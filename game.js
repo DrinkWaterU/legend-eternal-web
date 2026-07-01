@@ -216,6 +216,8 @@ const encounterPlan = ["normal", "normal", "normal", "elite", "normal", "normal"
 
 const state = {
   run: 0,
+  selectedRegion: "平原",
+  selectedHero: "冒險者",
   encounterIndex: 0,
   turn: 0,
   hero: null,
@@ -226,8 +228,15 @@ const state = {
 };
 
 const els = {
-  startScreen: document.querySelector("#startScreen"),
+  menuScreen: document.querySelector("#menuScreen"),
+  regionScreen: document.querySelector("#regionScreen"),
+  characterScreen: document.querySelector("#characterScreen"),
+  achievementScreen: document.querySelector("#achievementScreen"),
   gameScreen: document.querySelector("#gameScreen"),
+  openRegionButton: document.querySelector("#openRegionButton"),
+  openCharacterButton: document.querySelector("#openCharacterButton"),
+  openAchievementButton: document.querySelector("#openAchievementButton"),
+  selectAdventurerButton: document.querySelector("#selectAdventurerButton"),
   startButton: document.querySelector("#startButton"),
   restartButton: document.querySelector("#restartButton"),
   nextButton: document.querySelector("#nextButton"),
@@ -249,6 +258,29 @@ const els = {
   endTitle: document.querySelector("#endTitle"),
   endText: document.querySelector("#endText")
 };
+
+function showScreen(screenId) {
+  document.querySelectorAll(".screen").forEach((screen) => {
+    screen.classList.toggle("is-active", screen.id === screenId);
+  });
+
+  if (screenId === "menuScreen") {
+    els.resultLabel.textContent = "冒險準備中";
+    els.encounterLabel.textContent = "尚未開始";
+  }
+  if (screenId === "regionScreen") {
+    els.resultLabel.textContent = "選擇地區";
+    els.encounterLabel.textContent = state.selectedRegion;
+  }
+  if (screenId === "characterScreen") {
+    els.resultLabel.textContent = "選擇角色";
+    els.encounterLabel.textContent = state.selectedHero;
+  }
+  if (screenId === "achievementScreen") {
+    els.resultLabel.textContent = "尚未開放";
+    els.encounterLabel.textContent = "成就系統";
+  }
+}
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -289,8 +321,7 @@ function startRun() {
   state.ended = false;
   state.log = [];
 
-  els.startScreen.classList.remove("is-active");
-  els.gameScreen.classList.add("is-active");
+  showScreen("gameScreen");
   els.rewardPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
   els.nextButton.disabled = false;
@@ -299,8 +330,9 @@ function startRun() {
 }
 
 function restart() {
-  els.gameScreen.classList.remove("is-active");
-  els.startScreen.classList.add("is-active");
+  showScreen("menuScreen");
+  els.rewardPanel.classList.remove("is-visible");
+  els.endPanel.classList.remove("is-visible");
   els.resultLabel.textContent = "冒險準備中";
   els.encounterLabel.textContent = "尚未開始";
 }
@@ -589,6 +621,16 @@ function setMeter(element, value, max) {
   element.style.width = `${Math.round(ratio * 100)}%`;
 }
 
+els.openRegionButton.addEventListener("click", () => showScreen("regionScreen"));
+els.openCharacterButton.addEventListener("click", () => showScreen("characterScreen"));
+els.openAchievementButton.addEventListener("click", () => showScreen("achievementScreen"));
+els.selectAdventurerButton.addEventListener("click", () => {
+  state.selectedHero = "冒險者";
+  showScreen("menuScreen");
+});
+document.querySelectorAll(".back-button").forEach((button) => {
+  button.addEventListener("click", () => showScreen(button.dataset.target));
+});
 els.startButton.addEventListener("click", startRun);
 els.restartButton.addEventListener("click", restart);
 els.nextButton.addEventListener("click", playTurn);
