@@ -122,23 +122,22 @@ h2 {
 }
 
 .menu-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 620px;
   padding: 30px;
 }
 
 .menu-copy {
-  align-self: end;
-  min-height: 340px;
   display: flex;
   flex-direction: column;
-  justify-content: end;
+  justify-content: start;
 }
 
 .menu-copy h2 {
-  max-width: 680px;
-  font-size: clamp(1.9rem, 5vw, 3.4rem);
+  max-width: 560px;
+  font-size: clamp(1.65rem, 5vw, 2.6rem);
   line-height: 1.15;
 }
 
@@ -427,13 +426,11 @@ dd {
 
   .topbar,
   .combat-layout,
-  .menu-layout,
   .end-panel.is-visible {
     display: block;
   }
 
   .menu-copy {
-    min-height: 220px;
     margin-bottom: 18px;
   }
 
