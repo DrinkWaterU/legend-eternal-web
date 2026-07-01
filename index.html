@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.1.1-alpha</p>
+            <p class="version-label">v0.1.2-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -53,7 +53,7 @@
               <p class="eyebrow">選擇地區</p>
               <h2>平原</h2>
             </div>
-            <button class="secondary-button back-button" type="button" data-target="menuScreen">返回</button>
+            <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
           <p class="body-text">
             城鎮外圍的開闊草地。野豬、史萊姆與草原狼經常出沒，是新手冒險者最常踏入的第一片野外。
@@ -75,7 +75,7 @@
               <p class="eyebrow">選擇角色</p>
               <h2>冒險者</h2>
             </div>
-            <button class="secondary-button back-button" type="button" data-target="menuScreen">返回</button>
+            <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
           <p class="body-text">
             傳說大陸最常見的職業。冒險者使用的武器各式各樣，會依照手上的裝備與旅途中的選擇調整戰鬥方式，能力平均且適合探索未知地區。
@@ -97,7 +97,7 @@
               <p class="eyebrow">成就系統</p>
               <h2>尚未開放</h2>
             </div>
-            <button class="secondary-button back-button" type="button" data-target="menuScreen">返回</button>
+            <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
           <p class="body-text">
             這裡之後會記錄冒險進度、擊敗首領、角色解鎖與特殊挑戰。
@@ -108,6 +108,8 @@
       <section id="gameScreen" class="screen">
         <div class="combat-layout">
           <aside class="status-panel" aria-label="角色狀態">
+            <button class="secondary-button home-button" type="button" data-target="menuScreen">回主選單</button>
+
             <div class="entity-block">
               <div class="entity-heading">
                 <h2 id="heroName">冒險者</h2>
@@ -152,13 +154,18 @@
           </div>
         </section>
 
-        <section id="endPanel" class="end-panel" aria-label="冒險結果">
-          <div>
-            <p class="eyebrow">本輪結束</p>
-            <h2 id="endTitle">冒險失敗</h2>
-            <p id="endText" class="body-text"></p>
+        <section id="endPanel" class="end-panel" aria-label="冒險結果" aria-modal="true">
+          <div class="end-dialog">
+            <div>
+              <p class="eyebrow">本輪結束</p>
+              <h2 id="endTitle">冒險失敗</h2>
+              <p id="endText" class="body-text"></p>
+            </div>
+            <div class="end-actions">
+              <button id="retryButton" class="primary-button" type="button">重新挑戰平原</button>
+              <button id="restartButton" class="secondary-button" type="button">回主選單</button>
+            </div>
           </div>
-          <button id="restartButton" class="primary-button" type="button">重新開始</button>
         </section>
       </section>
     </main>

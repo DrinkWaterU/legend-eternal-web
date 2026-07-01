@@ -121,7 +121,7 @@ h2 {
 .status-panel,
 .log-panel,
 .reward-dialog,
-.end-panel {
+.end-dialog {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(24, 33, 28, 0.9);
@@ -321,6 +321,11 @@ dd {
   min-height: auto;
 }
 
+.home-button {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
 .log-panel {
   min-height: 560px;
 }
@@ -419,18 +424,10 @@ dd {
 .reward-panel,
 .end-panel {
   display: none;
-  margin-top: 18px;
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 760px;
-  padding: 22px;
 }
 
-.end-panel.is-visible {
-  display: block;
-}
-
-.reward-panel {
+.reward-panel,
+.end-panel {
   position: fixed;
   inset: 0;
   z-index: 20;
@@ -440,13 +437,19 @@ dd {
   background: rgba(4, 8, 6, 0.72);
 }
 
-.reward-panel.is-visible {
+.reward-panel.is-visible,
+.end-panel.is-visible {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.reward-dialog {
+.end-panel {
+  z-index: 30;
+}
+
+.reward-dialog,
+.end-dialog {
   width: min(520px, 100%);
   max-height: min(680px, calc(100vh - 36px));
   padding: 22px;
@@ -479,16 +482,22 @@ dd {
   line-height: 1.6;
 }
 
-.end-panel {
-  align-items: center;
+.end-dialog {
+  display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 18px;
+  gap: 20px;
   text-align: center;
 }
 
-.end-panel.is-visible {
+.end-actions {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.end-actions .secondary-button,
+.end-actions .primary-button {
+  width: 100%;
 }
 
 @media (max-width: 820px) {
@@ -497,8 +506,7 @@ dd {
     padding-top: 18px;
   }
 
-  .topbar,
-  .end-panel.is-visible {
+  .topbar {
     display: block;
   }
 
@@ -536,7 +544,4 @@ dd {
     width: 100%;
   }
 
-  .end-panel .primary-button {
-    margin-top: 16px;
-  }
 }

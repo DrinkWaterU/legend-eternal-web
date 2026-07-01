@@ -239,6 +239,7 @@ const els = {
   selectAdventurerButton: document.querySelector("#selectAdventurerButton"),
   startButton: document.querySelector("#startButton"),
   restartButton: document.querySelector("#restartButton"),
+  retryButton: document.querySelector("#retryButton"),
   nextButton: document.querySelector("#nextButton"),
   encounterLabel: document.querySelector("#encounterLabel"),
   resultLabel: document.querySelector("#resultLabel"),
@@ -333,6 +334,9 @@ function restart() {
   showScreen("menuScreen");
   els.rewardPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  els.nextButton.disabled = true;
+  state.awaitingReward = false;
+  state.ended = true;
   els.resultLabel.textContent = "冒險準備中";
   els.encounterLabel.textContent = "尚未開始";
 }
@@ -632,6 +636,10 @@ els.selectAdventurerButton.addEventListener("click", () => {
 document.querySelectorAll(".back-button").forEach((button) => {
   button.addEventListener("click", () => showScreen(button.dataset.target));
 });
+document.querySelectorAll(".home-button").forEach((button) => {
+  button.addEventListener("click", restart);
+});
 els.startButton.addEventListener("click", startRun);
 els.restartButton.addEventListener("click", restart);
+els.retryButton.addEventListener("click", startRun);
 els.nextButton.addEventListener("click", playTurn);
