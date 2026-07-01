@@ -126,19 +126,26 @@ h2 {
   flex-direction: column;
   gap: 22px;
   max-width: 620px;
+  margin: 0 auto;
   padding: 30px;
 }
 
 .menu-copy {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: start;
+  text-align: center;
 }
 
 .menu-copy h2 {
   max-width: 560px;
   font-size: clamp(1.65rem, 5vw, 2.6rem);
   line-height: 1.15;
+}
+
+.menu-copy .body-text {
+  max-width: 480px;
 }
 
 .menu-actions {
