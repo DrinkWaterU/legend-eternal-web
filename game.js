@@ -608,13 +608,13 @@ function render() {
 
 function renderLog() {
   els.battleLog.innerHTML = "";
-  state.log.slice(-80).forEach((entry) => {
+  state.log.slice(-80).reverse().forEach((entry) => {
     const item = document.createElement("li");
     item.className = entry.type;
     item.textContent = entry.text;
     els.battleLog.append(item);
   });
-  els.battleLog.scrollTop = els.battleLog.scrollHeight;
+  els.battleLog.scrollTop = 0;
 }
 
 function setMeter(element, value, max) {

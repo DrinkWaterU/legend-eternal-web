@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.1.0-alpha</p>
+            <p class="version-label">v0.1.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -142,12 +142,14 @@
           </section>
         </div>
 
-        <section id="rewardPanel" class="reward-panel" aria-label="戰後強化">
-          <div>
-            <p class="eyebrow">戰鬥勝利</p>
-            <h2>選擇一項強化</h2>
+        <section id="rewardPanel" class="reward-panel" aria-label="戰後強化" aria-modal="true">
+          <div class="reward-dialog">
+            <div>
+              <p class="eyebrow">戰鬥勝利</p>
+              <h2>選擇一項強化</h2>
+            </div>
+            <div id="rewardChoices" class="reward-grid"></div>
           </div>
-          <div id="rewardChoices" class="reward-grid"></div>
         </section>
 
         <section id="endPanel" class="end-panel" aria-label="冒險結果">

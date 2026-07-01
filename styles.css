@@ -120,7 +120,7 @@ h2 {
 .intro-panel,
 .status-panel,
 .log-panel,
-.reward-panel,
+.reward-dialog,
 .end-panel {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -426,9 +426,31 @@ dd {
   padding: 22px;
 }
 
-.reward-panel.is-visible,
 .end-panel.is-visible {
   display: block;
+}
+
+.reward-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  margin: 0;
+  max-width: none;
+  padding: 18px;
+  background: rgba(4, 8, 6, 0.72);
+}
+
+.reward-panel.is-visible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reward-dialog {
+  width: min(520px, 100%);
+  max-height: min(680px, calc(100vh - 36px));
+  padding: 22px;
+  overflow: auto;
 }
 
 .reward-grid {
