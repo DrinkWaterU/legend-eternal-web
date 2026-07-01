@@ -341,6 +341,7 @@ function startEncounter() {
   const type = encounterPlan[state.encounterIndex];
   state.turn = 0;
   state.awaitingReward = false;
+  state.log = [];
   state.enemy = buildEnemy(type, state.encounterIndex);
   state.enemy.poison = 0;
   state.hero.poison = 0;

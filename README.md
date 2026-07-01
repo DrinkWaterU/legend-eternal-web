@@ -1,5 +1,7 @@
 # 傳說永恆
 
+目前版本：`v0.1.0-alpha`
+
 文字網頁 roguelite 原型。玩家目前只能選擇「冒險者」，進入第一地區「平原」進行自動戰鬥。死亡後本輪結束，重新開始。
 
 ## 第一版內容
@@ -16,3 +18,10 @@
 ## 執行方式
 
 直接用瀏覽器開啟 `index.html` 即可。
+
+## 版本與 Commit 方式
+
+- 小型 UI、文字、數值、戰鬥節奏調整可以先留在 working tree，不一定每次 commit。
+- 當完成一個可描述的階段版本時，再整理成 commit 並更新版本號。
+- 版本號採 `v主版.次版.修訂-alpha`。目前仍是早期原型，因此使用 `alpha`。
+- Commit message 使用 `type: description`，例如 `feat: prepare v0.1.0 alpha prototype`。
