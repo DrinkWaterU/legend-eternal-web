@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>平原冒險</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-label="目前冒險">
+        <div>
+          <p class="eyebrow">第一地區</p>
+          <h1>平原</h1>
+        </div>
+        <div class="run-summary">
+          <span id="encounterLabel">尚未開始</span>
+          <span id="resultLabel">冒險準備中</span>
+        </div>
+      </section>
+
+      <section id="startScreen" class="screen is-active">
+        <div class="intro-panel">
+          <p class="eyebrow">角色</p>
+          <h2>冒險者</h2>
+          <p class="body-text">
+            能力平均的通用職業。還沒有鳳凰加護，倒下後本輪冒險就會結束。
+          </p>
+          <dl class="stat-list">
+            <div><dt>生命</dt><dd>100</dd></div>
+            <div><dt>攻擊</dt><dd>10</dd></div>
+            <div><dt>防禦</dt><dd>2</dd></div>
+            <div><dt>暴擊</dt><dd>5%</dd></div>
+          </dl>
+          <button id="startButton" class="primary-button" type="button">開始冒險</button>
+        </div>
+      </section>
+
+      <section id="gameScreen" class="screen">
+        <div class="combat-layout">
+          <aside class="status-panel" aria-label="角色狀態">
+            <div class="entity-block">
+              <div class="entity-heading">
+                <h2 id="heroName">冒險者</h2>
+                <span id="heroLevel">第 1 輪</span>
+              </div>
+              <div class="meter" aria-label="冒險者生命">
+                <span id="heroHealthBar"></span>
+              </div>
+              <p id="heroHealthText" class="meter-text">100 / 100</p>
+            </div>
+
+            <div class="entity-block">
+              <div class="entity-heading">
+                <h2 id="enemyName">敵人</h2>
+                <span id="enemyKind">普通</span>
+              </div>
+              <div class="meter enemy" aria-label="敵人生命">
+                <span id="enemyHealthBar"></span>
+              </div>
+              <p id="enemyHealthText" class="meter-text">0 / 0</p>
+            </div>
+
+            <dl id="currentStats" class="compact-stats"></dl>
+          </aside>
+
+          <section class="log-panel" aria-label="戰鬥紀錄">
+            <div class="log-header">
+              <h2>戰鬥紀錄</h2>
+              <button id="nextButton" class="secondary-button" type="button">下一回合</button>
+            </div>
+            <ol id="battleLog" class="battle-log"></ol>
+          </section>
+        </div>
+
+        <section id="rewardPanel" class="reward-panel" aria-label="戰後強化">
+          <div>
+            <p class="eyebrow">戰鬥勝利</p>
+            <h2>選擇一項強化</h2>
+          </div>
+          <div id="rewardChoices" class="reward-grid"></div>
+        </section>
+
+        <section id="endPanel" class="end-panel" aria-label="冒險結果">
+          <div>
+            <p class="eyebrow">本輪結束</p>
+            <h2 id="endTitle">冒險失敗</h2>
+            <p id="endText" class="body-text"></p>
+          </div>
+          <button id="restartButton" class="primary-button" type="button">重新開始</button>
+        </section>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
