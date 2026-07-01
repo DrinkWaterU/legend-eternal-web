@@ -46,10 +46,16 @@ button {
 
 .topbar {
   display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
   padding: 0 4px 22px;
+  text-align: center;
+}
+
+.topbar > div:first-child {
+  width: 100%;
 }
 
 .eyebrow {
@@ -86,8 +92,9 @@ h2 {
 .run-summary {
   display: flex;
   flex-wrap: wrap;
-  justify-content: end;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
 }
 
 .run-summary span {
@@ -191,7 +198,9 @@ h2 {
 .selection-panel,
 .intro-panel {
   max-width: 620px;
+  margin: 0 auto;
   padding: 30px;
+  text-align: center;
 }
 
 .selection-panel {
@@ -200,9 +209,19 @@ h2 {
 
 .section-heading {
   display: flex;
+  flex-direction: column;
   align-items: start;
-  justify-content: space-between;
+  justify-content: center;
   gap: 18px;
+  text-align: center;
+}
+
+.section-heading > div {
+  width: 100%;
+}
+
+.section-heading .back-button {
+  align-self: center;
 }
 
 .locked-panel {
@@ -257,6 +276,10 @@ dd {
   font-weight: 800;
 }
 
+.selection-panel > .primary-button {
+  min-width: min(100%, 260px);
+}
+
 .secondary-button {
   min-width: 112px;
   min-height: 40px;
@@ -275,15 +298,25 @@ dd {
 }
 
 .combat-layout {
-  display: grid;
-  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 18px;
+  max-width: 760px;
+  margin: 0 auto;
 }
 
 .status-panel,
 .log-panel {
-  min-height: 560px;
+  width: 100%;
   padding: 22px;
+}
+
+.status-panel {
+  min-height: auto;
+}
+
+.log-panel {
+  min-height: 560px;
 }
 
 .entity-block + .entity-block {
@@ -381,6 +414,9 @@ dd {
 .end-panel {
   display: none;
   margin-top: 18px;
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 760px;
   padding: 22px;
 }
 
@@ -391,7 +427,7 @@ dd {
 
 .reward-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -417,8 +453,10 @@ dd {
 
 .end-panel {
   align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
   gap: 18px;
+  text-align: center;
 }
 
 .end-panel.is-visible {
@@ -432,7 +470,6 @@ dd {
   }
 
   .topbar,
-  .combat-layout,
   .end-panel.is-visible {
     display: block;
   }
@@ -441,35 +478,25 @@ dd {
     margin-bottom: 18px;
   }
 
-  .section-heading {
-    display: block;
-  }
-
   .back-button {
     width: 100%;
     margin-top: 8px;
   }
 
   .run-summary {
-    justify-content: start;
     margin-top: 16px;
-  }
-
-  .status-panel,
-  .log-panel {
-    min-height: auto;
   }
 
   .log-panel {
     margin-top: 14px;
+    min-height: auto;
   }
 
   .battle-log {
     height: 360px;
   }
 
-  .stat-list,
-  .reward-grid {
+  .stat-list {
     grid-template-columns: 1fr;
   }
 
