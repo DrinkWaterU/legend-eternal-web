@@ -1,5 +1,11 @@
 "use strict";
 
+const GAME_VERSION = "v0.1.3.0-alpha";
+const SAVE_KEY = "legendEternalSave";
+const SAVE_SCHEMA_VERSION = 1;
+const REGION_ID = "plains";
+const CHARACTER_ID = "adventurer";
+
 const templates = {
   encounter: "{enemy} 出現在平原上。",
   heroDamage: "{actor} 攻擊了 {target}，造成 {amount} 點傷害。",
@@ -214,10 +220,25 @@ const rewards = [
 
 const encounterPlan = ["normal", "normal", "normal", "elite", "normal", "normal", "elite", "boss"];
 
+const regionDefinitions = {
+  [REGION_ID]: {
+    name: "平原",
+    encounterCount: encounterPlan.length
+  }
+};
+
+const characterDefinitions = {
+  [CHARACTER_ID]: {
+    name: "冒險者"
+  }
+};
+
 const state = {
   run: 0,
-  selectedRegion: "平原",
-  selectedHero: "冒險者",
+  selectedRegionId: REGION_ID,
+  selectedHeroId: CHARACTER_ID,
+  selectedRegion: regionDefinitions[REGION_ID].name,
+  selectedHero: characterDefinitions[CHARACTER_ID].name,
   encounterIndex: 0,
   turn: 0,
   hero: null,
@@ -231,10 +252,12 @@ const els = {
   menuScreen: document.querySelector("#menuScreen"),
   regionScreen: document.querySelector("#regionScreen"),
   characterScreen: document.querySelector("#characterScreen"),
+  statisticsScreen: document.querySelector("#statisticsScreen"),
   achievementScreen: document.querySelector("#achievementScreen"),
   gameScreen: document.querySelector("#gameScreen"),
   openRegionButton: document.querySelector("#openRegionButton"),
   openCharacterButton: document.querySelector("#openCharacterButton"),
+  openStatisticsButton: document.querySelector("#openStatisticsButton"),
   openAchievementButton: document.querySelector("#openAchievementButton"),
   selectAdventurerButton: document.querySelector("#selectAdventurerButton"),
   startButton: document.querySelector("#startButton"),
@@ -257,8 +280,15 @@ const els = {
   rewardChoices: document.querySelector("#rewardChoices"),
   endPanel: document.querySelector("#endPanel"),
   endTitle: document.querySelector("#endTitle"),
-  endText: document.querySelector("#endText")
+  endText: document.querySelector("#endText"),
+  statisticsList: document.querySelector("#statisticsList"),
+  deleteSaveButton: document.querySelector("#deleteSaveButton"),
+  deleteSavePanel: document.querySelector("#deleteSavePanel"),
+  confirmDeleteSaveButton: document.querySelector("#confirmDeleteSaveButton"),
+  cancelDeleteSaveButton: document.querySelector("#cancelDeleteSaveButton")
 };
+
+let saveData = loadSave();
 
 function showScreen(screenId) {
   document.querySelectorAll(".screen").forEach((screen) => {
@@ -281,6 +311,253 @@ function showScreen(screenId) {
     els.resultLabel.textContent = "尚未開放";
     els.encounterLabel.textContent = "成就系統";
   }
+  if (screenId === "statisticsScreen") {
+    els.resultLabel.textContent = "累積紀錄";
+    els.encounterLabel.textContent = "統計數據";
+    renderStatistics();
+  }
+}
+
+function createDefaultSave() {
+  const now = new Date().toISOString();
+  return {
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    gameVersion: GAME_VERSION,
+    profile: {
+      createdAt: now,
+      updatedAt: now
+    },
+    progression: {
+      regions: {
+        [REGION_ID]: {
+          unlocked: true,
+          bestEncounter: 0,
+          clears: 0
+        }
+      },
+      characters: {
+        [CHARACTER_ID]: {
+          unlocked: true,
+          level: 1,
+          exp: 0,
+          learnedSkills: [],
+          runs: 0,
+          clears: 0
+        }
+      }
+    },
+    inventory: {
+      gold: 0,
+      materials: {}
+    },
+    achievements: {},
+    statistics: {
+      totalRuns: 0,
+      totalDefeats: 0,
+      totalClears: 0,
+      totalEnemiesDefeated: 0,
+      bossesDefeated: 0,
+      regions: {
+        [REGION_ID]: {
+          runs: 0,
+          clears: 0,
+          bestEncounter: 0
+        }
+      },
+      characters: {
+        [CHARACTER_ID]: {
+          runs: 0,
+          clears: 0
+        }
+      }
+    },
+    settings: {
+      selectedRegionId: REGION_ID,
+      selectedCharacterId: CHARACTER_ID
+    }
+  };
+}
+
+function loadSave() {
+  const fallback = createDefaultSave();
+  try {
+    const rawSave = localStorage.getItem(SAVE_KEY);
+    if (!rawSave) {
+      saveGame(fallback);
+      return fallback;
+    }
+    return migrateSave(JSON.parse(rawSave));
+  } catch {
+    return fallback;
+  }
+}
+
+function migrateSave(rawSave) {
+  const save = createDefaultSave();
+  if (!rawSave || typeof rawSave !== "object") {
+    saveGame(save);
+    return save;
+  }
+
+  save.schemaVersion = SAVE_SCHEMA_VERSION;
+  save.gameVersion = GAME_VERSION;
+  save.profile.createdAt = rawSave.profile?.createdAt || save.profile.createdAt;
+  save.profile.updatedAt = rawSave.profile?.updatedAt || save.profile.updatedAt;
+  mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
+  mergePlainObject(save.achievements, rawSave.achievements);
+
+  const rawStats = rawSave.statistics || {};
+  save.statistics.totalRuns = toSafeNumber(rawStats.totalRuns);
+  save.statistics.totalDefeats = toSafeNumber(rawStats.totalDefeats);
+  save.statistics.totalClears = toSafeNumber(rawStats.totalClears);
+  save.statistics.totalEnemiesDefeated = toSafeNumber(rawStats.totalEnemiesDefeated);
+  save.statistics.bossesDefeated = toSafeNumber(rawStats.bossesDefeated);
+
+  const rawRegionStats = rawStats.regions?.[REGION_ID] || rawSave.progression?.regions?.[REGION_ID] || {};
+  save.statistics.regions[REGION_ID].runs = toSafeNumber(rawRegionStats.runs);
+  save.statistics.regions[REGION_ID].clears = toSafeNumber(rawRegionStats.clears);
+  save.statistics.regions[REGION_ID].bestEncounter = toSafeNumber(rawRegionStats.bestEncounter);
+  save.progression.regions[REGION_ID].bestEncounter = save.statistics.regions[REGION_ID].bestEncounter;
+  save.progression.regions[REGION_ID].clears = save.statistics.regions[REGION_ID].clears;
+
+  const rawCharacterStats = rawStats.characters?.[CHARACTER_ID] || rawSave.progression?.characters?.[CHARACTER_ID] || {};
+  save.statistics.characters[CHARACTER_ID].runs = toSafeNumber(rawCharacterStats.runs);
+  save.statistics.characters[CHARACTER_ID].clears = toSafeNumber(rawCharacterStats.clears);
+  save.progression.characters[CHARACTER_ID].runs = save.statistics.characters[CHARACTER_ID].runs;
+  save.progression.characters[CHARACTER_ID].clears = save.statistics.characters[CHARACTER_ID].clears;
+  save.progression.characters[CHARACTER_ID].level = Math.max(1, toSafeNumber(rawSave.progression?.characters?.[CHARACTER_ID]?.level, 1));
+  save.progression.characters[CHARACTER_ID].exp = toSafeNumber(rawSave.progression?.characters?.[CHARACTER_ID]?.exp);
+  save.progression.characters[CHARACTER_ID].learnedSkills = Array.isArray(rawSave.progression?.characters?.[CHARACTER_ID]?.learnedSkills)
+    ? rawSave.progression.characters[CHARACTER_ID].learnedSkills
+    : [];
+
+  save.settings.selectedRegionId = rawSave.settings?.selectedRegionId || REGION_ID;
+  save.settings.selectedCharacterId = rawSave.settings?.selectedCharacterId || CHARACTER_ID;
+  saveGame(save);
+  return save;
+}
+
+function mergePlainObject(target, source) {
+  if (!source || typeof source !== "object" || Array.isArray(source)) {
+    return;
+  }
+  Object.entries(source).forEach(([key, value]) => {
+    target[key] = value;
+  });
+}
+
+function toSafeNumber(value, fallback = 0) {
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
+function saveGame(save = saveData) {
+  try {
+    save.gameVersion = GAME_VERSION;
+    save.profile.updatedAt = new Date().toISOString();
+    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  } catch {
+    addFixedLog("system", "瀏覽器無法保存目前進度。");
+  }
+}
+
+function syncSelectionFromSave() {
+  const regionId = regionDefinitions[saveData.settings.selectedRegionId] ? saveData.settings.selectedRegionId : REGION_ID;
+  const characterId = characterDefinitions[saveData.settings.selectedCharacterId] ? saveData.settings.selectedCharacterId : CHARACTER_ID;
+  state.selectedRegionId = regionId;
+  state.selectedHeroId = characterId;
+  state.selectedRegion = regionDefinitions[regionId].name;
+  state.selectedHero = characterDefinitions[characterId].name;
+}
+
+function recordRunStarted() {
+  const stats = saveData.statistics;
+  const regionStats = stats.regions[state.selectedRegionId];
+  const characterStats = stats.characters[state.selectedHeroId];
+  const characterProgress = saveData.progression.characters[state.selectedHeroId];
+
+  stats.totalRuns += 1;
+  regionStats.runs += 1;
+  characterStats.runs += 1;
+  characterProgress.runs = characterStats.runs;
+  saveGame();
+}
+
+function recordEnemyDefeated(isBoss) {
+  saveData.statistics.totalEnemiesDefeated += 1;
+  if (isBoss) {
+    saveData.statistics.bossesDefeated += 1;
+  }
+  saveGame();
+}
+
+function recordRunFinished(cleared) {
+  const reachedEncounter = cleared ? encounterPlan.length : state.encounterIndex + 1;
+  const stats = saveData.statistics;
+  const regionStats = stats.regions[state.selectedRegionId];
+  const characterStats = stats.characters[state.selectedHeroId];
+  const regionProgress = saveData.progression.regions[state.selectedRegionId];
+  const characterProgress = saveData.progression.characters[state.selectedHeroId];
+
+  regionStats.bestEncounter = Math.max(regionStats.bestEncounter, reachedEncounter);
+  regionProgress.bestEncounter = regionStats.bestEncounter;
+
+  if (cleared) {
+    stats.totalClears += 1;
+    regionStats.clears += 1;
+    characterStats.clears += 1;
+    regionProgress.clears = regionStats.clears;
+    characterProgress.clears = characterStats.clears;
+  } else {
+    stats.totalDefeats += 1;
+  }
+
+  saveGame();
+}
+
+function renderStatistics() {
+  const stats = saveData.statistics;
+  const regionStats = stats.regions[REGION_ID];
+  const characterStats = stats.characters[CHARACTER_ID];
+  const statisticsItems = [
+    ["冒險次數", stats.totalRuns],
+    ["冒險失敗", stats.totalDefeats],
+    ["平原通關", regionStats.clears],
+    ["最高抵達遭遇", `${regionStats.bestEncounter} / ${encounterPlan.length}`],
+    ["擊敗敵人", stats.totalEnemiesDefeated],
+    ["擊敗首領", stats.bossesDefeated],
+    ["冒險者出戰", characterStats.runs],
+    ["冒險者通關", characterStats.clears]
+  ];
+
+  els.statisticsList.innerHTML = "";
+  statisticsItems.forEach(([label, value]) => {
+    const item = document.createElement("div");
+    item.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
+    els.statisticsList.append(item);
+  });
+}
+
+function openDeleteSaveDialog() {
+  els.deleteSavePanel.classList.add("is-visible");
+}
+
+function closeDeleteSaveDialog() {
+  els.deleteSavePanel.classList.remove("is-visible");
+}
+
+function deleteSave() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {
+    // The in-memory reset still keeps the page usable if storage is blocked.
+  }
+  saveData = createDefaultSave();
+  saveGame();
+  syncSelectionFromSave();
+  closeDeleteSaveDialog();
+  renderStatistics();
+  els.resultLabel.textContent = "存檔已刪除";
+  els.encounterLabel.textContent = "統計數據";
 }
 
 function clone(value) {
@@ -313,6 +590,7 @@ function addFixedLog(type, text) {
 }
 
 function startRun() {
+  syncSelectionFromSave();
   state.run += 1;
   state.encounterIndex = 0;
   state.turn = 0;
@@ -325,8 +603,10 @@ function startRun() {
   showScreen("gameScreen");
   els.rewardPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeDeleteSaveDialog();
   els.nextButton.disabled = false;
 
+  recordRunStarted();
   startEncounter();
 }
 
@@ -334,6 +614,7 @@ function restart() {
   showScreen("menuScreen");
   els.rewardPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeDeleteSaveDialog();
   els.nextButton.disabled = true;
   state.awaitingReward = false;
   state.ended = true;
@@ -500,7 +781,9 @@ function applyEndOfTurnEffects() {
 
 function winEncounter() {
   const enemyName = state.enemy.name;
+  const defeatedBoss = state.enemy.kind === "首領";
   addLog("system", "victory", { target: enemyName });
+  recordEnemyDefeated(defeatedBoss);
 
   if (state.hero.killHeal > 0) {
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + state.hero.killHeal);
@@ -527,6 +810,7 @@ function loseRun() {
 function finishRun(cleared) {
   state.ended = true;
   state.awaitingReward = false;
+  recordRunFinished(cleared);
   els.nextButton.disabled = true;
   els.rewardPanel.classList.remove("is-visible");
   els.endPanel.classList.add("is-visible");
@@ -626,11 +910,16 @@ function setMeter(element, value, max) {
   element.style.width = `${Math.round(ratio * 100)}%`;
 }
 
+syncSelectionFromSave();
+
 els.openRegionButton.addEventListener("click", () => showScreen("regionScreen"));
 els.openCharacterButton.addEventListener("click", () => showScreen("characterScreen"));
+els.openStatisticsButton.addEventListener("click", () => showScreen("statisticsScreen"));
 els.openAchievementButton.addEventListener("click", () => showScreen("achievementScreen"));
 els.selectAdventurerButton.addEventListener("click", () => {
-  state.selectedHero = "冒險者";
+  saveData.settings.selectedCharacterId = CHARACTER_ID;
+  saveGame();
+  syncSelectionFromSave();
   showScreen("menuScreen");
 });
 document.querySelectorAll(".back-button").forEach((button) => {
@@ -643,3 +932,6 @@ els.startButton.addEventListener("click", startRun);
 els.restartButton.addEventListener("click", restart);
 els.retryButton.addEventListener("click", startRun);
 els.nextButton.addEventListener("click", playTurn);
+els.deleteSaveButton.addEventListener("click", openDeleteSaveDialog);
+els.confirmDeleteSaveButton.addEventListener("click", deleteSave);
+els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);

@@ -264,6 +264,7 @@ dd {
 
 .primary-button,
 .secondary-button,
+.danger-button,
 .reward-card {
   border: 0;
   border-radius: 8px;
@@ -296,11 +297,39 @@ dd {
   font-weight: 800;
 }
 
+.danger-button {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid rgba(214, 106, 94, 0.7);
+  background: rgba(100, 34, 29, 0.86);
+  color: #ffe5df;
+  font-weight: 800;
+}
+
 .primary-button:hover,
 .secondary-button:hover,
+.danger-button:hover,
 .reward-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
+}
+
+.statistics-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.statistics-list div {
+  min-height: 82px;
+}
+
+.danger-zone {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.danger-zone .danger-button {
+  width: min(100%, 260px);
 }
 
 .combat-layout {
@@ -496,7 +525,8 @@ dd {
 }
 
 .end-actions .secondary-button,
-.end-actions .primary-button {
+.end-actions .primary-button,
+.end-actions .danger-button {
   width: 100%;
 }
 

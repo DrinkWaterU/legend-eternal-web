@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.1.2.1-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.1.3.0-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.1.2.1-alpha</p>
+            <p class="version-label">v0.1.3.0-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -37,6 +37,10 @@
             <button id="openCharacterButton" class="menu-button" type="button">
               <span>選擇角色</span>
               <small>查看目前可用角色</small>
+            </button>
+            <button id="openStatisticsButton" class="menu-button" type="button">
+              <span>統計數據</span>
+              <small>查看目前累積紀錄</small>
             </button>
             <button id="openAchievementButton" class="menu-button" type="button">
               <span>成就系統</span>
@@ -105,6 +109,25 @@
         </div>
       </section>
 
+      <section id="statisticsScreen" class="screen">
+        <div class="selection-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">統計數據</p>
+              <h2>冒險紀錄</h2>
+            </div>
+            <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
+          </div>
+          <p class="body-text">
+            這裡會保存這個瀏覽器上的冒險紀錄。更換瀏覽器或清除網站資料後，紀錄會重新開始。
+          </p>
+          <dl id="statisticsList" class="stat-list statistics-list"></dl>
+          <div class="danger-zone">
+            <button id="deleteSaveButton" class="danger-button" type="button">刪除存檔</button>
+          </div>
+        </div>
+      </section>
+
       <section id="gameScreen" class="screen">
         <div class="combat-layout">
           <aside class="status-panel" aria-label="角色狀態">
@@ -168,8 +191,22 @@
           </div>
         </section>
       </section>
+
+      <section id="deleteSavePanel" class="end-panel" aria-label="刪除存檔確認" aria-modal="true">
+        <div class="end-dialog">
+          <div>
+            <p class="eyebrow">刪除存檔</p>
+            <h2>確認要刪除目前存檔？</h2>
+            <p class="body-text">這會清除統計、解鎖與設定，刪除後無法復原。</p>
+          </div>
+          <div class="end-actions">
+            <button id="confirmDeleteSaveButton" class="danger-button" type="button">確認刪除</button>
+            <button id="cancelDeleteSaveButton" class="secondary-button" type="button">取消</button>
+          </div>
+        </div>
+      </section>
     </main>
 
-    <script src="game.js?v=0.1.2.1-alpha"></script>
+    <script src="game.js?v=0.1.3.0-alpha"></script>
   </body>
 </html>
