@@ -1,3 +1,5 @@
+import { DEFAULT_BLESSING_RARITY, getBlessingRarity } from "../data/rarities.js";
+
 export function renderStatList(element, items) {
   element.innerHTML = "";
   items.forEach(([label, value]) => {
@@ -29,11 +31,16 @@ export function renderChoiceList(element, choices) {
 export function renderBlessingChoices(element, blessings, onChoose) {
   element.innerHTML = "";
   blessings.forEach((blessing) => {
+    const rarityId = blessing.rarity || DEFAULT_BLESSING_RARITY;
+    const rarity = getBlessingRarity(rarityId);
     const button = document.createElement("button");
-    button.className = "blessing-card";
+    button.className = `blessing-card rarity-${rarity.id}`;
     button.type = "button";
     button.innerHTML = `
-      <small>${blessing.eventTitle}</small>
+      <small>
+        <span>${blessing.eventTitle}</span>
+        <i>${rarity.label}</i>
+      </small>
       <strong>${blessing.name}</strong>
       <span>${blessing.eventText}</span>
       <em>${blessing.flavorText}</em>

@@ -4,6 +4,7 @@ import { applyEndOfTurnEffects, buildEnemy, resolveEnemyAction, resolveHeroActio
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
+import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
 import { els } from "./src/ui/dom.js";
 import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderCurrentStats, renderStatList, setMeter } from "./src/ui/renderHelpers.js";
@@ -470,10 +471,24 @@ function getBlessingChoices(count) {
   const pool = [...currentRegion().blessings];
   const choices = [];
   while (choices.length < count && pool.length > 0) {
-    const index = Math.floor(Math.random() * pool.length);
+    const index = getWeightedBlessingIndex(pool);
     choices.push(pool.splice(index, 1)[0]);
   }
   return choices;
+}
+
+function getWeightedBlessingIndex(pool) {
+  const totalWeight = pool.reduce((total, blessing) => total + getBlessingRarity(blessing.rarity).weight, 0);
+  let roll = Math.random() * totalWeight;
+
+  for (let index = 0; index < pool.length; index += 1) {
+    roll -= getBlessingRarity(pool[index].rarity).weight;
+    if (roll <= 0) {
+      return index;
+    }
+  }
+
+  return pool.length - 1;
 }
 
 function chooseBlessing(blessing) {

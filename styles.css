@@ -648,10 +648,28 @@ dd {
 }
 
 .blessing-card small {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 8px;
   color: var(--gold);
   font-weight: 800;
+}
+
+.blessing-card small span {
+  color: inherit;
+  line-height: 1.4;
+}
+
+.blessing-card small i {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-style: normal;
+  line-height: 1;
 }
 
 .blessing-card strong {
@@ -660,18 +678,18 @@ dd {
   font-size: 1.05rem;
 }
 
-.blessing-card span,
-.blessing-card em,
-.blessing-card b {
+.blessing-card > span,
+.blessing-card > em,
+.blessing-card > b {
   display: block;
 }
 
-.blessing-card span {
+.blessing-card > span {
   color: var(--muted);
   line-height: 1.6;
 }
 
-.blessing-card em {
+.blessing-card > em {
   margin-top: 10px;
   color: var(--sky);
   font-size: 0.88rem;
@@ -679,10 +697,67 @@ dd {
   line-height: 1.6;
 }
 
-.blessing-card b {
+.blessing-card > b {
   margin-top: 10px;
   color: var(--moss);
   font-size: 0.92rem;
+}
+
+.blessing-card.rarity-common {
+  border-color: rgba(183, 204, 184, 0.34);
+}
+
+.blessing-card.rarity-common small {
+  color: #b7ccb8;
+}
+
+.blessing-card.rarity-uncommon {
+  border-color: rgba(111, 193, 170, 0.52);
+  background:
+    linear-gradient(135deg, rgba(111, 193, 170, 0.15), transparent 50%),
+    rgba(21, 26, 27, 0.96);
+}
+
+.blessing-card.rarity-uncommon small {
+  color: #7dd5bd;
+}
+
+.blessing-card.rarity-rare {
+  border-color: rgba(226, 180, 96, 0.66);
+  background:
+    linear-gradient(135deg, rgba(226, 180, 96, 0.18), transparent 52%),
+    rgba(24, 24, 22, 0.97);
+  box-shadow: inset 0 0 0 1px rgba(226, 180, 96, 0.08);
+}
+
+.blessing-card.rarity-rare small {
+  color: #e6bf70;
+}
+
+.blessing-card.rarity-epic {
+  border-color: rgba(197, 126, 226, 0.72);
+  background:
+    linear-gradient(135deg, rgba(197, 126, 226, 0.2), transparent 50%),
+    rgba(23, 21, 29, 0.97);
+  box-shadow: inset 0 0 22px rgba(197, 126, 226, 0.1);
+}
+
+.blessing-card.rarity-epic small {
+  color: #dca2f3;
+}
+
+.blessing-card.rarity-legendary {
+  border-color: rgba(255, 231, 164, 0.82);
+  background:
+    linear-gradient(135deg, rgba(255, 231, 164, 0.25), transparent 48%),
+    linear-gradient(180deg, rgba(50, 38, 21, 0.78), rgba(21, 26, 27, 0.97));
+  box-shadow:
+    inset 0 0 24px rgba(255, 231, 164, 0.12),
+    0 14px 32px rgba(226, 180, 96, 0.12);
+}
+
+.blessing-card.rarity-legendary small {
+  color: #ffe7a4;
 }
 
 .end-dialog {
