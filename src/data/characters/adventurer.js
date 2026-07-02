@@ -1,28 +1,10 @@
-export const adventurerTemplate = {
-  name: "冒險者",
-  maxHp: 100,
-  hp: 100,
-  attack: 10,
-  defense: 2,
-  critChance: 0.05,
-  shieldStart: 0,
-  poisonPower: 0,
-  regenEvery: 0,
-  regenAmount: 0,
-  killHeal: 0,
-  slimeBonus: 0,
-  damageReduction: 0,
-  blessings: []
-};
+import adventurerData from "./adventurer.json" with { type: "json" };
 
 export const adventurerDefinition = {
-  name: "冒險者",
-  description: "傳說大陸最常見的職業。冒險者使用的武器各式各樣，會依照手上的裝備與旅途中的選擇調整戰鬥方式，能力平均且適合探索未知地區。",
-  stats: {
-    maxHp: adventurerTemplate.maxHp,
-    attack: adventurerTemplate.attack,
-    defense: adventurerTemplate.defense,
-    critChance: "5%"
-  },
-  template: adventurerTemplate
+  name: adventurerData.name,
+  description: adventurerData.description,
+  stats: adventurerData.stats,
+  template: adventurerData.template
 };
+
+export const adventurerTemplate = adventurerDefinition.template;
