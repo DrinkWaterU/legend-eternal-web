@@ -1,306 +1,17 @@
-"use strict";
-
-const GAME_VERSION = "v0.1.7.0-alpha";
-const SAVE_KEY = "legendEternalSave";
-const SAVE_SCHEMA_VERSION = 2;
-const REGION_ID = "plains";
-const CHARACTER_ID = "adventurer";
-
-const templates = {
-  encounter: "{enemy} 出現在平原上。",
-  heroDamage: "{actor} 攻擊了 {target}，造成 {amount} 點傷害。",
-  enemyDamage: "{actor} 攻擊了 {target}，造成 {amount} 點傷害。",
-  critical: "{actor} 打出了暴擊。",
-  block: "{target} 擋下了一部分攻擊。",
-  poisonApply: "{target} 中毒了。",
-  poisonTick: "{target} 受到毒素影響，失去 {amount} 點生命。",
-  heal: "{target} 恢復了 {amount} 點生命。",
-  charge: "{actor} 準備衝撞。",
-  shield: "{target} 獲得了 {amount} 點護盾。",
-  victory: "{target} 倒下了。戰鬥勝利。",
-  defeat: "{target} 倒下了。本輪冒險結束。",
-  blessing: "你接受了祝福：{blessing}。",
-  boss: "平原深處傳來沉重的腳步聲。",
-  clear: "你擊敗了平原的首領。這次冒險成功了。"
-};
-
-const heroTemplate = {
-  name: "冒險者",
-  maxHp: 100,
-  hp: 100,
-  attack: 10,
-  defense: 2,
-  critChance: 0.05,
-  shieldStart: 0,
-  poisonPower: 0,
-  regenEvery: 0,
-  regenAmount: 0,
-  killHeal: 0,
-  slimeBonus: 0,
-  damageReduction: 0,
-  blessings: []
-};
-
-const enemies = [
-  {
-    id: "boar",
-    name: "野豬",
-    kind: "普通",
-    family: "beast",
-    maxHp: 34,
-    attack: 8,
-    defense: 1,
-    critChance: 0.03,
-    intro: "野豬壓低身體，前蹄刮過草地。"
-  },
-  {
-    id: "slime",
-    name: "史萊姆",
-    kind: "普通",
-    family: "slime",
-    maxHp: 30,
-    attack: 6,
-    defense: 0,
-    critChance: 0,
-    intro: "史萊姆在草葉間緩慢蠕動。"
-  },
-  {
-    id: "wolf",
-    name: "草原狼",
-    kind: "普通",
-    family: "beast",
-    maxHp: 28,
-    attack: 9,
-    defense: 0,
-    critChance: 0.08,
-    dodgeChance: 0.12,
-    intro: "草原狼繞著你低聲咆哮。"
-  },
-  {
-    id: "poison-slime",
-    name: "毒史萊姆",
-    kind: "普通",
-    family: "slime",
-    maxHp: 32,
-    attack: 5,
-    defense: 0,
-    critChance: 0,
-    poisonPower: 3,
-    intro: "毒史萊姆冒出細小氣泡。"
-  },
-  {
-    id: "horn-rabbit",
-    name: "尖角兔",
-    kind: "普通",
-    family: "beast",
-    maxHp: 22,
-    attack: 7,
-    defense: 0,
-    critChance: 0.1,
-    dodgeChance: 0.15,
-    intro: "尖角兔從草叢裡竄出。"
-  }
-];
-
-const elites = [
-  {
-    id: "giant-boar",
-    name: "巨大野豬",
-    kind: "精英",
-    family: "beast",
-    maxHp: 70,
-    attack: 12,
-    defense: 2,
-    critChance: 0.05,
-    chargeEvery: 3,
-    intro: "巨大野豬用沉重鼻息震動草梗。"
-  },
-  {
-    id: "mutant-slime",
-    name: "變異史萊姆",
-    kind: "精英",
-    family: "slime",
-    maxHp: 64,
-    attack: 9,
-    defense: 1,
-    critChance: 0,
-    regenEvery: 3,
-    regenAmount: 6,
-    intro: "變異史萊姆的核心在半透明身體裡閃動。"
-  }
-];
-
-const boss = {
-  id: "boar-king",
-  name: "魔化野豬王",
-  kind: "首領",
-  family: "beast",
-  maxHp: 118,
-  attack: 14,
-  defense: 3,
-  critChance: 0.06,
-  chargeEvery: 3,
-  intro: "魔化野豬王踏碎土丘，闖入你的視線。"
-};
-
-const regionalBlessingDefinitions = {
-  [REGION_ID]: [
-    {
-      id: "stream-whetstone",
-      category: "attack",
-      name: "磨利劍刃",
-      eventTitle: "溪邊磨石",
-      eventText: "你在淺溪旁找到一塊平整的磨石，花了些時間整理武器。",
-      flavorText: "水聲蓋過了草叢裡的動靜，刀鋒重新映出平原的天光。",
-      effectText: "攻擊力 +2。",
-      apply(hero) {
-        hero.attack += 2;
-      }
-    },
-    {
-      id: "warm-campfire",
-      category: "survival",
-      name: "穩固體魄",
-      eventTitle: "溫暖營火",
-      eventText: "你找到前人留下的石圈，重新點起一小堆營火休息片刻。",
-      flavorText: "火光讓肩上的疲憊慢慢鬆開，平原的夜風也不再那麼刺骨。",
-      effectText: "最大生命 +12，並恢復 12 點生命。",
-      apply(hero) {
-        hero.maxHp += 12;
-        hero.hp = Math.min(hero.maxHp, hero.hp + 12);
-      }
-    },
-    {
-      id: "abandoned-satchel",
-      category: "defense",
-      name: "皮革護具",
-      eventTitle: "廢棄行囊",
-      eventText: "半埋在草裡的舊行囊中，還留著幾片堪用的皮革護片。",
-      flavorText: "你把它們綁在容易受傷的位置，雖然粗糙，但足夠可靠。",
-      effectText: "防禦 +1。",
-      apply(hero) {
-        hero.defense += 1;
-      }
-    },
-    {
-      id: "wind-marker",
-      category: "attack",
-      name: "精準攻勢",
-      eventTitle: "風中標記",
-      eventText: "你停下腳步觀察草浪方向，學會從風裡判斷敵人的破綻。",
-      flavorText: "平原沒有牆，所有動作都會在草尖留下痕跡。",
-      effectText: "暴擊率 +8%。",
-      apply(hero) {
-        hero.critChance += 0.08;
-      }
-    },
-    {
-      id: "grass-charm",
-      category: "defense",
-      name: "草繩護符",
-      eventTitle: "草繩護符",
-      eventText: "你用韌草和碎石編成護符，掛在胸前當作簡單的守護。",
-      flavorText: "它不算神聖，卻像平原本身願意替你擋下一次危險。",
-      effectText: "每場戰鬥開始獲得 8 點護盾。",
-      apply(hero) {
-        hero.shieldStart += 8;
-      }
-    },
-    {
-      id: "wildgrass-bandage",
-      category: "healing",
-      name: "野草繃帶",
-      eventTitle: "野草繃帶",
-      eventText: "你採下柔韌的長草與乾淨布條，做成方便替換的臨時繃帶。",
-      flavorText: "不算精緻，但冒險者常常就是靠這種小準備活下來。",
-      effectText: "每 3 回合恢復 5 點生命。",
-      apply(hero) {
-        hero.regenEvery = 3;
-        hero.regenAmount += 5;
-      }
-    },
-    {
-      id: "slime-residue",
-      category: "attack",
-      name: "史萊姆殘液",
-      eventTitle: "史萊姆殘液",
-      eventText: "你從乾掉的史萊姆痕跡裡收集到帶有腐蝕性的黏液。",
-      flavorText: "瓶中的液體緩慢晃動，像還記得自己曾經是活物。",
-      effectText: "攻擊時附加 2 點中毒傷害。",
-      apply(hero) {
-        hero.poisonPower += 2;
-      }
-    },
-    {
-      id: "quiet-hill",
-      category: "healing",
-      name: "喘息節奏",
-      eventTitle: "安靜丘坡",
-      eventText: "你登上一處低矮丘坡，趁視野開闊重新調整呼吸與步伐。",
-      flavorText: "短暫的安靜讓你想起，活著本身也是一種技巧。",
-      effectText: "擊敗敵人後恢復 10 點生命。",
-      apply(hero) {
-        hero.killHeal += 10;
-      }
-    },
-    {
-      id: "clear-trails",
-      category: "attack",
-      name: "黏液研究",
-      eventTitle: "透明足跡",
-      eventText: "你沿著草葉上的透明黏痕前進，摸清了史萊姆類魔物的活動方式。",
-      flavorText: "那些看似隨意的痕跡，其實都指向柔軟核心的位置。",
-      effectText: "對史萊姆類敵人的傷害 +15%。",
-      apply(hero) {
-        hero.slimeBonus += 0.15;
-      }
-    },
-    {
-      id: "bitter-herb",
-      category: "survival",
-      name: "苦味藥草",
-      eventTitle: "苦味藥草",
-      eventText: "你認出一叢帶苦味的藥草，它常被平原旅人用來壓制毒性。",
-      flavorText: "味道糟得誠實，但身體很快記住了它的用處。",
-      effectText: "受到的中毒傷害降低 50%。",
-      apply(hero) {
-        hero.damageReduction = Math.max(hero.damageReduction, 0.5);
-      }
-    }
-  ]
-};
-
-const encounterPlan = ["normal", "normal", "normal", "elite", "normal", "normal", "elite", "boss"];
-
-const regionDefinitions = {
-  [REGION_ID]: {
-    name: "平原",
-    description: "城鎮外圍的開闊草地。野豬、史萊姆與草原狼經常出沒，是新手冒險者最常踏入的第一片野外。",
-    encounterCount: encounterPlan.length,
-    bossName: boss.name,
-    difficulty: "入門"
-  }
-};
-
-const characterDefinitions = {
-  [CHARACTER_ID]: {
-    name: "冒險者",
-    description: "傳說大陸最常見的職業。冒險者使用的武器各式各樣，會依照手上的裝備與旅途中的選擇調整戰鬥方式，能力平均且適合探索未知地區。",
-    stats: {
-      maxHp: heroTemplate.maxHp,
-      attack: heroTemplate.attack,
-      defense: heroTemplate.defense,
-      critChance: "5%"
-    }
-  }
-};
+import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID } from "./src/config.js";
+import { applyEndOfTurnEffects, buildEnemy, resolveEnemyAction, resolveHeroAction } from "./src/core/combat.js";
+import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
+import { characterDefinitions } from "./src/data/characters/index.js";
+import { regionDefinitions } from "./src/data/regions/index.js";
+import { templates } from "./src/data/templates.js";
+import { clone } from "./src/utils.js";
 
 const state = {
   run: 0,
-  selectedRegionId: REGION_ID,
-  selectedHeroId: CHARACTER_ID,
-  selectedRegion: regionDefinitions[REGION_ID].name,
-  selectedHero: characterDefinitions[CHARACTER_ID].name,
+  selectedRegionId: DEFAULT_REGION_ID,
+  selectedHeroId: DEFAULT_CHARACTER_ID,
+  selectedRegion: regionDefinitions[DEFAULT_REGION_ID].name,
+  selectedHero: characterDefinitions[DEFAULT_CHARACTER_ID].name,
   encounterIndex: 0,
   turn: 0,
   hero: null,
@@ -314,8 +25,8 @@ const uiState = {
   regionView: "list",
   characterView: "list",
   statisticsView: "overview",
-  statisticsCharacterId: CHARACTER_ID,
-  statisticsRegionId: REGION_ID
+  statisticsCharacterId: DEFAULT_CHARACTER_ID,
+  statisticsRegionId: DEFAULT_REGION_ID
 };
 
 const els = {
@@ -343,7 +54,7 @@ const els = {
   characterDetailDescription: document.querySelector("#characterDetailDescription"),
   characterDetailStats: document.querySelector("#characterDetailStats"),
   backToCharacterListButton: document.querySelector("#backToCharacterListButton"),
-  selectAdventurerButton: document.querySelector("#selectAdventurerButton"),
+  selectCharacterButton: document.querySelector("#selectCharacterButton"),
   startButton: document.querySelector("#startButton"),
   restartButton: document.querySelector("#restartButton"),
   retryButton: document.querySelector("#retryButton"),
@@ -423,168 +134,9 @@ function showScreen(screenId) {
   }
 }
 
-function createDefaultSave() {
-  const now = new Date().toISOString();
-  return {
-    schemaVersion: SAVE_SCHEMA_VERSION,
-    gameVersion: GAME_VERSION,
-    profile: {
-      createdAt: now,
-      updatedAt: now,
-      migratedAt: null,
-      exportedAt: null
-    },
-    progression: {
-      regions: {
-        [REGION_ID]: {
-          unlocked: true,
-          bestEncounter: 0,
-          clears: 0
-        }
-      },
-      characters: {
-        [CHARACTER_ID]: {
-          unlocked: true,
-          level: 1,
-          exp: 0,
-          learnedSkills: [],
-          runs: 0,
-          clears: 0
-        }
-      }
-    },
-    inventory: {
-      gold: 0,
-      materials: {}
-    },
-    achievements: {},
-    statistics: {
-      totalRuns: 0,
-      totalDefeats: 0,
-      totalClears: 0,
-      totalEnemiesDefeated: 0,
-      bossesDefeated: 0,
-      regions: {
-        [REGION_ID]: {
-          runs: 0,
-          clears: 0,
-          bestEncounter: 0
-        }
-      },
-      characters: {
-        [CHARACTER_ID]: {
-          runs: 0,
-          clears: 0
-        }
-      }
-    },
-    settings: {
-      selectedRegionId: REGION_ID,
-      selectedCharacterId: CHARACTER_ID
-    }
-  };
-}
-
-function loadSave() {
-  const fallback = createDefaultSave();
-  try {
-    const rawSave = localStorage.getItem(SAVE_KEY);
-    if (!rawSave) {
-      saveGame(fallback);
-      return fallback;
-    }
-    return migrateSave(JSON.parse(rawSave), { persist: true });
-  } catch {
-    return fallback;
-  }
-}
-
-function migrateSave(rawSave, options = {}) {
-  const { persist = false } = options;
-  const save = createDefaultSave();
-  if (!rawSave || typeof rawSave !== "object") {
-    if (persist) {
-      saveGame(save);
-    }
-    return save;
-  }
-
-  const rawSchemaVersion = toSafeInteger(rawSave.schemaVersion, 0);
-  const shouldMarkMigration = rawSchemaVersion !== SAVE_SCHEMA_VERSION;
-
-  save.gameVersion = GAME_VERSION;
-  save.profile.createdAt = rawSave.profile?.createdAt || save.profile.createdAt;
-  save.profile.updatedAt = rawSave.profile?.updatedAt || save.profile.updatedAt;
-  save.profile.migratedAt = shouldMarkMigration ? new Date().toISOString() : rawSave.profile?.migratedAt || save.profile.migratedAt;
-  save.profile.exportedAt = rawSave.profile?.exportedAt || save.profile.exportedAt;
-  mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
-  save.inventory.gold = toSafeNumber(rawSave.inventory?.gold);
-  mergePlainObject(save.achievements, rawSave.achievements);
-
-  const rawStats = rawSave.statistics || {};
-  save.statistics.totalRuns = toSafeNumber(rawStats.totalRuns);
-  save.statistics.totalDefeats = toSafeNumber(rawStats.totalDefeats);
-  save.statistics.totalClears = toSafeNumber(rawStats.totalClears);
-  save.statistics.totalEnemiesDefeated = toSafeNumber(rawStats.totalEnemiesDefeated);
-  save.statistics.bossesDefeated = toSafeNumber(rawStats.bossesDefeated);
-
-  const rawRegionStats = rawStats.regions?.[REGION_ID] || rawSave.progression?.regions?.[REGION_ID] || {};
-  save.statistics.regions[REGION_ID].runs = toSafeNumber(rawRegionStats.runs);
-  save.statistics.regions[REGION_ID].clears = toSafeNumber(rawRegionStats.clears);
-  save.statistics.regions[REGION_ID].bestEncounter = toSafeNumber(rawRegionStats.bestEncounter);
-  save.progression.regions[REGION_ID].bestEncounter = save.statistics.regions[REGION_ID].bestEncounter;
-  save.progression.regions[REGION_ID].clears = save.statistics.regions[REGION_ID].clears;
-
-  const rawCharacterStats = rawStats.characters?.[CHARACTER_ID] || rawSave.progression?.characters?.[CHARACTER_ID] || {};
-  save.statistics.characters[CHARACTER_ID].runs = toSafeNumber(rawCharacterStats.runs);
-  save.statistics.characters[CHARACTER_ID].clears = toSafeNumber(rawCharacterStats.clears);
-  save.progression.characters[CHARACTER_ID].runs = save.statistics.characters[CHARACTER_ID].runs;
-  save.progression.characters[CHARACTER_ID].clears = save.statistics.characters[CHARACTER_ID].clears;
-  save.progression.characters[CHARACTER_ID].level = Math.max(1, toSafeNumber(rawSave.progression?.characters?.[CHARACTER_ID]?.level, 1));
-  save.progression.characters[CHARACTER_ID].exp = toSafeNumber(rawSave.progression?.characters?.[CHARACTER_ID]?.exp);
-  save.progression.characters[CHARACTER_ID].learnedSkills = Array.isArray(rawSave.progression?.characters?.[CHARACTER_ID]?.learnedSkills)
-    ? rawSave.progression.characters[CHARACTER_ID].learnedSkills
-    : [];
-
-  save.settings.selectedRegionId = rawSave.settings?.selectedRegionId || REGION_ID;
-  save.settings.selectedCharacterId = rawSave.settings?.selectedCharacterId || CHARACTER_ID;
-  if (persist) {
-    saveGame(save);
-  }
-  return save;
-}
-
-function mergePlainObject(target, source) {
-  if (!source || typeof source !== "object" || Array.isArray(source)) {
-    return;
-  }
-  Object.entries(source).forEach(([key, value]) => {
-    target[key] = value;
-  });
-}
-
-function toSafeNumber(value, fallback = 0) {
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
-}
-
-function toSafeInteger(value, fallback = 0) {
-  return Number.isInteger(value) && value >= 0 ? value : fallback;
-}
-
-function saveGame(save = saveData) {
-  try {
-    save.schemaVersion = SAVE_SCHEMA_VERSION;
-    save.gameVersion = GAME_VERSION;
-    save.profile.updatedAt = new Date().toISOString();
-    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
-  } catch {
-    addFixedLog("system", "瀏覽器無法保存目前進度。");
-  }
-}
-
 function syncSelectionFromSave() {
-  const regionId = regionDefinitions[saveData.settings.selectedRegionId] ? saveData.settings.selectedRegionId : REGION_ID;
-  const characterId = characterDefinitions[saveData.settings.selectedCharacterId] ? saveData.settings.selectedCharacterId : CHARACTER_ID;
+  const regionId = regionDefinitions[saveData.settings.selectedRegionId] ? saveData.settings.selectedRegionId : DEFAULT_REGION_ID;
+  const characterId = characterDefinitions[saveData.settings.selectedCharacterId] ? saveData.settings.selectedCharacterId : DEFAULT_CHARACTER_ID;
   state.selectedRegionId = regionId;
   state.selectedHeroId = characterId;
   state.selectedRegion = regionDefinitions[regionId].name;
@@ -596,40 +148,38 @@ function showRegionList() {
   showScreen("regionScreen");
 }
 
-function showRegionDetail(regionId = REGION_ID) {
+function showRegionDetail(regionId = DEFAULT_REGION_ID) {
   saveData.settings.selectedRegionId = regionId;
-  saveGame();
+  saveGameSafe();
   syncSelectionFromSave();
   uiState.regionView = "detail";
   showScreen("regionScreen");
 }
 
 function renderRegionScreen() {
-  const showDetail = uiState.regionView === "detail";
-  els.regionListView.classList.toggle("is-active", !showDetail);
-  els.regionDetailView.classList.toggle("is-active", showDetail);
+  els.regionListView.classList.toggle("is-active", uiState.regionView === "list");
+  els.regionDetailView.classList.toggle("is-active", uiState.regionView === "detail");
 
-  if (showDetail) {
-    const region = regionDefinitions[state.selectedRegionId];
+  renderChoiceList(els.regionChoiceList, Object.entries(regionDefinitions).map(([regionId, region]) => ({
+    title: region.name,
+    meta: region.difficulty,
+    description: `${region.encounterCount} 場遭遇，首領：${region.bossName}`,
+    action: "查看地區",
+    onClick: () => showRegionDetail(regionId)
+  })));
+
+  if (uiState.regionView === "detail") {
+    const region = currentRegion();
     els.regionDetailName.textContent = region.name;
     els.regionDetailDescription.textContent = region.description;
     renderStatList(els.regionDetailStats, [
-      ["遭遇", region.encounterCount],
+      ["遭遇數", region.encounterCount],
       ["首領", region.bossName],
       ["難度", region.difficulty],
       ["角色", state.selectedHero]
     ]);
     els.startButton.textContent = `開始${region.name}冒險`;
-    return;
   }
-
-  renderChoiceList(els.regionChoiceList, Object.entries(regionDefinitions).map(([regionId, region]) => ({
-    title: region.name,
-    meta: `${region.difficulty}地區`,
-    description: `${region.encounterCount} 場遭遇，首領：${region.bossName}`,
-    action: "查看地區",
-    onClick: () => showRegionDetail(regionId)
-  })));
 }
 
 function showCharacterList() {
@@ -637,40 +187,38 @@ function showCharacterList() {
   showScreen("characterScreen");
 }
 
-function showCharacterDetail(characterId = CHARACTER_ID) {
+function showCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
   saveData.settings.selectedCharacterId = characterId;
-  saveGame();
+  saveGameSafe();
   syncSelectionFromSave();
   uiState.characterView = "detail";
   showScreen("characterScreen");
 }
 
 function renderCharacterScreen() {
-  const showDetail = uiState.characterView === "detail";
-  els.characterListView.classList.toggle("is-active", !showDetail);
-  els.characterDetailView.classList.toggle("is-active", showDetail);
-
-  if (showDetail) {
-    const character = characterDefinitions[state.selectedHeroId];
-    els.characterDetailName.textContent = character.name;
-    els.characterDetailDescription.textContent = character.description;
-    renderStatList(els.characterDetailStats, [
-      ["生命", character.stats.maxHp],
-      ["攻擊", character.stats.attack],
-      ["防禦", character.stats.defense],
-      ["暴擊", character.stats.critChance]
-    ]);
-    els.selectAdventurerButton.textContent = `使用${character.name}`;
-    return;
-  }
+  els.characterListView.classList.toggle("is-active", uiState.characterView === "list");
+  els.characterDetailView.classList.toggle("is-active", uiState.characterView === "detail");
 
   renderChoiceList(els.characterChoiceList, Object.entries(characterDefinitions).map(([characterId, character]) => ({
     title: character.name,
     meta: characterId === saveData.settings.selectedCharacterId ? "目前選擇" : "可使用",
-    description: "能力平均，適合探索未知地區。",
+    description: character.description,
     action: "查看角色",
     onClick: () => showCharacterDetail(characterId)
   })));
+
+  if (uiState.characterView === "detail") {
+    const character = characterDefinitions[state.selectedHeroId];
+    els.characterDetailName.textContent = character.name;
+    els.characterDetailDescription.textContent = character.description;
+    renderStatList(els.characterDetailStats, [
+      ["最大生命", character.stats.maxHp],
+      ["攻擊", character.stats.attack],
+      ["防禦", character.stats.defense],
+      ["暴擊", character.stats.critChance]
+    ]);
+    els.selectCharacterButton.textContent = `使用${character.name}`;
+  }
 }
 
 function recordRunStarted() {
@@ -682,8 +230,9 @@ function recordRunStarted() {
   stats.totalRuns += 1;
   regionStats.runs += 1;
   characterStats.runs += 1;
-  characterProgress.runs = characterStats.runs;
-  saveGame();
+  characterProgress.runs += 1;
+
+  saveGameSafe();
 }
 
 function recordEnemyDefeated(isBoss) {
@@ -691,31 +240,31 @@ function recordEnemyDefeated(isBoss) {
   if (isBoss) {
     saveData.statistics.bossesDefeated += 1;
   }
-  saveGame();
+  saveGameSafe();
 }
 
 function recordRunFinished(cleared) {
-  const reachedEncounter = cleared ? encounterPlan.length : state.encounterIndex + 1;
   const stats = saveData.statistics;
   const regionStats = stats.regions[state.selectedRegionId];
   const characterStats = stats.characters[state.selectedHeroId];
   const regionProgress = saveData.progression.regions[state.selectedRegionId];
   const characterProgress = saveData.progression.characters[state.selectedHeroId];
+  const bestEncounter = cleared ? currentRegion().encounterCount : state.encounterIndex + 1;
 
-  regionStats.bestEncounter = Math.max(regionStats.bestEncounter, reachedEncounter);
-  regionProgress.bestEncounter = regionStats.bestEncounter;
+  regionStats.bestEncounter = Math.max(regionStats.bestEncounter, bestEncounter);
+  regionProgress.bestEncounter = Math.max(regionProgress.bestEncounter, bestEncounter);
 
   if (cleared) {
     stats.totalClears += 1;
     regionStats.clears += 1;
     characterStats.clears += 1;
-    regionProgress.clears = regionStats.clears;
-    characterProgress.clears = characterStats.clears;
+    regionProgress.clears += 1;
+    characterProgress.clears += 1;
   } else {
     stats.totalDefeats += 1;
   }
 
-  saveGame();
+  saveGameSafe();
 }
 
 function renderStatistics() {
@@ -733,8 +282,7 @@ function renderStatistics() {
     element.classList.toggle("is-active", uiState.statisticsView === view);
   });
   els.statisticsTabs.forEach((button) => {
-    const isActive = button.dataset.statisticsView === getActiveStatisticsTab();
-    button.classList.toggle("is-active", isActive);
+    button.classList.toggle("is-active", button.dataset.statisticsView === getActiveStatisticsTab());
   });
 
   renderStatisticsOverview(stats);
@@ -759,13 +307,13 @@ function showStatisticsView(view) {
   renderStatistics();
 }
 
-function showStatisticsCharacterDetail(characterId = CHARACTER_ID) {
+function showStatisticsCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
   uiState.statisticsCharacterId = characterId;
   uiState.statisticsView = "characterDetail";
   renderStatistics();
 }
 
-function showStatisticsRegionDetail(regionId = REGION_ID) {
+function showStatisticsRegionDetail(regionId = DEFAULT_REGION_ID) {
   uiState.statisticsRegionId = regionId;
   uiState.statisticsView = "regionDetail";
   renderStatistics();
@@ -912,13 +460,6 @@ function importSaveFromFile(event) {
   reader.readAsText(file);
 }
 
-function isImportableSave(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return false;
-  }
-  return Boolean(value.schemaVersion || value.statistics || value.progression || value.settings || value.profile);
-}
-
 function openDeleteSaveDialog() {
   els.deleteSavePanel.classList.add("is-visible");
 }
@@ -929,30 +470,18 @@ function closeDeleteSaveDialog() {
 
 function deleteSave() {
   try {
-    localStorage.removeItem(SAVE_KEY);
+    deleteStoredSave();
   } catch {
     // The in-memory reset still keeps the page usable if storage is blocked.
   }
   saveData = createDefaultSave();
-  saveGame();
+  saveGameSafe();
   syncSelectionFromSave();
   closeDeleteSaveDialog();
   renderStatistics();
   setSaveNotice("存檔已刪除，新的空白存檔已建立。");
   els.resultLabel.textContent = "存檔已刪除";
   els.encounterLabel.textContent = "統計數據";
-}
-
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-
-function randomItem(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-function roll(chance) {
-  return Math.random() < chance;
 }
 
 function format(templateId, values = {}) {
@@ -972,12 +501,19 @@ function addFixedLog(type, text) {
   renderLog();
 }
 
+function createCombatLogger() {
+  return {
+    template: addLog,
+    fixed: addFixedLog
+  };
+}
+
 function startRun() {
   syncSelectionFromSave();
   state.run += 1;
   state.encounterIndex = 0;
   state.turn = 0;
-  state.hero = clone(heroTemplate);
+  state.hero = clone(characterDefinitions[state.selectedHeroId].template);
   state.enemy = null;
   state.awaitingBlessing = false;
   state.ended = false;
@@ -1006,11 +542,12 @@ function restart() {
 }
 
 function startEncounter() {
-  const type = encounterPlan[state.encounterIndex];
+  const region = currentRegion();
+  const encounterType = region.encounterPlan[state.encounterIndex];
   state.turn = 0;
   state.awaitingBlessing = false;
   state.log = [];
-  state.enemy = buildEnemy(type, state.encounterIndex);
+  state.enemy = buildEnemy(region, state.encounterIndex);
   state.enemy.poison = 0;
   state.hero.poison = 0;
   state.hero.shield = state.hero.shieldStart;
@@ -1018,7 +555,7 @@ function startEncounter() {
   els.blessingPanel.classList.remove("is-visible");
   els.nextButton.disabled = false;
 
-  if (type === "boss") {
+  if (encounterType === "boss") {
     addLog("system", "boss");
   }
   addLog("system", "encounter", { enemy: state.enemy.name });
@@ -1029,35 +566,26 @@ function startEncounter() {
   render();
 }
 
-function buildEnemy(type, encounterIndex) {
-  const base = type === "boss" ? boss : type === "elite" ? randomItem(elites) : randomItem(enemies);
-  const enemy = clone(base);
-  const scale = 1 + encounterIndex * 0.08;
-  enemy.maxHp = Math.round(enemy.maxHp * scale);
-  enemy.hp = enemy.maxHp;
-  enemy.attack = Math.round(enemy.attack * scale);
-  return enemy;
-}
-
 function playTurn() {
   if (state.ended || state.awaitingBlessing || !state.enemy) {
     return;
   }
 
+  const log = createCombatLogger();
   state.turn += 1;
-  heroAction();
+  resolveHeroAction({ hero: state.hero, enemy: state.enemy, log });
   if (state.enemy.hp <= 0) {
     winEncounter();
     return;
   }
 
-  enemyAction();
+  resolveEnemyAction({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
   if (state.hero.hp <= 0) {
     loseRun();
     return;
   }
 
-  applyEndOfTurnEffects();
+  applyEndOfTurnEffects({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
   if (state.enemy.hp <= 0) {
     winEncounter();
     return;
@@ -1068,98 +596,6 @@ function playTurn() {
   }
 
   render();
-}
-
-function heroAction() {
-  const enemy = state.enemy;
-  const hero = state.hero;
-
-  if (enemy.dodgeChance && roll(enemy.dodgeChance)) {
-    addFixedLog("status", `${enemy.name} 閃開了攻擊。`);
-    return;
-  }
-
-  let damage = Math.max(1, hero.attack - enemy.defense);
-  if (enemy.family === "slime") {
-    damage = Math.round(damage * (1 + hero.slimeBonus));
-  }
-  if (roll(hero.critChance)) {
-    damage = Math.round(damage * 1.7);
-    addLog("damage", "critical", { actor: hero.name });
-  }
-
-  enemy.hp = Math.max(0, enemy.hp - damage);
-  addLog("damage", "heroDamage", {
-    actor: hero.name,
-    target: enemy.name,
-    amount: damage
-  });
-
-  if (hero.poisonPower > 0 && enemy.hp > 0) {
-    enemy.poison = Math.max(enemy.poison || 0, hero.poisonPower);
-    addLog("status", "poisonApply", { target: enemy.name });
-  }
-}
-
-function enemyAction() {
-  const enemy = state.enemy;
-  const hero = state.hero;
-  let damage = Math.max(1, enemy.attack - hero.defense);
-
-  if (enemy.chargeEvery && state.turn % enemy.chargeEvery === 0) {
-    addLog("status", "charge", { actor: enemy.name });
-    damage = Math.round(damage * 1.8);
-  }
-
-  if (roll(enemy.critChance || 0)) {
-    damage = Math.round(damage * 1.6);
-    addLog("damage", "critical", { actor: enemy.name });
-  }
-
-  if (hero.shield > 0) {
-    const blocked = Math.min(hero.shield, damage);
-    hero.shield -= blocked;
-    damage -= blocked;
-    addLog("status", "block", { target: hero.name });
-  }
-
-  hero.hp = Math.max(0, hero.hp - damage);
-  addLog("damage", "enemyDamage", {
-    actor: enemy.name,
-    target: hero.name,
-    amount: damage
-  });
-
-  if (enemy.poisonPower && hero.hp > 0) {
-    hero.poison = Math.max(hero.poison || 0, enemy.poisonPower);
-    addLog("status", "poisonApply", { target: hero.name });
-  }
-}
-
-function applyEndOfTurnEffects() {
-  const hero = state.hero;
-  const enemy = state.enemy;
-
-  if (hero.poison > 0) {
-    const poisonDamage = Math.max(1, Math.round(hero.poison * (1 - hero.damageReduction)));
-    hero.hp = Math.max(0, hero.hp - poisonDamage);
-    addLog("damage", "poisonTick", { target: hero.name, amount: poisonDamage });
-  }
-
-  if (enemy.poison > 0) {
-    enemy.hp = Math.max(0, enemy.hp - enemy.poison);
-    addLog("damage", "poisonTick", { target: enemy.name, amount: enemy.poison });
-  }
-
-  if (hero.regenEvery > 0 && state.turn % hero.regenEvery === 0 && hero.hp > 0) {
-    hero.hp = Math.min(hero.maxHp, hero.hp + hero.regenAmount);
-    addLog("heal", "heal", { target: hero.name, amount: hero.regenAmount });
-  }
-
-  if (enemy.regenEvery > 0 && state.turn % enemy.regenEvery === 0 && enemy.hp > 0) {
-    enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.regenAmount);
-    addLog("heal", "heal", { target: enemy.name, amount: enemy.regenAmount });
-  }
 }
 
 function winEncounter() {
@@ -1176,7 +612,7 @@ function winEncounter() {
   state.encounterIndex += 1;
   render();
 
-  if (state.encounterIndex >= encounterPlan.length) {
+  if (state.encounterIndex >= currentRegion().encounterPlan.length) {
     addLog("system", "clear");
     finishRun(true);
     return;
@@ -1191,6 +627,7 @@ function loseRun() {
 }
 
 function finishRun(cleared) {
+  const region = currentRegion();
   state.ended = true;
   state.awaitingBlessing = false;
   recordRunFinished(cleared);
@@ -1199,9 +636,9 @@ function finishRun(cleared) {
   els.endPanel.classList.add("is-visible");
   els.endTitle.textContent = cleared ? "冒險成功" : "冒險失敗";
   els.endText.textContent = cleared
-    ? `你完成了平原的挑戰。本輪共通過 ${state.encounterIndex} 場遭遇。`
+    ? `你完成了${region.name}的挑戰。本輪共通過 ${state.encounterIndex} 場遭遇。`
     : `你抵達了第 ${state.encounterIndex + 1} 場遭遇。本輪冒險結束。`;
-  els.resultLabel.textContent = cleared ? "平原突破" : "本輪結束";
+  els.resultLabel.textContent = cleared ? `${region.name}突破` : "本輪結束";
   render();
 }
 
@@ -1229,7 +666,7 @@ function showBlessings() {
 }
 
 function getBlessingChoices(count) {
-  const pool = [...regionalBlessingDefinitions[state.selectedRegionId]];
+  const pool = [...currentRegion().blessings];
   const choices = [];
   while (choices.length < count && pool.length > 0) {
     const index = Math.floor(Math.random() * pool.length);
@@ -1248,6 +685,7 @@ function chooseBlessing(blessing) {
 function render() {
   const hero = state.hero;
   const enemy = state.enemy;
+  const region = currentRegion();
 
   els.heroName.textContent = hero.name;
   els.heroLevel.textContent = `第 ${state.run} 輪`;
@@ -1259,7 +697,7 @@ function render() {
   setMeter(els.enemyHealthBar, enemy ? enemy.hp : 0, enemy ? enemy.maxHp : 1);
   els.enemyHealthText.textContent = enemy ? `${enemy.hp} / ${enemy.maxHp}` : "0 / 0";
 
-  els.encounterLabel.textContent = `第 ${Math.min(state.encounterIndex + 1, encounterPlan.length)} / ${encounterPlan.length} 場`;
+  els.encounterLabel.textContent = `第 ${Math.min(state.encounterIndex + 1, region.encounterPlan.length)} / ${region.encounterPlan.length} 場`;
   if (!state.ended) {
     els.resultLabel.textContent = state.awaitingBlessing
       ? "選擇祝福"
@@ -1299,41 +737,54 @@ function setMeter(element, value, max) {
   element.style.width = `${Math.round(ratio * 100)}%`;
 }
 
-syncSelectionFromSave();
+function currentRegion() {
+  return regionDefinitions[state.selectedRegionId];
+}
 
-els.openRegionButton.addEventListener("click", showRegionList);
-els.openCharacterButton.addEventListener("click", showCharacterList);
-els.openStatisticsButton.addEventListener("click", () => {
-  uiState.statisticsView = "overview";
-  showScreen("statisticsScreen");
-});
-els.openAchievementButton.addEventListener("click", () => showScreen("achievementScreen"));
-els.backToRegionListButton.addEventListener("click", showRegionList);
-els.backToCharacterListButton.addEventListener("click", showCharacterList);
-els.statisticsTabs.forEach((button) => {
-  button.addEventListener("click", () => showStatisticsView(button.dataset.statisticsView));
-});
-els.backToStatisticsCharacterListButton.addEventListener("click", () => showStatisticsView("characters"));
-els.backToStatisticsRegionListButton.addEventListener("click", () => showStatisticsView("regions"));
-els.selectAdventurerButton.addEventListener("click", () => {
-  saveData.settings.selectedCharacterId = state.selectedHeroId;
-  saveGame();
-  syncSelectionFromSave();
-  showScreen("menuScreen");
-});
-document.querySelectorAll(".back-button").forEach((button) => {
-  button.addEventListener("click", () => showScreen(button.dataset.target));
-});
-document.querySelectorAll(".home-button").forEach((button) => {
-  button.addEventListener("click", restart);
-});
-els.startButton.addEventListener("click", startRun);
-els.restartButton.addEventListener("click", restart);
-els.retryButton.addEventListener("click", startRun);
-els.nextButton.addEventListener("click", playTurn);
-els.exportSaveButton.addEventListener("click", exportSave);
-els.importSaveButton.addEventListener("click", openImportSavePicker);
-els.importSaveInput.addEventListener("change", importSaveFromFile);
-els.deleteSaveButton.addEventListener("click", openDeleteSaveDialog);
-els.confirmDeleteSaveButton.addEventListener("click", deleteSave);
-els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
+function saveGameSafe() {
+  saveGame(saveData, {
+    onError: () => addFixedLog("system", "瀏覽器無法保存目前進度。")
+  });
+}
+
+function bindEvents() {
+  els.openRegionButton.addEventListener("click", showRegionList);
+  els.openCharacterButton.addEventListener("click", showCharacterList);
+  els.openStatisticsButton.addEventListener("click", () => {
+    uiState.statisticsView = "overview";
+    showScreen("statisticsScreen");
+  });
+  els.openAchievementButton.addEventListener("click", () => showScreen("achievementScreen"));
+  els.backToRegionListButton.addEventListener("click", showRegionList);
+  els.backToCharacterListButton.addEventListener("click", showCharacterList);
+  els.statisticsTabs.forEach((button) => {
+    button.addEventListener("click", () => showStatisticsView(button.dataset.statisticsView));
+  });
+  els.backToStatisticsCharacterListButton.addEventListener("click", () => showStatisticsView("characters"));
+  els.backToStatisticsRegionListButton.addEventListener("click", () => showStatisticsView("regions"));
+  els.selectCharacterButton.addEventListener("click", () => {
+    saveData.settings.selectedCharacterId = state.selectedHeroId;
+    saveGameSafe();
+    syncSelectionFromSave();
+    showScreen("menuScreen");
+  });
+  document.querySelectorAll(".back-button").forEach((button) => {
+    button.addEventListener("click", () => showScreen(button.dataset.target));
+  });
+  document.querySelectorAll(".home-button").forEach((button) => {
+    button.addEventListener("click", restart);
+  });
+  els.startButton.addEventListener("click", startRun);
+  els.restartButton.addEventListener("click", restart);
+  els.retryButton.addEventListener("click", startRun);
+  els.nextButton.addEventListener("click", playTurn);
+  els.exportSaveButton.addEventListener("click", exportSave);
+  els.importSaveButton.addEventListener("click", openImportSavePicker);
+  els.importSaveInput.addEventListener("change", importSaveFromFile);
+  els.deleteSaveButton.addEventListener("click", openDeleteSaveDialog);
+  els.confirmDeleteSaveButton.addEventListener("click", deleteSave);
+  els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
+}
+
+syncSelectionFromSave();
+bindEvents();
