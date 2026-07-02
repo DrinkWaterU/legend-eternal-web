@@ -113,9 +113,7 @@ export const plainsBlessings = [
     eventText: "你在淺溪旁找到一塊平整的磨石，花了些時間整理武器。",
     flavorText: "水聲蓋過了草叢裡的動靜，刀鋒重新映出平原的天光。",
     effectText: "攻擊力 +2。",
-    apply(hero) {
-      hero.attack += 2;
-    }
+    effects: [{ type: "add", stat: "attack", amount: 2 }]
   },
   {
     id: "warm-campfire",
@@ -125,10 +123,10 @@ export const plainsBlessings = [
     eventText: "你找到前人留下的石圈，重新點起一小堆營火休息片刻。",
     flavorText: "火光讓肩上的疲憊慢慢鬆開，平原的夜風也不再那麼刺骨。",
     effectText: "最大生命 +12，並恢復 12 點生命。",
-    apply(hero) {
-      hero.maxHp += 12;
-      hero.hp = Math.min(hero.maxHp, hero.hp + 12);
-    }
+    effects: [
+      { type: "add", stat: "maxHp", amount: 12 },
+      { type: "recoverHp", amount: 12 }
+    ]
   },
   {
     id: "abandoned-satchel",
@@ -138,9 +136,7 @@ export const plainsBlessings = [
     eventText: "半埋在草裡的舊行囊中，還留著幾片堪用的皮革護片。",
     flavorText: "你把它們綁在容易受傷的位置，雖然粗糙，但足夠可靠。",
     effectText: "防禦 +1。",
-    apply(hero) {
-      hero.defense += 1;
-    }
+    effects: [{ type: "add", stat: "defense", amount: 1 }]
   },
   {
     id: "wind-marker",
@@ -150,9 +146,7 @@ export const plainsBlessings = [
     eventText: "你停下腳步觀察草浪方向，學會從風裡判斷敵人的破綻。",
     flavorText: "平原沒有牆，所有動作都會在草尖留下痕跡。",
     effectText: "暴擊率 +8%。",
-    apply(hero) {
-      hero.critChance += 0.08;
-    }
+    effects: [{ type: "add", stat: "critChance", amount: 0.08 }]
   },
   {
     id: "grass-charm",
@@ -162,9 +156,7 @@ export const plainsBlessings = [
     eventText: "你用韌草和碎石編成護符，掛在胸前當作簡單的守護。",
     flavorText: "它不算神聖，卻像平原本身願意替你擋下一次危險。",
     effectText: "每場戰鬥開始獲得 8 點護盾。",
-    apply(hero) {
-      hero.shieldStart += 8;
-    }
+    effects: [{ type: "add", stat: "shieldStart", amount: 8 }]
   },
   {
     id: "wildgrass-bandage",
@@ -174,10 +166,10 @@ export const plainsBlessings = [
     eventText: "你採下柔韌的長草與乾淨布條，做成方便替換的臨時繃帶。",
     flavorText: "不算精緻，但冒險者常常就是靠這種小準備活下來。",
     effectText: "每 3 回合恢復 5 點生命。",
-    apply(hero) {
-      hero.regenEvery = 3;
-      hero.regenAmount += 5;
-    }
+    effects: [
+      { type: "set", stat: "regenEvery", value: 3 },
+      { type: "add", stat: "regenAmount", amount: 5 }
+    ]
   },
   {
     id: "slime-residue",
@@ -187,9 +179,7 @@ export const plainsBlessings = [
     eventText: "你從乾掉的史萊姆痕跡裡收集到帶有腐蝕性的黏液。",
     flavorText: "瓶中的液體緩慢晃動，像還記得自己曾經是活物。",
     effectText: "攻擊時附加 2 點中毒傷害。",
-    apply(hero) {
-      hero.poisonPower += 2;
-    }
+    effects: [{ type: "add", stat: "poisonPower", amount: 2 }]
   },
   {
     id: "quiet-hill",
@@ -199,9 +189,7 @@ export const plainsBlessings = [
     eventText: "你登上一處低矮丘坡，趁視野開闊重新調整呼吸與步伐。",
     flavorText: "短暫的安靜讓你想起，活著本身也是一種技巧。",
     effectText: "擊敗敵人後恢復 10 點生命。",
-    apply(hero) {
-      hero.killHeal += 10;
-    }
+    effects: [{ type: "add", stat: "killHeal", amount: 10 }]
   },
   {
     id: "clear-trails",
@@ -211,9 +199,7 @@ export const plainsBlessings = [
     eventText: "你沿著草葉上的透明黏痕前進，摸清了史萊姆類魔物的活動方式。",
     flavorText: "那些看似隨意的痕跡，其實都指向柔軟核心的位置。",
     effectText: "對史萊姆類敵人的傷害 +15%。",
-    apply(hero) {
-      hero.slimeBonus += 0.15;
-    }
+    effects: [{ type: "add", stat: "slimeBonus", amount: 0.15 }]
   },
   {
     id: "bitter-herb",
@@ -223,9 +209,7 @@ export const plainsBlessings = [
     eventText: "你認出一叢帶苦味的藥草，它常被平原旅人用來壓制毒性。",
     flavorText: "味道糟得誠實，但身體很快記住了它的用處。",
     effectText: "受到的中毒傷害降低 50%。",
-    apply(hero) {
-      hero.damageReduction = Math.max(hero.damageReduction, 0.5);
-    }
+    effects: [{ type: "max", stat: "damageReduction", value: 0.5 }]
   }
 ];
 

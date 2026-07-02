@@ -1,4 +1,5 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID } from "./src/config.js";
+import { applyBlessingEffects } from "./src/core/blessings.js";
 import { applyEndOfTurnEffects, buildEnemy, resolveEnemyAction, resolveHeroAction } from "./src/core/combat.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
@@ -476,7 +477,7 @@ function getBlessingChoices(count) {
 }
 
 function chooseBlessing(blessing) {
-  blessing.apply(state.hero);
+  applyBlessingEffects(state.hero, blessing);
   state.hero.blessings.push(blessing.name);
   addLog("system", "blessing", { blessing: blessing.name });
   startEncounter();
