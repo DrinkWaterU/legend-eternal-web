@@ -1,0 +1,27 @@
+# Local planning and handoff notes
+/更新企劃.md
+/傳說永恆_專案交接.md
+/傳說永恆_更新注意事項.md
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Dependency and build output
+node_modules/
+dist/
+build/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
