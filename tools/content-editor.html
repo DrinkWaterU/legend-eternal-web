@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>傳說永恆內容編輯器</title>
+  <link rel="stylesheet" href="content-editor.css?v=0.1.1" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero-panel">
+      <div>
+        <p class="eyebrow">Legend Eternal Tool</p>
+        <h1>傳說永恆內容編輯器</h1>
+        <p class="subtitle">用來建立與維護地區怪物、局中 Buff / 祝福資料。此工具不會直接修改主遊戲存檔或正式資料檔。</p>
+      </div>
+      <div class="tool-meta">
+        <span>工具版本 v0.1.1</span>
+        <span>Schema 1</span>
+      </div>
+    </header>
+
+    <main class="layout-grid">
+      <section class="panel region-panel" aria-labelledby="region-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Region Package</p>
+            <h2 id="region-title">地區內容包</h2>
+          </div>
+        </div>
+
+        <div class="form-grid compact">
+          <label>
+            <span>地區 ID</span>
+            <input id="regionId" type="text" value="plains" placeholder="例如 plains / forest / mine" />
+          </label>
+          <label>
+            <span>地區名稱</span>
+            <input id="regionName" type="text" value="平原" placeholder="例如 平原" />
+          </label>
+          <label class="full-row">
+            <span>備註</span>
+            <textarea id="regionNote" rows="2" placeholder="選填，可記錄此地區的設計方向"></textarea>
+          </label>
+        </div>
+
+        <div class="game-import-box" aria-labelledby="game-import-title">
+          <div>
+            <h3 id="game-import-title">匯入遊戲地區資料</h3>
+            <p class="hint">可一鍵載入目前專案內建地區，或選擇本機的 <code>src/data/regions/*.json</code> 匯入成工具內容包。</p>
+          </div>
+          <div class="game-import-actions">
+            <label>
+              <span>已知地區</span>
+              <select id="knownGameRegion"></select>
+            </label>
+            <button id="loadKnownRegionButton" type="button">載入已知地區</button>
+            <label class="file-button">
+              <span>選擇地區 JSON</span>
+              <input id="gameRegionFileInput" type="file" accept=".json,application/json" />
+            </label>
+          </div>
+        </div>
+
+        <div class="toolbar wrap">
+          <button id="syncRegionButton" class="primary-button" type="button">套用地區設定</button>
+          <button id="copyPackageButton" type="button">複製整包 JSON</button>
+          <button id="downloadPackageButton" type="button">下載整包 JSON</button>
+        </div>
+      </section>
+
+      <section class="panel editor-panel" aria-labelledby="editor-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Editor</p>
+            <h2 id="editor-title">內容編輯</h2>
+          </div>
+          <div class="tab-buttons" role="tablist" aria-label="內容類型">
+            <button id="monsterTab" class="tab-button active" type="button" role="tab" aria-selected="true">怪物</button>
+            <button id="blessingTab" class="tab-button" type="button" role="tab" aria-selected="false">局中 Buff / 祝福</button>
+          </div>
+        </div>
+
+        <form id="monsterForm" class="editor-form" autocomplete="off">
+          <input id="monsterEditIndex" type="hidden" value="" />
+
+          <fieldset>
+            <legend>基本資料</legend>
+            <div class="form-grid">
+              <label>
+                <span>怪物 ID</span>
+                <input id="monsterId" type="text" placeholder="wild_boar" required />
+              </label>
+              <label>
+                <span>怪物名稱</span>
+                <input id="monsterName" type="text" placeholder="野豬" required />
+              </label>
+              <label>
+                <span>怪物類型</span>
+                <select id="monsterType">
+                  <option value="normal">normal / 普通</option>
+                  <option value="elite">elite / 精英</option>
+                  <option value="boss">boss / 首領</option>
+                </select>
+              </label>
+              <label>
+                <span>怪物家族</span>
+                <select id="monsterFamily">
+                  <option value="beast">beast / 野獸</option>
+                  <option value="slime">slime / 史萊姆</option>
+                  <option value="wolf">wolf / 狼類</option>
+                  <option value="rabbit">rabbit / 兔類</option>
+                  <option value="plant">plant / 植物</option>
+                  <option value="undead">undead / 不死</option>
+                  <option value="spirit">spirit / 靈體</option>
+                  <option value="construct">construct / 構裝</option>
+                  <option value="other">other / 其他</option>
+                </select>
+              </label>
+              <label class="full-row">
+                <span>描述</span>
+                <textarea id="monsterDescription" rows="3" placeholder="平原常見的野獸，會用獠牙衝撞旅人。"></textarea>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>戰鬥數值</legend>
+            <div class="form-grid stats-grid">
+              <label><span>最大生命</span><input id="monsterMaxHp" type="number" min="1" step="1" value="35" /></label>
+              <label><span>攻擊</span><input id="monsterAttack" type="number" min="0" step="1" value="8" /></label>
+              <label><span>防禦</span><input id="monsterDefense" type="number" min="0" step="1" value="1" /></label>
+              <label><span>暴擊率 0~1</span><input id="monsterCritRate" type="number" min="0" max="1" step="0.01" value="0.03" /></label>
+              <label><span>閃避率 0~1</span><input id="monsterEvasion" type="number" min="0" max="1" step="0.01" value="0" /></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>特殊能力</legend>
+            <div class="form-grid stats-grid">
+              <label><span>中毒能力</span><input id="monsterPoisonPower" type="number" min="0" step="1" value="0" /></label>
+              <label><span>回血間隔</span><input id="monsterRegenEvery" type="number" min="0" step="1" value="0" /></label>
+              <label><span>回血量</span><input id="monsterRegenAmount" type="number" min="0" step="1" value="0" /></label>
+              <label><span>蓄力間隔</span><input id="monsterChargeEvery" type="number" min="0" step="1" value="0" /></label>
+              <label><span>蓄力倍率</span><input id="monsterChargeMultiplier" type="number" min="1" step="0.1" value="1" /></label>
+              <label><span>傷害減免 0~1</span><input id="monsterDamageReduction" type="number" min="0" max="1" step="0.01" value="0" /></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>未來獎勵</legend>
+            <div class="form-grid stats-grid">
+              <label><span>EXP</span><input id="monsterExp" type="number" min="0" step="1" value="0" /></label>
+              <label><span>金幣最小值</span><input id="monsterGoldMin" type="number" min="0" step="1" value="0" /></label>
+              <label><span>金幣最大值</span><input id="monsterGoldMax" type="number" min="0" step="1" value="0" /></label>
+            </div>
+
+            <div class="inline-builder">
+              <h3>掉落素材</h3>
+              <div class="builder-row drop-row">
+                <input id="dropItemId" type="text" placeholder="itemId，例如 beast_hide" />
+                <input id="dropName" type="text" placeholder="名稱，例如 獸皮" />
+                <input id="dropChance" type="number" min="0" max="1" step="0.01" placeholder="機率 0~1" />
+                <input id="dropMin" type="number" min="1" step="1" placeholder="最小" />
+                <input id="dropMax" type="number" min="1" step="1" placeholder="最大" />
+                <button id="addDropButton" type="button">新增掉落</button>
+              </div>
+              <ul id="dropList" class="chip-list"></ul>
+            </div>
+          </fieldset>
+
+          <div class="toolbar sticky-actions">
+            <button class="primary-button" type="submit">新增到目前地區</button>
+            <button id="copyMonsterDraftButton" type="button">複製目前怪物 JSON</button>
+            <button id="resetMonsterButton" type="button">清空怪物表單</button>
+          </div>
+        </form>
+
+        <form id="blessingForm" class="editor-form hidden" autocomplete="off">
+          <input id="blessingEditIndex" type="hidden" value="" />
+
+          <fieldset>
+            <legend>基本資料</legend>
+            <div class="form-grid">
+              <label>
+                <span>Buff ID</span>
+                <input id="blessingId" type="text" placeholder="hunter_instinct" required />
+              </label>
+              <label>
+                <span>標題</span>
+                <input id="blessingTitle" type="text" placeholder="獵人的直覺" required />
+              </label>
+              <label>
+                <span>稀有度</span>
+                <select id="blessingRarity">
+                  <option value="common">common / 普通</option>
+                  <option value="uncommon">uncommon / 罕見</option>
+                  <option value="rare">rare / 稀有</option>
+                  <option value="epic">epic / 史詩</option>
+                </select>
+              </label>
+              <label>
+                <span>事件標題</span>
+                <input id="blessingEventTitle" type="text" placeholder="草叢中的痕跡" />
+              </label>
+              <label class="full-row">
+                <span>事件敘事</span>
+                <textarea id="blessingStory" rows="3" placeholder="你在草叢中發現獵人留下的標記。"></textarea>
+              </label>
+              <label class="full-row">
+                <span>沉浸小字</span>
+                <textarea id="blessingFlavor" rows="2" placeholder="風裡傳來野獸的氣味，你開始懂得判斷危險。"></textarea>
+              </label>
+              <label class="full-row">
+                <span>效果說明</span>
+                <input id="blessingEffectText" type="text" placeholder="攻擊力 +2，暴擊率 +3%" />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>效果列表</legend>
+            <div class="inline-builder">
+              <div class="builder-row effect-row">
+                <select id="effectType">
+                  <option value="add">add / 增加</option>
+                  <option value="set">set / 設定</option>
+                  <option value="max">max / 取較高值</option>
+                  <option value="recoverHp">recoverHp / 回復生命</option>
+                </select>
+                <select id="effectTarget">
+                  <option value="attack">attack / 攻擊</option>
+                  <option value="defense">defense / 防禦</option>
+                  <option value="maxHp">maxHp / 最大生命</option>
+                  <option value="critRate">critRate / 暴擊率</option>
+                  <option value="shield">shield / 護盾</option>
+                  <option value="poisonPower">poisonPower / 毒傷</option>
+                  <option value="damageReduction">damageReduction / 減傷</option>
+                  <option value="regenAmount">regenAmount / 回血量</option>
+                  <option value="slimeBonus">slimeBonus / 對史萊姆加成</option>
+                </select>
+                <input id="effectValue" type="number" step="0.01" placeholder="數值" />
+                <button id="addEffectButton" type="button">新增效果</button>
+              </div>
+              <p class="hint">recoverHp 不需要 target，工具會自動只輸出 value。</p>
+              <ul id="effectList" class="chip-list"></ul>
+            </div>
+          </fieldset>
+
+          <div class="toolbar sticky-actions">
+            <button class="primary-button" type="submit">新增到目前地區</button>
+            <button id="copyBlessingDraftButton" type="button">複製目前 Buff JSON</button>
+            <button id="resetBlessingButton" type="button">清空 Buff 表單</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="panel list-panel" aria-labelledby="list-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Current Region</p>
+            <h2 id="list-title">目前內容清單</h2>
+          </div>
+        </div>
+
+        <div class="summary-cards">
+          <div><strong id="monsterCount">0</strong><span>怪物</span></div>
+          <div><strong id="blessingCount">0</strong><span>Buff</span></div>
+        </div>
+
+        <div class="content-list-block">
+          <h3>怪物</h3>
+          <ul id="monsterList" class="content-list"></ul>
+        </div>
+        <div class="content-list-block">
+          <h3>局中 Buff / 祝福</h3>
+          <ul id="blessingList" class="content-list"></ul>
+        </div>
+      </aside>
+
+      <section class="panel import-panel" aria-labelledby="import-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Import / Export</p>
+            <h2 id="import-title">匯入與 JSON 預覽</h2>
+          </div>
+        </div>
+
+        <textarea id="jsonOutput" class="json-output" spellcheck="false" rows="18" readonly></textarea>
+
+        <div class="toolbar wrap">
+          <button id="copyPreviewButton" type="button">複製預覽 JSON</button>
+          <button id="loadPreviewButton" type="button">從下方文字匯入</button>
+          <button id="clearPackageButton" class="danger-button" type="button">清空目前內容包</button>
+        </div>
+
+        <label class="import-box">
+          <span>貼上整包 JSON 後按「從下方文字匯入」</span>
+          <textarea id="jsonImport" rows="8" placeholder='貼上 { "schemaVersion": 1, "region": ... }'></textarea>
+        </label>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="content-editor.js?v=0.1.1"></script>
+</body>
+</html>

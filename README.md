@@ -25,6 +25,21 @@
 - 戰鬥文字採用固定事件模板
 - 暗色系介面
 
+
+## 開發工具
+
+本專案另外提供獨立內容編輯器，用來建立與維護地區怪物、局中 Buff / 祝福資料。工具頁不會直接修改主遊戲存檔或正式資料檔。
+
+本機啟動靜態伺服器後，可開啟：
+
+    http://127.0.0.1:4173/tools/content-editor.html
+
+GitHub Pages 部署後，可開啟：
+
+    https://drinkwateru.github.io/legend-eternal-web/tools/content-editor.html
+
+第一版工具支援地區內容包、怪物資料、局中 Buff / 祝福、單筆複製、整包 JSON 匯入與匯出。工具頁也可以載入目前專案內建的平原地區資料，或選擇本機的 `src/data/regions/*.json` 匯入成工具內容包，方便用既有地區資料繼續新增怪物與 Buff。
+
 ## 存檔
 
 - 目前使用瀏覽器 `localStorage` 保存基礎統計與設定。
