@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.1.4.0-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.1.5.0-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.1.4.0-alpha</p>
+            <p class="version-label">v0.1.5.0-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -119,9 +119,15 @@
             <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
           <p class="body-text">
-            這裡會保存這個瀏覽器上的冒險紀錄。更換瀏覽器或清除網站資料後，紀錄會重新開始。
+            這裡會保存這個瀏覽器上的冒險紀錄。更換裝置前可以先匯出存檔，再於新裝置匯入。
           </p>
           <dl id="statisticsList" class="stat-list statistics-list"></dl>
+          <div class="save-tools">
+            <button id="exportSaveButton" class="secondary-button" type="button">匯出存檔</button>
+            <button id="importSaveButton" class="secondary-button" type="button">匯入存檔</button>
+            <input id="importSaveInput" class="visually-hidden" type="file" accept="application/json,.json" />
+            <p id="saveNotice" class="save-notice" aria-live="polite"></p>
+          </div>
           <div class="danger-zone">
             <button id="deleteSaveButton" class="danger-button" type="button">刪除存檔</button>
           </div>
@@ -207,6 +213,6 @@
       </section>
     </main>
 
-    <script src="game.js?v=0.1.4.0-alpha"></script>
+    <script src="game.js?v=0.1.5.0-alpha"></script>
   </body>
 </html>

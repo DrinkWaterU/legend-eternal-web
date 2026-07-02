@@ -1,8 +1,8 @@
 "use strict";
 
-const GAME_VERSION = "v0.1.4.0-alpha";
+const GAME_VERSION = "v0.1.5.0-alpha";
 const SAVE_KEY = "legendEternalSave";
-const SAVE_SCHEMA_VERSION = 1;
+const SAVE_SCHEMA_VERSION = 2;
 const REGION_ID = "plains";
 const CHARACTER_ID = "adventurer";
 
@@ -282,6 +282,10 @@ const els = {
   endTitle: document.querySelector("#endTitle"),
   endText: document.querySelector("#endText"),
   statisticsList: document.querySelector("#statisticsList"),
+  exportSaveButton: document.querySelector("#exportSaveButton"),
+  importSaveButton: document.querySelector("#importSaveButton"),
+  importSaveInput: document.querySelector("#importSaveInput"),
+  saveNotice: document.querySelector("#saveNotice"),
   deleteSaveButton: document.querySelector("#deleteSaveButton"),
   deleteSavePanel: document.querySelector("#deleteSavePanel"),
   confirmDeleteSaveButton: document.querySelector("#confirmDeleteSaveButton"),
@@ -325,7 +329,9 @@ function createDefaultSave() {
     gameVersion: GAME_VERSION,
     profile: {
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      migratedAt: null,
+      exportedAt: null
     },
     progression: {
       regions: {
@@ -386,24 +392,32 @@ function loadSave() {
       saveGame(fallback);
       return fallback;
     }
-    return migrateSave(JSON.parse(rawSave));
+    return migrateSave(JSON.parse(rawSave), { persist: true });
   } catch {
     return fallback;
   }
 }
 
-function migrateSave(rawSave) {
+function migrateSave(rawSave, options = {}) {
+  const { persist = false } = options;
   const save = createDefaultSave();
   if (!rawSave || typeof rawSave !== "object") {
-    saveGame(save);
+    if (persist) {
+      saveGame(save);
+    }
     return save;
   }
 
-  save.schemaVersion = SAVE_SCHEMA_VERSION;
+  const rawSchemaVersion = toSafeInteger(rawSave.schemaVersion, 0);
+  const shouldMarkMigration = rawSchemaVersion !== SAVE_SCHEMA_VERSION;
+
   save.gameVersion = GAME_VERSION;
   save.profile.createdAt = rawSave.profile?.createdAt || save.profile.createdAt;
   save.profile.updatedAt = rawSave.profile?.updatedAt || save.profile.updatedAt;
+  save.profile.migratedAt = shouldMarkMigration ? new Date().toISOString() : rawSave.profile?.migratedAt || save.profile.migratedAt;
+  save.profile.exportedAt = rawSave.profile?.exportedAt || save.profile.exportedAt;
   mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
+  save.inventory.gold = toSafeNumber(rawSave.inventory?.gold);
   mergePlainObject(save.achievements, rawSave.achievements);
 
   const rawStats = rawSave.statistics || {};
@@ -433,7 +447,9 @@ function migrateSave(rawSave) {
 
   save.settings.selectedRegionId = rawSave.settings?.selectedRegionId || REGION_ID;
   save.settings.selectedCharacterId = rawSave.settings?.selectedCharacterId || CHARACTER_ID;
-  saveGame(save);
+  if (persist) {
+    saveGame(save);
+  }
   return save;
 }
 
@@ -450,8 +466,13 @@ function toSafeNumber(value, fallback = 0) {
   return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
+function toSafeInteger(value, fallback = 0) {
+  return Number.isInteger(value) && value >= 0 ? value : fallback;
+}
+
 function saveGame(save = saveData) {
   try {
+    save.schemaVersion = SAVE_SCHEMA_VERSION;
     save.gameVersion = GAME_VERSION;
     save.profile.updatedAt = new Date().toISOString();
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
@@ -518,7 +539,11 @@ function renderStatistics() {
   const stats = saveData.statistics;
   const regionStats = stats.regions[REGION_ID];
   const characterStats = stats.characters[CHARACTER_ID];
+  const characterProgress = saveData.progression.characters[CHARACTER_ID];
   const statisticsItems = [
+    ["存檔版本", `Schema ${saveData.schemaVersion}`],
+    ["冒險者等級", characterProgress.level],
+    ["冒險者經驗", characterProgress.exp],
     ["冒險次數", stats.totalRuns],
     ["冒險失敗", stats.totalDefeats],
     ["平原通關", regionStats.clears],
@@ -535,6 +560,62 @@ function renderStatistics() {
     item.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
     els.statisticsList.append(item);
   });
+}
+
+function setSaveNotice(message, type = "status") {
+  els.saveNotice.textContent = message;
+  els.saveNotice.dataset.type = type;
+}
+
+function exportSave() {
+  const exportData = migrateSave(saveData);
+  exportData.profile.exportedAt = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `legend-eternal-save-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setSaveNotice("存檔已匯出。請妥善保存下載的備份檔。");
+}
+
+function openImportSavePicker() {
+  els.importSaveInput.value = "";
+  els.importSaveInput.click();
+}
+
+function importSaveFromFile(event) {
+  const [file] = event.target.files;
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      const importedSave = JSON.parse(reader.result);
+      if (!isImportableSave(importedSave)) {
+        throw new Error("Invalid save file");
+      }
+      saveData = migrateSave(importedSave, { persist: true });
+      syncSelectionFromSave();
+      renderStatistics();
+      setSaveNotice("存檔已匯入並轉換為目前版本。");
+    } catch {
+      setSaveNotice("匯入失敗。請確認檔案是傳說永恆的存檔備份。", "error");
+    }
+  });
+  reader.readAsText(file);
+}
+
+function isImportableSave(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  return Boolean(value.schemaVersion || value.statistics || value.progression || value.settings || value.profile);
 }
 
 function openDeleteSaveDialog() {
@@ -556,6 +637,7 @@ function deleteSave() {
   syncSelectionFromSave();
   closeDeleteSaveDialog();
   renderStatistics();
+  setSaveNotice("存檔已刪除，新的空白存檔已建立。");
   els.resultLabel.textContent = "存檔已刪除";
   els.encounterLabel.textContent = "統計數據";
 }
@@ -932,6 +1014,9 @@ els.startButton.addEventListener("click", startRun);
 els.restartButton.addEventListener("click", restart);
 els.retryButton.addEventListener("click", startRun);
 els.nextButton.addEventListener("click", playTurn);
+els.exportSaveButton.addEventListener("click", exportSave);
+els.importSaveButton.addEventListener("click", openImportSavePicker);
+els.importSaveInput.addEventListener("change", importSaveFromFile);
 els.deleteSaveButton.addEventListener("click", openDeleteSaveDialog);
 els.confirmDeleteSaveButton.addEventListener("click", deleteSave);
 els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
