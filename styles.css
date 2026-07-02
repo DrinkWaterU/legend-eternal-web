@@ -1,18 +1,24 @@
 :root {
   color-scheme: dark;
-  --ink: #f2f5ea;
-  --muted: #aab3a6;
-  --line: #344236;
-  --paper: #0f1512;
-  --panel: #18211c;
-  --panel-strong: #202b24;
-  --grass: #7fb36a;
-  --moss: #a6d37d;
-  --amber: #d6a653;
-  --clay: #c66954;
-  --river: #6aa6b8;
-  --danger: #d66a5e;
-  --shadow: 0 20px 54px rgba(0, 0, 0, 0.34);
+  --ink: #f7f1e5;
+  --muted: #b8b0a0;
+  --line: rgba(173, 148, 102, 0.26);
+  --paper: #101315;
+  --panel: rgba(28, 31, 32, 0.88);
+  --panel-strong: rgba(35, 39, 39, 0.94);
+  --panel-soft: rgba(18, 24, 25, 0.82);
+  --grass: #8fbd70;
+  --moss: #bad98a;
+  --amber: #e0b35d;
+  --gold: #f1d386;
+  --clay: #c66b58;
+  --wine: #b85f72;
+  --river: #6fb0c1;
+  --sky: #9ec8d6;
+  --violet: #9c83cf;
+  --danger: #e06f62;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  --inner-light: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 * {
@@ -23,8 +29,9 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(rgba(15, 21, 18, 0.9), rgba(15, 21, 18, 0.96)),
-    linear-gradient(135deg, #111a16 0%, #1b241f 45%, #261b19 100%);
+    linear-gradient(rgba(7, 10, 11, 0.76), rgba(7, 10, 11, 0.94)),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 18px),
+    linear-gradient(145deg, #121b1a 0%, #1c2225 36%, #251f2b 66%, #321e1d 100%);
   color: var(--ink);
   font-family:
     "Microsoft JhengHei",
@@ -60,7 +67,7 @@ button {
 
 .eyebrow {
   margin: 0 0 6px;
-  color: var(--amber);
+  color: var(--gold);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -76,7 +83,10 @@ h1 {
   margin-bottom: 0;
   font-size: clamp(2.2rem, 8vw, 4.8rem);
   line-height: 0.95;
-  text-shadow: 0 8px 28px rgba(0, 0, 0, 0.38);
+  color: #fff4d8;
+  text-shadow:
+    0 2px 0 rgba(101, 56, 38, 0.5),
+    0 10px 34px rgba(0, 0, 0, 0.52);
 }
 
 h2 {
@@ -102,9 +112,10 @@ h2 {
   padding: 7px 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(24, 33, 28, 0.82);
+  background: linear-gradient(180deg, rgba(31, 39, 39, 0.9), rgba(15, 19, 20, 0.9));
   color: var(--muted);
   font-size: 0.92rem;
+  box-shadow: var(--inner-light);
 }
 
 .screen {
@@ -124,8 +135,10 @@ h2 {
 .end-dialog {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(24, 33, 28, 0.9);
-  box-shadow: var(--shadow);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 28%),
+    var(--panel);
+  box-shadow: var(--shadow), var(--inner-light);
 }
 
 .menu-layout {
@@ -135,6 +148,7 @@ h2 {
   max-width: 620px;
   margin: 0 auto;
   padding: 30px;
+  border-color: rgba(224, 179, 93, 0.32);
 }
 
 .menu-copy {
@@ -156,8 +170,8 @@ h2 {
 }
 
 .version-label {
-  margin: 4px 0 0;
-  color: var(--muted);
+  margin: 6px 0 0;
+  color: var(--sky);
   font-size: 0.86rem;
 }
 
@@ -167,11 +181,15 @@ h2 {
 }
 
 .menu-button {
+  position: relative;
+  overflow: hidden;
   min-height: 104px;
-  padding: 18px;
+  padding: 18px 18px 18px 22px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--panel-strong);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%),
+    var(--panel-strong);
   color: var(--ink);
   cursor: pointer;
   text-align: left;
@@ -182,10 +200,32 @@ h2 {
     box-shadow 150ms ease;
 }
 
+.menu-button::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--amber);
+  content: "";
+}
+
+.menu-button:nth-child(2)::before {
+  background: var(--river);
+}
+
+.menu-button:nth-child(3)::before {
+  background: var(--violet);
+}
+
+.menu-button:nth-child(4)::before {
+  background: var(--wine);
+}
+
 .menu-button:hover {
   transform: translateY(-1px);
   border-color: rgba(214, 166, 83, 0.7);
-  background: #26342b;
+  background:
+    linear-gradient(135deg, rgba(224, 179, 93, 0.13), transparent 46%),
+    #252b2d;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
 }
 
@@ -211,6 +251,7 @@ h2 {
 
 .selection-panel {
   max-width: 760px;
+  border-color: rgba(111, 176, 193, 0.25);
 }
 
 .section-heading {
@@ -248,11 +289,14 @@ h2 {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #111a16;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 70%),
+    var(--panel-soft);
+  box-shadow: var(--inner-light);
 }
 
 dt {
-  color: var(--muted);
+  color: var(--sky);
   font-size: 0.82rem;
 }
 
@@ -278,9 +322,12 @@ dd {
 .primary-button {
   min-height: 46px;
   padding: 0 18px;
-  background: var(--amber);
-  color: #17110a;
+  background: linear-gradient(180deg, #f1d386, #cf9446);
+  color: #20140b;
   font-weight: 800;
+  box-shadow:
+    0 12px 28px rgba(207, 148, 70, 0.24),
+    var(--inner-light);
 }
 
 .selection-panel > .primary-button {
@@ -292,8 +339,8 @@ dd {
   min-height: 40px;
   padding: 0 14px;
   border: 1px solid var(--line);
-  background: #111a16;
-  color: var(--moss);
+  background: linear-gradient(180deg, rgba(33, 40, 42, 0.95), rgba(16, 20, 21, 0.95));
+  color: var(--sky);
   font-weight: 800;
 }
 
@@ -301,7 +348,7 @@ dd {
   min-height: 46px;
   padding: 0 18px;
   border: 1px solid rgba(214, 106, 94, 0.7);
-  background: rgba(100, 34, 29, 0.86);
+  background: linear-gradient(180deg, rgba(157, 66, 58, 0.96), rgba(96, 35, 39, 0.96));
   color: #ffe5df;
   font-weight: 800;
 }
@@ -325,7 +372,7 @@ dd {
 .danger-zone {
   margin-top: 26px;
   padding-top: 18px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(224, 111, 98, 0.25);
 }
 
 .danger-zone .danger-button {
@@ -348,6 +395,7 @@ dd {
 
 .status-panel {
   min-height: auto;
+  border-color: rgba(143, 189, 112, 0.25);
 }
 
 .home-button {
@@ -357,6 +405,7 @@ dd {
 
 .log-panel {
   min-height: 560px;
+  border-color: rgba(156, 131, 207, 0.24);
 }
 
 .entity-block + .entity-block {
@@ -387,7 +436,8 @@ dd {
   margin-top: 12px;
   overflow: hidden;
   border-radius: 999px;
-  background: #30352f;
+  background: rgba(5, 8, 9, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .meter span {
@@ -395,12 +445,12 @@ dd {
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--grass), var(--river));
+  background: linear-gradient(90deg, #78b86b, #80c6b5);
   transition: width 250ms ease;
 }
 
 .meter.enemy span {
-  background: linear-gradient(90deg, var(--amber), var(--clay));
+  background: linear-gradient(90deg, var(--gold), var(--clay), var(--wine));
 }
 
 .meter-text {
@@ -430,8 +480,11 @@ dd {
   padding: 12px 14px;
   border-left: 4px solid var(--line);
   border-radius: 6px;
-  background: #111a16;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035), transparent),
+    rgba(13, 17, 18, 0.88);
   line-height: 1.65;
+  box-shadow: var(--inner-light);
 }
 
 .battle-log li.damage {
@@ -463,7 +516,9 @@ dd {
   margin: 0;
   max-width: none;
   padding: 18px;
-  background: rgba(4, 8, 6, 0.72);
+  background:
+    linear-gradient(rgba(8, 10, 12, 0.78), rgba(8, 10, 12, 0.86)),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 16px);
 }
 
 .reward-panel.is-visible,
@@ -495,7 +550,9 @@ dd {
   min-height: 128px;
   padding: 16px;
   border: 1px solid var(--line);
-  background: #151f1a;
+  background:
+    linear-gradient(135deg, rgba(111, 176, 193, 0.09), transparent 48%),
+    rgba(21, 26, 27, 0.96);
   color: var(--ink);
   text-align: left;
 }

@@ -1,6 +1,6 @@
 "use strict";
 
-const GAME_VERSION = "v0.1.3.0-alpha";
+const GAME_VERSION = "v0.1.4.0-alpha";
 const SAVE_KEY = "legendEternalSave";
 const SAVE_SCHEMA_VERSION = 1;
 const REGION_ID = "plains";
