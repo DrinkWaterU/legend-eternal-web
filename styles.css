@@ -131,7 +131,7 @@ h2 {
 .intro-panel,
 .status-panel,
 .log-panel,
-.reward-dialog,
+.blessing-dialog,
 .end-dialog {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -375,7 +375,7 @@ dd {
 .primary-button,
 .secondary-button,
 .danger-button,
-.reward-card {
+.blessing-card {
   border: 0;
   border-radius: 8px;
   cursor: pointer;
@@ -422,7 +422,7 @@ dd {
 .primary-button:hover,
 .secondary-button:hover,
 .danger-button:hover,
-.reward-card:hover {
+.blessing-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
 }
@@ -593,12 +593,12 @@ dd {
   border-color: var(--amber);
 }
 
-.reward-panel,
+.blessing-panel,
 .end-panel {
   display: none;
 }
 
-.reward-panel,
+.blessing-panel,
 .end-panel {
   position: fixed;
   inset: 0;
@@ -611,7 +611,7 @@ dd {
     repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 16px);
 }
 
-.reward-panel.is-visible,
+.blessing-panel.is-visible,
 .end-panel.is-visible {
   display: flex;
   align-items: center;
@@ -622,7 +622,7 @@ dd {
   z-index: 30;
 }
 
-.reward-dialog,
+.blessing-dialog,
 .end-dialog {
   width: min(520px, 100%);
   max-height: min(680px, calc(100vh - 36px));
@@ -630,14 +630,14 @@ dd {
   overflow: auto;
 }
 
-.reward-grid {
+.blessing-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
 }
 
-.reward-card {
-  min-height: 128px;
+.blessing-card {
+  min-height: 176px;
   padding: 16px;
   border: 1px solid var(--line);
   background:
@@ -647,15 +647,42 @@ dd {
   text-align: left;
 }
 
-.reward-card strong {
+.blessing-card small {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.blessing-card strong {
   display: block;
   margin-bottom: 8px;
   font-size: 1.05rem;
 }
 
-.reward-card span {
+.blessing-card span,
+.blessing-card em,
+.blessing-card b {
+  display: block;
+}
+
+.blessing-card span {
   color: var(--muted);
   line-height: 1.6;
+}
+
+.blessing-card em {
+  margin-top: 10px;
+  color: var(--sky);
+  font-size: 0.88rem;
+  font-style: normal;
+  line-height: 1.6;
+}
+
+.blessing-card b {
+  margin-top: 10px;
+  color: var(--moss);
+  font-size: 0.92rem;
 }
 
 .end-dialog {

@@ -1,6 +1,6 @@
 "use strict";
 
-const GAME_VERSION = "v0.1.6.0-alpha";
+const GAME_VERSION = "v0.1.7.0-alpha";
 const SAVE_KEY = "legendEternalSave";
 const SAVE_SCHEMA_VERSION = 2;
 const REGION_ID = "plains";
@@ -19,7 +19,7 @@ const templates = {
   shield: "{target} 獲得了 {amount} 點護盾。",
   victory: "{target} 倒下了。戰鬥勝利。",
   defeat: "{target} 倒下了。本輪冒險結束。",
-  reward: "你選擇了強化：{reward}。",
+  blessing: "你接受了祝福：{blessing}。",
   boss: "平原深處傳來沉重的腳步聲。",
   clear: "你擊敗了平原的首領。這次冒險成功了。"
 };
@@ -38,7 +38,7 @@ const heroTemplate = {
   killHeal: 0,
   slimeBonus: 0,
   damageReduction: 0,
-  rewards: []
+  blessings: []
 };
 
 const enemies = [
@@ -143,80 +143,132 @@ const boss = {
   intro: "魔化野豬王踏碎土丘，闖入你的視線。"
 };
 
-const rewards = [
-  {
-    name: "磨利劍刃",
-    description: "攻擊力 +2。",
-    apply(hero) {
-      hero.attack += 2;
+const regionalBlessingDefinitions = {
+  [REGION_ID]: [
+    {
+      id: "stream-whetstone",
+      category: "attack",
+      name: "磨利劍刃",
+      eventTitle: "溪邊磨石",
+      eventText: "你在淺溪旁找到一塊平整的磨石，花了些時間整理武器。",
+      flavorText: "水聲蓋過了草叢裡的動靜，刀鋒重新映出平原的天光。",
+      effectText: "攻擊力 +2。",
+      apply(hero) {
+        hero.attack += 2;
+      }
+    },
+    {
+      id: "warm-campfire",
+      category: "survival",
+      name: "穩固體魄",
+      eventTitle: "溫暖營火",
+      eventText: "你找到前人留下的石圈，重新點起一小堆營火休息片刻。",
+      flavorText: "火光讓肩上的疲憊慢慢鬆開，平原的夜風也不再那麼刺骨。",
+      effectText: "最大生命 +12，並恢復 12 點生命。",
+      apply(hero) {
+        hero.maxHp += 12;
+        hero.hp = Math.min(hero.maxHp, hero.hp + 12);
+      }
+    },
+    {
+      id: "abandoned-satchel",
+      category: "defense",
+      name: "皮革護具",
+      eventTitle: "廢棄行囊",
+      eventText: "半埋在草裡的舊行囊中，還留著幾片堪用的皮革護片。",
+      flavorText: "你把它們綁在容易受傷的位置，雖然粗糙，但足夠可靠。",
+      effectText: "防禦 +1。",
+      apply(hero) {
+        hero.defense += 1;
+      }
+    },
+    {
+      id: "wind-marker",
+      category: "attack",
+      name: "精準攻勢",
+      eventTitle: "風中標記",
+      eventText: "你停下腳步觀察草浪方向，學會從風裡判斷敵人的破綻。",
+      flavorText: "平原沒有牆，所有動作都會在草尖留下痕跡。",
+      effectText: "暴擊率 +8%。",
+      apply(hero) {
+        hero.critChance += 0.08;
+      }
+    },
+    {
+      id: "grass-charm",
+      category: "defense",
+      name: "草繩護符",
+      eventTitle: "草繩護符",
+      eventText: "你用韌草和碎石編成護符，掛在胸前當作簡單的守護。",
+      flavorText: "它不算神聖，卻像平原本身願意替你擋下一次危險。",
+      effectText: "每場戰鬥開始獲得 8 點護盾。",
+      apply(hero) {
+        hero.shieldStart += 8;
+      }
+    },
+    {
+      id: "wildgrass-bandage",
+      category: "healing",
+      name: "野草繃帶",
+      eventTitle: "野草繃帶",
+      eventText: "你採下柔韌的長草與乾淨布條，做成方便替換的臨時繃帶。",
+      flavorText: "不算精緻，但冒險者常常就是靠這種小準備活下來。",
+      effectText: "每 3 回合恢復 5 點生命。",
+      apply(hero) {
+        hero.regenEvery = 3;
+        hero.regenAmount += 5;
+      }
+    },
+    {
+      id: "slime-residue",
+      category: "attack",
+      name: "史萊姆殘液",
+      eventTitle: "史萊姆殘液",
+      eventText: "你從乾掉的史萊姆痕跡裡收集到帶有腐蝕性的黏液。",
+      flavorText: "瓶中的液體緩慢晃動，像還記得自己曾經是活物。",
+      effectText: "攻擊時附加 2 點中毒傷害。",
+      apply(hero) {
+        hero.poisonPower += 2;
+      }
+    },
+    {
+      id: "quiet-hill",
+      category: "healing",
+      name: "喘息節奏",
+      eventTitle: "安靜丘坡",
+      eventText: "你登上一處低矮丘坡，趁視野開闊重新調整呼吸與步伐。",
+      flavorText: "短暫的安靜讓你想起，活著本身也是一種技巧。",
+      effectText: "擊敗敵人後恢復 10 點生命。",
+      apply(hero) {
+        hero.killHeal += 10;
+      }
+    },
+    {
+      id: "clear-trails",
+      category: "attack",
+      name: "黏液研究",
+      eventTitle: "透明足跡",
+      eventText: "你沿著草葉上的透明黏痕前進，摸清了史萊姆類魔物的活動方式。",
+      flavorText: "那些看似隨意的痕跡，其實都指向柔軟核心的位置。",
+      effectText: "對史萊姆類敵人的傷害 +15%。",
+      apply(hero) {
+        hero.slimeBonus += 0.15;
+      }
+    },
+    {
+      id: "bitter-herb",
+      category: "survival",
+      name: "苦味藥草",
+      eventTitle: "苦味藥草",
+      eventText: "你認出一叢帶苦味的藥草，它常被平原旅人用來壓制毒性。",
+      flavorText: "味道糟得誠實，但身體很快記住了它的用處。",
+      effectText: "受到的中毒傷害降低 50%。",
+      apply(hero) {
+        hero.damageReduction = Math.max(hero.damageReduction, 0.5);
+      }
     }
-  },
-  {
-    name: "穩固體魄",
-    description: "最大生命 +12，並恢復 12 點生命。",
-    apply(hero) {
-      hero.maxHp += 12;
-      hero.hp = Math.min(hero.maxHp, hero.hp + 12);
-    }
-  },
-  {
-    name: "皮革護具",
-    description: "防禦 +1。",
-    apply(hero) {
-      hero.defense += 1;
-    }
-  },
-  {
-    name: "精準攻勢",
-    description: "暴擊率 +8%。",
-    apply(hero) {
-      hero.critChance += 0.08;
-    }
-  },
-  {
-    name: "冒險護符",
-    description: "每場戰鬥開始獲得 8 點護盾。",
-    apply(hero) {
-      hero.shieldStart += 8;
-    }
-  },
-  {
-    name: "簡易繃帶",
-    description: "每 3 回合恢復 5 點生命。",
-    apply(hero) {
-      hero.regenEvery = 3;
-      hero.regenAmount += 5;
-    }
-  },
-  {
-    name: "酸液瓶",
-    description: "攻擊時附加 2 點中毒傷害。",
-    apply(hero) {
-      hero.poisonPower += 2;
-    }
-  },
-  {
-    name: "喘息節奏",
-    description: "擊敗敵人後恢復 10 點生命。",
-    apply(hero) {
-      hero.killHeal += 10;
-    }
-  },
-  {
-    name: "黏液研究",
-    description: "對史萊姆類敵人的傷害 +15%。",
-    apply(hero) {
-      hero.slimeBonus += 0.15;
-    }
-  },
-  {
-    name: "解毒草",
-    description: "受到的中毒傷害降低 50%。",
-    apply(hero) {
-      hero.damageReduction = Math.max(hero.damageReduction, 0.5);
-    }
-  }
-];
+  ]
+};
 
 const encounterPlan = ["normal", "normal", "normal", "elite", "normal", "normal", "elite", "boss"];
 
@@ -253,7 +305,7 @@ const state = {
   turn: 0,
   hero: null,
   enemy: null,
-  awaitingReward: false,
+  awaitingBlessing: false,
   ended: false,
   log: []
 };
@@ -308,8 +360,8 @@ const els = {
   enemyHealthText: document.querySelector("#enemyHealthText"),
   currentStats: document.querySelector("#currentStats"),
   battleLog: document.querySelector("#battleLog"),
-  rewardPanel: document.querySelector("#rewardPanel"),
-  rewardChoices: document.querySelector("#rewardChoices"),
+  blessingPanel: document.querySelector("#blessingPanel"),
+  blessingChoices: document.querySelector("#blessingChoices"),
   endPanel: document.querySelector("#endPanel"),
   endTitle: document.querySelector("#endTitle"),
   endText: document.querySelector("#endText"),
@@ -927,12 +979,12 @@ function startRun() {
   state.turn = 0;
   state.hero = clone(heroTemplate);
   state.enemy = null;
-  state.awaitingReward = false;
+  state.awaitingBlessing = false;
   state.ended = false;
   state.log = [];
 
   showScreen("gameScreen");
-  els.rewardPanel.classList.remove("is-visible");
+  els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
   closeDeleteSaveDialog();
   els.nextButton.disabled = false;
@@ -943,11 +995,11 @@ function startRun() {
 
 function restart() {
   showScreen("menuScreen");
-  els.rewardPanel.classList.remove("is-visible");
+  els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
   closeDeleteSaveDialog();
   els.nextButton.disabled = true;
-  state.awaitingReward = false;
+  state.awaitingBlessing = false;
   state.ended = true;
   els.resultLabel.textContent = "冒險準備中";
   els.encounterLabel.textContent = "尚未開始";
@@ -956,14 +1008,14 @@ function restart() {
 function startEncounter() {
   const type = encounterPlan[state.encounterIndex];
   state.turn = 0;
-  state.awaitingReward = false;
+  state.awaitingBlessing = false;
   state.log = [];
   state.enemy = buildEnemy(type, state.encounterIndex);
   state.enemy.poison = 0;
   state.hero.poison = 0;
   state.hero.shield = state.hero.shieldStart;
 
-  els.rewardPanel.classList.remove("is-visible");
+  els.blessingPanel.classList.remove("is-visible");
   els.nextButton.disabled = false;
 
   if (type === "boss") {
@@ -988,7 +1040,7 @@ function buildEnemy(type, encounterIndex) {
 }
 
 function playTurn() {
-  if (state.ended || state.awaitingReward || !state.enemy) {
+  if (state.ended || state.awaitingBlessing || !state.enemy) {
     return;
   }
 
@@ -1130,7 +1182,7 @@ function winEncounter() {
     return;
   }
 
-  showRewards();
+  showBlessings();
 }
 
 function loseRun() {
@@ -1140,10 +1192,10 @@ function loseRun() {
 
 function finishRun(cleared) {
   state.ended = true;
-  state.awaitingReward = false;
+  state.awaitingBlessing = false;
   recordRunFinished(cleared);
   els.nextButton.disabled = true;
-  els.rewardPanel.classList.remove("is-visible");
+  els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.add("is-visible");
   els.endTitle.textContent = cleared ? "冒險成功" : "冒險失敗";
   els.endText.textContent = cleared
@@ -1153,25 +1205,31 @@ function finishRun(cleared) {
   render();
 }
 
-function showRewards() {
-  state.awaitingReward = true;
+function showBlessings() {
+  state.awaitingBlessing = true;
   els.nextButton.disabled = true;
-  els.rewardPanel.classList.add("is-visible");
-  els.resultLabel.textContent = "選擇強化";
-  els.rewardChoices.innerHTML = "";
+  els.blessingPanel.classList.add("is-visible");
+  els.resultLabel.textContent = "選擇祝福";
+  els.blessingChoices.innerHTML = "";
 
-  getRewardChoices(3).forEach((reward) => {
+  getBlessingChoices(3).forEach((blessing) => {
     const button = document.createElement("button");
-    button.className = "reward-card";
+    button.className = "blessing-card";
     button.type = "button";
-    button.innerHTML = `<strong>${reward.name}</strong><span>${reward.description}</span>`;
-    button.addEventListener("click", () => chooseReward(reward));
-    els.rewardChoices.append(button);
+    button.innerHTML = `
+      <small>${blessing.eventTitle}</small>
+      <strong>${blessing.name}</strong>
+      <span>${blessing.eventText}</span>
+      <em>${blessing.flavorText}</em>
+      <b>${blessing.effectText}</b>
+    `;
+    button.addEventListener("click", () => chooseBlessing(blessing));
+    els.blessingChoices.append(button);
   });
 }
 
-function getRewardChoices(count) {
-  const pool = [...rewards];
+function getBlessingChoices(count) {
+  const pool = [...regionalBlessingDefinitions[state.selectedRegionId]];
   const choices = [];
   while (choices.length < count && pool.length > 0) {
     const index = Math.floor(Math.random() * pool.length);
@@ -1180,10 +1238,10 @@ function getRewardChoices(count) {
   return choices;
 }
 
-function chooseReward(reward) {
-  reward.apply(state.hero);
-  state.hero.rewards.push(reward.name);
-  addLog("system", "reward", { reward: reward.name });
+function chooseBlessing(blessing) {
+  blessing.apply(state.hero);
+  state.hero.blessings.push(blessing.name);
+  addLog("system", "blessing", { blessing: blessing.name });
   startEncounter();
 }
 
@@ -1203,8 +1261,8 @@ function render() {
 
   els.encounterLabel.textContent = `第 ${Math.min(state.encounterIndex + 1, encounterPlan.length)} / ${encounterPlan.length} 場`;
   if (!state.ended) {
-    els.resultLabel.textContent = state.awaitingReward
-      ? "選擇強化"
+    els.resultLabel.textContent = state.awaitingBlessing
+      ? "選擇祝福"
       : state.turn === 0
         ? "遭遇開始"
         : `第 ${state.turn} 回合`;
@@ -1217,7 +1275,7 @@ function render() {
     ["暴擊", `${Math.round(hero.critChance * 100)}%`],
     ["護盾", hero.shield || 0],
     ["中毒", hero.poison || 0],
-    ["強化", hero.rewards.length]
+    ["祝福", hero.blessings.length]
   ].forEach(([label, value]) => {
     const item = document.createElement("div");
     item.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
