@@ -4,6 +4,9 @@ import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrat
 import { characterDefinitions } from "./src/data/characters/index.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
 import { templates } from "./src/data/templates.js";
+import { els } from "./src/ui/dom.js";
+import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderCurrentStats, renderStatList, setMeter } from "./src/ui/renderHelpers.js";
+import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { clone } from "./src/utils.js";
 
 const state = {
@@ -27,79 +30,6 @@ const uiState = {
   statisticsView: "overview",
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID
-};
-
-const els = {
-  menuScreen: document.querySelector("#menuScreen"),
-  regionScreen: document.querySelector("#regionScreen"),
-  characterScreen: document.querySelector("#characterScreen"),
-  statisticsScreen: document.querySelector("#statisticsScreen"),
-  achievementScreen: document.querySelector("#achievementScreen"),
-  gameScreen: document.querySelector("#gameScreen"),
-  openRegionButton: document.querySelector("#openRegionButton"),
-  openCharacterButton: document.querySelector("#openCharacterButton"),
-  openStatisticsButton: document.querySelector("#openStatisticsButton"),
-  openAchievementButton: document.querySelector("#openAchievementButton"),
-  regionListView: document.querySelector("#regionListView"),
-  regionDetailView: document.querySelector("#regionDetailView"),
-  regionChoiceList: document.querySelector("#regionChoiceList"),
-  regionDetailName: document.querySelector("#regionDetailName"),
-  regionDetailDescription: document.querySelector("#regionDetailDescription"),
-  regionDetailStats: document.querySelector("#regionDetailStats"),
-  backToRegionListButton: document.querySelector("#backToRegionListButton"),
-  characterListView: document.querySelector("#characterListView"),
-  characterDetailView: document.querySelector("#characterDetailView"),
-  characterChoiceList: document.querySelector("#characterChoiceList"),
-  characterDetailName: document.querySelector("#characterDetailName"),
-  characterDetailDescription: document.querySelector("#characterDetailDescription"),
-  characterDetailStats: document.querySelector("#characterDetailStats"),
-  backToCharacterListButton: document.querySelector("#backToCharacterListButton"),
-  selectCharacterButton: document.querySelector("#selectCharacterButton"),
-  startButton: document.querySelector("#startButton"),
-  restartButton: document.querySelector("#restartButton"),
-  retryButton: document.querySelector("#retryButton"),
-  nextButton: document.querySelector("#nextButton"),
-  encounterLabel: document.querySelector("#encounterLabel"),
-  resultLabel: document.querySelector("#resultLabel"),
-  heroName: document.querySelector("#heroName"),
-  heroLevel: document.querySelector("#heroLevel"),
-  heroHealthBar: document.querySelector("#heroHealthBar"),
-  heroHealthText: document.querySelector("#heroHealthText"),
-  enemyName: document.querySelector("#enemyName"),
-  enemyKind: document.querySelector("#enemyKind"),
-  enemyHealthBar: document.querySelector("#enemyHealthBar"),
-  enemyHealthText: document.querySelector("#enemyHealthText"),
-  currentStats: document.querySelector("#currentStats"),
-  battleLog: document.querySelector("#battleLog"),
-  blessingPanel: document.querySelector("#blessingPanel"),
-  blessingChoices: document.querySelector("#blessingChoices"),
-  endPanel: document.querySelector("#endPanel"),
-  endTitle: document.querySelector("#endTitle"),
-  endText: document.querySelector("#endText"),
-  statisticsTabs: document.querySelectorAll("[data-statistics-view]"),
-  statisticsOverviewView: document.querySelector("#statisticsOverviewView"),
-  statisticsCharacterListView: document.querySelector("#statisticsCharacterListView"),
-  statisticsCharacterDetailView: document.querySelector("#statisticsCharacterDetailView"),
-  statisticsRegionListView: document.querySelector("#statisticsRegionListView"),
-  statisticsRegionDetailView: document.querySelector("#statisticsRegionDetailView"),
-  statisticsSaveView: document.querySelector("#statisticsSaveView"),
-  statisticsOverviewList: document.querySelector("#statisticsOverviewList"),
-  statisticsCharacterList: document.querySelector("#statisticsCharacterList"),
-  statisticsCharacterName: document.querySelector("#statisticsCharacterName"),
-  statisticsCharacterDetailList: document.querySelector("#statisticsCharacterDetailList"),
-  statisticsRegionList: document.querySelector("#statisticsRegionList"),
-  statisticsRegionName: document.querySelector("#statisticsRegionName"),
-  statisticsRegionDetailList: document.querySelector("#statisticsRegionDetailList"),
-  backToStatisticsCharacterListButton: document.querySelector("#backToStatisticsCharacterListButton"),
-  backToStatisticsRegionListButton: document.querySelector("#backToStatisticsRegionListButton"),
-  exportSaveButton: document.querySelector("#exportSaveButton"),
-  importSaveButton: document.querySelector("#importSaveButton"),
-  importSaveInput: document.querySelector("#importSaveInput"),
-  saveNotice: document.querySelector("#saveNotice"),
-  deleteSaveButton: document.querySelector("#deleteSaveButton"),
-  deleteSavePanel: document.querySelector("#deleteSavePanel"),
-  confirmDeleteSaveButton: document.querySelector("#confirmDeleteSaveButton"),
-  cancelDeleteSaveButton: document.querySelector("#cancelDeleteSaveButton")
 };
 
 let saveData = loadSave();
@@ -268,38 +198,15 @@ function recordRunFinished(cleared) {
 }
 
 function renderStatistics() {
-  const stats = saveData.statistics;
-  const views = {
-    overview: els.statisticsOverviewView,
-    characters: els.statisticsCharacterListView,
-    characterDetail: els.statisticsCharacterDetailView,
-    regions: els.statisticsRegionListView,
-    regionDetail: els.statisticsRegionDetailView,
-    save: els.statisticsSaveView
-  };
-
-  Object.entries(views).forEach(([view, element]) => {
-    element.classList.toggle("is-active", uiState.statisticsView === view);
+  renderStatisticsView({
+    els,
+    uiState,
+    saveData,
+    characterDefinitions,
+    regionDefinitions,
+    onCharacterDetail: showStatisticsCharacterDetail,
+    onRegionDetail: showStatisticsRegionDetail
   });
-  els.statisticsTabs.forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.statisticsView === getActiveStatisticsTab());
-  });
-
-  renderStatisticsOverview(stats);
-  renderStatisticsCharacterList();
-  renderStatisticsCharacterDetail(uiState.statisticsCharacterId);
-  renderStatisticsRegionList();
-  renderStatisticsRegionDetail(uiState.statisticsRegionId);
-}
-
-function getActiveStatisticsTab() {
-  if (uiState.statisticsView === "characterDetail") {
-    return "characters";
-  }
-  if (uiState.statisticsView === "regionDetail") {
-    return "regions";
-  }
-  return uiState.statisticsView;
 }
 
 function showStatisticsView(view) {
@@ -317,98 +224,6 @@ function showStatisticsRegionDetail(regionId = DEFAULT_REGION_ID) {
   uiState.statisticsRegionId = regionId;
   uiState.statisticsView = "regionDetail";
   renderStatistics();
-}
-
-function renderStatisticsOverview(stats) {
-  renderStatList(els.statisticsOverviewList, [
-    ["冒險次數", stats.totalRuns],
-    ["冒險失敗", stats.totalDefeats],
-    ["總通關", stats.totalClears],
-    ["擊敗敵人", stats.totalEnemiesDefeated],
-    ["擊敗首領", stats.bossesDefeated]
-  ]);
-}
-
-function renderStatisticsCharacterList() {
-  renderChoiceList(els.statisticsCharacterList, Object.entries(characterDefinitions).map(([characterId, character]) => {
-    const characterStats = saveData.statistics.characters[characterId];
-    const characterProgress = saveData.progression.characters[characterId];
-    return {
-      title: character.name,
-      meta: `Lv. ${characterProgress.level}`,
-      description: `出戰 ${characterStats.runs} 次，通關 ${characterStats.clears} 次。`,
-      action: "查看統計",
-      onClick: () => showStatisticsCharacterDetail(characterId)
-    };
-  }));
-}
-
-function renderStatisticsCharacterDetail(characterId) {
-  const character = characterDefinitions[characterId];
-  const characterStats = saveData.statistics.characters[characterId];
-  const characterProgress = saveData.progression.characters[characterId];
-  els.statisticsCharacterName.textContent = character.name;
-  renderStatList(els.statisticsCharacterDetailList, [
-    ["等級", characterProgress.level],
-    ["經驗", characterProgress.exp],
-    ["出戰次數", characterStats.runs],
-    ["通關次數", characterStats.clears],
-    ["已學技能", characterProgress.learnedSkills.length]
-  ]);
-}
-
-function renderStatisticsRegionList() {
-  renderChoiceList(els.statisticsRegionList, Object.entries(regionDefinitions).map(([regionId, region]) => {
-    const regionStats = saveData.statistics.regions[regionId];
-    return {
-      title: region.name,
-      meta: region.difficulty,
-      description: `通關 ${regionStats.clears} 次，最高抵達 ${regionStats.bestEncounter} / ${region.encounterCount}。`,
-      action: "查看統計",
-      onClick: () => showStatisticsRegionDetail(regionId)
-    };
-  }));
-}
-
-function renderStatisticsRegionDetail(regionId) {
-  const region = regionDefinitions[regionId];
-  const regionStats = saveData.statistics.regions[regionId];
-  els.statisticsRegionName.textContent = region.name;
-  renderStatList(els.statisticsRegionDetailList, [
-    ["冒險次數", regionStats.runs],
-    ["通關次數", regionStats.clears],
-    ["最高抵達遭遇", `${regionStats.bestEncounter} / ${region.encounterCount}`],
-    ["首領", region.bossName],
-    ["難度", region.difficulty]
-  ]);
-}
-
-function renderStatList(element, items) {
-  element.innerHTML = "";
-  items.forEach(([label, value]) => {
-    const item = document.createElement("div");
-    item.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
-    element.append(item);
-  });
-}
-
-function renderChoiceList(element, choices) {
-  element.innerHTML = "";
-  choices.forEach((choice) => {
-    const button = document.createElement("button");
-    button.className = "choice-button";
-    button.type = "button";
-    button.innerHTML = `
-      <span>
-        <strong>${choice.title}</strong>
-        <small>${choice.meta}</small>
-      </span>
-      <em>${choice.description}</em>
-      <b>${choice.action}</b>
-    `;
-    button.addEventListener("click", choice.onClick);
-    element.append(button);
-  });
 }
 
 function setSaveNotice(message, type = "status") {
@@ -647,22 +462,7 @@ function showBlessings() {
   els.nextButton.disabled = true;
   els.blessingPanel.classList.add("is-visible");
   els.resultLabel.textContent = "選擇祝福";
-  els.blessingChoices.innerHTML = "";
-
-  getBlessingChoices(3).forEach((blessing) => {
-    const button = document.createElement("button");
-    button.className = "blessing-card";
-    button.type = "button";
-    button.innerHTML = `
-      <small>${blessing.eventTitle}</small>
-      <strong>${blessing.name}</strong>
-      <span>${blessing.eventText}</span>
-      <em>${blessing.flavorText}</em>
-      <b>${blessing.effectText}</b>
-    `;
-    button.addEventListener("click", () => chooseBlessing(blessing));
-    els.blessingChoices.append(button);
-  });
+  renderBlessingChoices(els.blessingChoices, getBlessingChoices(3), chooseBlessing);
 }
 
 function getBlessingChoices(count) {
@@ -706,35 +506,11 @@ function render() {
         : `第 ${state.turn} 回合`;
   }
 
-  els.currentStats.innerHTML = "";
-  [
-    ["攻擊", hero.attack],
-    ["防禦", hero.defense],
-    ["暴擊", `${Math.round(hero.critChance * 100)}%`],
-    ["護盾", hero.shield || 0],
-    ["中毒", hero.poison || 0],
-    ["祝福", hero.blessings.length]
-  ].forEach(([label, value]) => {
-    const item = document.createElement("div");
-    item.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
-    els.currentStats.append(item);
-  });
+  renderCurrentStats(els.currentStats, hero);
 }
 
 function renderLog() {
-  els.battleLog.innerHTML = "";
-  state.log.slice(-80).reverse().forEach((entry) => {
-    const item = document.createElement("li");
-    item.className = entry.type;
-    item.textContent = entry.text;
-    els.battleLog.append(item);
-  });
-  els.battleLog.scrollTop = 0;
-}
-
-function setMeter(element, value, max) {
-  const ratio = Math.max(0, Math.min(1, value / max));
-  element.style.width = `${Math.round(ratio * 100)}%`;
+  renderBattleLog(els.battleLog, state.log);
 }
 
 function currentRegion() {
