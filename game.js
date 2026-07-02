@@ -1,6 +1,6 @@
 "use strict";
 
-const GAME_VERSION = "v0.1.5.0-alpha";
+const GAME_VERSION = "v0.1.6.0-alpha";
 const SAVE_KEY = "legendEternalSave";
 const SAVE_SCHEMA_VERSION = 2;
 const REGION_ID = "plains";
@@ -223,13 +223,23 @@ const encounterPlan = ["normal", "normal", "normal", "elite", "normal", "normal"
 const regionDefinitions = {
   [REGION_ID]: {
     name: "平原",
-    encounterCount: encounterPlan.length
+    description: "城鎮外圍的開闊草地。野豬、史萊姆與草原狼經常出沒，是新手冒險者最常踏入的第一片野外。",
+    encounterCount: encounterPlan.length,
+    bossName: boss.name,
+    difficulty: "入門"
   }
 };
 
 const characterDefinitions = {
   [CHARACTER_ID]: {
-    name: "冒險者"
+    name: "冒險者",
+    description: "傳說大陸最常見的職業。冒險者使用的武器各式各樣，會依照手上的裝備與旅途中的選擇調整戰鬥方式，能力平均且適合探索未知地區。",
+    stats: {
+      maxHp: heroTemplate.maxHp,
+      attack: heroTemplate.attack,
+      defense: heroTemplate.defense,
+      critChance: "5%"
+    }
   }
 };
 
@@ -248,6 +258,14 @@ const state = {
   log: []
 };
 
+const uiState = {
+  regionView: "list",
+  characterView: "list",
+  statisticsView: "overview",
+  statisticsCharacterId: CHARACTER_ID,
+  statisticsRegionId: REGION_ID
+};
+
 const els = {
   menuScreen: document.querySelector("#menuScreen"),
   regionScreen: document.querySelector("#regionScreen"),
@@ -259,6 +277,20 @@ const els = {
   openCharacterButton: document.querySelector("#openCharacterButton"),
   openStatisticsButton: document.querySelector("#openStatisticsButton"),
   openAchievementButton: document.querySelector("#openAchievementButton"),
+  regionListView: document.querySelector("#regionListView"),
+  regionDetailView: document.querySelector("#regionDetailView"),
+  regionChoiceList: document.querySelector("#regionChoiceList"),
+  regionDetailName: document.querySelector("#regionDetailName"),
+  regionDetailDescription: document.querySelector("#regionDetailDescription"),
+  regionDetailStats: document.querySelector("#regionDetailStats"),
+  backToRegionListButton: document.querySelector("#backToRegionListButton"),
+  characterListView: document.querySelector("#characterListView"),
+  characterDetailView: document.querySelector("#characterDetailView"),
+  characterChoiceList: document.querySelector("#characterChoiceList"),
+  characterDetailName: document.querySelector("#characterDetailName"),
+  characterDetailDescription: document.querySelector("#characterDetailDescription"),
+  characterDetailStats: document.querySelector("#characterDetailStats"),
+  backToCharacterListButton: document.querySelector("#backToCharacterListButton"),
   selectAdventurerButton: document.querySelector("#selectAdventurerButton"),
   startButton: document.querySelector("#startButton"),
   restartButton: document.querySelector("#restartButton"),
@@ -281,7 +313,22 @@ const els = {
   endPanel: document.querySelector("#endPanel"),
   endTitle: document.querySelector("#endTitle"),
   endText: document.querySelector("#endText"),
-  statisticsList: document.querySelector("#statisticsList"),
+  statisticsTabs: document.querySelectorAll("[data-statistics-view]"),
+  statisticsOverviewView: document.querySelector("#statisticsOverviewView"),
+  statisticsCharacterListView: document.querySelector("#statisticsCharacterListView"),
+  statisticsCharacterDetailView: document.querySelector("#statisticsCharacterDetailView"),
+  statisticsRegionListView: document.querySelector("#statisticsRegionListView"),
+  statisticsRegionDetailView: document.querySelector("#statisticsRegionDetailView"),
+  statisticsSaveView: document.querySelector("#statisticsSaveView"),
+  statisticsOverviewList: document.querySelector("#statisticsOverviewList"),
+  statisticsCharacterList: document.querySelector("#statisticsCharacterList"),
+  statisticsCharacterName: document.querySelector("#statisticsCharacterName"),
+  statisticsCharacterDetailList: document.querySelector("#statisticsCharacterDetailList"),
+  statisticsRegionList: document.querySelector("#statisticsRegionList"),
+  statisticsRegionName: document.querySelector("#statisticsRegionName"),
+  statisticsRegionDetailList: document.querySelector("#statisticsRegionDetailList"),
+  backToStatisticsCharacterListButton: document.querySelector("#backToStatisticsCharacterListButton"),
+  backToStatisticsRegionListButton: document.querySelector("#backToStatisticsRegionListButton"),
   exportSaveButton: document.querySelector("#exportSaveButton"),
   importSaveButton: document.querySelector("#importSaveButton"),
   importSaveInput: document.querySelector("#importSaveInput"),
@@ -306,10 +353,12 @@ function showScreen(screenId) {
   if (screenId === "regionScreen") {
     els.resultLabel.textContent = "選擇地區";
     els.encounterLabel.textContent = state.selectedRegion;
+    renderRegionScreen();
   }
   if (screenId === "characterScreen") {
     els.resultLabel.textContent = "選擇角色";
     els.encounterLabel.textContent = state.selectedHero;
+    renderCharacterScreen();
   }
   if (screenId === "achievementScreen") {
     els.resultLabel.textContent = "尚未開放";
@@ -490,6 +539,88 @@ function syncSelectionFromSave() {
   state.selectedHero = characterDefinitions[characterId].name;
 }
 
+function showRegionList() {
+  uiState.regionView = "list";
+  showScreen("regionScreen");
+}
+
+function showRegionDetail(regionId = REGION_ID) {
+  saveData.settings.selectedRegionId = regionId;
+  saveGame();
+  syncSelectionFromSave();
+  uiState.regionView = "detail";
+  showScreen("regionScreen");
+}
+
+function renderRegionScreen() {
+  const showDetail = uiState.regionView === "detail";
+  els.regionListView.classList.toggle("is-active", !showDetail);
+  els.regionDetailView.classList.toggle("is-active", showDetail);
+
+  if (showDetail) {
+    const region = regionDefinitions[state.selectedRegionId];
+    els.regionDetailName.textContent = region.name;
+    els.regionDetailDescription.textContent = region.description;
+    renderStatList(els.regionDetailStats, [
+      ["遭遇", region.encounterCount],
+      ["首領", region.bossName],
+      ["難度", region.difficulty],
+      ["角色", state.selectedHero]
+    ]);
+    els.startButton.textContent = `開始${region.name}冒險`;
+    return;
+  }
+
+  renderChoiceList(els.regionChoiceList, Object.entries(regionDefinitions).map(([regionId, region]) => ({
+    title: region.name,
+    meta: `${region.difficulty}地區`,
+    description: `${region.encounterCount} 場遭遇，首領：${region.bossName}`,
+    action: "查看地區",
+    onClick: () => showRegionDetail(regionId)
+  })));
+}
+
+function showCharacterList() {
+  uiState.characterView = "list";
+  showScreen("characterScreen");
+}
+
+function showCharacterDetail(characterId = CHARACTER_ID) {
+  saveData.settings.selectedCharacterId = characterId;
+  saveGame();
+  syncSelectionFromSave();
+  uiState.characterView = "detail";
+  showScreen("characterScreen");
+}
+
+function renderCharacterScreen() {
+  const showDetail = uiState.characterView === "detail";
+  els.characterListView.classList.toggle("is-active", !showDetail);
+  els.characterDetailView.classList.toggle("is-active", showDetail);
+
+  if (showDetail) {
+    const character = characterDefinitions[state.selectedHeroId];
+    els.characterDetailName.textContent = character.name;
+    els.characterDetailDescription.textContent = character.description;
+    renderStatList(els.characterDetailStats, [
+      ["生命", character.stats.maxHp],
+      ["攻擊", character.stats.attack],
+      ["防禦", character.stats.defense],
+      ["暴擊", character.stats.critChance]
+    ]);
+    els.selectAdventurerButton.textContent = `使用${character.name}`;
+    return;
+  }
+
+  renderChoiceList(els.characterChoiceList, Object.entries(characterDefinitions).map(([characterId, character]) => ({
+    title: character.name,
+    meta: characterId === saveData.settings.selectedCharacterId ? "目前選擇" : "可使用",
+    description: "能力平均，適合探索未知地區。",
+    action: "查看角色",
+    onClick: () => showCharacterDetail(characterId)
+  })));
+}
+
 function recordRunStarted() {
   const stats = saveData.statistics;
   const regionStats = stats.regions[state.selectedRegionId];
@@ -537,28 +668,146 @@ function recordRunFinished(cleared) {
 
 function renderStatistics() {
   const stats = saveData.statistics;
-  const regionStats = stats.regions[REGION_ID];
-  const characterStats = stats.characters[CHARACTER_ID];
-  const characterProgress = saveData.progression.characters[CHARACTER_ID];
-  const statisticsItems = [
-    ["存檔版本", `Schema ${saveData.schemaVersion}`],
-    ["冒險者等級", characterProgress.level],
-    ["冒險者經驗", characterProgress.exp],
+  const views = {
+    overview: els.statisticsOverviewView,
+    characters: els.statisticsCharacterListView,
+    characterDetail: els.statisticsCharacterDetailView,
+    regions: els.statisticsRegionListView,
+    regionDetail: els.statisticsRegionDetailView,
+    save: els.statisticsSaveView
+  };
+
+  Object.entries(views).forEach(([view, element]) => {
+    element.classList.toggle("is-active", uiState.statisticsView === view);
+  });
+  els.statisticsTabs.forEach((button) => {
+    const isActive = button.dataset.statisticsView === getActiveStatisticsTab();
+    button.classList.toggle("is-active", isActive);
+  });
+
+  renderStatisticsOverview(stats);
+  renderStatisticsCharacterList();
+  renderStatisticsCharacterDetail(uiState.statisticsCharacterId);
+  renderStatisticsRegionList();
+  renderStatisticsRegionDetail(uiState.statisticsRegionId);
+}
+
+function getActiveStatisticsTab() {
+  if (uiState.statisticsView === "characterDetail") {
+    return "characters";
+  }
+  if (uiState.statisticsView === "regionDetail") {
+    return "regions";
+  }
+  return uiState.statisticsView;
+}
+
+function showStatisticsView(view) {
+  uiState.statisticsView = view;
+  renderStatistics();
+}
+
+function showStatisticsCharacterDetail(characterId = CHARACTER_ID) {
+  uiState.statisticsCharacterId = characterId;
+  uiState.statisticsView = "characterDetail";
+  renderStatistics();
+}
+
+function showStatisticsRegionDetail(regionId = REGION_ID) {
+  uiState.statisticsRegionId = regionId;
+  uiState.statisticsView = "regionDetail";
+  renderStatistics();
+}
+
+function renderStatisticsOverview(stats) {
+  renderStatList(els.statisticsOverviewList, [
     ["冒險次數", stats.totalRuns],
     ["冒險失敗", stats.totalDefeats],
-    ["平原通關", regionStats.clears],
-    ["最高抵達遭遇", `${regionStats.bestEncounter} / ${encounterPlan.length}`],
+    ["總通關", stats.totalClears],
     ["擊敗敵人", stats.totalEnemiesDefeated],
-    ["擊敗首領", stats.bossesDefeated],
-    ["冒險者出戰", characterStats.runs],
-    ["冒險者通關", characterStats.clears]
-  ];
+    ["擊敗首領", stats.bossesDefeated]
+  ]);
+}
 
-  els.statisticsList.innerHTML = "";
-  statisticsItems.forEach(([label, value]) => {
+function renderStatisticsCharacterList() {
+  renderChoiceList(els.statisticsCharacterList, Object.entries(characterDefinitions).map(([characterId, character]) => {
+    const characterStats = saveData.statistics.characters[characterId];
+    const characterProgress = saveData.progression.characters[characterId];
+    return {
+      title: character.name,
+      meta: `Lv. ${characterProgress.level}`,
+      description: `出戰 ${characterStats.runs} 次，通關 ${characterStats.clears} 次。`,
+      action: "查看統計",
+      onClick: () => showStatisticsCharacterDetail(characterId)
+    };
+  }));
+}
+
+function renderStatisticsCharacterDetail(characterId) {
+  const character = characterDefinitions[characterId];
+  const characterStats = saveData.statistics.characters[characterId];
+  const characterProgress = saveData.progression.characters[characterId];
+  els.statisticsCharacterName.textContent = character.name;
+  renderStatList(els.statisticsCharacterDetailList, [
+    ["等級", characterProgress.level],
+    ["經驗", characterProgress.exp],
+    ["出戰次數", characterStats.runs],
+    ["通關次數", characterStats.clears],
+    ["已學技能", characterProgress.learnedSkills.length]
+  ]);
+}
+
+function renderStatisticsRegionList() {
+  renderChoiceList(els.statisticsRegionList, Object.entries(regionDefinitions).map(([regionId, region]) => {
+    const regionStats = saveData.statistics.regions[regionId];
+    return {
+      title: region.name,
+      meta: region.difficulty,
+      description: `通關 ${regionStats.clears} 次，最高抵達 ${regionStats.bestEncounter} / ${region.encounterCount}。`,
+      action: "查看統計",
+      onClick: () => showStatisticsRegionDetail(regionId)
+    };
+  }));
+}
+
+function renderStatisticsRegionDetail(regionId) {
+  const region = regionDefinitions[regionId];
+  const regionStats = saveData.statistics.regions[regionId];
+  els.statisticsRegionName.textContent = region.name;
+  renderStatList(els.statisticsRegionDetailList, [
+    ["冒險次數", regionStats.runs],
+    ["通關次數", regionStats.clears],
+    ["最高抵達遭遇", `${regionStats.bestEncounter} / ${region.encounterCount}`],
+    ["首領", region.bossName],
+    ["難度", region.difficulty]
+  ]);
+}
+
+function renderStatList(element, items) {
+  element.innerHTML = "";
+  items.forEach(([label, value]) => {
     const item = document.createElement("div");
     item.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
-    els.statisticsList.append(item);
+    element.append(item);
+  });
+}
+
+function renderChoiceList(element, choices) {
+  element.innerHTML = "";
+  choices.forEach((choice) => {
+    const button = document.createElement("button");
+    button.className = "choice-button";
+    button.type = "button";
+    button.innerHTML = `
+      <span>
+        <strong>${choice.title}</strong>
+        <small>${choice.meta}</small>
+      </span>
+      <em>${choice.description}</em>
+      <b>${choice.action}</b>
+    `;
+    button.addEventListener("click", choice.onClick);
+    element.append(button);
   });
 }
 
@@ -994,12 +1243,22 @@ function setMeter(element, value, max) {
 
 syncSelectionFromSave();
 
-els.openRegionButton.addEventListener("click", () => showScreen("regionScreen"));
-els.openCharacterButton.addEventListener("click", () => showScreen("characterScreen"));
-els.openStatisticsButton.addEventListener("click", () => showScreen("statisticsScreen"));
+els.openRegionButton.addEventListener("click", showRegionList);
+els.openCharacterButton.addEventListener("click", showCharacterList);
+els.openStatisticsButton.addEventListener("click", () => {
+  uiState.statisticsView = "overview";
+  showScreen("statisticsScreen");
+});
 els.openAchievementButton.addEventListener("click", () => showScreen("achievementScreen"));
+els.backToRegionListButton.addEventListener("click", showRegionList);
+els.backToCharacterListButton.addEventListener("click", showCharacterList);
+els.statisticsTabs.forEach((button) => {
+  button.addEventListener("click", () => showStatisticsView(button.dataset.statisticsView));
+});
+els.backToStatisticsCharacterListButton.addEventListener("click", () => showStatisticsView("characters"));
+els.backToStatisticsRegionListButton.addEventListener("click", () => showStatisticsView("regions"));
 els.selectAdventurerButton.addEventListener("click", () => {
-  saveData.settings.selectedCharacterId = CHARACTER_ID;
+  saveData.settings.selectedCharacterId = state.selectedHeroId;
   saveGame();
   syncSelectionFromSave();
   showScreen("menuScreen");
