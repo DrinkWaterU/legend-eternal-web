@@ -3,7 +3,16 @@
   "name": "平原",
   "description": "城鎮外圍的開闊草地。野豬、史萊姆與草原狼經常出沒，是新手冒險者最常踏入的第一片野外。",
   "difficulty": "入門",
-  "encounterPlan": ["normal", "normal", "normal", "elite", "normal", "normal", "elite", "boss"],
+  "encounterPlan": [
+    "normal",
+    "normal",
+    "normal",
+    "elite",
+    "normal",
+    "normal",
+    "elite",
+    "boss"
+  ],
   "enemies": [
     {
       "id": "boar",
@@ -112,7 +121,13 @@
       "eventText": "你在淺溪旁找到一塊平整的磨石，花了些時間整理武器。",
       "flavorText": "水聲蓋過了草叢裡的動靜，刀鋒重新映出平原的天光。",
       "effectText": "攻擊力 +2。",
-      "effects": [{ "type": "add", "stat": "attack", "amount": 2 }]
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 2
+        }
+      ]
     },
     {
       "id": "warm-campfire",
@@ -121,10 +136,17 @@
       "eventTitle": "溫暖營火",
       "eventText": "你找到前人留下的石圈，重新點起一小堆營火休息片刻。",
       "flavorText": "火光讓肩上的疲憊慢慢鬆開，平原的夜風也不再那麼刺骨。",
-      "effectText": "最大生命 +12，並恢復 12 點生命。",
+      "effectText": "最大生命 +10，並恢復 20 點生命。",
       "effects": [
-        { "type": "add", "stat": "maxHp", "amount": 12 },
-        { "type": "recoverHp", "amount": 12 }
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        },
+        {
+          "type": "recoverHp",
+          "amount": 20
+        }
       ]
     },
     {
@@ -135,7 +157,13 @@
       "eventText": "半埋在草裡的舊行囊中，還留著幾片堪用的皮革護片。",
       "flavorText": "你把它們綁在容易受傷的位置，雖然粗糙，但足夠可靠。",
       "effectText": "防禦 +1。",
-      "effects": [{ "type": "add", "stat": "defense", "amount": 1 }]
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
     },
     {
       "id": "wind-marker",
@@ -145,7 +173,13 @@
       "eventText": "你停下腳步觀察草浪方向，學會從風裡判斷敵人的破綻。",
       "flavorText": "平原沒有牆，所有動作都會在草尖留下痕跡。",
       "effectText": "暴擊率 +8%。",
-      "effects": [{ "type": "add", "stat": "critChance", "amount": 0.08 }]
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.08
+        }
+      ]
     },
     {
       "id": "grass-charm",
@@ -155,7 +189,13 @@
       "eventText": "你用韌草和碎石編成護符，掛在胸前當作簡單的守護。",
       "flavorText": "它不算神聖，卻像平原本身願意替你擋下一次危險。",
       "effectText": "每場戰鬥開始獲得 8 點護盾。",
-      "effects": [{ "type": "add", "stat": "shieldStart", "amount": 8 }]
+      "effects": [
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 8
+        }
+      ]
     },
     {
       "id": "wildgrass-bandage",
@@ -166,8 +206,16 @@
       "flavorText": "不算精緻，但冒險者常常就是靠這種小準備活下來。",
       "effectText": "每 3 回合恢復 5 點生命。",
       "effects": [
-        { "type": "set", "stat": "regenEvery", "value": 3 },
-        { "type": "add", "stat": "regenAmount", "amount": 5 }
+        {
+          "type": "set",
+          "stat": "regenEvery",
+          "value": 3
+        },
+        {
+          "type": "add",
+          "stat": "regenAmount",
+          "amount": 5
+        }
       ]
     },
     {
@@ -178,7 +226,13 @@
       "eventText": "你從乾掉的史萊姆痕跡裡收集到帶有腐蝕性的黏液。",
       "flavorText": "瓶中的液體緩慢晃動，像還記得自己曾經是活物。",
       "effectText": "攻擊時附加 2 點中毒傷害。",
-      "effects": [{ "type": "add", "stat": "poisonPower", "amount": 2 }]
+      "effects": [
+        {
+          "type": "add",
+          "stat": "poisonPower",
+          "amount": 2
+        }
+      ]
     },
     {
       "id": "quiet-hill",
@@ -188,7 +242,13 @@
       "eventText": "你登上一處低矮丘坡，趁視野開闊重新調整呼吸與步伐。",
       "flavorText": "短暫的安靜讓你想起，活著本身也是一種技巧。",
       "effectText": "擊敗敵人後恢復 10 點生命。",
-      "effects": [{ "type": "add", "stat": "killHeal", "amount": 10 }]
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHeal",
+          "amount": 10
+        }
+      ]
     },
     {
       "id": "clear-trails",
@@ -198,7 +258,13 @@
       "eventText": "你沿著草葉上的透明黏痕前進，摸清了史萊姆類魔物的活動方式。",
       "flavorText": "那些看似隨意的痕跡，其實都指向柔軟核心的位置。",
       "effectText": "對史萊姆類敵人的傷害 +15%。",
-      "effects": [{ "type": "add", "stat": "slimeBonus", "amount": 0.15 }]
+      "effects": [
+        {
+          "type": "add",
+          "stat": "slimeBonus",
+          "amount": 0.15
+        }
+      ]
     },
     {
       "id": "bitter-herb",
@@ -208,7 +274,227 @@
       "eventText": "你認出一叢帶苦味的藥草，它常被平原旅人用來壓制毒性。",
       "flavorText": "味道糟得誠實，但身體很快記住了它的用處。",
       "effectText": "受到的中毒傷害降低 50%。",
-      "effects": [{ "type": "max", "stat": "damageReduction", "value": 0.5 }]
+      "effects": [
+        {
+          "type": "max",
+          "stat": "damageReduction",
+          "value": 0.5
+        }
+      ]
+    },
+    {
+      "id": "dew-herb",
+      "category": "healing",
+      "name": "露水藥草",
+      "eventTitle": "晨露藥草",
+      "eventText": "你在草葉根部找到幾株帶著露水的藥草，簡單處理後吞下苦澀的汁液。",
+      "flavorText": "味道不算好，但喉嚨與傷口都像被清晨的涼意安撫。",
+      "effectText": "恢復 16 點生命。",
+      "effects": [
+        {
+          "type": "recoverHp",
+          "amount": 16
+        }
+      ]
+    },
+    {
+      "id": "field-dressing",
+      "category": "healing",
+      "name": "簡易包紮",
+      "eventTitle": "乾淨布條",
+      "eventText": "你從廢棄行囊中找到幾條還算乾淨的布條，停下腳步重新包紮傷口。",
+      "flavorText": "傷口仍在發疼，但至少血不再沿著手臂往下滴。",
+      "effectText": "最大生命 +6，並恢復 12 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 6
+        },
+        {
+          "type": "recoverHp",
+          "amount": 12
+        }
+      ]
+    },
+    {
+      "id": "plain-rest",
+      "category": "healing",
+      "name": "平原歇腳",
+      "eventTitle": "背風草坡",
+      "eventText": "你找到一處被高草遮住的背風草坡，短暫坐下調整呼吸。",
+      "flavorText": "平原仍然危險，但至少這一刻，風沒有把你推向下一場戰鬥。",
+      "effectText": "恢復 10 點生命，防禦 +1。",
+      "effects": [
+        {
+          "type": "recoverHp",
+          "amount": 10
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "grass-padding",
+      "category": "defense",
+      "name": "厚草護墊",
+      "eventTitle": "厚實草束",
+      "eventText": "你把韌草與碎布塞進護具縫隙，做成粗糙但有用的緩衝。",
+      "flavorText": "它不會讓你變得強壯，卻能讓第一下撞擊少痛一點。",
+      "effectText": "每場戰鬥開始獲得 5 點護盾。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "steady-footing",
+      "category": "defense",
+      "name": "沉穩步伐",
+      "eventTitle": "泥土腳印",
+      "eventText": "你觀察地上的腳印與壓痕，學會在草地上保持更穩的重心。",
+      "flavorText": "平原的危險常常不是來自看不見的敵人，而是你自己站得不夠穩。",
+      "effectText": "防禦 +1。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "trail-rations",
+      "category": "healing",
+      "name": "乾糧補給",
+      "eventTitle": "壓扁的乾糧",
+      "eventText": "你在舊背包夾層找到幾塊壓得變形的乾糧，雖然硬得像石頭，但還能入口。",
+      "flavorText": "冒險者不能挑剔食物，能吞下去的東西有時就等於多活一段路。",
+      "effectText": "擊敗敵人後恢復 6 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHeal",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "id": "brace-stance",
+      "category": "defense",
+      "name": "防衝架勢",
+      "eventTitle": "折斷的木樁",
+      "eventText": "你在倒塌的木樁旁練習用肩與腳跟承受衝撞，順手削出幾片能固定護具的木片。",
+      "flavorText": "你不可能完全擋住野獸的衝鋒，但可以讓自己不要被第一下撞倒。",
+      "effectText": "防禦 +1，每場戰鬥開始獲得 3 點護盾。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "stone-edge",
+      "category": "attack",
+      "name": "石刃打磨",
+      "eventTitle": "尖銳碎石",
+      "eventText": "你在溪邊撿到幾片堅硬碎石，簡單修整武器的邊緣。",
+      "flavorText": "不算精細，卻足以讓下一次揮擊更有分量。",
+      "effectText": "攻擊力 +1。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "hunter-rhythm",
+      "category": "attack",
+      "name": "追獵節奏",
+      "eventTitle": "獵人的舊足跡",
+      "eventText": "你沿著草地上交錯的足跡前進，慢慢抓到追擊獵物的節奏。",
+      "flavorText": "當敵人露出破綻時，你的身體會比思考更快一步。",
+      "effectText": "暴擊率 +5%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.05
+        }
+      ]
+    },
+    {
+      "id": "low-thrust",
+      "category": "attack",
+      "name": "低身突刺",
+      "eventTitle": "倒伏的草痕",
+      "eventText": "你注意到野獸衝鋒前總會壓低身體，於是學著從低處反擊。",
+      "flavorText": "不是每次都能成功，但抓準時機時，這一下會很痛。",
+      "effectText": "攻擊力 +1，暴擊率 +3%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        }
+      ]
+    },
+    {
+      "id": "thorn-coating",
+      "category": "attack",
+      "name": "藤刺塗層",
+      "eventTitle": "帶刺藤蔓",
+      "eventText": "你把帶刺藤蔓的汁液塗在武器邊緣，讓傷口更難癒合。",
+      "flavorText": "這不是致命毒藥，但足以讓敵人的每次呼吸都變得沉重。",
+      "effectText": "攻擊時附加 1 點中毒傷害。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "poisonPower",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "momentum-strike",
+      "category": "attack",
+      "name": "乘勝追擊",
+      "eventTitle": "短暫空檔",
+      "eventText": "你在擊倒敵人的瞬間重新調整姿勢，讓下一段路不至於太過狼狽。",
+      "flavorText": "真正的冒險者不只會贏，還要學會在勝利後立刻站穩。",
+      "effectText": "攻擊力 +1，擊敗敵人後恢復 4 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "killHeal",
+          "amount": 4
+        }
+      ]
     }
   ]
 }
