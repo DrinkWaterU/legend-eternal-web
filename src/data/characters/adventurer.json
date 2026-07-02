@@ -14,6 +14,8 @@
     "regenAmount": 0,
     "killHeal": 0,
     "slimeBonus": 0,
+    "familyDamageBonus": {},
+    "encounterBiases": [],
     "damageReduction": 0,
     "blessings": []
   },

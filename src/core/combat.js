@@ -1,18 +1,82 @@
-import { clone, randomItem, roll } from "../utils.js";
+import { clone, randomItem, roll, weightedRandomItem } from "../utils.js";
 
-export function buildEnemy(region, encounterIndex) {
+const DEFAULT_ENEMY_WEIGHT = 100;
+const DEFAULT_CHARGE_MULTIPLIER = 1.6;
+
+export function buildEnemy(region, encounterIndex, hero) {
   const encounterType = region.encounterPlan[encounterIndex];
   const base = encounterType === "boss"
     ? region.boss
     : encounterType === "elite"
-      ? randomItem(region.elites)
-      : randomItem(region.enemies);
+      ? pickEnemy(region.elites, hero, "elite")
+      : pickEnemy(region.enemies, hero, "normal");
   const enemy = clone(base);
   const scale = 1 + encounterIndex * 0.08;
   enemy.maxHp = Math.round(enemy.maxHp * scale);
   enemy.hp = enemy.maxHp;
   enemy.attack = Math.round(enemy.attack * scale);
   return enemy;
+}
+
+function pickEnemy(enemies, hero, encounterType) {
+  const activeBiases = getActiveEncounterBiases(hero, encounterType);
+  const guaranteeBias = activeBiases.find((bias) => shouldGuaranteeFamily(enemies, bias, encounterType));
+  const selected = guaranteeBias
+    ? randomItem(enemies.filter((enemy) => enemy.family === guaranteeBias.family))
+    : weightedRandomItem(enemies, (enemy) => getBiasedEnemyWeight(enemy, activeBiases, encounterType));
+
+  updateEncounterBiases(hero, encounterType, selected);
+  return selected;
+}
+
+function getActiveEncounterBiases(hero, encounterType) {
+  if (!hero || !Array.isArray(hero.encounterBiases)) {
+    return [];
+  }
+
+  return hero.encounterBiases.filter((bias) => {
+    const mode = bias[encounterType];
+    return mode && mode.remaining > 0;
+  });
+}
+
+function shouldGuaranteeFamily(enemies, bias, encounterType) {
+  const mode = bias[encounterType];
+  return Boolean(
+    mode.guaranteeAfter
+    && mode.misses + 1 >= mode.guaranteeAfter
+    && enemies.some((enemy) => enemy.family === bias.family)
+  );
+}
+
+function getBiasedEnemyWeight(enemy, activeBiases, encounterType) {
+  const baseWeight = Number(enemy.weight) || DEFAULT_ENEMY_WEIGHT;
+  return activeBiases.reduce((weight, bias) => {
+    if (enemy.family !== bias.family) {
+      return weight;
+    }
+    return weight + (Number(bias[encounterType].bonusWeight) || 0);
+  }, baseWeight);
+}
+
+function updateEncounterBiases(hero, encounterType, selectedEnemy) {
+  if (!hero || !Array.isArray(hero.encounterBiases)) {
+    return;
+  }
+
+  hero.encounterBiases.forEach((bias) => {
+    const mode = bias[encounterType];
+    if (!mode || mode.remaining <= 0) {
+      return;
+    }
+
+    mode.remaining -= 1;
+    mode.misses = selectedEnemy.family === bias.family ? 0 : mode.misses + 1;
+  });
+
+  hero.encounterBiases = hero.encounterBiases.filter((bias) => {
+    return ["normal", "elite"].some((type) => bias[type] && bias[type].remaining > 0);
+  });
 }
 
 export function resolveHeroAction({ hero, enemy, log }) {
@@ -22,8 +86,9 @@ export function resolveHeroAction({ hero, enemy, log }) {
   }
 
   let damage = Math.max(1, hero.attack - enemy.defense);
-  if (enemy.family === "slime") {
-    damage = Math.round(damage * (1 + hero.slimeBonus));
+  const familyBonus = getFamilyDamageBonus(hero, enemy.family);
+  if (familyBonus > 0) {
+    damage = Math.round(damage * (1 + familyBonus));
   }
   if (roll(hero.critChance)) {
     damage = Math.round(damage * 1.7);
@@ -48,7 +113,7 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
 
   if (enemy.chargeEvery && turn % enemy.chargeEvery === 0) {
     log.template("status", "charge", { actor: enemy.name });
-    damage = Math.round(damage * 1.8);
+    damage = Math.round(damage * (enemy.chargeMultiplier || DEFAULT_CHARGE_MULTIPLIER));
   }
 
   if (roll(enemy.critChance || 0)) {
@@ -74,6 +139,12 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
     hero.poison = Math.max(hero.poison || 0, enemy.poisonPower);
     log.template("status", "poisonApply", { target: hero.name });
   }
+}
+
+function getFamilyDamageBonus(hero, family) {
+  const familyDamageBonus = hero.familyDamageBonus || {};
+  const legacySlimeBonus = family === "slime" ? hero.slimeBonus || 0 : 0;
+  return (familyDamageBonus[family] || 0) + legacySlimeBonus;
 }
 
 export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {

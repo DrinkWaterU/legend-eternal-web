@@ -6,7 +6,7 @@
   const KNOWN_GAME_REGIONS = [
     { id: "plains", name: "平原", path: "../src/data/regions/plains.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.1.13.0-alpha";
+  const DEFAULT_GAME_VERSION = "v0.1.14.0-alpha";
 
   const state = {
     package: createEmptyPackage(),
@@ -690,7 +690,7 @@
         regenEvery: monster.regenEvery,
         regenAmount: monster.regenAmount,
         chargeEvery: monster.chargeEvery,
-        chargeMultiplier: monster.chargeMultiplier || 1.8,
+        chargeMultiplier: monster.chargeMultiplier || 1.6,
         damageReduction: monster.damageReduction
       },
       rewards: monster.rewards || {
@@ -741,6 +741,14 @@
   function normalizeGameEffect(effect) {
     if (effect.type === "recoverHp") {
       return { type: "recoverHp", value: numberOr(effect.value ?? effect.amount, 0) };
+    }
+
+    if (effect.type === "addFamilyDamageBonus") {
+      return {
+        type: "addFamilyDamageBonus",
+        target: effect.family || effect.target || "slime",
+        value: numberOr(effect.value ?? effect.amount, 0)
+      };
     }
 
     return {
@@ -932,6 +940,14 @@
       return { type: "recoverHp", value: numberOr(effect.value ?? effect.amount, 0) };
     }
 
+    if (effect.type === "addFamilyDamageBonus") {
+      return {
+        type: "addFamilyDamageBonus",
+        target: effect.family || effect.target || "slime",
+        value: numberOr(effect.value ?? effect.amount, 0)
+      };
+    }
+
     return {
       type: effect.type || "add",
       target: effect.target || effect.stat || "attack",
@@ -1046,6 +1062,20 @@
   function convertEffectToGameFormat(effect) {
     if (effect.type === "recoverHp") {
       return { type: "recoverHp", amount: numberOr(effect.value, 0) };
+    }
+    if (effect.type === "set" || effect.type === "max") {
+      return {
+        type: effect.type,
+        stat: effect.target || "attack",
+        value: numberOr(effect.value, 0)
+      };
+    }
+    if (effect.type === "addFamilyDamageBonus") {
+      return {
+        type: "addFamilyDamageBonus",
+        family: effect.target || "slime",
+        amount: numberOr(effect.value, 0)
+      };
     }
     return {
       type: effect.type || "add",

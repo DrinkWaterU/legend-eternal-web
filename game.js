@@ -364,7 +364,7 @@ function startEncounter() {
   state.turn = 0;
   state.awaitingBlessing = false;
   state.log = [];
-  state.enemy = buildEnemy(region, state.encounterIndex);
+  state.enemy = buildEnemy(region, state.encounterIndex, state.hero);
   state.enemy.poison = 0;
   state.hero.poison = 0;
   state.hero.shield = state.hero.shieldStart;

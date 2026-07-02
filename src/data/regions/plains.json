@@ -19,6 +19,7 @@
       "name": "野豬",
       "kind": "普通",
       "family": "beast",
+      "weight": 100,
       "maxHp": 34,
       "attack": 8,
       "defense": 1,
@@ -30,6 +31,7 @@
       "name": "史萊姆",
       "kind": "普通",
       "family": "slime",
+      "weight": 100,
       "maxHp": 30,
       "attack": 6,
       "defense": 0,
@@ -41,6 +43,7 @@
       "name": "草原狼",
       "kind": "普通",
       "family": "beast",
+      "weight": 100,
       "maxHp": 28,
       "attack": 9,
       "defense": 0,
@@ -53,6 +56,7 @@
       "name": "毒史萊姆",
       "kind": "普通",
       "family": "slime",
+      "weight": 100,
       "maxHp": 32,
       "attack": 5,
       "defense": 0,
@@ -65,6 +69,7 @@
       "name": "尖角兔",
       "kind": "普通",
       "family": "beast",
+      "weight": 100,
       "maxHp": 22,
       "attack": 7,
       "defense": 0,
@@ -79,11 +84,13 @@
       "name": "巨大野豬",
       "kind": "精英",
       "family": "beast",
+      "weight": 100,
       "maxHp": 70,
-      "attack": 12,
+      "attack": 11,
       "defense": 2,
       "critChance": 0.05,
       "chargeEvery": 3,
+      "chargeMultiplier": 1.6,
       "intro": "巨大野豬用沉重鼻息震動草梗。"
     },
     {
@@ -91,8 +98,9 @@
       "name": "變異史萊姆",
       "kind": "精英",
       "family": "slime",
+      "weight": 100,
       "maxHp": 64,
-      "attack": 9,
+      "attack": 8,
       "defense": 1,
       "critChance": 0,
       "regenEvery": 3,
@@ -105,11 +113,13 @@
     "name": "魔化野豬王",
     "kind": "首領",
     "family": "beast",
+    "weight": 100,
     "maxHp": 118,
-    "attack": 14,
+    "attack": 12,
     "defense": 3,
     "critChance": 0.06,
     "chargeEvery": 3,
+    "chargeMultiplier": 1.6,
     "intro": "魔化野豬王踏碎土丘，闖入你的視線。"
   },
   "blessings": [
@@ -266,14 +276,55 @@
       "eventTitle": "透明足跡",
       "eventText": "你沿著草葉上的透明黏痕前進，摸清了史萊姆類魔物的活動方式。",
       "flavorText": "那些看似隨意的痕跡，其實都指向柔軟核心的位置。",
-      "effectText": "對史萊姆類敵人的傷害 +15%。",
+      "effectText": "對史萊姆類敵人的傷害 +15%。接下來更容易循著黏液痕跡遇到史萊姆類敵人。",
       "effects": [
         {
-          "type": "add",
-          "stat": "slimeBonus",
+          "type": "addFamilyDamageBonus",
+          "family": "slime",
           "amount": 0.15
         }
-      ]
+      ],
+      "encounterBias": {
+        "family": "slime",
+        "normal": {
+          "bonusWeight": 200,
+          "duration": 3,
+          "guaranteeAfter": 3
+        },
+        "elite": {
+          "bonusWeight": 150,
+          "duration": 2
+        }
+      }
+    },
+    {
+      "id": "beast-tracks",
+      "category": "attack",
+      "rarity": "rare",
+      "name": "獸徑追蹤",
+      "eventTitle": "獸徑追蹤",
+      "eventText": "你在倒伏的草痕與凌亂蹄印間辨認出獸群常走的路線。",
+      "flavorText": "風把野獸的氣味送來，你知道下一次交鋒該瞄準哪裡。",
+      "effectText": "對野獸類敵人的傷害 +10%。接下來更容易遇到野獸類敵人。",
+      "effects": [
+        {
+          "type": "addFamilyDamageBonus",
+          "family": "beast",
+          "amount": 0.1
+        }
+      ],
+      "encounterBias": {
+        "family": "beast",
+        "normal": {
+          "bonusWeight": 200,
+          "duration": 3,
+          "guaranteeAfter": 3
+        },
+        "elite": {
+          "bonusWeight": 150,
+          "duration": 2
+        }
+      }
     },
     {
       "id": "bitter-herb",
