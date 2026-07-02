@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>傳說永恆內容編輯器</title>
-  <link rel="stylesheet" href="content-editor.css?v=0.1.1" />
+  <link rel="stylesheet" href="content-editor.css?v=0.1.2" />
 </head>
 <body>
   <div class="page-shell">
@@ -12,10 +12,10 @@
       <div>
         <p class="eyebrow">Legend Eternal Tool</p>
         <h1>傳說永恆內容編輯器</h1>
-        <p class="subtitle">用來建立與維護地區怪物、局中 Buff / 祝福資料。此工具不會直接修改主遊戲存檔或正式資料檔。</p>
+        <p class="subtitle">用來建立與維護地區怪物、局中 Buff / 祝福資料。此工具不會直接修改主遊戲存檔，但現在可以匯出成遊戲地區 JSON，方便直接覆蓋正式資料檔。</p>
       </div>
       <div class="tool-meta">
-        <span>工具版本 v0.1.1</span>
+        <span>工具版本 v0.1.2</span>
         <span>Schema 1</span>
       </div>
     </header>
@@ -66,6 +66,8 @@
           <button id="syncRegionButton" class="primary-button" type="button">套用地區設定</button>
           <button id="copyPackageButton" type="button">複製整包 JSON</button>
           <button id="downloadPackageButton" type="button">下載整包 JSON</button>
+          <button id="copyGameRegionButton" type="button">複製遊戲地區 JSON</button>
+          <button id="downloadGameRegionButton" type="button">下載遊戲地區 JSON</button>
         </div>
       </section>
 
@@ -286,10 +288,19 @@
           </div>
         </div>
 
-        <textarea id="jsonOutput" class="json-output" spellcheck="false" rows="18" readonly></textarea>
+        <label class="import-box">
+          <span>工具內容包 JSON 預覽</span>
+          <textarea id="jsonOutput" class="json-output" spellcheck="false" rows="14" readonly></textarea>
+        </label>
+
+        <label class="import-box">
+          <span>可直接覆蓋用的遊戲地區 JSON 預覽</span>
+          <textarea id="gameJsonOutput" class="json-output" spellcheck="false" rows="14" readonly></textarea>
+        </label>
 
         <div class="toolbar wrap">
-          <button id="copyPreviewButton" type="button">複製預覽 JSON</button>
+          <button id="copyPreviewButton" type="button">複製工具預覽 JSON</button>
+          <button id="copyGamePreviewButton" type="button">複製遊戲預覽 JSON</button>
           <button id="loadPreviewButton" type="button">從下方文字匯入</button>
           <button id="clearPackageButton" class="danger-button" type="button">清空目前內容包</button>
         </div>
@@ -304,6 +315,6 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="content-editor.js?v=0.1.1"></script>
+  <script src="content-editor.js?v=0.1.2"></script>
 </body>
 </html>

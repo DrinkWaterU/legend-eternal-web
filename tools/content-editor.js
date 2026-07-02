@@ -2,7 +2,7 @@
   "use strict";
 
   const SCHEMA_VERSION = 1;
-  const TOOL_VERSION = "v0.1.1";
+  const TOOL_VERSION = "v0.1.2";
   const KNOWN_GAME_REGIONS = [
     { id: "plains", name: "平原", path: "../src/data/regions/plains.json" }
   ];
@@ -35,14 +35,26 @@
         name: "平原",
         note: ""
       },
+      regionMeta: createDefaultRegionMeta(),
       monsters: [],
       blessings: []
     };
   }
 
+
+
+  function createDefaultRegionMeta() {
+    return {
+      description: "",
+      difficulty: "",
+      encounterPlan: ["normal", "normal", "normal", "elite", "normal", "normal", "elite", "boss"],
+      extraFields: {}
+    };
+  }
+
   function bindElements() {
     const ids = [
-      "regionId", "regionName", "regionNote", "knownGameRegion", "loadKnownRegionButton", "gameRegionFileInput", "syncRegionButton", "copyPackageButton", "downloadPackageButton",
+      "regionId", "regionName", "regionNote", "knownGameRegion", "loadKnownRegionButton", "gameRegionFileInput", "syncRegionButton", "copyPackageButton", "downloadPackageButton", "copyGameRegionButton", "downloadGameRegionButton",
       "monsterTab", "blessingTab", "monsterForm", "blessingForm", "monsterEditIndex", "blessingEditIndex",
       "monsterId", "monsterName", "monsterType", "monsterFamily", "monsterDescription",
       "monsterMaxHp", "monsterAttack", "monsterDefense", "monsterCritRate", "monsterEvasion",
@@ -51,7 +63,7 @@
       "addDropButton", "dropList", "copyMonsterDraftButton", "resetMonsterButton",
       "blessingId", "blessingTitle", "blessingRarity", "blessingEventTitle", "blessingStory", "blessingFlavor", "blessingEffectText",
       "effectType", "effectTarget", "effectValue", "addEffectButton", "effectList", "copyBlessingDraftButton", "resetBlessingButton",
-      "monsterList", "blessingList", "monsterCount", "blessingCount", "jsonOutput", "jsonImport", "copyPreviewButton", "loadPreviewButton", "clearPackageButton", "toast"
+      "monsterList", "blessingList", "monsterCount", "blessingCount", "jsonOutput", "gameJsonOutput", "jsonImport", "copyPreviewButton", "copyGamePreviewButton", "loadPreviewButton", "clearPackageButton", "toast"
     ];
 
     ids.forEach((id) => {
@@ -65,6 +77,8 @@
     els.gameRegionFileInput.addEventListener("change", importGameRegionFile);
     els.copyPackageButton.addEventListener("click", () => copyText(toPrettyJson(state.package), "已複製整包 JSON。"));
     els.downloadPackageButton.addEventListener("click", downloadPackageJson);
+    els.copyGameRegionButton.addEventListener("click", () => copyText(toPrettyJson(buildGameRegionJson()), "已複製遊戲地區 JSON。"));
+    els.downloadGameRegionButton.addEventListener("click", downloadGameRegionJson);
 
     els.monsterTab.addEventListener("click", () => setActiveTab("monster"));
     els.blessingTab.addEventListener("click", () => setActiveTab("blessing"));
@@ -79,7 +93,8 @@
     els.resetMonsterButton.addEventListener("click", resetMonsterForm);
     els.resetBlessingButton.addEventListener("click", resetBlessingForm);
 
-    els.copyPreviewButton.addEventListener("click", () => copyText(els.jsonOutput.value, "已複製預覽 JSON。"));
+    els.copyPreviewButton.addEventListener("click", () => copyText(els.jsonOutput.value, "已複製工具預覽 JSON。"));
+    els.copyGamePreviewButton.addEventListener("click", () => copyText(els.gameJsonOutput.value, "已複製遊戲預覽 JSON。"));
     els.loadPreviewButton.addEventListener("click", importPackageFromText);
     els.clearPackageButton.addEventListener("click", clearPackage);
 
@@ -126,6 +141,9 @@
       name,
       note: els.regionNote.value.trim()
     };
+    if (!state.package.regionMeta) {
+      state.package.regionMeta = createDefaultRegionMeta();
+    }
     els.regionId.value = id;
     renderPreview();
     showToast("已套用地區設定。");
@@ -377,6 +395,7 @@
 
   function renderPreview() {
     els.jsonOutput.value = toPrettyJson(state.package);
+    els.gameJsonOutput.value = toPrettyJson(buildGameRegionJson());
   }
 
   function loadMonster(index) {
@@ -507,8 +526,10 @@
     if (!confirmed) return;
 
     const currentRegion = clone(state.package.region);
+    const currentRegionMeta = clone(state.package.regionMeta || createDefaultRegionMeta());
     state.package = createEmptyPackage();
     state.package.region = currentRegion;
+    state.package.regionMeta = currentRegionMeta;
     state.dropsDraft = [];
     state.effectsDraft = [];
     resetMonsterForm();
@@ -615,8 +636,28 @@
         name: regionName,
         note: buildRegionNote(regionData)
       },
+      regionMeta: extractRegionMeta(regionData),
       monsters,
       blessings: toArray(regionData.blessings).map(normalizeGameBlessing)
+    };
+  }
+
+
+
+  function extractRegionMeta(regionData) {
+    const extraFields = {};
+    Object.entries(regionData || {}).forEach(([key, value]) => {
+      if (["id", "name", "description", "difficulty", "encounterPlan", "enemies", "elites", "boss", "blessings"].includes(key)) {
+        return;
+      }
+      extraFields[key] = clone(value);
+    });
+
+    return {
+      description: String(regionData.description || ""),
+      difficulty: String(regionData.difficulty || ""),
+      encounterPlan: Array.isArray(regionData.encounterPlan) ? clone(regionData.encounterPlan) : createDefaultRegionMeta().encounterPlan,
+      extraFields
     };
   }
 
@@ -632,6 +673,11 @@
       type,
       family: monster.family || "other",
       description: monster.description || monster.intro || "",
+      meta: {
+        kind: monster.kind || typeToKind(type),
+        intro: monster.intro || monster.description || "",
+        extraFields: collectExtraMonsterFields(monster)
+      },
       stats: {
         maxHp: monster.maxHp,
         attack: monster.attack,
@@ -655,6 +701,24 @@
     });
   }
 
+
+
+  function collectExtraMonsterFields(monster) {
+    const extraFields = {};
+    Object.entries(monster || {}).forEach(([key, value]) => {
+      if (["id", "name", "kind", "family", "description", "intro", "maxHp", "attack", "defense", "critRate", "critChance", "evasion", "dodgeChance", "poisonPower", "regenEvery", "regenAmount", "chargeEvery", "chargeMultiplier", "damageReduction", "rewards", "expReward", "exp", "goldReward", "drops", "type"].includes(key)) {
+        return;
+      }
+      extraFields[key] = clone(value);
+    });
+    return extraFields;
+  }
+
+  function typeToKind(type) {
+    const map = { normal: "普通", elite: "精英", boss: "首領" };
+    return map[type] || "普通";
+  }
+
   function normalizeGameBlessing(blessing) {
     return normalizeBlessing({
       contentType: "blessing",
@@ -665,6 +729,11 @@
       story: blessing.story || blessing.eventText || blessing.description,
       flavor: blessing.flavor || blessing.flavorText,
       effectText: blessing.effectText,
+      meta: {
+        category: blessing.category || "misc",
+        name: blessing.name || blessing.title || "",
+        extraFields: collectExtraBlessingFields(blessing)
+      },
       effects: toArray(blessing.effects).map(normalizeGameEffect)
     });
   }
@@ -679,6 +748,19 @@
       target: effect.target || effect.stat || "attack",
       value: numberOr(effect.value ?? effect.amount, 0)
     };
+  }
+
+
+
+  function collectExtraBlessingFields(blessing) {
+    const extraFields = {};
+    Object.entries(blessing || {}).forEach(([key, value]) => {
+      if (["id", "category", "name", "title", "rarity", "eventTitle", "story", "eventText", "description", "flavor", "flavorText", "effectText", "effects"].includes(key)) {
+        return;
+      }
+      extraFields[key] = clone(value);
+    });
+    return extraFields;
   }
 
   function kindToType(kind) {
@@ -750,8 +832,22 @@
         name: regionName,
         note: String(region.note || "")
       },
+      regionMeta: normalizeRegionMeta(data.regionMeta),
       monsters: Array.isArray(data.monsters) ? data.monsters.map(normalizeMonster) : [],
       blessings: Array.isArray(data.blessings) ? data.blessings.map(normalizeBlessing) : []
+    };
+  }
+
+
+
+  function normalizeRegionMeta(regionMeta) {
+    const defaults = createDefaultRegionMeta();
+    const meta = regionMeta && typeof regionMeta === "object" ? regionMeta : {};
+    return {
+      description: String(meta.description || defaults.description),
+      difficulty: String(meta.difficulty || defaults.difficulty),
+      encounterPlan: Array.isArray(meta.encounterPlan) && meta.encounterPlan.length > 0 ? clone(meta.encounterPlan) : clone(defaults.encounterPlan),
+      extraFields: meta.extraFields && typeof meta.extraFields === "object" ? clone(meta.extraFields) : {}
     };
   }
 
@@ -768,6 +864,7 @@
       type: monster.type || "normal",
       family: monster.family || "other",
       description: String(monster.description || ""),
+      meta: normalizeMonsterMeta(monster.meta),
       stats: {
         maxHp: numberOr(stats.maxHp, 1),
         attack: numberOr(stats.attack, 0),
@@ -794,6 +891,17 @@
     };
   }
 
+
+
+  function normalizeMonsterMeta(meta) {
+    const metaObj = meta && typeof meta === "object" ? meta : {};
+    return {
+      kind: String(metaObj.kind || ""),
+      intro: String(metaObj.intro || ""),
+      extraFields: metaObj.extraFields && typeof metaObj.extraFields === "object" ? clone(metaObj.extraFields) : {}
+    };
+  }
+
   function normalizeDrop(drop) {
     return {
       itemId: normalizeId(drop.itemId || drop.id || "item"),
@@ -814,6 +922,7 @@
       story: String(blessing.story || blessing.description || ""),
       flavor: String(blessing.flavor || ""),
       effectText: String(blessing.effectText || ""),
+      meta: normalizeBlessingMeta(blessing.meta),
       effects: Array.isArray(blessing.effects) ? blessing.effects.map(normalizeEffect) : []
     };
   }
@@ -828,6 +937,135 @@
       target: effect.target || effect.stat || "attack",
       value: numberOr(effect.value ?? effect.amount, 0)
     };
+  }
+
+
+
+  function normalizeBlessingMeta(meta) {
+    const metaObj = meta && typeof meta === "object" ? meta : {};
+    return {
+      category: String(metaObj.category || "misc"),
+      name: String(metaObj.name || ""),
+      extraFields: metaObj.extraFields && typeof metaObj.extraFields === "object" ? clone(metaObj.extraFields) : {}
+    };
+  }
+
+  function buildGameRegionJson() {
+    const meta = normalizeRegionMeta(state.package.regionMeta);
+    const gameRegion = {
+      id: state.package.region.id || "plains",
+      name: state.package.region.name || "平原",
+      description: meta.description || state.package.region.note || "",
+      difficulty: meta.difficulty || "",
+      encounterPlan: clone(meta.encounterPlan),
+      enemies: state.package.monsters.filter((item) => item.type === "normal").map((item) => convertMonsterToGameFormat(item, "normal")),
+      elites: state.package.monsters.filter((item) => item.type === "elite").map((item) => convertMonsterToGameFormat(item, "elite")),
+      boss: null,
+      blessings: state.package.blessings.map(convertBlessingToGameFormat)
+    };
+
+    const bossMonster = state.package.monsters.find((item) => item.type === "boss");
+    if (bossMonster) {
+      gameRegion.boss = convertMonsterToGameFormat(bossMonster, "boss");
+    }
+
+    Object.assign(gameRegion, clone(meta.extraFields || {}));
+    return gameRegion;
+  }
+
+  function convertMonsterToGameFormat(monster, fallbackType) {
+    const meta = normalizeMonsterMeta(monster.meta);
+    const gameMonster = {
+      id: normalizeId(monster.id || "monster"),
+      name: String(monster.name || "未命名怪物"),
+      kind: meta.kind || typeToKind(monster.type || fallbackType),
+      family: monster.family || "other",
+      maxHp: numberOr(monster.stats && monster.stats.maxHp, 1),
+      attack: numberOr(monster.stats && monster.stats.attack, 0),
+      defense: numberOr(monster.stats && monster.stats.defense, 0),
+      critChance: numberOr(monster.stats && monster.stats.critRate, 0),
+      intro: meta.intro || monster.description || ""
+    };
+
+    const evasion = numberOr(monster.stats && monster.stats.evasion, 0);
+    if (evasion > 0) gameMonster.dodgeChance = evasion;
+
+    const poisonPower = numberOr(monster.traits && monster.traits.poisonPower, 0);
+    if (poisonPower > 0) gameMonster.poisonPower = poisonPower;
+
+    const regenEvery = numberOr(monster.traits && monster.traits.regenEvery, 0);
+    if (regenEvery > 0) gameMonster.regenEvery = regenEvery;
+
+    const regenAmount = numberOr(monster.traits && monster.traits.regenAmount, 0);
+    if (regenAmount > 0) gameMonster.regenAmount = regenAmount;
+
+    const chargeEvery = numberOr(monster.traits && monster.traits.chargeEvery, 0);
+    if (chargeEvery > 0) gameMonster.chargeEvery = chargeEvery;
+
+    const chargeMultiplier = numberOr(monster.traits && monster.traits.chargeMultiplier, 1);
+    if (chargeEvery > 0 && chargeMultiplier !== 1) gameMonster.chargeMultiplier = chargeMultiplier;
+
+    const damageReduction = numberOr(monster.traits && monster.traits.damageReduction, 0);
+    if (damageReduction > 0) gameMonster.damageReduction = damageReduction;
+
+    const rewards = monster.rewards || {};
+    const exp = numberOr(rewards.exp, 0);
+    if (exp > 0) gameMonster.expReward = exp;
+
+    const gold = rewards.gold || {};
+    if (numberOr(gold.min, 0) > 0 || numberOr(gold.max, 0) > 0) {
+      gameMonster.goldReward = { min: numberOr(gold.min, 0), max: numberOr(gold.max, 0) };
+    }
+
+    if (Array.isArray(rewards.drops) && rewards.drops.length > 0) {
+      gameMonster.drops = rewards.drops.map(normalizeDrop);
+    }
+
+    Object.assign(gameMonster, clone(meta.extraFields || {}));
+    return gameMonster;
+  }
+
+  function convertBlessingToGameFormat(blessing) {
+    const meta = normalizeBlessingMeta(blessing.meta);
+    const gameBlessing = {
+      id: normalizeId(blessing.id || "blessing"),
+      category: meta.category || "misc",
+      name: meta.name || blessing.title || "未命名 Buff",
+      eventTitle: String(blessing.eventTitle || ""),
+      eventText: String(blessing.story || ""),
+      flavorText: String(blessing.flavor || ""),
+      effectText: String(blessing.effectText || ""),
+      effects: Array.isArray(blessing.effects) ? blessing.effects.map(convertEffectToGameFormat) : []
+    };
+
+    Object.assign(gameBlessing, clone(meta.extraFields || {}));
+    return gameBlessing;
+  }
+
+  function convertEffectToGameFormat(effect) {
+    if (effect.type === "recoverHp") {
+      return { type: "recoverHp", amount: numberOr(effect.value, 0) };
+    }
+    return {
+      type: effect.type || "add",
+      stat: effect.target || "attack",
+      amount: numberOr(effect.value, 0)
+    };
+  }
+
+  function downloadGameRegionJson() {
+    const regionId = state.package.region.id || "region";
+    const filename = `${regionId}.json`;
+    const blob = new Blob([toPrettyJson(buildGameRegionJson())], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    showToast(`已下載可覆蓋用地區檔：${filename}`);
   }
 
   function downloadPackageJson() {
