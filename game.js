@@ -48,7 +48,9 @@ const state = {
 const uiState = {
   regionView: "list",
   characterView: "list",
+  characterReturnTarget: "menuScreen",
   statisticsView: "overview",
+  statisticsReturnTarget: "menuScreen",
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID
 };
@@ -56,6 +58,7 @@ const uiState = {
 let saveData = loadSave();
 
 function showScreen(screenId) {
+  document.body.classList.toggle("is-camp-view", screenId === "campScreen");
   document.querySelectorAll(".screen").forEach((screen) => {
     screen.classList.toggle("is-active", screen.id === screenId);
   });
@@ -153,7 +156,8 @@ function renderRegionScreen() {
   }
 }
 
-function showCharacterList() {
+function showCharacterList(returnTarget = uiState.characterReturnTarget || "menuScreen") {
+  uiState.characterReturnTarget = returnTarget;
   uiState.characterView = "list";
   showScreen("characterScreen");
 }
@@ -169,6 +173,7 @@ function showCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
 function renderCharacterScreen() {
   els.characterListView.classList.toggle("is-active", uiState.characterView === "list");
   els.characterDetailView.classList.toggle("is-active", uiState.characterView === "detail");
+  setReturnButton(els.characterListView.querySelector(".back-button"), uiState.characterReturnTarget);
 
   renderChoiceList(els.characterChoiceList, Object.entries(characterDefinitions).map(([characterId, character]) => ({
     title: character.name,
@@ -334,6 +339,7 @@ function recordRunFinished(outcome) {
 }
 
 function renderStatistics() {
+  setReturnButton(els.statisticsScreen.querySelector(".back-button"), uiState.statisticsReturnTarget);
   renderStatisticsView({
     els,
     uiState,
@@ -345,9 +351,23 @@ function renderStatistics() {
   });
 }
 
+function showStatisticsScreen(returnTarget = uiState.statisticsReturnTarget || "menuScreen") {
+  uiState.statisticsReturnTarget = returnTarget;
+  uiState.statisticsView = "overview";
+  showScreen("statisticsScreen");
+}
+
 function showStatisticsView(view) {
   uiState.statisticsView = view;
   renderStatistics();
+}
+
+function setReturnButton(button, target) {
+  if (!button) {
+    return;
+  }
+  button.dataset.target = target;
+  button.textContent = target === "campScreen" ? "回營地" : "回主選單";
 }
 
 function showStatisticsCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
@@ -913,10 +933,19 @@ function setCombatActionState() {
   const canRest = canContinue && state.canRest && !state.hasRested && state.hero.hp < state.hero.maxHp;
 
   els.nextButton.disabled = !canFight;
-  els.nextButton.textContent = state.turn === 0 ? "開始戰鬥" : "下一回合";
+  els.nextButton.hidden = !canFight;
+  els.nextButton.textContent = state.turn === 0 ? "戰鬥" : "繼續戰鬥";
   els.fleeButton.disabled = !canFlee;
+  els.fleeButton.hidden = !canFight;
+  els.fleeButton.textContent = isBoss
+    ? "首領無法逃跑"
+    : `逃跑（剩餘 ${state.hero?.fleesRemaining ?? 0} / ${RUN_STARTING_FLEES}）`;
+  els.continueButton.hidden = !canContinue;
   els.continueButton.disabled = !canContinue;
+  els.restButton.hidden = !canContinue;
   els.restButton.disabled = !canRest;
+  els.restButton.textContent = state.canRest && !state.hasRested ? "原地修整" : "已修整";
+  els.retreatButton.hidden = !canContinue;
   els.retreatButton.disabled = !canContinue;
 }
 
@@ -936,22 +965,16 @@ function saveGameSafe() {
 
 function bindEvents() {
   els.openRegionButton.addEventListener("click", () => showScreen("campScreen"));
-  els.openCharacterButton.addEventListener("click", showCharacterList);
-  els.openStatisticsButton.addEventListener("click", () => {
-    uiState.statisticsView = "overview";
-    showScreen("statisticsScreen");
-  });
+  els.openCharacterButton.addEventListener("click", () => showCharacterList("menuScreen"));
+  els.openStatisticsButton.addEventListener("click", () => showStatisticsScreen("menuScreen"));
   els.openAchievementButton.addEventListener("click", () => showScreen("achievementScreen"));
   els.campStartButton.addEventListener("click", startRun);
   els.campRegionButton.addEventListener("click", showRegionList);
-  els.campCharacterButton.addEventListener("click", showCharacterList);
-  els.campRecordButton.addEventListener("click", () => {
-    uiState.statisticsView = "overview";
-    showScreen("statisticsScreen");
-  });
+  els.campCharacterButton.addEventListener("click", () => showCharacterList("campScreen"));
+  els.campRecordButton.addEventListener("click", () => showStatisticsScreen("campScreen"));
   els.campBackButton.addEventListener("click", restart);
   els.backToRegionListButton.addEventListener("click", showRegionList);
-  els.backToCharacterListButton.addEventListener("click", showCharacterList);
+  els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
   els.statisticsTabs.forEach((button) => {
     button.addEventListener("click", () => showStatisticsView(button.dataset.statisticsView));
   });
@@ -961,7 +984,7 @@ function bindEvents() {
     saveData.settings.selectedCharacterId = state.selectedHeroId;
     saveGameSafe();
     syncSelectionFromSave();
-    showScreen("menuScreen");
+    showScreen(uiState.characterReturnTarget);
   });
   document.querySelectorAll(".back-button").forEach((button) => {
     button.addEventListener("click", () => showScreen(button.dataset.target));

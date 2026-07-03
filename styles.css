@@ -41,6 +41,20 @@ body {
     sans-serif;
 }
 
+body.is-camp-view {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 7, 10, 0.16) 0%,
+      rgba(5, 7, 10, 0.54) 28%,
+      rgba(5, 7, 10, 0.74) 50%,
+      rgba(5, 7, 10, 0.54) 72%,
+      rgba(5, 7, 10, 0.18) 100%
+    ),
+    linear-gradient(180deg, rgba(5, 7, 10, 0.14) 0%, rgba(5, 7, 10, 0.48) 100%),
+    url("./assets/images/camp/camp-mobile.png") center / cover fixed no-repeat;
+}
+
 button {
   font: inherit;
 }
@@ -159,16 +173,7 @@ h2 {
   padding: 28px 12px;
   border-radius: 12px;
   background:
-    linear-gradient(
-      90deg,
-      rgba(5, 7, 10, 0.16) 0%,
-      rgba(5, 7, 10, 0.54) 28%,
-      rgba(5, 7, 10, 0.74) 50%,
-      rgba(5, 7, 10, 0.54) 72%,
-      rgba(5, 7, 10, 0.18) 100%
-    ),
-    linear-gradient(180deg, rgba(5, 7, 10, 0.12) 0%, rgba(5, 7, 10, 0.46) 100%),
-    url("./assets/images/camp/camp-mobile.png") center / cover no-repeat;
+    linear-gradient(180deg, rgba(5, 7, 10, 0.08) 0%, rgba(5, 7, 10, 0.18) 100%);
   box-shadow: var(--shadow);
 }
 
@@ -577,14 +582,16 @@ dd {
 }
 
 .combat-actions {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
-  width: min(100%, 180px);
+  width: min(100%, 520px);
 }
 
 .combat-actions .secondary-button {
-  width: 100%;
+  flex: 1 1 132px;
+  min-width: 132px;
 }
 
 .entity-heading h2,
@@ -991,8 +998,13 @@ dd {
   }
 
   .combat-actions {
+    display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
+  }
+
+  .combat-actions .secondary-button {
+    min-width: 0;
   }
 
   .primary-button {
@@ -1006,9 +1018,7 @@ dd {
 }
 
 @media (min-width: 821px) {
-  .camp-screen {
-    min-height: calc(100vh - 210px);
-    border-radius: 0;
+  body.is-camp-view {
     background:
       linear-gradient(
         90deg,
@@ -1019,6 +1029,12 @@ dd {
         rgba(5, 7, 10, 0.22) 100%
       ),
       linear-gradient(180deg, rgba(5, 7, 10, 0.08) 0%, rgba(5, 7, 10, 0.38) 100%),
-      url("./assets/images/camp/camp-desktop.png") center / cover no-repeat;
+      url("./assets/images/camp/camp-desktop.png") center / cover fixed no-repeat;
+  }
+
+  .camp-screen {
+    min-height: calc(100vh - 210px);
+    border-radius: 0;
+    background: linear-gradient(180deg, rgba(5, 7, 10, 0.04) 0%, rgba(5, 7, 10, 0.18) 100%);
   }
 }
