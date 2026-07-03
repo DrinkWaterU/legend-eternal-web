@@ -8,6 +8,7 @@
     "attack": 10,
     "defense": 2,
     "critChance": 0.05,
+    "critDamageMultiplier": 1.7,
     "shieldStart": 0,
     "poisonPower": 0,
     "regenEvery": 0,
@@ -25,115 +26,229 @@
     "defense": 2,
     "critChance": "5%"
   },
-  "runProgression": {
-    "maxLevel": 7,
-    "expCurve": [
-      0,
-      16,
-      36,
-      64,
-      100,
-      145,
-      200
-    ],
-    "levelUps": {
-      "2": {
-        "name": "重擊訓練",
-        "description": "你逐漸抓到揮擊節奏，攻擊力提升。",
-        "effects": [
-          {
-            "type": "add",
-            "stat": "attack",
-            "amount": 1
-          }
-        ],
-        "skills": [
-          "重擊訓練"
-        ]
-      },
-      "3": {
-        "name": "耐久行軍",
-        "description": "你適應了平原長途跋涉，生命上限提升並恢復少量生命。",
-        "effects": [
-          {
-            "type": "add",
-            "stat": "maxHp",
-            "amount": 8
-          },
-          {
-            "type": "recoverHp",
-            "amount": 8
-          }
-        ],
-        "skills": [
-          "耐久行軍"
-        ]
-      },
-      "4": {
-        "name": "守勢調整",
-        "description": "你學會讓護具承受更多衝擊，防禦提升。",
-        "effects": [
-          {
-            "type": "add",
-            "stat": "defense",
-            "amount": 1
-          }
-        ],
-        "skills": [
-          "守勢調整"
-        ]
-      },
-      "5": {
-        "name": "破綻觀察",
-        "description": "你更容易看出敵人的破綻，暴擊率提升。",
-        "effects": [
-          {
-            "type": "add",
-            "stat": "critChance",
-            "amount": 0.03
-          }
-        ],
-        "skills": [
-          "破綻觀察"
-        ]
-      },
-      "6": {
-        "name": "熟練冒險者",
-        "description": "一輪輪遭遇讓你的動作更加穩定，攻擊與生命上限提升。",
-        "effects": [
-          {
-            "type": "add",
-            "stat": "attack",
-            "amount": 1
-          },
-          {
-            "type": "add",
-            "stat": "maxHp",
-            "amount": 6
-          },
-          {
-            "type": "recoverHp",
-            "amount": 6
-          }
-        ],
-        "skills": [
-          "熟練冒險者"
-        ]
-      },
-      "7": {
-        "name": "戰鬥回復",
-        "description": "你能在勝利後更快調整呼吸，擊敗敵人後恢復生命。",
-        "effects": [
-          {
-            "type": "add",
-            "stat": "killHeal",
-            "amount": 4
-          }
-        ],
-        "skills": [
-          "戰鬥回復"
-        ]
-      }
+  "levelCurve": {
+    "base": 18,
+    "exponent": 1.55,
+    "linear": 8,
+    "offset": 0,
+    "maxLevel": 15
+  },
+  "levelGrowth": [
+    {
+      "level": 2,
+      "name": "體魄磨練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "name": "重擊訓練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "name": "守勢調整",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 5,
+      "name": "耐久行軍",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "level": 6,
+      "name": "穩固步伐",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "level": 7,
+      "name": "破綻觀察",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        }
+      ]
+    },
+    {
+      "level": 8,
+      "name": "防具熟悉",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "level": 9,
+      "name": "攻勢熟練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 10,
+      "name": "冒險者步調",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 11,
+      "name": "長途適應",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "level": 13,
+      "name": "攻守磨合",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 14,
+      "name": "護具整備",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 15,
+      "name": "死地磨練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        }
+      ]
     }
-  }
+  ],
+  "skills": [
+    {
+      "id": "heavy-strike",
+      "level": 3,
+      "type": "minor",
+      "name": "重擊",
+      "description": "攻擊時有 20% 機率造成 140% 傷害。"
+    },
+    {
+      "id": "emergency-bandage",
+      "level": 5,
+      "type": "milestone",
+      "name": "應急包紮",
+      "description": "每場戰鬥一次，生命低於 40% 時恢復最大生命 18%。"
+    },
+    {
+      "id": "steady-stance",
+      "level": 6,
+      "type": "minor",
+      "name": "穩定架勢",
+      "description": "受到敵人直接攻擊時有 25% 機率降低本次傷害 30%。"
+    },
+    {
+      "id": "skilled-follow-up",
+      "level": 9,
+      "type": "minor",
+      "name": "熟練追擊",
+      "description": "普通攻擊造成傷害後，有 25% 機率追加攻擊力 50% 的傷害。"
+    },
+    {
+      "id": "adventurer-pace",
+      "level": 10,
+      "type": "milestone",
+      "name": "冒險者步調",
+      "description": "每場勝利後恢復最大生命 10%。"
+    },
+    {
+      "id": "exploit-weakness",
+      "level": 12,
+      "type": "minor",
+      "name": "破綻判斷",
+      "description": "暴擊率 +5%，暴擊傷害倍率由 170% 提升為 185%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.05
+        },
+        {
+          "type": "add",
+          "stat": "critDamageMultiplier",
+          "amount": 0.15
+        }
+      ]
+    },
+    {
+      "id": "last-stand",
+      "level": 15,
+      "type": "rare",
+      "name": "死地求生",
+      "description": "每場戰鬥第一次受到致命傷害時保留 1 HP，恢復最大生命 15%，並清除 1 個負面效果。"
+    }
+  ]
 }

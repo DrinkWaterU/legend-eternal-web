@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.0.2-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.1.2-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.2.0.2-alpha</p>
+            <p class="version-label">v0.2.1.2-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -61,6 +61,7 @@
           </div>
 
           <dl id="campStatusList" class="stat-list camp-status"></dl>
+          <p id="campWarning" class="camp-warning" data-type="danger"></p>
 
           <nav class="menu-actions camp-actions" aria-label="冒險營地">
             <button id="campStartButton" class="menu-button primary-menu-button" type="button">
@@ -144,6 +145,10 @@
             </div>
             <p id="characterDetailDescription" class="body-text"></p>
             <dl id="characterDetailStats" class="stat-list"></dl>
+            <section class="skill-section" aria-label="已學技能">
+              <h3>已學技能</h3>
+              <div id="characterSkillList" class="skill-chip-list"></div>
+            </section>
             <button id="selectCharacterButton" class="primary-button" type="button">使用冒險者</button>
           </div>
         </div>
@@ -154,13 +159,14 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">成就系統</p>
-              <h2>尚未開放</h2>
+              <h2 id="achievementTitle">尚未開放</h2>
             </div>
             <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
-          <p class="body-text">
+          <p id="achievementText" class="body-text">
             這裡之後會記錄冒險進度、擊敗首領、角色解鎖與特殊挑戰。
           </p>
+          <div id="achievementList" class="achievement-list"></div>
         </div>
       </section>
 
@@ -255,11 +261,11 @@
             <div class="log-header">
               <h2>戰鬥紀錄</h2>
               <div class="combat-actions">
-                <button id="nextButton" class="secondary-button" type="button">下一回合</button>
-                <button id="fleeButton" class="secondary-button" type="button">嘗試逃跑</button>
-                <button id="restButton" class="secondary-button" type="button">原地修整</button>
-                <button id="continueButton" class="secondary-button" type="button">繼續前進</button>
-                <button id="retreatButton" class="secondary-button" type="button">撤退</button>
+                <button id="nextButton" class="secondary-button action-combat" type="button">下一回合</button>
+                <button id="fleeButton" class="secondary-button action-flee" type="button">嘗試逃跑</button>
+                <button id="restButton" class="secondary-button action-rest" type="button">原地修整</button>
+                <button id="continueButton" class="secondary-button action-forward" type="button">繼續前進</button>
+                <button id="retreatButton" class="secondary-button action-retreat" type="button">撤退</button>
               </div>
             </div>
             <ol id="battleLog" class="battle-log"></ol>
@@ -291,6 +297,29 @@
             </div>
           </div>
         </section>
+
+        <section id="storyPanel" class="story-panel" aria-label="命運覺醒" aria-modal="true">
+          <div class="story-dialog">
+            <div class="story-star-strip" aria-hidden="true">
+              <div class="story-star-glow"></div>
+              <div class="story-star-field"></div>
+              <div class="story-star-eye"></div>
+            </div>
+            <div class="story-content">
+              <p class="eyebrow">命運覺醒</p>
+              <h2>星穹之外的目光</h2>
+              <div id="storyText" class="story-text"></div>
+              <div class="story-actions">
+                <button id="revealStoryButton" class="secondary-button" type="button">立即顯示全文</button>
+                <button id="finishStoryButton" class="primary-button" type="button" hidden>回到營地</button>
+              </div>
+            </div>
+            <div class="story-phoenix-strip" aria-hidden="true">
+              <div class="story-flame-glow"></div>
+              <div class="story-ember-field"></div>
+            </div>
+          </div>
+        </section>
       </section>
 
       <section id="deleteSavePanel" class="end-panel" aria-label="刪除存檔確認" aria-modal="true">
@@ -308,6 +337,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.0.2-alpha"></script>
+    <script type="module" src="game.js?v=0.2.1.2-alpha"></script>
   </body>
 </html>

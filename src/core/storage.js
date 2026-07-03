@@ -22,7 +22,8 @@ export function createDefaultSave() {
       gold: 0,
       materials: {}
     },
-    achievements: {},
+    storyFlags: createDefaultStoryFlags(),
+    achievements: createDefaultAchievements(),
     statistics: {
       totalRuns: 0,
       totalDefeats: 0,
@@ -81,10 +82,11 @@ export function migrateSave(rawSave, options = {}) {
   save.profile.exportedAt = rawSave.profile?.exportedAt || save.profile.exportedAt;
   mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
   save.inventory.gold = toSafeNumber(rawSave.inventory?.gold);
-  mergePlainObject(save.achievements, rawSave.achievements);
+  migrateStoryFlags(save, rawSave);
+  migrateAchievements(save, rawSave);
 
   migrateStatistics(save, rawSave);
-  migrateProgression(save, rawSave);
+  migrateProgression(save, rawSave, { rawSchemaVersion });
 
   save.settings.selectedRegionId = regionDefinitions[rawSave.settings?.selectedRegionId] ? rawSave.settings.selectedRegionId : DEFAULT_REGION_ID;
   save.settings.selectedCharacterId = characterDefinitions[rawSave.settings?.selectedCharacterId] ? rawSave.settings.selectedCharacterId : DEFAULT_CHARACTER_ID;
@@ -143,6 +145,23 @@ function createDefaultCharacterProgression() {
   ]));
 }
 
+function createDefaultStoryFlags() {
+  return {
+    phoenixBlessingUnlocked: false,
+    plainsBossStorySeen: false,
+    achievementSystemUnlocked: false
+  };
+}
+
+function createDefaultAchievements() {
+  return {
+    plains_trial: {
+      unlocked: false,
+      unlockedAt: null
+    }
+  };
+}
+
 function createDefaultRegionStatistics() {
   return Object.fromEntries(Object.keys(regionDefinitions).map((regionId) => [
     regionId,
@@ -165,6 +184,22 @@ function createDefaultCharacterStatistics() {
       highestRunLevel: 1
     }
   ]));
+}
+
+function migrateStoryFlags(save, rawSave) {
+  const rawStoryFlags = rawSave.storyFlags || {};
+  Object.keys(save.storyFlags).forEach((flag) => {
+    save.storyFlags[flag] = Boolean(rawStoryFlags[flag]);
+  });
+}
+
+function migrateAchievements(save, rawSave) {
+  const rawAchievements = rawSave.achievements || {};
+  Object.entries(save.achievements).forEach(([achievementId, achievement]) => {
+    const rawAchievement = rawAchievements[achievementId] || {};
+    achievement.unlocked = Boolean(rawAchievement.unlocked);
+    achievement.unlockedAt = rawAchievement.unlockedAt || null;
+  });
 }
 
 function migrateStatistics(save, rawSave) {
@@ -200,7 +235,10 @@ function migrateStatistics(save, rawSave) {
   });
 }
 
-function migrateProgression(save, rawSave) {
+function migrateProgression(save, rawSave, options = {}) {
+  const { rawSchemaVersion = 0 } = options;
+  const shouldResetLegacyCharacterGrowth = rawSchemaVersion < 5;
+
   Object.keys(regionDefinitions).forEach((regionId) => {
     const regionProgress = save.progression.regions[regionId];
     const rawRegionProgress = rawSave.progression?.regions?.[regionId] || {};
@@ -215,6 +253,12 @@ function migrateProgression(save, rawSave) {
     characterProgress.unlocked = rawCharacterProgress.unlocked ?? characterProgress.unlocked;
     characterProgress.runs = save.statistics.characters[characterId].runs;
     characterProgress.clears = save.statistics.characters[characterId].clears;
+    if (shouldResetLegacyCharacterGrowth) {
+      characterProgress.level = 1;
+      characterProgress.exp = 0;
+      characterProgress.learnedSkills = [];
+      return;
+    }
     characterProgress.level = Math.max(1, toSafeNumber(rawCharacterProgress.level, 1));
     characterProgress.exp = toSafeNumber(rawCharacterProgress.exp);
     characterProgress.learnedSkills = Array.isArray(rawCharacterProgress.learnedSkills) ? rawCharacterProgress.learnedSkills : [];

@@ -6,7 +6,7 @@
   const KNOWN_GAME_REGIONS = [
     { id: "plains", name: "平原", path: "../src/data/regions/plains.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.2.0.2-alpha";
+  const DEFAULT_GAME_VERSION = "v0.2.1.2-alpha";
 
   const state = {
     package: createEmptyPackage(),

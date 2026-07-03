@@ -44,8 +44,7 @@ function renderStatisticsOverview(els, stats) {
     ["擊敗敵人", stats.totalEnemiesDefeated],
     ["擊敗首領", stats.bossesDefeated],
     ["逃跑成功", stats.fleeSuccesses],
-    ["逃跑失敗", stats.fleeFailures],
-    ["最高局內等級", stats.highestRunLevel]
+    ["逃跑失敗", stats.fleeFailures]
   ]);
 }
 
@@ -56,7 +55,7 @@ function renderStatisticsCharacterList(els, saveData, characterDefinitions, onCh
     return {
       title: character.name,
       meta: `Lv. ${characterProgress.level}`,
-      description: `出戰 ${characterStats.runs} 次，通關 ${characterStats.clears} 次，最高局內 Lv. ${characterStats.highestRunLevel}。`,
+      description: `出戰 ${characterStats.runs} 次，通關 ${characterStats.clears} 次，目前角色 Lv. ${characterProgress.level}。`,
       action: "查看統計",
       onClick: () => onCharacterDetail(characterId)
     };
@@ -74,7 +73,6 @@ function renderStatisticsCharacterDetail(els, saveData, characterDefinitions, ch
     ["出戰次數", characterStats.runs],
     ["通關次數", characterStats.clears],
     ["撤退次數", characterStats.retreats],
-    ["最高局內等級", characterStats.highestRunLevel],
     ["已學技能", characterProgress.learnedSkills.length]
   ]);
 }

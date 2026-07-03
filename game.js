@@ -20,6 +20,16 @@ const FLEE_RESULTS = [
   { id: "evacuation", weight: 10 }
 ];
 const REST_HEAL_RATIO = 0.15;
+const PLAINS_TRIAL_ACHIEVEMENT_ID = "plains_trial";
+const STORY_LINE_DELAY_MS = 1500;
+const STORY_FINISH_EXTRA_DELAY_MS = 1700;
+const PLAINS_STORY_LINES = [
+  `魔化野豬王倒下後，牠身上的紋路化作無溫的<span class="story-mark-star">星光</span>。`,
+  `平原的風停了，你在<span class="story-mark-star">星穹之外</span>看見<span class="story-mark-star">某個存在</span>睜開了眼。`,
+  `你的思緒被那道<span class="story-mark-star">目光</span>壓碎，<span class="story-mark-death">死亡</span>隨之降臨。`,
+  `<span class="story-mark-phoenix">灰燼般的微光</span>在黑暗中燃起。`,
+  `<span class="story-mark-phoenix">鳳凰的加護</span>回應了死亡，將你帶回<span class="story-mark-phoenix">營地</span>。`
+];
 
 const state = {
   run: 0,
@@ -42,6 +52,7 @@ const state = {
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
+  storyTimer: null,
   log: []
 };
 
@@ -66,6 +77,7 @@ function showScreen(screenId) {
   if (screenId === "menuScreen") {
     els.resultLabel.textContent = "冒險準備中";
     els.encounterLabel.textContent = "尚未開始";
+    renderMenuScreen();
   }
   if (screenId === "campScreen") {
     els.resultLabel.textContent = "營地整備";
@@ -83,8 +95,9 @@ function showScreen(screenId) {
     renderCharacterScreen();
   }
   if (screenId === "achievementScreen") {
-    els.resultLabel.textContent = "尚未開放";
+    els.resultLabel.textContent = saveData.storyFlags.achievementSystemUnlocked ? "成就紀錄" : "尚未開放";
     els.encounterLabel.textContent = "成就系統";
+    renderAchievementScreen();
   }
   if (screenId === "statisticsScreen") {
     els.resultLabel.textContent = "累積紀錄";
@@ -115,19 +128,36 @@ function showRegionDetail(regionId = DEFAULT_REGION_ID) {
   showScreen("regionScreen");
 }
 
+function renderMenuScreen() {
+  const achievementHint = els.openAchievementButton.querySelector("small");
+  if (achievementHint) {
+    achievementHint.textContent = saveData.storyFlags.achievementSystemUnlocked ? "查看已解鎖成就" : "尚未開放";
+  }
+}
+
 function renderCampScreen() {
   const region = currentRegion();
   const character = characterDefinitions[state.selectedHeroId];
+  const progress = normalizeCharacterProgress(state.selectedHeroId);
+  const expToNext = getExpToNextLevel(progress.level, character);
   const lastResult = state.lastRunSummary
     ? `${state.lastRunSummary.result}，抵達第 ${state.lastRunSummary.reachedEncounter} / ${region.encounterPlan.length} 場`
     : "尚無紀錄";
 
   renderStatList(els.campStatusList, [
     ["目前角色", character.name],
+    ["角色等級", `Lv. ${progress.level}`],
+    ["經驗", `${progress.exp} / ${expToNext}`],
     ["目前地區", region.name],
     ["地區難度", region.difficulty],
     ["最近冒險", lastResult]
   ]);
+  if (els.campWarning) {
+    els.campWarning.textContent = hasPhoenixBlessing()
+      ? "鳳凰的加護已覺醒。死亡會結束本輪冒險，但角色等級與經驗會保留。"
+      : "警告：死亡會失去目前等級與經驗；撤退能保留成長。";
+    els.campWarning.dataset.type = hasPhoenixBlessing() ? "blessed" : "danger";
+  }
 }
 
 function renderRegionScreen() {
@@ -185,22 +215,55 @@ function renderCharacterScreen() {
 
   if (uiState.characterView === "detail") {
     const character = characterDefinitions[state.selectedHeroId];
+    const preview = buildHeroFromProgression(state.selectedHeroId);
+    const progress = getCharacterProgress(state.selectedHeroId);
+    const nextSkill = (character.skills || []).find((skill) => skill.level > progress.level);
     els.characterDetailName.textContent = character.name;
     els.characterDetailDescription.textContent = character.description;
     renderStatList(els.characterDetailStats, [
-      ["最大生命", character.stats.maxHp],
-      ["攻擊", character.stats.attack],
-      ["防禦", character.stats.defense],
-      ["暴擊", character.stats.critChance]
+      ["等級", `Lv. ${progress.level}`],
+      ["經驗", `${progress.exp} / ${getExpToNextLevel(progress.level, character)}`],
+      ["最大生命", preview.maxHp],
+      ["攻擊", preview.attack],
+      ["防禦", preview.defense],
+      ["暴擊", `${Math.round(preview.critChance * 100)}%`],
+      ["下一技能", nextSkill ? `Lv. ${nextSkill.level} ${nextSkill.name}` : "已達目前上限"]
     ]);
+    renderSkillChips(character, progress.learnedSkills);
     els.selectCharacterButton.textContent = `使用${character.name}`;
   }
+}
+
+function renderSkillChips(character, skillIds) {
+  if (!els.characterSkillList) {
+    return;
+  }
+  els.characterSkillList.innerHTML = "";
+  if (!skillIds || skillIds.length === 0) {
+    const empty = document.createElement("span");
+    empty.className = "skill-chip is-empty";
+    empty.textContent = "尚未學會技能";
+    els.characterSkillList.append(empty);
+    return;
+  }
+  skillIds.forEach((skillId) => {
+    const chip = document.createElement("span");
+    chip.className = "skill-chip";
+    chip.textContent = getSkillName(character, skillId);
+    els.characterSkillList.append(chip);
+  });
 }
 
 function createRunStats() {
   return {
     expGained: 0,
-    highestRunLevel: 1,
+    startLevel: 1,
+    endLevel: 1,
+    levelUps: [],
+    learnedSkills: [],
+    progressReset: false,
+    lostLevel: 1,
+    lostExp: 0,
     fleeAttempts: 0,
     fleeSuccesses: 0,
     fleeFailures: 0,
@@ -211,71 +274,163 @@ function createRunStats() {
   };
 }
 
-function getRunProgression() {
-  return characterDefinitions[state.selectedHeroId].runProgression || {
-    maxLevel: 1,
-    expCurve: [0],
-    levelUps: {}
+function getCharacterProgress(characterId = state.selectedHeroId) {
+  return saveData.progression.characters[characterId];
+}
+
+function getCharacterDefinition(characterId = state.selectedHeroId) {
+  return characterDefinitions[characterId];
+}
+
+function getCharacterMaxLevel(character = getCharacterDefinition()) {
+  return character.levelCurve?.maxLevel || 1;
+}
+
+function getExpToNextLevel(level, character = getCharacterDefinition()) {
+  const curve = character.levelCurve;
+  if (!curve || level >= getCharacterMaxLevel(character)) {
+    return "MAX";
+  }
+  return Math.floor(
+    (curve.base || 0) * level ** (curve.exponent || 1)
+    + (curve.linear || 0) * level
+    + (curve.offset || 0)
+  );
+}
+
+function getSkillsForLevel(character, level) {
+  return (character.skills || []).filter((skill) => skill.level <= level);
+}
+
+function getGrowthForLevel(character, level) {
+  return (character.levelGrowth || []).find((growth) => growth.level === level);
+}
+
+function getSkillName(character, skillId) {
+  return (character.skills || []).find((skill) => skill.id === skillId)?.name || skillId;
+}
+
+function normalizeCharacterProgress(characterId = state.selectedHeroId) {
+  const character = getCharacterDefinition(characterId);
+  const progress = getCharacterProgress(characterId);
+  progress.level = Math.max(1, Math.min(getCharacterMaxLevel(character), Math.floor(progress.level || 1)));
+  progress.exp = Math.max(0, Math.floor(progress.exp || 0));
+  progress.learnedSkills = getSkillsForLevel(character, progress.level).map((skill) => skill.id);
+  return progress;
+}
+
+function buildHeroFromProgression(characterId = state.selectedHeroId) {
+  const character = getCharacterDefinition(characterId);
+  const progress = normalizeCharacterProgress(characterId);
+  const hero = clone(character.template);
+  hero.level = progress.level;
+  hero.exp = progress.exp;
+  hero.expToNext = getExpToNextLevel(progress.level, character);
+  hero.skills = [...progress.learnedSkills];
+  hero.skillState = createSkillState();
+  hero.critDamageMultiplier = hero.critDamageMultiplier || 1.7;
+
+  (character.levelGrowth || []).forEach((growth) => {
+    if (growth.level <= progress.level) {
+      applyProgressionEffects(hero, growth.effects || [], { recover: false });
+    }
+  });
+
+  getSkillsForLevel(character, progress.level).forEach((skill) => {
+    applyProgressionEffects(hero, skill.effects || [], { recover: false });
+  });
+
+  hero.hp = hero.maxHp;
+  return hero;
+}
+
+function createSkillState() {
+  return {
+    emergencyBandageUsed: false,
+    lastStandUsed: false
   };
 }
 
-function getRunExpToNext(level) {
-  const progression = getRunProgression();
-  if (level >= progression.maxLevel) {
-    return "MAX";
-  }
-  return progression.expCurve[level] ?? "MAX";
+function applyProgressionEffects(hero, effects, options = {}) {
+  const { recover = true } = options;
+  effects.forEach((effect) => {
+    if (effect.type === "add") {
+      hero[effect.stat] = (hero[effect.stat] || 0) + effect.amount;
+      if (recover && effect.stat === "maxHp") {
+        hero.hp = Math.min(hero.maxHp, (hero.hp || 0) + effect.amount);
+      }
+    }
+  });
 }
 
-function gainRunExp(amount) {
+function gainCharacterExp(amount) {
   if (!state.hero || amount <= 0) {
     return;
   }
 
-  state.hero.runExp += amount;
+  const character = getCharacterDefinition();
+  const progress = getCharacterProgress();
+  progress.exp += amount;
   state.runStats.expGained += amount;
   addLog("system", "expGain", { amount });
-  applyRunLevelUps();
+  applyCharacterLevelUps(character, progress);
+  syncHeroProgressState(character, progress);
+  saveGameSafe();
 }
 
-function applyRunLevelUps() {
-  const progression = getRunProgression();
-  while (
-    state.hero.runLevel < progression.maxLevel
-    && state.hero.runExp >= (progression.expCurve[state.hero.runLevel] ?? Infinity)
-  ) {
-    state.hero.runLevel += 1;
-    state.runStats.highestRunLevel = Math.max(state.runStats.highestRunLevel, state.hero.runLevel);
-    const levelUp = progression.levelUps[String(state.hero.runLevel)];
-    applyRunLevelUp(levelUp);
+function applyCharacterLevelUps(character, progress) {
+  while (progress.level < getCharacterMaxLevel(character)) {
+    const expToNext = getExpToNextLevel(progress.level, character);
+    if (expToNext === "MAX" || progress.exp < expToNext) {
+      break;
+    }
+    progress.exp -= expToNext;
+    progress.level += 1;
+    state.runStats.endLevel = progress.level;
+    state.runStats.levelUps.push(progress.level);
+    const growth = getGrowthForLevel(character, progress.level);
+    applyProgressionEffects(state.hero, growth?.effects || [], { recover: true });
     addLog("system", "levelUp", {
-      level: state.hero.runLevel,
-      name: levelUp?.name || "能力提升"
+      level: progress.level,
+      name: growth?.name || "能力提升"
+    });
+
+    const knownSkills = new Set(progress.learnedSkills);
+    getSkillsForLevel(character, progress.level).forEach((skill) => {
+      if (!knownSkills.has(skill.id)) {
+        progress.learnedSkills.push(skill.id);
+        state.runStats.learnedSkills.push(skill.name);
+        state.hero.skills.push(skill.id);
+        applyProgressionEffects(state.hero, skill.effects || [], { recover: true });
+        addLog("system", "skillLearned", { name: skill.name });
+      }
     });
   }
-
-  state.hero.runExpToNext = getRunExpToNext(state.hero.runLevel);
 }
 
-function applyRunLevelUp(levelUp) {
-  if (!levelUp) {
-    return;
+function syncHeroProgressState(character = getCharacterDefinition(), progress = getCharacterProgress()) {
+  state.hero.level = progress.level;
+  state.hero.exp = progress.exp;
+  state.hero.expToNext = getExpToNextLevel(progress.level, character);
+  state.hero.skills = [...progress.learnedSkills];
+  if (state.runStats) {
+    state.runStats.endLevel = progress.level;
   }
+}
 
-  (levelUp.effects || []).forEach((effect) => {
-    if (effect.type === "add") {
-      state.hero[effect.stat] = (state.hero[effect.stat] || 0) + effect.amount;
-    }
-    if (effect.type === "recoverHp") {
-      state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + effect.amount);
-    }
-  });
+function hasPhoenixBlessing() {
+  return Boolean(saveData.storyFlags.phoenixBlessingUnlocked);
+}
 
-  (levelUp.skills || []).forEach((skill) => {
-    if (!state.hero.runSkills.includes(skill)) {
-      state.hero.runSkills.push(skill);
-    }
-  });
+function resetCharacterProgress(characterId = state.selectedHeroId) {
+  const progress = getCharacterProgress(characterId);
+  progress.level = 1;
+  progress.exp = 0;
+  progress.learnedSkills = [];
+}
+
+function hasHeroSkill(skillId) {
+  return Array.isArray(state.hero?.skills) && state.hero.skills.includes(skillId);
 }
 
 function recordRunStarted() {
@@ -312,8 +467,8 @@ function recordRunFinished(outcome) {
 
   regionStats.bestEncounter = Math.max(regionStats.bestEncounter, bestEncounter);
   regionProgress.bestEncounter = Math.max(regionProgress.bestEncounter, bestEncounter);
-  stats.highestRunLevel = Math.max(stats.highestRunLevel, state.runStats?.highestRunLevel || 1);
-  characterStats.highestRunLevel = Math.max(characterStats.highestRunLevel, state.runStats?.highestRunLevel || 1);
+  stats.highestRunLevel = Math.max(stats.highestRunLevel, state.runStats?.endLevel || 1);
+  characterStats.highestRunLevel = Math.max(characterStats.highestRunLevel, state.runStats?.endLevel || 1);
   stats.fleeAttempts += state.runStats?.fleeAttempts || 0;
   stats.fleeSuccesses += state.runStats?.fleeSuccesses || 0;
   stats.fleeFailures += state.runStats?.fleeFailures || 0;
@@ -349,6 +504,31 @@ function renderStatistics() {
     onCharacterDetail: showStatisticsCharacterDetail,
     onRegionDetail: showStatisticsRegionDetail
   });
+}
+
+function renderAchievementScreen() {
+  if (!els.achievementTitle || !els.achievementText || !els.achievementList) {
+    return;
+  }
+  const unlocked = saveData.storyFlags.achievementSystemUnlocked;
+  els.achievementTitle.textContent = unlocked ? "已解鎖成就" : "尚未開放";
+  els.achievementText.textContent = unlocked
+    ? "這裡記錄你在傳說大陸留下的節點。"
+    : "這裡之後會記錄冒險進度、擊敗首領、角色解鎖與特殊挑戰。";
+  els.achievementList.innerHTML = "";
+  if (!unlocked) {
+    return;
+  }
+  const achievement = saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID];
+  const item = document.createElement("div");
+  item.className = "achievement-card";
+  item.innerHTML = `
+    <strong>平原的試煉</strong>
+    <span>擊敗平原首領</span>
+    <p>你跨過了第一片野外的終點，並在死亡邊緣觸及了新的命運。</p>
+    <small>${achievement?.unlockedAt ? `解鎖於 ${new Date(achievement.unlockedAt).toLocaleString("zh-TW")}` : "已解鎖"}</small>
+  `;
+  els.achievementList.append(item);
 }
 
 function showStatisticsScreen(returnTarget = uiState.statisticsReturnTarget || "menuScreen") {
@@ -484,11 +664,7 @@ function startRun() {
   state.run += 1;
   state.encounterIndex = 0;
   state.turn = 0;
-  state.hero = clone(characterDefinitions[state.selectedHeroId].template);
-  state.hero.runLevel = 1;
-  state.hero.runExp = 0;
-  state.hero.runExpToNext = getRunExpToNext(1);
-  state.hero.runSkills = [];
+  state.hero = buildHeroFromProgression(state.selectedHeroId);
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
   state.enemy = null;
   state.phase = "danger";
@@ -502,10 +678,13 @@ function startRun() {
   state.hasRested = false;
   state.ambushAdvantage = false;
   state.log = [];
+  state.runStats.startLevel = state.hero.level;
+  state.runStats.endLevel = state.hero.level;
 
   showScreen("gameScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = false;
 
@@ -517,6 +696,7 @@ function restart() {
   showScreen("menuScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = true;
   setCombatActionState();
@@ -531,6 +711,7 @@ function returnToCamp() {
   showScreen("campScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeStoryPanel();
   closeDeleteSaveDialog();
   state.awaitingBlessing = false;
   state.ended = true;
@@ -552,6 +733,7 @@ function startEncounter() {
   state.enemy.poison = 0;
   state.hero.poison = 0;
   state.hero.shield = state.hero.shieldStart;
+  state.hero.skillState = createSkillState();
 
   els.blessingPanel.classList.remove("is-visible");
   setCombatActionState();
@@ -582,10 +764,13 @@ function playTurn() {
   }
 
   const enemyAction = resolveEnemyAction({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
+  applyEmergencyBandage();
   if (state.hero.hp <= 0) {
     state.deathCause = enemyAction;
-    loseRun();
-    return;
+    if (!tryLastStand()) {
+      loseRun();
+      return;
+    }
   }
 
   const endOfTurn = applyEndOfTurnEffects({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
@@ -594,8 +779,10 @@ function playTurn() {
       type: "other",
       label: "回合結束效果"
     };
-    loseRun();
-    return;
+    if (!tryLastStand()) {
+      loseRun();
+      return;
+    }
   }
   if (state.enemy.hp <= 0) {
     winEncounter();
@@ -609,7 +796,7 @@ function winEncounter() {
   const enemyName = state.enemy.name;
   const defeatedBoss = state.enemy.kind === "首領";
   addLog("system", "victory", { target: enemyName });
-  gainRunExp(getEnemyExpReward(state.enemy));
+  gainCharacterExp(getEnemyExpReward(state.enemy));
   recordEnemyDefeated(defeatedBoss);
   state.defeatedEnemies += 1;
   state.defeatedBoss = state.defeatedBoss || defeatedBoss;
@@ -618,12 +805,17 @@ function winEncounter() {
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + state.hero.killHeal);
     addLog("heal", "heal", { target: state.hero.name, amount: state.hero.killHeal });
   }
+  applyVictorySkills();
 
   state.encounterIndex += 1;
   render();
 
   if (state.encounterIndex >= currentRegion().encounterPlan.length) {
     addLog("system", "clear");
+    if (shouldTriggerPlainsStory()) {
+      showPlainsStory();
+      return;
+    }
     finishRun("clear");
     return;
   }
@@ -644,6 +836,47 @@ function getEnemyExpReward(enemy) {
   return 9;
 }
 
+function applyEmergencyBandage() {
+  if (!hasHeroSkill("emergency-bandage") || state.hero.skillState.emergencyBandageUsed || state.hero.hp <= 0) {
+    return;
+  }
+  if (state.hero.hp > state.hero.maxHp * 0.4) {
+    return;
+  }
+  const amount = Math.max(1, Math.round(state.hero.maxHp * 0.18));
+  state.hero.skillState.emergencyBandageUsed = true;
+  state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
+  addLog("heal", "emergencyBandage", { actor: state.hero.name, amount });
+}
+
+function tryLastStand() {
+  if (!hasHeroSkill("last-stand") || state.hero.skillState.lastStandUsed) {
+    return false;
+  }
+  state.hero.skillState.lastStandUsed = true;
+  const amount = Math.max(1, Math.round(state.hero.maxHp * 0.15));
+  state.hero.hp = Math.min(state.hero.maxHp, 1 + amount);
+  addLog("heal", "lastStand", { actor: state.hero.name, amount });
+  cleanseOneNegativeEffect();
+  return state.hero.hp > 0;
+}
+
+function cleanseOneNegativeEffect() {
+  if (state.hero.poison > 0) {
+    state.hero.poison = 0;
+    addLog("status", "cleanse", { actor: state.hero.name, effect: "中毒" });
+  }
+}
+
+function applyVictorySkills() {
+  if (!hasHeroSkill("adventurer-pace")) {
+    return;
+  }
+  const amount = Math.max(1, Math.round(state.hero.maxHp * 0.1));
+  state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
+  addLog("heal", "adventurerPace", { amount });
+}
+
 function enterSafeState(options = {}) {
   const { canRest = false } = options;
   state.phase = "safe";
@@ -662,19 +895,38 @@ function loseRun() {
   finishRun("defeat");
 }
 
+function handleDefeatProgression() {
+  const progress = getCharacterProgress();
+  state.runStats.endLevel = progress.level;
+  if (hasPhoenixBlessing()) {
+    return;
+  }
+  state.runStats.progressReset = true;
+  state.runStats.lostLevel = progress.level;
+  state.runStats.lostExp = progress.exp;
+  resetCharacterProgress();
+  addLog("system", "progressLost");
+  saveGameSafe();
+}
+
 function finishRun(outcome) {
   const region = currentRegion();
   const cleared = outcome === "clear";
   const retreated = outcome === "retreat";
+  const defeated = outcome === "defeat";
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "ended";
+  if (defeated) {
+    handleDefeatProgression();
+  }
   recordRunFinished(outcome);
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.add("is-visible");
   els.endTitle.textContent = cleared ? "冒險成功" : retreated ? "冒險撤退" : "冒險失敗";
   els.endText.textContent = getEndText(outcome, region);
+  els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
   renderEndSummary(outcome, region);
   els.resultLabel.textContent = cleared ? `${region.name}突破` : retreated ? "回到營地" : "本輪結束";
   setCombatActionState();
@@ -686,10 +938,13 @@ function getEndText(outcome, region) {
     return `你完成了${region.name}的挑戰。`;
   }
   if (outcome === "retreat") {
-    return "你回到營地。本輪的局內祝福與等級會重置，下一次冒險將重新開始。";
+    return "你回到營地。本輪的臨時祝福會重置，角色等級與經驗會保留。";
+  }
+  if (hasPhoenixBlessing()) {
+    return "你倒下了。鳳凰的加護在灰燼般的微光中甦醒，將你帶回營地。";
   }
 
-  return "冒險者倒下了。你可以查看最後一場戰鬥紀錄，確認本輪結束前發生了什麼。";
+  return "你倒在野外，這段旅途累積的等級與經驗已經失去。";
 }
 
 function renderEndSummary(outcome, region) {
@@ -697,21 +952,32 @@ function renderEndSummary(outcome, region) {
   const retreated = outcome === "retreat";
   const reachedEncounter = getReachedEncounter(cleared, region);
   const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
+  const progress = getCharacterProgress();
   state.lastRunSummary = {
     result: cleared ? "成功" : retreated ? "撤退" : "失敗",
     reachedEncounter,
-    runLevel: state.runStats?.highestRunLevel || 1
+    runLevel: state.runStats?.endLevel || progress.level
   };
   const items = [
     ["結果", cleared ? "冒險成功" : retreated ? "冒險撤退" : "冒險失敗"],
     ["抵達", `第 ${reachedEncounter} / ${region.encounterPlan.length} 場`],
-    ["局內等級", `Lv. ${state.runStats?.highestRunLevel || 1}`],
-    ["局內經驗", `${state.runStats?.expGained || 0}`],
+    ["角色等級", `Lv. ${progress.level}`],
+    ["本輪經驗", `${state.runStats?.expGained || 0}`],
     ["擊敗敵人", `${state.defeatedEnemies} 隻`],
     ["擊敗首領", state.defeatedBoss ? "是" : "否"],
     ["逃跑", `成功 ${state.runStats?.fleeSuccesses || 0} / 失敗 ${state.runStats?.fleeFailures || 0}`],
     ["選擇祝福", blessings]
   ];
+
+  if (state.runStats?.levelUps.length > 0) {
+    items.push(["升級", state.runStats.levelUps.map((level) => `Lv. ${level}`).join("、")]);
+  }
+  if (state.runStats?.learnedSkills.length > 0) {
+    items.push(["新技能", state.runStats.learnedSkills.join("、")]);
+  }
+  if (state.runStats?.progressReset) {
+    items.push(["成長損失", `死亡使等級與經驗失去，已回到 Lv. 1。`]);
+  }
 
   if (!cleared && !retreated) {
     items.push(["死因", state.deathCause ? state.deathCause.label : "未知"]);
@@ -778,14 +1044,17 @@ function resolveFleeFailure() {
     turn: Math.max(1, state.turn),
     log
   });
+  applyEmergencyBandage();
   if (state.hero.hp <= 0) {
     state.deathCause = {
       type: "fleeFailure",
       label: `逃跑失敗後被${state.enemy.name}擊倒`
     };
     state.deathCause = state.deathCause || enemyAction;
-    loseRun();
-    return;
+    if (!tryLastStand()) {
+      loseRun();
+      return;
+    }
   }
   state.phase = "combat";
   render();
@@ -892,13 +1161,88 @@ function closeEndPanel() {
   els.endPanel.classList.remove("is-visible");
 }
 
+function closeStoryPanel() {
+  if (state.storyTimer) {
+    window.clearTimeout(state.storyTimer);
+    state.storyTimer = null;
+  }
+  els.storyPanel.classList.remove("is-visible");
+}
+
+function shouldTriggerPlainsStory() {
+  return state.selectedRegionId === "plains" && !saveData.storyFlags.plainsBossStorySeen;
+}
+
+function showPlainsStory() {
+  state.ended = true;
+  state.awaitingBlessing = false;
+  state.phase = "story";
+  recordRunFinished("clear");
+  els.nextButton.disabled = true;
+  els.blessingPanel.classList.remove("is-visible");
+  els.endPanel.classList.remove("is-visible");
+  els.storyPanel.classList.add("is-visible");
+  els.resultLabel.textContent = "命運覺醒";
+  els.encounterLabel.textContent = "星穹之外";
+  renderStoryText(false);
+  setCombatActionState();
+  render();
+}
+
+function renderStoryText(revealed) {
+  if (state.storyTimer) {
+    window.clearTimeout(state.storyTimer);
+    state.storyTimer = null;
+  }
+  els.storyText.innerHTML = "";
+  PLAINS_STORY_LINES.forEach((line, index) => {
+    const paragraph = document.createElement("p");
+    paragraph.innerHTML = line;
+    paragraph.style.animationDelay = revealed ? "0ms" : `${index * STORY_LINE_DELAY_MS}ms`;
+    if (revealed) {
+      paragraph.classList.add("is-revealed");
+    }
+    els.storyText.append(paragraph);
+  });
+  els.revealStoryButton.hidden = revealed;
+  els.finishStoryButton.hidden = !revealed;
+  if (!revealed) {
+    state.storyTimer = window.setTimeout(() => {
+      els.revealStoryButton.hidden = true;
+      els.finishStoryButton.hidden = false;
+    }, (PLAINS_STORY_LINES.length - 1) * STORY_LINE_DELAY_MS + STORY_FINISH_EXTRA_DELAY_MS);
+  }
+}
+
+function revealStoryText() {
+  renderStoryText(true);
+}
+
+function completePlainsStory() {
+  unlockPhoenixBlessing();
+  els.storyPanel.classList.remove("is-visible");
+  returnToCamp();
+}
+
+function unlockPhoenixBlessing() {
+  const now = new Date().toISOString();
+  saveData.storyFlags.phoenixBlessingUnlocked = true;
+  saveData.storyFlags.plainsBossStorySeen = true;
+  saveData.storyFlags.achievementSystemUnlocked = true;
+  saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID] = {
+    unlocked: true,
+    unlockedAt: saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID]?.unlockedAt || now
+  };
+  saveGameSafe();
+}
+
 function render() {
   const hero = state.hero;
   const enemy = state.enemy;
   const region = currentRegion();
 
   els.heroName.textContent = hero.name;
-  els.heroLevel.textContent = `第 ${state.run} 輪｜Lv. ${hero.runLevel || 1}`;
+  els.heroLevel.textContent = `第 ${state.run} 輪｜角色 Lv. ${hero.level || 1}`;
   setMeter(els.heroHealthBar, hero.hp, hero.maxHp);
   els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}`;
 
@@ -996,6 +1340,8 @@ function bindEvents() {
   els.restartButton.addEventListener("click", restart);
   els.retryButton.addEventListener("click", returnToCamp);
   els.viewLogButton.addEventListener("click", closeEndPanel);
+  els.revealStoryButton.addEventListener("click", revealStoryText);
+  els.finishStoryButton.addEventListener("click", completePlainsStory);
   els.nextButton.addEventListener("click", playTurn);
   els.fleeButton.addEventListener("click", tryFlee);
   els.continueButton.addEventListener("click", continueAdventure);

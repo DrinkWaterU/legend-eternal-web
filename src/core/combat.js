@@ -2,6 +2,12 @@ import { clone, randomItem, roll, weightedRandomItem } from "../utils.js";
 
 const DEFAULT_ENEMY_WEIGHT = 100;
 const DEFAULT_CHARGE_MULTIPLIER = 1.6;
+const HEAVY_STRIKE_CHANCE = 0.2;
+const HEAVY_STRIKE_MULTIPLIER = 1.4;
+const STEADY_STANCE_CHANCE = 0.25;
+const STEADY_STANCE_REDUCTION = 0.3;
+const FOLLOW_UP_CHANCE = 0.25;
+const FOLLOW_UP_ATTACK_RATIO = 0.5;
 
 export function buildEnemy(region, encounterIndex, hero) {
   const encounterType = region.encounterPlan[encounterIndex];
@@ -86,12 +92,16 @@ export function resolveHeroAction({ hero, enemy, log }) {
   }
 
   let damage = Math.max(1, hero.attack - enemy.defense);
+  if (hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
+    damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
+    log.template("skill", "heavyStrike", { actor: hero.name });
+  }
   const familyBonus = getFamilyDamageBonus(hero, enemy.family);
   if (familyBonus > 0) {
     damage = Math.round(damage * (1 + familyBonus));
   }
   if (roll(hero.critChance)) {
-    damage = Math.round(damage * 1.7);
+    damage = Math.round(damage * (hero.critDamageMultiplier || 1.7));
     log.template("critical", "critical", { actor: hero.name });
   }
 
@@ -101,6 +111,16 @@ export function resolveHeroAction({ hero, enemy, log }) {
     target: enemy.name,
     amount: damage
   });
+
+  if (enemy.hp > 0 && hasSkill(hero, "skilled-follow-up") && roll(FOLLOW_UP_CHANCE)) {
+    const followUpDamage = Math.max(1, Math.round(hero.attack * FOLLOW_UP_ATTACK_RATIO));
+    enemy.hp = Math.max(0, enemy.hp - followUpDamage);
+    log.template("hero-damage", "skilledFollowUp", {
+      actor: hero.name,
+      target: enemy.name,
+      amount: followUpDamage
+    });
+  }
 
   if (hero.poisonPower > 0 && enemy.hp > 0) {
     enemy.poison = Math.max(enemy.poison || 0, hero.poisonPower);
@@ -131,6 +151,12 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
       : `${enemy.name}的暴擊`;
   }
 
+  if (damage > 1 && hasSkill(hero, "steady-stance") && roll(STEADY_STANCE_CHANCE)) {
+    const reduced = Math.max(1, Math.min(damage - 1, Math.round(damage * STEADY_STANCE_REDUCTION)));
+    damage -= reduced;
+    log.template("skill", "steadyStance", { actor: hero.name, amount: reduced });
+  }
+
   if (hero.shield > 0) {
     const blocked = Math.min(hero.shield, damage);
     hero.shield -= blocked;
@@ -151,6 +177,10 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
   }
 
   return damageSource;
+}
+
+function hasSkill(hero, skillId) {
+  return Array.isArray(hero.skills) && hero.skills.includes(skillId);
 }
 
 function getFamilyDamageBonus(hero, family) {
