@@ -153,7 +153,9 @@ h2 {
 }
 
 .camp-screen {
+  width: 100vw;
   margin: -10px auto 0;
+  margin-left: calc(50% - 50vw);
   padding: 28px 12px;
   border-radius: 12px;
   background:
@@ -1005,6 +1007,8 @@ dd {
 
 @media (min-width: 821px) {
   .camp-screen {
+    min-height: calc(100vh - 210px);
+    border-radius: 0;
     background:
       linear-gradient(
         90deg,
