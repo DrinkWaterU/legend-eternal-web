@@ -12,6 +12,17 @@ export const templates = {
   victory: "{target} 倒下了。戰鬥勝利。",
   defeat: "{target} 倒下了。本輪冒險結束。",
   blessing: "你接受了祝福：{blessing}。",
+  expGain: "你獲得了 {amount} 點局內經驗。",
+  levelUp: "局內等級提升到 Lv. {level}：{name}。",
+  safeState: "你暫時回到安全路段，可以重新整備呼吸。",
+  rest: "你原地修整，恢復了 {amount} 點生命。",
+  fleeAttempt: "你嘗試脫離 {enemy} 的追擊。",
+  fleeFail: "逃跑失敗，{enemy} 追上了你。",
+  safeEscape: "安全逃跑成功。你退回較安全的路段。",
+  counterEscape: "遇敵反制。你在退回途中發現新的敵人，取得偷襲優勢。",
+  evacuationEscape: "撤離逃跑成功。你找到回營地的路線。",
+  retreat: "你選擇撤退，帶著本輪經驗回到營地。",
+  ambushAdvantage: "{enemy} 被你搶先壓制，生命降低了 {amount} 點。",
   boss: "平原深處傳來沉重的腳步聲。",
   clear: "你擊敗了平原的首領。這次冒險成功了。"
 };

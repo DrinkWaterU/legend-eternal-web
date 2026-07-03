@@ -53,9 +53,12 @@ export function renderBlessingChoices(element, blessings, onChoose) {
 
 export function renderCurrentStats(element, hero) {
   renderStatList(element, [
+    ["局內等級", `Lv. ${hero.runLevel || 1}`],
+    ["局內經驗", `${hero.runExp || 0} / ${hero.runExpToNext || "-"}`],
     ["攻擊", hero.attack],
     ["防禦", hero.defense],
     ["暴擊", `${Math.round(hero.critChance * 100)}%`],
+    ["逃跑", `${hero.fleesRemaining ?? 0} 次`],
     ["護盾", hero.shield || 0],
     ["中毒", hero.poison || 0],
     ["祝福", hero.blessings.length]

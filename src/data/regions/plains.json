@@ -24,6 +24,7 @@
       "attack": 8,
       "defense": 1,
       "critChance": 0.03,
+      "expReward": 9,
       "intro": "野豬壓低身體，前蹄刮過草地。"
     },
     {
@@ -36,6 +37,7 @@
       "attack": 6,
       "defense": 0,
       "critChance": 0,
+      "expReward": 8,
       "intro": "史萊姆在草葉間緩慢蠕動。"
     },
     {
@@ -49,6 +51,7 @@
       "defense": 0,
       "critChance": 0.08,
       "dodgeChance": 0.12,
+      "expReward": 10,
       "intro": "草原狼繞著你低聲咆哮。"
     },
     {
@@ -62,6 +65,7 @@
       "defense": 0,
       "critChance": 0,
       "poisonPower": 3,
+      "expReward": 11,
       "intro": "毒史萊姆冒出細小氣泡。"
     },
     {
@@ -75,6 +79,7 @@
       "defense": 0,
       "critChance": 0.1,
       "dodgeChance": 0.15,
+      "expReward": 8,
       "intro": "尖角兔從草叢裡竄出。"
     }
   ],
@@ -91,6 +96,7 @@
       "critChance": 0.05,
       "chargeEvery": 3,
       "chargeMultiplier": 1.6,
+      "expReward": 28,
       "intro": "巨大野豬用沉重鼻息震動草梗。"
     },
     {
@@ -105,6 +111,7 @@
       "critChance": 0,
       "regenEvery": 3,
       "regenAmount": 6,
+      "expReward": 26,
       "intro": "變異史萊姆的核心在半透明身體裡閃動。"
     }
   ],
@@ -120,6 +127,7 @@
     "critChance": 0.06,
     "chargeEvery": 3,
     "chargeMultiplier": 1.6,
+    "expReward": 48,
     "intro": "魔化野豬王踏碎土丘，闖入你的視線。"
   },
   "blessings": [

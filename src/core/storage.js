@@ -27,8 +27,16 @@ export function createDefaultSave() {
       totalRuns: 0,
       totalDefeats: 0,
       totalClears: 0,
+      totalRetreats: 0,
       totalEnemiesDefeated: 0,
       bossesDefeated: 0,
+      fleeAttempts: 0,
+      fleeSuccesses: 0,
+      fleeFailures: 0,
+      safeEscapes: 0,
+      counterEscapes: 0,
+      evacuationEscapes: 0,
+      highestRunLevel: 1,
       regions: createDefaultRegionStatistics(),
       characters: createDefaultCharacterStatistics()
     },
@@ -141,6 +149,7 @@ function createDefaultRegionStatistics() {
     {
       runs: 0,
       clears: 0,
+      retreats: 0,
       bestEncounter: 0
     }
   ]));
@@ -151,7 +160,9 @@ function createDefaultCharacterStatistics() {
     characterId,
     {
       runs: 0,
-      clears: 0
+      clears: 0,
+      retreats: 0,
+      highestRunLevel: 1
     }
   ]));
 }
@@ -161,13 +172,22 @@ function migrateStatistics(save, rawSave) {
   save.statistics.totalRuns = toSafeNumber(rawStats.totalRuns);
   save.statistics.totalDefeats = toSafeNumber(rawStats.totalDefeats);
   save.statistics.totalClears = toSafeNumber(rawStats.totalClears);
+  save.statistics.totalRetreats = toSafeNumber(rawStats.totalRetreats);
   save.statistics.totalEnemiesDefeated = toSafeNumber(rawStats.totalEnemiesDefeated);
   save.statistics.bossesDefeated = toSafeNumber(rawStats.bossesDefeated);
+  save.statistics.fleeAttempts = toSafeNumber(rawStats.fleeAttempts);
+  save.statistics.fleeSuccesses = toSafeNumber(rawStats.fleeSuccesses);
+  save.statistics.fleeFailures = toSafeNumber(rawStats.fleeFailures);
+  save.statistics.safeEscapes = toSafeNumber(rawStats.safeEscapes);
+  save.statistics.counterEscapes = toSafeNumber(rawStats.counterEscapes);
+  save.statistics.evacuationEscapes = toSafeNumber(rawStats.evacuationEscapes);
+  save.statistics.highestRunLevel = Math.max(1, toSafeNumber(rawStats.highestRunLevel, 1));
 
   Object.keys(regionDefinitions).forEach((regionId) => {
     const rawRegionStats = rawStats.regions?.[regionId] || rawSave.progression?.regions?.[regionId] || {};
     save.statistics.regions[regionId].runs = toSafeNumber(rawRegionStats.runs);
     save.statistics.regions[regionId].clears = toSafeNumber(rawRegionStats.clears);
+    save.statistics.regions[regionId].retreats = toSafeNumber(rawRegionStats.retreats);
     save.statistics.regions[regionId].bestEncounter = toSafeNumber(rawRegionStats.bestEncounter);
   });
 
@@ -175,6 +195,8 @@ function migrateStatistics(save, rawSave) {
     const rawCharacterStats = rawStats.characters?.[characterId] || rawSave.progression?.characters?.[characterId] || {};
     save.statistics.characters[characterId].runs = toSafeNumber(rawCharacterStats.runs);
     save.statistics.characters[characterId].clears = toSafeNumber(rawCharacterStats.clears);
+    save.statistics.characters[characterId].retreats = toSafeNumber(rawCharacterStats.retreats);
+    save.statistics.characters[characterId].highestRunLevel = Math.max(1, toSafeNumber(rawCharacterStats.highestRunLevel, 1));
   });
 }
 

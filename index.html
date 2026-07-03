@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.1.15.1-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.0.0-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,12 +27,12 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.1.15.1-alpha</p>
+            <p class="version-label">v0.2.0.0-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
               <span>開始遊戲</span>
-              <small>選擇地區並進入冒險</small>
+              <small>進入冒險營地</small>
             </button>
             <button id="openCharacterButton" class="menu-button" type="button">
               <span>選擇角色</span>
@@ -50,6 +50,47 @@
         </div>
       </section>
 
+      <section id="campScreen" class="screen camp-screen">
+        <div class="camp-layout">
+          <div class="camp-copy">
+            <p class="eyebrow">冒險營地</p>
+            <h2>火光暫時守住了平原的夜。</h2>
+            <p class="body-text">
+              在出發前確認角色、地區與最近一次冒險紀錄。撤退、失敗或通關後也會回到這裡。
+            </p>
+          </div>
+
+          <dl id="campStatusList" class="stat-list camp-status"></dl>
+
+          <nav class="menu-actions camp-actions" aria-label="冒險營地">
+            <button id="campStartButton" class="menu-button primary-menu-button" type="button">
+              <span>出發冒險</span>
+              <small>從目前地區的第一段開始</small>
+            </button>
+            <button id="campRegionButton" class="menu-button" type="button">
+              <span>選擇地區</span>
+              <small>查看平原與未來地區</small>
+            </button>
+            <button id="campCharacterButton" class="menu-button" type="button">
+              <span>查看角色</span>
+              <small>確認冒險者能力</small>
+            </button>
+            <button id="campRecordButton" class="menu-button" type="button">
+              <span>冒險紀錄</span>
+              <small>查看統計數據</small>
+            </button>
+            <button class="menu-button disabled-menu-button" type="button" disabled>
+              <span>整備</span>
+              <small>背包與裝備尚未開放</small>
+            </button>
+            <button id="campBackButton" class="menu-button" type="button">
+              <span>返回主選單</span>
+              <small>離開營地</small>
+            </button>
+          </nav>
+        </div>
+      </section>
+
       <section id="regionScreen" class="screen">
         <div class="selection-panel">
           <div id="regionListView" class="subview is-active">
@@ -58,7 +99,7 @@
                 <p class="eyebrow">開始遊戲</p>
                 <h2>選擇地區</h2>
               </div>
-              <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
+              <button class="secondary-button back-button" type="button" data-target="campScreen">回營地</button>
             </div>
             <p class="body-text">選擇本輪冒險要前往的地區。點選地區後可以查看詳細資訊再出發。</p>
             <div id="regionChoiceList" class="choice-list"></div>
@@ -213,7 +254,13 @@
           <section class="log-panel" aria-label="戰鬥紀錄">
             <div class="log-header">
               <h2>戰鬥紀錄</h2>
-              <button id="nextButton" class="secondary-button" type="button">下一回合</button>
+              <div class="combat-actions">
+                <button id="nextButton" class="secondary-button" type="button">下一回合</button>
+                <button id="fleeButton" class="secondary-button" type="button">嘗試逃跑</button>
+                <button id="continueButton" class="secondary-button" type="button">繼續前進</button>
+                <button id="restButton" class="secondary-button" type="button">原地修整</button>
+                <button id="retreatButton" class="secondary-button" type="button">撤退</button>
+              </div>
             </div>
             <ol id="battleLog" class="battle-log"></ol>
           </section>
@@ -238,7 +285,7 @@
               <dl id="endSummary" class="end-summary"></dl>
             </div>
             <div class="end-actions">
-              <button id="retryButton" class="primary-button" type="button">重新挑戰平原</button>
+              <button id="retryButton" class="primary-button" type="button">回到營地</button>
               <button id="viewLogButton" class="secondary-button" type="button">查看戰鬥紀錄</button>
               <button id="restartButton" class="secondary-button" type="button">回主選單</button>
             </div>
@@ -261,6 +308,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.1.15.1-alpha"></script>
+    <script type="module" src="game.js?v=0.2.0.0-alpha"></script>
   </body>
 </html>

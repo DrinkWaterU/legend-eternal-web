@@ -39,9 +39,13 @@ function renderStatisticsOverview(els, stats) {
   renderStatList(els.statisticsOverviewList, [
     ["冒險次數", stats.totalRuns],
     ["冒險失敗", stats.totalDefeats],
+    ["主動撤退", stats.totalRetreats],
     ["總通關", stats.totalClears],
     ["擊敗敵人", stats.totalEnemiesDefeated],
-    ["擊敗首領", stats.bossesDefeated]
+    ["擊敗首領", stats.bossesDefeated],
+    ["逃跑成功", stats.fleeSuccesses],
+    ["逃跑失敗", stats.fleeFailures],
+    ["最高局內等級", stats.highestRunLevel]
   ]);
 }
 
@@ -52,7 +56,7 @@ function renderStatisticsCharacterList(els, saveData, characterDefinitions, onCh
     return {
       title: character.name,
       meta: `Lv. ${characterProgress.level}`,
-      description: `出戰 ${characterStats.runs} 次，通關 ${characterStats.clears} 次。`,
+      description: `出戰 ${characterStats.runs} 次，通關 ${characterStats.clears} 次，最高局內 Lv. ${characterStats.highestRunLevel}。`,
       action: "查看統計",
       onClick: () => onCharacterDetail(characterId)
     };
@@ -69,6 +73,8 @@ function renderStatisticsCharacterDetail(els, saveData, characterDefinitions, ch
     ["經驗", characterProgress.exp],
     ["出戰次數", characterStats.runs],
     ["通關次數", characterStats.clears],
+    ["撤退次數", characterStats.retreats],
+    ["最高局內等級", characterStats.highestRunLevel],
     ["已學技能", characterProgress.learnedSkills.length]
   ]);
 }
@@ -79,7 +85,7 @@ function renderStatisticsRegionList(els, saveData, regionDefinitions, onRegionDe
     return {
       title: region.name,
       meta: region.difficulty,
-      description: `通關 ${regionStats.clears} 次，最高抵達 ${regionStats.bestEncounter} / ${region.encounterCount}。`,
+      description: `通關 ${regionStats.clears} 次，撤退 ${regionStats.retreats} 次，最高抵達 ${regionStats.bestEncounter} / ${region.encounterCount}。`,
       action: "查看統計",
       onClick: () => onRegionDetail(regionId)
     };
@@ -93,6 +99,7 @@ function renderStatisticsRegionDetail(els, saveData, regionDefinitions, regionId
   renderStatList(els.statisticsRegionDetailList, [
     ["冒險次數", regionStats.runs],
     ["通關次數", regionStats.clears],
+    ["撤退次數", regionStats.retreats],
     ["最高抵達遭遇", `${regionStats.bestEncounter} / ${region.encounterCount}`],
     ["首領", region.bossName],
     ["難度", region.difficulty]

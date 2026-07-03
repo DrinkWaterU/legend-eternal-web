@@ -24,5 +24,116 @@
     "attack": 10,
     "defense": 2,
     "critChance": "5%"
+  },
+  "runProgression": {
+    "maxLevel": 7,
+    "expCurve": [
+      0,
+      16,
+      36,
+      64,
+      100,
+      145,
+      200
+    ],
+    "levelUps": {
+      "2": {
+        "name": "重擊訓練",
+        "description": "你逐漸抓到揮擊節奏，攻擊力提升。",
+        "effects": [
+          {
+            "type": "add",
+            "stat": "attack",
+            "amount": 1
+          }
+        ],
+        "skills": [
+          "重擊訓練"
+        ]
+      },
+      "3": {
+        "name": "耐久行軍",
+        "description": "你適應了平原長途跋涉，生命上限提升並恢復少量生命。",
+        "effects": [
+          {
+            "type": "add",
+            "stat": "maxHp",
+            "amount": 8
+          },
+          {
+            "type": "recoverHp",
+            "amount": 8
+          }
+        ],
+        "skills": [
+          "耐久行軍"
+        ]
+      },
+      "4": {
+        "name": "守勢調整",
+        "description": "你學會讓護具承受更多衝擊，防禦提升。",
+        "effects": [
+          {
+            "type": "add",
+            "stat": "defense",
+            "amount": 1
+          }
+        ],
+        "skills": [
+          "守勢調整"
+        ]
+      },
+      "5": {
+        "name": "破綻觀察",
+        "description": "你更容易看出敵人的破綻，暴擊率提升。",
+        "effects": [
+          {
+            "type": "add",
+            "stat": "critChance",
+            "amount": 0.03
+          }
+        ],
+        "skills": [
+          "破綻觀察"
+        ]
+      },
+      "6": {
+        "name": "熟練冒險者",
+        "description": "一輪輪遭遇讓你的動作更加穩定，攻擊與生命上限提升。",
+        "effects": [
+          {
+            "type": "add",
+            "stat": "attack",
+            "amount": 1
+          },
+          {
+            "type": "add",
+            "stat": "maxHp",
+            "amount": 6
+          },
+          {
+            "type": "recoverHp",
+            "amount": 6
+          }
+        ],
+        "skills": [
+          "熟練冒險者"
+        ]
+      },
+      "7": {
+        "name": "戰鬥回復",
+        "description": "你能在勝利後更快調整呼吸，擊敗敵人後恢復生命。",
+        "effects": [
+          {
+            "type": "add",
+            "stat": "killHeal",
+            "amount": 4
+          }
+        ],
+        "skills": [
+          "戰鬥回復"
+        ]
+      }
+    }
   }
 }

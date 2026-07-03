@@ -127,6 +127,7 @@ h2 {
 }
 
 .menu-layout,
+.camp-layout,
 .selection-panel,
 .intro-panel,
 .status-panel,
@@ -149,6 +150,65 @@ h2 {
   margin: 0 auto;
   padding: 30px;
   border-color: rgba(224, 179, 93, 0.32);
+}
+
+.camp-screen {
+  margin: -10px auto 0;
+  padding: 28px 12px;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 7, 10, 0.16) 0%,
+      rgba(5, 7, 10, 0.54) 28%,
+      rgba(5, 7, 10, 0.74) 50%,
+      rgba(5, 7, 10, 0.54) 72%,
+      rgba(5, 7, 10, 0.18) 100%
+    ),
+    linear-gradient(180deg, rgba(5, 7, 10, 0.12) 0%, rgba(5, 7, 10, 0.46) 100%),
+    url("./assets/images/camp/camp-mobile.png") center / cover no-repeat;
+  box-shadow: var(--shadow);
+}
+
+.camp-layout {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 18px 18px;
+  border-color: rgba(241, 211, 134, 0.38);
+  background:
+    linear-gradient(180deg, rgba(49, 42, 28, 0.4), rgba(9, 12, 14, 0.4)),
+    rgba(16, 18, 20, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.camp-copy {
+  text-align: center;
+}
+
+.camp-copy h2 {
+  font-size: clamp(1.7rem, 6vw, 2.6rem);
+  line-height: 1.18;
+}
+
+.camp-status {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 18px 0;
+}
+
+.camp-actions {
+  gap: 10px;
+}
+
+.primary-menu-button {
+  border-color: rgba(241, 211, 134, 0.62);
+  background:
+    linear-gradient(135deg, rgba(241, 211, 134, 0.2), transparent 44%),
+    rgba(55, 39, 22, 0.96);
+}
+
+.disabled-menu-button {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .menu-copy {
@@ -508,6 +568,21 @@ dd {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.log-header {
+  align-items: start;
+}
+
+.combat-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  width: min(100%, 180px);
+}
+
+.combat-actions .secondary-button {
+  width: 100%;
 }
 
 .entity-heading h2,
@@ -901,6 +976,23 @@ dd {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .camp-screen {
+    padding: 18px 8px;
+  }
+
+  .camp-status {
+    grid-template-columns: 1fr;
+  }
+
+  .log-header {
+    flex-direction: column;
+  }
+
+  .combat-actions {
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
   .primary-button {
     width: 100%;
   }
@@ -909,4 +1001,20 @@ dd {
     grid-template-columns: 1fr;
   }
 
+}
+
+@media (min-width: 821px) {
+  .camp-screen {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(5, 7, 10, 0.2) 0%,
+        rgba(5, 7, 10, 0.5) 30%,
+        rgba(5, 7, 10, 0.72) 50%,
+        rgba(5, 7, 10, 0.5) 70%,
+        rgba(5, 7, 10, 0.22) 100%
+      ),
+      linear-gradient(180deg, rgba(5, 7, 10, 0.08) 0%, rgba(5, 7, 10, 0.38) 100%),
+      url("./assets/images/camp/camp-desktop.png") center / cover no-repeat;
+  }
 }
