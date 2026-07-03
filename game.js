@@ -23,6 +23,9 @@ const state = {
   enemy: null,
   awaitingBlessing: false,
   ended: false,
+  defeatedEnemies: 0,
+  defeatedBoss: false,
+  deathCause: null,
   log: []
 };
 
@@ -334,6 +337,9 @@ function startRun() {
   state.enemy = null;
   state.awaitingBlessing = false;
   state.ended = false;
+  state.defeatedEnemies = 0;
+  state.defeatedBoss = false;
+  state.deathCause = null;
   state.log = [];
 
   showScreen("gameScreen");
@@ -396,14 +402,19 @@ function playTurn() {
     return;
   }
 
-  resolveEnemyAction({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
+  const enemyAction = resolveEnemyAction({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
   if (state.hero.hp <= 0) {
+    state.deathCause = enemyAction;
     loseRun();
     return;
   }
 
-  applyEndOfTurnEffects({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
+  const endOfTurn = applyEndOfTurnEffects({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
   if (state.hero.hp <= 0) {
+    state.deathCause = endOfTurn.heroDeathCause || {
+      type: "other",
+      label: "回合結束效果"
+    };
     loseRun();
     return;
   }
@@ -420,6 +431,8 @@ function winEncounter() {
   const defeatedBoss = state.enemy.kind === "首領";
   addLog("system", "victory", { target: enemyName });
   recordEnemyDefeated(defeatedBoss);
+  state.defeatedEnemies += 1;
+  state.defeatedBoss = state.defeatedBoss || defeatedBoss;
 
   if (state.hero.killHeal > 0) {
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + state.hero.killHeal);
@@ -452,11 +465,44 @@ function finishRun(cleared) {
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.add("is-visible");
   els.endTitle.textContent = cleared ? "冒險成功" : "冒險失敗";
-  els.endText.textContent = cleared
-    ? `你完成了${region.name}的挑戰。本輪共通過 ${state.encounterIndex} 場遭遇。`
-    : `你抵達了第 ${state.encounterIndex + 1} 場遭遇。本輪冒險結束。`;
+  els.endText.textContent = getEndText(cleared, region);
+  renderEndSummary(cleared, region);
   els.resultLabel.textContent = cleared ? `${region.name}突破` : "本輪結束";
   render();
+}
+
+function getEndText(cleared, region) {
+  if (cleared) {
+    return `你完成了${region.name}的挑戰。`;
+  }
+
+  return "冒險者倒下了。你可以查看最後一場戰鬥紀錄，確認本輪結束前發生了什麼。";
+}
+
+function renderEndSummary(cleared, region) {
+  const reachedEncounter = getReachedEncounter(cleared, region);
+  const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
+  const items = [
+    ["結果", cleared ? "冒險成功" : "冒險失敗"],
+    ["抵達", `第 ${reachedEncounter} / ${region.encounterPlan.length} 場`],
+    ["擊敗敵人", `${state.defeatedEnemies} 隻`],
+    ["擊敗首領", state.defeatedBoss ? "是" : "否"],
+    ["選擇祝福", blessings]
+  ];
+
+  if (!cleared) {
+    items.push(["死因", state.deathCause ? state.deathCause.label : "未知"]);
+  }
+
+  renderStatList(els.endSummary, items);
+}
+
+function getReachedEncounter(cleared, region) {
+  if (cleared) {
+    return region.encounterPlan.length;
+  }
+
+  return Math.min(state.encounterIndex + 1, region.encounterPlan.length);
 }
 
 function showBlessings() {
@@ -496,6 +542,10 @@ function chooseBlessing(blessing) {
   state.hero.blessings.push(blessing.name);
   addLog("system", "blessing", { blessing: blessing.name });
   startEncounter();
+}
+
+function closeEndPanel() {
+  els.endPanel.classList.remove("is-visible");
 }
 
 function render() {
@@ -569,6 +619,7 @@ function bindEvents() {
   els.startButton.addEventListener("click", startRun);
   els.restartButton.addEventListener("click", restart);
   els.retryButton.addEventListener("click", startRun);
+  els.viewLogButton.addEventListener("click", closeEndPanel);
   els.nextButton.addEventListener("click", playTurn);
   els.exportSaveButton.addEventListener("click", exportSave);
   els.importSaveButton.addEventListener("click", openImportSavePicker);

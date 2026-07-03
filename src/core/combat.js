@@ -110,15 +110,25 @@ export function resolveHeroAction({ hero, enemy, log }) {
 
 export function resolveEnemyAction({ hero, enemy, turn, log }) {
   let damage = Math.max(1, enemy.attack - hero.defense);
+  const damageSource = {
+    type: "attack",
+    label: `${enemy.name}的攻擊`
+  };
 
   if (enemy.chargeEvery && turn % enemy.chargeEvery === 0) {
     log.template("status", "charge", { actor: enemy.name });
     damage = Math.round(damage * (enemy.chargeMultiplier || DEFAULT_CHARGE_MULTIPLIER));
+    damageSource.type = "charge";
+    damageSource.label = `${enemy.name}的衝鋒`;
   }
 
   if (roll(enemy.critChance || 0)) {
     damage = Math.round(damage * 1.6);
     log.template("damage", "critical", { actor: enemy.name });
+    damageSource.type = damageSource.type === "charge" ? "chargeCritical" : "critical";
+    damageSource.label = damageSource.type === "chargeCritical"
+      ? `${enemy.name}的衝鋒暴擊`
+      : `${enemy.name}的暴擊`;
   }
 
   if (hero.shield > 0) {
@@ -139,6 +149,8 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
     hero.poison = Math.max(hero.poison || 0, enemy.poisonPower);
     log.template("status", "poisonApply", { target: hero.name });
   }
+
+  return damageSource;
 }
 
 function getFamilyDamageBonus(hero, family) {
@@ -148,10 +160,18 @@ function getFamilyDamageBonus(hero, family) {
 }
 
 export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
+  let heroDeathCause = null;
+
   if (hero.poison > 0) {
     const poisonDamage = Math.max(1, Math.round(hero.poison * (1 - hero.damageReduction)));
     hero.hp = Math.max(0, hero.hp - poisonDamage);
     log.template("damage", "poisonTick", { target: hero.name, amount: poisonDamage });
+    if (hero.hp <= 0) {
+      heroDeathCause = {
+        type: "poison",
+        label: "中毒"
+      };
+    }
   }
 
   if (enemy.poison > 0) {
@@ -168,4 +188,6 @@ export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.regenAmount);
     log.template("heal", "heal", { target: enemy.name, amount: enemy.regenAmount });
   }
+
+  return { heroDeathCause };
 }

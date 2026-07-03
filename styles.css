@@ -704,22 +704,26 @@ dd {
 }
 
 .blessing-card.rarity-common {
-  border-color: rgba(183, 204, 184, 0.34);
-}
-
-.blessing-card.rarity-common small {
-  color: #b7ccb8;
-}
-
-.blessing-card.rarity-uncommon {
-  border-color: rgba(111, 193, 170, 0.52);
+  border-color: rgba(190, 198, 192, 0.28);
   background:
-    linear-gradient(135deg, rgba(111, 193, 170, 0.15), transparent 50%),
+    linear-gradient(135deg, rgba(190, 198, 192, 0.05), transparent 48%),
     rgba(21, 26, 27, 0.96);
 }
 
+.blessing-card.rarity-common small {
+  color: #bac3bd;
+}
+
+.blessing-card.rarity-uncommon {
+  border-color: rgba(132, 229, 143, 0.7);
+  background:
+    linear-gradient(135deg, rgba(132, 229, 143, 0.19), transparent 50%),
+    rgba(21, 26, 27, 0.96);
+  box-shadow: inset 0 0 18px rgba(132, 229, 143, 0.08);
+}
+
 .blessing-card.rarity-uncommon small {
-  color: #7dd5bd;
+  color: #8fe878;
 }
 
 .blessing-card.rarity-rare {
@@ -771,6 +775,40 @@ dd {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.end-summary {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 18px 0 0;
+  text-align: left;
+}
+
+.end-summary div {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.34fr) 1fr;
+  gap: 10px;
+  min-height: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(217, 199, 150, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.end-summary dt {
+  color: var(--sky);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.end-summary dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .end-actions .secondary-button,

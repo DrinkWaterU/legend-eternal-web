@@ -45,6 +45,8 @@ export const els = {
   endPanel: document.querySelector("#endPanel"),
   endTitle: document.querySelector("#endTitle"),
   endText: document.querySelector("#endText"),
+  endSummary: document.querySelector("#endSummary"),
+  viewLogButton: document.querySelector("#viewLogButton"),
   statisticsTabs: document.querySelectorAll("[data-statistics-view]"),
   statisticsOverviewView: document.querySelector("#statisticsOverviewView"),
   statisticsCharacterListView: document.querySelector("#statisticsCharacterListView"),
