@@ -242,7 +242,7 @@
       "eventTitle": "史萊姆殘液",
       "eventText": "你從乾掉的史萊姆痕跡裡收集到帶有腐蝕性的黏液。",
       "flavorText": "瓶中的液體緩慢晃動，像還記得自己曾經是活物。",
-      "effectText": "攻擊時附加 2 點中毒傷害。",
+      "effectText": "攻擊時使敵人中毒，每回合結束失去 2 點生命。",
       "effects": [
         {
           "type": "add",
@@ -538,7 +538,7 @@
       "eventTitle": "帶刺藤蔓",
       "eventText": "你把帶刺藤蔓的汁液塗在武器邊緣，讓傷口更難癒合。",
       "flavorText": "這不是致命毒藥，但足以讓敵人的每次呼吸都變得沉重。",
-      "effectText": "攻擊時附加 1 點中毒傷害。",
+      "effectText": "攻擊時使敵人中毒，每回合結束失去 1 點生命。",
       "effects": [
         {
           "type": "add",

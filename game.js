@@ -403,12 +403,12 @@ function playTurn() {
   }
 
   applyEndOfTurnEffects({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
-  if (state.enemy.hp <= 0) {
-    winEncounter();
-    return;
-  }
   if (state.hero.hp <= 0) {
     loseRun();
+    return;
+  }
+  if (state.enemy.hp <= 0) {
+    winEncounter();
     return;
   }
 
