@@ -581,6 +581,34 @@ dd {
   border-color: var(--clay);
 }
 
+.battle-log li.hero-damage {
+  border-color: var(--grass);
+  background:
+    linear-gradient(90deg, rgba(132, 229, 143, 0.08), transparent),
+    rgba(13, 17, 18, 0.88);
+}
+
+.battle-log li.enemy-damage {
+  border-color: var(--wine);
+  background:
+    linear-gradient(90deg, rgba(214, 106, 94, 0.1), transparent),
+    rgba(13, 17, 18, 0.88);
+}
+
+.battle-log li.neutral-damage {
+  border-color: rgba(167, 139, 211, 0.78);
+  background:
+    linear-gradient(90deg, rgba(167, 139, 211, 0.09), transparent),
+    rgba(13, 17, 18, 0.88);
+}
+
+.battle-log li.critical {
+  border-color: var(--gold);
+  background:
+    linear-gradient(90deg, rgba(241, 211, 134, 0.12), transparent),
+    rgba(13, 17, 18, 0.88);
+}
+
 .battle-log li.heal {
   border-color: var(--grass);
 }

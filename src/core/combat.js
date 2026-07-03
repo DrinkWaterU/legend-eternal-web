@@ -92,11 +92,11 @@ export function resolveHeroAction({ hero, enemy, log }) {
   }
   if (roll(hero.critChance)) {
     damage = Math.round(damage * 1.7);
-    log.template("damage", "critical", { actor: hero.name });
+    log.template("critical", "critical", { actor: hero.name });
   }
 
   enemy.hp = Math.max(0, enemy.hp - damage);
-  log.template("damage", "heroDamage", {
+  log.template("hero-damage", "heroDamage", {
     actor: hero.name,
     target: enemy.name,
     amount: damage
@@ -124,7 +124,7 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
 
   if (roll(enemy.critChance || 0)) {
     damage = Math.round(damage * 1.6);
-    log.template("damage", "critical", { actor: enemy.name });
+    log.template("critical", "critical", { actor: enemy.name });
     damageSource.type = damageSource.type === "charge" ? "chargeCritical" : "critical";
     damageSource.label = damageSource.type === "chargeCritical"
       ? `${enemy.name}的衝鋒暴擊`
@@ -139,7 +139,7 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
   }
 
   hero.hp = Math.max(0, hero.hp - damage);
-  log.template("damage", "enemyDamage", {
+  log.template("enemy-damage", "enemyDamage", {
     actor: enemy.name,
     target: hero.name,
     amount: damage
@@ -165,7 +165,7 @@ export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
   if (hero.poison > 0) {
     const poisonDamage = Math.max(1, Math.round(hero.poison * (1 - hero.damageReduction)));
     hero.hp = Math.max(0, hero.hp - poisonDamage);
-    log.template("damage", "poisonTick", { target: hero.name, amount: poisonDamage });
+    log.template("enemy-damage", "poisonTick", { target: hero.name, amount: poisonDamage });
     if (hero.hp <= 0) {
       heroDeathCause = {
         type: "poison",
@@ -176,7 +176,7 @@ export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
 
   if (enemy.poison > 0) {
     enemy.hp = Math.max(0, enemy.hp - enemy.poison);
-    log.template("damage", "poisonTick", { target: enemy.name, amount: enemy.poison });
+    log.template("hero-damage", "poisonTick", { target: enemy.name, amount: enemy.poison });
   }
 
   if (hero.regenEvery > 0 && turn % hero.regenEvery === 0 && hero.hp > 0) {
