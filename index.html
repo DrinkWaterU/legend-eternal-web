@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.2.4-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.2.4.1-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.2.2.4-alpha</p>
+            <p class="version-label">v0.2.2.4.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -435,25 +435,12 @@
           <h2 id="materialInfoTitle">素材</h2>
           <p id="materialInfoMeta" class="body-text"></p>
           <p id="materialInfoDescription" class="body-text"></p>
-          <dl class="stat-list material-info-list">
-            <div>
-              <dt>用途</dt>
-              <dd id="materialInfoUsage"></dd>
-            </div>
-            <div>
-              <dt>來源</dt>
-              <dd id="materialInfoSource"></dd>
-            </div>
-            <div>
-              <dt>價值</dt>
-              <dd id="materialInfoPrice"></dd>
-            </div>
-          </dl>
+          <div id="materialInfoDetails" class="detail-info-layout" aria-label="物品詳細資訊"></div>
           <button id="closeMaterialInfoButton" class="secondary-button" type="button">關閉</button>
         </div>
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.2.4-alpha"></script>
+    <script type="module" src="game.js?v=0.2.2.4.1-alpha"></script>
   </body>
 </html>

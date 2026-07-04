@@ -45,6 +45,17 @@ const PLAINS_STORY_LINES = [
   `<span class="story-mark-phoenix">灰燼般的微光</span>在黑暗中燃起。`,
   `<span class="story-mark-phoenix">鳳凰的加護</span>回應了死亡，將你帶回<span class="story-mark-phoenix">營地</span>。`
 ];
+const NAVIGATION_CONTEXTS = Object.freeze({
+  menu: { scene: null, returnTarget: "menuScreen" },
+  camp: { scene: "camp", returnTarget: "campScreen" },
+  adventure: { scene: "region", returnTarget: null },
+  story: { scene: null, returnTarget: null }
+});
+const ROOT_SCREEN_CONTEXTS = Object.freeze({
+  menuScreen: "menu",
+  campScreen: "camp",
+  gameScreen: "adventure"
+});
 
 const state = {
   run: 0,
@@ -72,11 +83,10 @@ const state = {
 };
 
 const uiState = {
+  navigationContext: "menu",
   regionView: "list",
   characterView: "list",
-  characterReturnTarget: "menuScreen",
   statisticsView: "overview",
-  statisticsReturnTarget: "menuScreen",
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID,
   storageSortMode: "rarity",
@@ -86,17 +96,57 @@ const uiState = {
 let saveData = loadSave();
 let pendingSaveCodeImport = null;
 
-function showScreen(screenId) {
-  closeMaterialDetail(els);
-  const isCampView = screenId === "campScreen";
-  const isRegionView = screenId === "gameScreen";
-  document.body.classList.toggle("is-camp-view", isCampView);
-  document.body.classList.toggle("is-region-view", isRegionView);
-  if (isRegionView) {
+function getNavigationContext(contextId = uiState.navigationContext) {
+  return NAVIGATION_CONTEXTS[contextId] || NAVIGATION_CONTEXTS.menu;
+}
+
+function setNavigationContext(contextId) {
+  uiState.navigationContext = NAVIGATION_CONTEXTS[contextId] ? contextId : "menu";
+}
+
+function getNavigationReturnTarget() {
+  return getNavigationContext().returnTarget || "menuScreen";
+}
+
+function showScreenInContext(screenId, contextId) {
+  setNavigationContext(contextId);
+  showScreen(screenId);
+}
+
+function syncRootScreenContext(screenId) {
+  const contextId = ROOT_SCREEN_CONTEXTS[screenId];
+  if (contextId) {
+    setNavigationContext(contextId);
+  }
+}
+
+function applySceneContext(screenId) {
+  const context = getNavigationContext();
+  const scene = screenId === "gameScreen"
+    ? "region"
+    : screenId === "campScreen"
+      ? "camp"
+      : screenId === "menuScreen"
+        ? null
+        : context.scene;
+
+  if (scene) {
+    document.body.dataset.scene = scene;
+  } else {
+    delete document.body.dataset.scene;
+  }
+
+  if (scene === "region") {
     document.body.dataset.region = state.selectedRegionId;
   } else {
     delete document.body.dataset.region;
   }
+}
+
+function showScreen(screenId) {
+  closeMaterialDetail(els);
+  syncRootScreenContext(screenId);
+  applySceneContext(screenId);
 
   document.querySelectorAll(".screen").forEach((screen) => {
     screen.classList.toggle("is-active", screen.id === screenId);
@@ -148,7 +198,8 @@ function syncSelectionFromSave() {
   state.selectedHero = characterDefinitions[characterId].name;
 }
 
-function showRegionList() {
+function showRegionList(contextId = uiState.navigationContext) {
+  setNavigationContext(contextId);
   uiState.regionView = "list";
   showScreen("regionScreen");
 }
@@ -201,6 +252,7 @@ function renderCampScreen() {
 function renderRegionScreen() {
   els.regionListView.classList.toggle("is-active", uiState.regionView === "list");
   els.regionDetailView.classList.toggle("is-active", uiState.regionView === "detail");
+  setReturnButton(els.regionListView.querySelector(".back-button"), getNavigationReturnTarget());
 
   renderChoiceList(els.regionChoiceList, Object.entries(regionDefinitions).map(([regionId, region]) => ({
     title: region.name,
@@ -224,8 +276,8 @@ function renderRegionScreen() {
   }
 }
 
-function showCharacterList(returnTarget = uiState.characterReturnTarget || "menuScreen") {
-  uiState.characterReturnTarget = returnTarget;
+function showCharacterList(contextId = uiState.navigationContext) {
+  setNavigationContext(contextId);
   uiState.characterView = "list";
   showScreen("characterScreen");
 }
@@ -241,7 +293,7 @@ function showCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
 function renderCharacterScreen() {
   els.characterListView.classList.toggle("is-active", uiState.characterView === "list");
   els.characterDetailView.classList.toggle("is-active", uiState.characterView === "detail");
-  setReturnButton(els.characterListView.querySelector(".back-button"), uiState.characterReturnTarget);
+  setReturnButton(els.characterListView.querySelector(".back-button"), getNavigationReturnTarget());
 
   renderChoiceList(els.characterChoiceList, Object.entries(characterDefinitions).map(([characterId, character]) => ({
     title: character.name,
@@ -278,6 +330,7 @@ function renderCharacterScreen() {
 
 function renderStorageScreen() {
   const inventory = normalizeInventory(saveData.inventory);
+  setReturnButton(els.storageBackButton, getNavigationReturnTarget());
   renderStorageView({
     els,
     inventory,
@@ -468,7 +521,7 @@ function recordRunFinished(outcome) {
 }
 
 function renderStatistics() {
-  setReturnButton(els.statisticsScreen.querySelector(".back-button"), uiState.statisticsReturnTarget);
+  setReturnButton(els.statisticsScreen.querySelector(".back-button"), getNavigationReturnTarget());
   renderStatisticsView({
     els,
     uiState,
@@ -484,6 +537,7 @@ function renderAchievementScreen() {
   if (!els.achievementTitle || !els.achievementText || !els.achievementList) {
     return;
   }
+  setReturnButton(els.achievementScreen.querySelector(".back-button"), getNavigationReturnTarget());
   const unlocked = saveData.storyFlags.achievementSystemUnlocked;
   els.achievementTitle.textContent = unlocked ? "已解鎖成就" : "尚未開放";
   els.achievementText.textContent = unlocked
@@ -505,8 +559,8 @@ function renderAchievementScreen() {
   els.achievementList.append(item);
 }
 
-function showStatisticsScreen(returnTarget = uiState.statisticsReturnTarget || "menuScreen") {
-  uiState.statisticsReturnTarget = returnTarget;
+function showStatisticsScreen(contextId = uiState.navigationContext) {
+  setNavigationContext(contextId);
   uiState.statisticsView = "overview";
   showScreen("statisticsScreen");
 }
@@ -1233,6 +1287,7 @@ function shouldTriggerPlainsStory() {
 }
 
 function showPlainsStory() {
+  setNavigationContext("story");
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "story";
@@ -1367,18 +1422,18 @@ function saveGameSafe() {
 }
 
 function bindEvents() {
-  els.openRegionButton.addEventListener("click", () => showScreen("campScreen"));
-  els.openCharacterButton.addEventListener("click", () => showCharacterList("menuScreen"));
-  els.openStatisticsButton.addEventListener("click", () => showStatisticsScreen("menuScreen"));
-  els.openAchievementButton.addEventListener("click", () => showScreen("achievementScreen"));
+  els.openRegionButton.addEventListener("click", () => showScreenInContext("campScreen", "camp"));
+  els.openCharacterButton.addEventListener("click", () => showCharacterList("menu"));
+  els.openStatisticsButton.addEventListener("click", () => showStatisticsScreen("menu"));
+  els.openAchievementButton.addEventListener("click", () => showScreenInContext("achievementScreen", "menu"));
   els.campStartButton.addEventListener("click", startRun);
-  els.campRegionButton.addEventListener("click", showRegionList);
-  els.campCharacterButton.addEventListener("click", () => showCharacterList("campScreen"));
-  els.campRecordButton.addEventListener("click", () => showStatisticsScreen("campScreen"));
-  els.campStorageButton.addEventListener("click", () => showScreen("storageScreen"));
+  els.campRegionButton.addEventListener("click", () => showRegionList("camp"));
+  els.campCharacterButton.addEventListener("click", () => showCharacterList("camp"));
+  els.campRecordButton.addEventListener("click", () => showStatisticsScreen("camp"));
+  els.campStorageButton.addEventListener("click", () => showScreenInContext("storageScreen", "camp"));
   els.campBackButton.addEventListener("click", restart);
-  els.storageBackButton.addEventListener("click", () => showScreen("campScreen"));
-  els.backToRegionListButton.addEventListener("click", showRegionList);
+  els.storageBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
+  els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
   els.statisticsTabs.forEach((button) => {
     button.addEventListener("click", () => showStatisticsView(button.dataset.statisticsView));
@@ -1389,7 +1444,7 @@ function bindEvents() {
     saveData.settings.selectedCharacterId = state.selectedHeroId;
     saveGameSafe();
     syncSelectionFromSave();
-    showScreen(uiState.characterReturnTarget);
+    showScreen(getNavigationReturnTarget());
   });
   document.querySelectorAll(".back-button").forEach((button) => {
     button.addEventListener("click", () => showScreen(button.dataset.target));

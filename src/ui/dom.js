@@ -122,8 +122,6 @@ export const els = {
   materialInfoTitle: document.querySelector("#materialInfoTitle"),
   materialInfoMeta: document.querySelector("#materialInfoMeta"),
   materialInfoDescription: document.querySelector("#materialInfoDescription"),
-  materialInfoUsage: document.querySelector("#materialInfoUsage"),
-  materialInfoSource: document.querySelector("#materialInfoSource"),
-  materialInfoPrice: document.querySelector("#materialInfoPrice"),
+  materialInfoDetails: document.querySelector("#materialInfoDetails"),
   closeMaterialInfoButton: document.querySelector("#closeMaterialInfoButton")
 };

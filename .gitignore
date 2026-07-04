@@ -16,6 +16,8 @@
 node_modules/
 dist/
 build/
+__pycache__/
+*.py[cod]
 
 # Logs and temporary files
 *.log

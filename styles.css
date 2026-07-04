@@ -41,7 +41,7 @@ body {
     sans-serif;
 }
 
-body.is-camp-view {
+body[data-scene="camp"] {
   background:
     linear-gradient(
       90deg,
@@ -55,7 +55,7 @@ body.is-camp-view {
     url("./assets/images/camp/camp-mobile.png") center / cover fixed no-repeat;
 }
 
-body.is-region-view[data-region="plains"] {
+body[data-scene="region"][data-region="plains"] {
   background:
     linear-gradient(
       90deg,
@@ -660,7 +660,55 @@ dd {
 }
 
 .material-info-dialog {
-  max-width: 560px;
+  max-width: 720px;
+}
+
+.detail-info-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+  gap: 0.8rem;
+  width: 100%;
+  align-items: stretch;
+  text-align: left;
+}
+
+.detail-info-primary,
+.detail-info-secondary {
+  display: grid;
+  gap: 0.8rem;
+  min-width: 0;
+  margin: 0;
+}
+
+.detail-info-primary {
+  grid-auto-rows: minmax(min-content, 1fr);
+}
+
+.detail-info-secondary {
+  align-content: start;
+}
+
+.detail-info-card {
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(241, 211, 134, 0.24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(111, 176, 193, 0.06), transparent 52%),
+    rgba(9, 14, 15, 0.68);
+}
+
+.detail-info-card dt {
+  color: var(--sky);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.detail-info-card dd {
+  margin: 0.5rem 0 0;
+  color: var(--ink);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 .modal-status {
@@ -688,9 +736,6 @@ dd {
   color: #9ed7ff;
 }
 
-.material-info-list {
-  width: 100%;
-}
 
 .skill-section {
   margin: 22px 0 24px;
@@ -1805,6 +1850,15 @@ dd {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .detail-info-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-info-primary,
+  .detail-info-secondary {
+    grid-template-columns: 1fr;
+  }
+
   .story-star-strip {
     min-height: 118px;
   }
@@ -1816,7 +1870,7 @@ dd {
 }
 
 @media (min-width: 821px) {
-  body.is-camp-view {
+  body[data-scene="camp"] {
     background:
       linear-gradient(
         90deg,
@@ -1830,7 +1884,7 @@ dd {
       url("./assets/images/camp/camp-desktop.png") center / cover fixed no-repeat;
   }
 
-  body.is-region-view[data-region="plains"] {
+  body[data-scene="region"][data-region="plains"] {
     background:
       linear-gradient(
         90deg,

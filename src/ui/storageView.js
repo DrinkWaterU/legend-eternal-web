@@ -1,4 +1,5 @@
 import { getMaterialRarity } from "../data/materials.js";
+import { renderDetailInfoLayout } from "./renderHelpers.js";
 
 const SORTERS = {
   rarity: compareByRarity,
@@ -45,9 +46,15 @@ export function showMaterialDetail(els, item) {
   els.materialInfoTitle.textContent = item.name;
   els.materialInfoMeta.textContent = `${getCategoryLabel(item.category)} / 持有 ${item.quantity}`;
   els.materialInfoDescription.textContent = item.description || "尚未記錄素材描述。";
-  els.materialInfoUsage.textContent = item.usage || "尚未記錄用途。";
-  els.materialInfoSource.textContent = item.source || "來源不明。";
-  els.materialInfoPrice.textContent = `${item.sellPrice || 0} 金幣`;
+  renderDetailInfoLayout(els.materialInfoDetails, {
+    primary: [
+      { label: "用途", value: item.usage || "尚未記錄用途。" }
+    ],
+    secondary: [
+      { label: "來源", value: item.source || "來源不明。" },
+      { label: "價值", value: `${item.sellPrice || 0} 金幣` }
+    ]
+  });
   els.materialInfoPanel.classList.add("is-visible");
 }
 
