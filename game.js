@@ -11,9 +11,10 @@ import {
   getSkillsForLevel,
   normalizeCharacterProgress as normalizeCharacterProgressCore
 } from "./src/core/progression.js";
-import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, formatRewards, mergeRewards, rollEnemyRewards } from "./src/core/rewards.js";
+import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, formatRewards, mergeRewards, normalizeInventory, rollEnemyRewards } from "./src/core/rewards.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
+import { materialDefinitions } from "./src/data/materials.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
 import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
@@ -22,6 +23,7 @@ import { renderCharacterSkills } from "./src/ui/characterSkillsView.js";
 import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderCurrentStats, renderStatList, setMeter } from "./src/ui/renderHelpers.js";
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
+import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
 import { roll, weightedRandomItem } from "./src/utils.js";
 
 const RUN_STARTING_FLEES = 2;
@@ -76,13 +78,16 @@ const uiState = {
   statisticsView: "overview",
   statisticsReturnTarget: "menuScreen",
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
-  statisticsRegionId: DEFAULT_REGION_ID
+  statisticsRegionId: DEFAULT_REGION_ID,
+  storageSortMode: "rarity",
+  storageSortDirection: "desc"
 };
 
 let saveData = loadSave();
 let pendingSaveCodeImport = null;
 
 function showScreen(screenId) {
+  closeMaterialDetail(els);
   const isCampView = screenId === "campScreen";
   const isRegionView = screenId === "gameScreen";
   document.body.classList.toggle("is-camp-view", isCampView);
@@ -106,6 +111,11 @@ function showScreen(screenId) {
     els.resultLabel.textContent = "營地整備";
     els.encounterLabel.textContent = state.selectedRegion;
     renderCampScreen();
+  }
+  if (screenId === "storageScreen") {
+    els.resultLabel.textContent = "倉庫";
+    els.encounterLabel.textContent = "冒險營地";
+    renderStorageScreen();
   }
   if (screenId === "regionScreen") {
     els.resultLabel.textContent = "選擇地區";
@@ -166,7 +176,7 @@ function renderCampScreen() {
   const lastResult = state.lastRunSummary
     ? `${state.lastRunSummary.result}，抵達第 ${state.lastRunSummary.reachedEncounter} / ${region.encounterPlan.length} 場`
     : "尚無紀錄";
-  const inventorySummary = formatInventorySummary(saveData.inventory);
+  const inventorySummary = formatInventorySummary(saveData.inventory, materialDefinitions);
   const campStats = [
     ["目前角色", character.name],
     ["角色等級", `Lv. ${progress.level}`],
@@ -179,6 +189,7 @@ function renderCampScreen() {
     campStats.splice(3, 0, ["目前金幣", inventorySummary.gold]);
   }
   renderStatList(els.campStatusList, campStats);
+  els.campStorageButton.hidden = !hasPhoenixBlessing();
   if (els.campWarning) {
     els.campWarning.textContent = hasPhoenixBlessing()
       ? "鳳凰的加護已覺醒。死亡會結束本輪冒險，但角色等級與經驗會保留。"
@@ -263,6 +274,26 @@ function renderCharacterScreen() {
     });
     els.selectCharacterButton.textContent = `使用${character.name}`;
   }
+}
+
+function renderStorageScreen() {
+  const inventory = normalizeInventory(saveData.inventory);
+  renderStorageView({
+    els,
+    inventory,
+    materialDefinitions,
+    sortMode: uiState.storageSortMode,
+    sortDirection: uiState.storageSortDirection,
+    onSortChange: (sortMode) => {
+      uiState.storageSortMode = sortMode;
+      renderStorageScreen();
+    },
+    onDirectionChange: (sortDirection) => {
+      uiState.storageSortDirection = sortDirection;
+      renderStorageScreen();
+    },
+    onMaterialClick: (item) => showMaterialDetail(els, item)
+  });
 }
 
 function createRunStats() {
@@ -614,6 +645,10 @@ function showSkillInfo(skill, context) {
 
 function closeSkillPanel() {
   els.skillInfoPanel.classList.remove("is-visible");
+}
+
+function closeMaterialInfoPanel() {
+  closeMaterialDetail(els);
 }
 
 function deleteSave() {
@@ -986,8 +1021,10 @@ function renderEndSummary(outcome, region) {
     ["選擇祝福", blessings]
   ];
   if (hasPhoenixBlessing()) {
-    const rewards = formatRewards(state.runStats?.rewards);
-    items.push(["本輪金幣", rewards.gold]);
+    const rewards = formatRewards(state.runStats?.rewards, materialDefinitions);
+    if (rewards.gold > 0) {
+      items.push(["本輪金幣", rewards.gold]);
+    }
     items.push(["本輪素材", rewards.materials]);
   }
 
@@ -1338,7 +1375,9 @@ function bindEvents() {
   els.campRegionButton.addEventListener("click", showRegionList);
   els.campCharacterButton.addEventListener("click", () => showCharacterList("campScreen"));
   els.campRecordButton.addEventListener("click", () => showStatisticsScreen("campScreen"));
+  els.campStorageButton.addEventListener("click", () => showScreen("storageScreen"));
   els.campBackButton.addEventListener("click", restart);
+  els.storageBackButton.addEventListener("click", () => showScreen("campScreen"));
   els.backToRegionListButton.addEventListener("click", showRegionList);
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
   els.statisticsTabs.forEach((button) => {
@@ -1380,9 +1419,15 @@ function bindEvents() {
   els.confirmDeleteSaveButton.addEventListener("click", deleteSave);
   els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
   els.closeSkillInfoButton.addEventListener("click", closeSkillPanel);
+  els.closeMaterialInfoButton.addEventListener("click", closeMaterialInfoPanel);
   els.skillInfoPanel.addEventListener("click", (event) => {
     if (event.target === els.skillInfoPanel) {
       closeSkillPanel();
+    }
+  });
+  els.materialInfoPanel.addEventListener("click", (event) => {
+    if (event.target === els.materialInfoPanel) {
+      closeMaterialInfoPanel();
     }
   });
   els.exportSaveCodePanel.addEventListener("click", (event) => {

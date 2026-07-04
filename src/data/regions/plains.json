@@ -32,6 +32,22 @@
       "defense": 1,
       "critChance": 0.03,
       "expReward": 9,
+      "rewards": {
+        "materials": [
+          {
+            "id": "soft_hide",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "hard_tusk",
+            "chance": 0.1,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
       "intro": "野豬壓低身體，前蹄刮過草地。"
     },
     {
@@ -46,15 +62,16 @@
       "critChance": 0,
       "expReward": 8,
       "rewards": {
-        "gold": {
-          "min": 1,
-          "max": 3
-        },
         "materials": [
           {
             "id": "slime_gel",
-            "name": "史萊姆凝膠",
-            "chance": 1,
+            "chance": 0.4,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "clear_slime_core",
+            "chance": 0.08,
             "min": 1,
             "max": 1
           }
@@ -74,6 +91,22 @@
       "critChance": 0.08,
       "dodgeChance": 0.12,
       "expReward": 10,
+      "rewards": {
+        "materials": [
+          {
+            "id": "soft_hide",
+            "chance": 0.3,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "sharp_fang",
+            "chance": 0.25,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
       "intro": "草原狼繞著你低聲咆哮。"
     },
     {
@@ -88,6 +121,22 @@
       "critChance": 0,
       "poisonPower": 3,
       "expReward": 11,
+      "rewards": {
+        "materials": [
+          {
+            "id": "slime_gel",
+            "chance": 0.3,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "toxic_slime_drop",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
       "intro": "毒史萊姆冒出細小氣泡。"
     },
     {
@@ -102,6 +151,22 @@
       "critChance": 0.1,
       "dodgeChance": 0.15,
       "expReward": 8,
+      "rewards": {
+        "materials": [
+          {
+            "id": "soft_hide",
+            "chance": 0.25,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "sharp_fang",
+            "chance": 0.15,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
       "intro": "尖角兔從草叢裡竄出。"
     }
   ],
@@ -119,6 +184,22 @@
       "chargeEvery": 3,
       "chargeMultiplier": 1.45,
       "expReward": 28,
+      "rewards": {
+        "materials": [
+          {
+            "id": "thick_boar_hide",
+            "chance": 0.6,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "hard_tusk",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
       "intro": "巨大野豬用沉重鼻息震動草梗。"
     },
     {
@@ -134,6 +215,28 @@
       "regenEvery": 3,
       "regenAmount": 6,
       "expReward": 26,
+      "rewards": {
+        "materials": [
+          {
+            "id": "clear_slime_core",
+            "chance": 0.6,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "slime_gel",
+            "chance": 0.7,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "toxic_slime_drop",
+            "chance": 0.2,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
       "intro": "變異史萊姆的核心在半透明身體裡閃動。"
     }
   ],
@@ -150,6 +253,28 @@
     "chargeEvery": 3,
     "chargeMultiplier": 1.6,
     "expReward": 48,
+    "rewards": {
+      "materials": [
+        {
+          "id": "tainted_tusk",
+          "chance": 1,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "thick_boar_hide",
+          "chance": 0.6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "hard_tusk",
+          "chance": 0.5,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
     "intro": "魔化野豬王踏碎土丘，闖入你的視線。"
   },
   "blessings": [

@@ -1,0 +1,98 @@
+{
+  "slime_gel": {
+    "id": "slime_gel",
+    "name": "史萊姆凝膠",
+    "rarity": "common",
+    "category": "material",
+    "description": "史萊姆留下的半透明凝膠，帶有微弱彈性。",
+    "usage": "常被工匠用來黏合裂縫、修補皮革，或作為基礎調和材料。",
+    "source": "平原 / 史萊姆系",
+    "sellPrice": 1,
+    "sortOrder": 100,
+    "tags": ["plains", "slime"]
+  },
+  "clear_slime_core": {
+    "id": "clear_slime_core",
+    "name": "透明黏核",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "從史萊姆體內凝結出的透明核心，質地比普通凝膠更穩定。",
+    "usage": "適合用來穩定黏液性質，是調和材料時常見的輔助素材。",
+    "source": "平原 / 史萊姆、變異史萊姆",
+    "sellPrice": 3,
+    "sortOrder": 120,
+    "tags": ["plains", "slime"]
+  },
+  "toxic_slime_drop": {
+    "id": "toxic_slime_drop",
+    "name": "毒性黏液",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "帶有刺鼻氣味的深色黏液，接觸皮膚時會留下麻痺感。",
+    "usage": "經過處理後可用於塗層、陷阱與抗毒材料的調製。",
+    "source": "平原 / 毒史萊姆、變異史萊姆",
+    "sellPrice": 3,
+    "sortOrder": 130,
+    "tags": ["plains", "slime", "poison"]
+  },
+  "soft_hide": {
+    "id": "soft_hide",
+    "name": "柔韌獸皮",
+    "rarity": "common",
+    "category": "material",
+    "description": "平原野獸身上剝下的獸皮，雖然薄，卻相當耐拉扯。",
+    "usage": "可交給皮匠處理，用於簡易護具、背帶或皮革補強。",
+    "source": "平原 / 野獸系",
+    "sellPrice": 1,
+    "sortOrder": 200,
+    "tags": ["plains", "beast", "hide"]
+  },
+  "sharp_fang": {
+    "id": "sharp_fang",
+    "name": "尖牙",
+    "rarity": "common",
+    "category": "material",
+    "description": "小型野獸留下的尖牙，邊緣仍保有自然磨出的銳度。",
+    "usage": "常被磨成箭頭、小刀刃，或鑲在簡易工具上增加破壞力。",
+    "source": "平原 / 草原狼、尖角兔",
+    "sellPrice": 1,
+    "sortOrder": 210,
+    "tags": ["plains", "beast", "fang"]
+  },
+  "hard_tusk": {
+    "id": "hard_tusk",
+    "name": "硬質獠牙",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "野豬類魔物留下的堅硬獠牙，表面帶著粗糙磨痕。",
+    "usage": "適合製作武器握柄、護手，或需要承受撞擊的零件。",
+    "source": "平原 / 野豬、巨大野豬",
+    "sellPrice": 3,
+    "sortOrder": 220,
+    "tags": ["plains", "beast", "tusk"]
+  },
+  "thick_boar_hide": {
+    "id": "thick_boar_hide",
+    "name": "厚實野豬皮",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "巨大野豬身上的厚皮，粗糙沉重，普通刀刃難以俐落切開。",
+    "usage": "皮匠會將它處理成厚革，用於護胸、肩甲或防衝補強。",
+    "source": "平原 / 巨大野豬、魔化野豬王",
+    "sellPrice": 4,
+    "sortOrder": 230,
+    "tags": ["plains", "beast", "hide"]
+  },
+  "tainted_tusk": {
+    "id": "tainted_tusk",
+    "name": "魔化獠牙",
+    "rarity": "rare",
+    "category": "material",
+    "description": "受魔力侵蝕的獠牙，內側有暗色紋路，敲擊時會傳出低沉回音。",
+    "usage": "工匠常用它製作能承受衝擊的武器部件，也能作為魔化材料的基底。",
+    "source": "平原 / 魔化野豬王",
+    "sellPrice": 8,
+    "sortOrder": 300,
+    "tags": ["plains", "beast", "tusk", "tainted"]
+  }
+}

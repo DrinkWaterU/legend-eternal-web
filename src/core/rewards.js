@@ -70,22 +70,24 @@ export function normalizeRewards(rewards = {}) {
   };
 }
 
-export function formatRewards(rewards) {
+export function formatRewards(rewards, materialDefinitions = {}) {
   const normalizedRewards = normalizeRewards(rewards);
   const materials = Object.values(normalizedRewards.materials)
     .filter((material) => material.quantity > 0)
+    .map((material) => hydrateMaterial(material, materialDefinitions))
     .sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"))
     .map((material) => `${material.name} x${material.quantity}`);
   return {
-    gold: `${normalizedRewards.gold}`,
+    gold: normalizedRewards.gold,
     materials: materials.length > 0 ? materials.join("、") : "沒有取得素材"
   };
 }
 
-export function formatInventorySummary(inventory) {
+export function formatInventorySummary(inventory, materialDefinitions = {}) {
   const normalizedInventory = normalizeInventory(inventory || {});
   const materials = Object.values(normalizedInventory.materials)
     .filter((material) => material.quantity > 0)
+    .map((material) => hydrateMaterial(material, materialDefinitions))
     .sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
   const materialCount = materials.reduce((total, material) => total + material.quantity, 0);
   return {
@@ -123,6 +125,7 @@ function normalizeMaterials(materials = {}) {
     .map(([materialId, material]) => [
       materialId,
       {
+        id: materialId,
         name: material?.name || materialId,
         quantity: toSafeNumber(material?.quantity)
       }
@@ -132,11 +135,21 @@ function normalizeMaterials(materials = {}) {
 
 function mergeMaterial(materials, materialId, material) {
   const current = materials[materialId] || {
+    id: materialId,
     name: material.name || materialId,
     quantity: 0
   };
   materials[materialId] = {
+    id: materialId,
     name: material.name || current.name || materialId,
     quantity: toSafeNumber(current.quantity) + toSafeNumber(material.quantity)
+  };
+}
+
+function hydrateMaterial(material, materialDefinitions) {
+  const definition = materialDefinitions?.[material.id] || materialDefinitions?.[material.materialId] || null;
+  return {
+    ...material,
+    name: definition?.name || material.name || material.id || material.materialId || "未知素材"
   };
 }

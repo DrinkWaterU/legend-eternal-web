@@ -1,4 +1,3 @@
-import { formatInventorySummary } from "../core/rewards.js";
 import { renderChoiceList, renderStatList } from "./renderHelpers.js";
 
 export function renderStatisticsView({ els, uiState, saveData, characterDefinitions, regionDefinitions, onCharacterDetail, onRegionDetail }) {
@@ -19,7 +18,7 @@ export function renderStatisticsView({ els, uiState, saveData, characterDefiniti
     button.classList.toggle("is-active", button.dataset.statisticsView === getActiveStatisticsTab(uiState.statisticsView));
   });
 
-  renderStatisticsOverview(els, stats, saveData.inventory, saveData.storyFlags);
+  renderStatisticsOverview(els, stats);
   renderStatisticsCharacterList(els, saveData, characterDefinitions, onCharacterDetail);
   renderStatisticsCharacterDetail(els, saveData, characterDefinitions, uiState.statisticsCharacterId);
   renderStatisticsRegionList(els, saveData, regionDefinitions, onRegionDetail);
@@ -36,8 +35,7 @@ function getActiveStatisticsTab(view) {
   return view;
 }
 
-function renderStatisticsOverview(els, stats, inventory, storyFlags) {
-  const inventorySummary = formatInventorySummary(inventory);
+function renderStatisticsOverview(els, stats) {
   const items = [
     ["冒險次數", stats.totalRuns],
     ["冒險失敗", stats.totalDefeats],
@@ -48,14 +46,6 @@ function renderStatisticsOverview(els, stats, inventory, storyFlags) {
     ["逃跑成功", stats.fleeSuccesses],
     ["逃跑失敗", stats.fleeFailures]
   ];
-  if (storyFlags?.phoenixBlessingUnlocked) {
-    items.push(
-      ["目前金幣", inventorySummary.gold],
-      ["素材種類", inventorySummary.materialTypes],
-      ["素材總數", inventorySummary.materialCount],
-      ["持有素材", inventorySummary.materials]
-    );
-  }
   renderStatList(els.statisticsOverviewList, items);
 }
 
