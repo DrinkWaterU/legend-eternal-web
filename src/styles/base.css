@@ -1,0 +1,148 @@
+:root {
+  color-scheme: dark;
+  --ink: #f7f1e5;
+  --muted: #b8b0a0;
+  --line: rgba(173, 148, 102, 0.26);
+  --paper: #101315;
+  --panel: rgba(28, 31, 32, 0.88);
+  --panel-strong: rgba(35, 39, 39, 0.94);
+  --panel-soft: rgba(18, 24, 25, 0.82);
+  --grass: #8fbd70;
+  --moss: #bad98a;
+  --amber: #e0b35d;
+  --gold: #f1d386;
+  --clay: #c66b58;
+  --wine: #b85f72;
+  --river: #6fb0c1;
+  --sky: #9ec8d6;
+  --violet: #9c83cf;
+  --danger: #e06f62;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  --inner-light: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(7, 10, 11, 0.76), rgba(7, 10, 11, 0.94)),
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 18px),
+    linear-gradient(145deg, #121b1a 0%, #1c2225 36%, #251f2b 66%, #321e1d 100%);
+  color: var(--ink);
+  font-family:
+    "Microsoft JhengHei",
+    "PingFang TC",
+    "Noto Sans TC",
+    system-ui,
+    sans-serif;
+}
+
+body[data-scene="camp"] {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 7, 10, 0.16) 0%,
+      rgba(5, 7, 10, 0.54) 28%,
+      rgba(5, 7, 10, 0.74) 50%,
+      rgba(5, 7, 10, 0.54) 72%,
+      rgba(5, 7, 10, 0.18) 100%
+    ),
+    linear-gradient(180deg, rgba(5, 7, 10, 0.14) 0%, rgba(5, 7, 10, 0.48) 100%),
+    url("../../assets/images/camp/camp-mobile.png") center / cover fixed no-repeat;
+}
+
+body[data-scene="region"][data-region="plains"] {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 7, 10, 0.42) 0%,
+      rgba(5, 7, 10, 0.66) 28%,
+      rgba(5, 7, 10, 0.78) 50%,
+      rgba(5, 7, 10, 0.66) 72%,
+      rgba(5, 7, 10, 0.42) 100%
+    ),
+    linear-gradient(180deg, rgba(5, 7, 10, 0.24) 0%, rgba(5, 7, 10, 0.74) 100%),
+    url("../../assets/images/regions/plains/plains-morning-mobile.png") center / cover fixed no-repeat;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.topbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 4px 22px;
+  text-align: center;
+}
+
+.topbar > div:first-child {
+  width: 100%;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(2.2rem, 8vw, 4.8rem);
+  line-height: 0.95;
+  color: #fff4d8;
+  text-shadow:
+    0 2px 0 rgba(101, 56, 38, 0.5),
+    0 10px 34px rgba(0, 0, 0, 0.52);
+}
+
+h2 {
+  margin-bottom: 10px;
+  font-size: 1.45rem;
+}
+
+.body-text {
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.run-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.run-summary span {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(31, 39, 39, 0.9), rgba(15, 19, 20, 0.9));
+  color: var(--muted);
+  font-size: 0.92rem;
+  box-shadow: var(--inner-light);
+}
+

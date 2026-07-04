@@ -20,6 +20,7 @@ import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
 import { els } from "./src/ui/dom.js";
 import { renderCharacterSkills } from "./src/ui/characterSkillsView.js";
+import { initDebugPanel } from "./src/ui/debugPanel.js";
 import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderCurrentStats, renderStatList, setMeter } from "./src/ui/renderHelpers.js";
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
@@ -95,6 +96,10 @@ const uiState = {
 
 let saveData = loadSave();
 let pendingSaveCodeImport = null;
+
+function isDebugModeEnabled() {
+  return new URLSearchParams(window.location.search).get("debug") === "1";
+}
 
 function getNavigationContext(contextId = uiState.navigationContext) {
   return NAVIGATION_CONTEXTS[contextId] || NAVIGATION_CONTEXTS.menu;
@@ -719,6 +724,214 @@ function deleteSave() {
   setSaveNotice("存檔已刪除，新的空白存檔已建立。");
   els.resultLabel.textContent = "存檔已刪除";
   els.encounterLabel.textContent = "統計數據";
+}
+
+function createDebugActions() {
+  return {
+    setLevel: setDebugCharacterLevel,
+    setExp: setDebugCharacterExp,
+    healHero: healDebugHero,
+    unlockPhoenix: unlockDebugPhoenix,
+    removePhoenix: removeDebugPhoenix,
+    givePlainsMaterials: giveDebugPlainsMaterials,
+    clearInventory: clearDebugInventory,
+    startPlainsBoss: startDebugPlainsBoss,
+    triggerPlainsStory: triggerDebugPlainsStory,
+    returnToCamp: returnDebugToCamp,
+    deleteSave: deleteDebugSave
+  };
+}
+
+function setDebugCharacterLevel(level) {
+  const character = getCharacterDefinition();
+  const progress = getCharacterProgress();
+  const maxLevel = getCharacterMaxLevel(character);
+  progress.level = clampDebugInteger(level, 1, maxLevel);
+  const expToNext = getExpToNextLevel(progress.level, character);
+  if (expToNext !== "MAX") {
+    progress.exp = Math.min(progress.exp, Math.max(0, expToNext - 1));
+  }
+  progress.learnedSkills = getSkillsForLevel(character, progress.level).map((skill) => skill.id);
+  rebuildDebugHero();
+  saveGameSafe();
+  refreshAfterDebugChange();
+  return `已設定等級為 Lv. ${progress.level}。`;
+}
+
+function setDebugCharacterExp(exp) {
+  const character = getCharacterDefinition();
+  const progress = getCharacterProgress();
+  const expToNext = getExpToNextLevel(progress.level, character);
+  const maxExp = expToNext === "MAX" ? 999999 : Math.max(0, expToNext - 1);
+  progress.exp = clampDebugInteger(exp, 0, maxExp);
+  rebuildDebugHero();
+  saveGameSafe();
+  refreshAfterDebugChange();
+  return `已設定 EXP 為 ${progress.exp}。`;
+}
+
+function healDebugHero() {
+  if (!state.hero) {
+    return "目前沒有戰鬥角色。";
+  }
+  state.hero.hp = state.hero.maxHp;
+  state.hero.poison = 0;
+  state.hero.shield = state.hero.shield || 0;
+  render();
+  return "已補滿目前 HP 並清除中毒。";
+}
+
+function unlockDebugPhoenix() {
+  saveData.storyFlags.phoenixBlessingUnlocked = true;
+  saveData.storyFlags.achievementSystemUnlocked = true;
+  saveGameSafe();
+  refreshAfterDebugChange();
+  return "已解鎖鳳凰加護。";
+}
+
+function removeDebugPhoenix() {
+  saveData.storyFlags.phoenixBlessingUnlocked = false;
+  saveData.storyFlags.plainsBossStorySeen = false;
+  saveData.storyFlags.achievementSystemUnlocked = false;
+  saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID] = {
+    unlocked: false,
+    unlockedAt: null
+  };
+  saveGameSafe();
+  refreshAfterDebugChange();
+  return "已移除鳳凰加護並重置平原劇情旗標。";
+}
+
+function giveDebugPlainsMaterials() {
+  const rewards = createEmptyRewards();
+  Object.entries(materialDefinitions)
+    .filter(([, material]) => Array.isArray(material.tags) && material.tags.includes("plains"))
+    .forEach(([materialId, material]) => {
+      rewards.materials[materialId] = {
+        id: materialId,
+        name: material.name,
+        quantity: material.rarity === "rare" ? 1 : 3
+      };
+    });
+  applyRewardsToInventory(saveData.inventory, rewards);
+  saveGameSafe();
+  refreshAfterDebugChange();
+  return "已給予少量平原素材。";
+}
+
+function clearDebugInventory() {
+  saveData.inventory.gold = 0;
+  saveData.inventory.materials = {};
+  normalizeInventory(saveData.inventory);
+  saveGameSafe();
+  refreshAfterDebugChange();
+  return "已清空金幣與素材。";
+}
+
+function startDebugPlainsBoss() {
+  prepareDebugRunAtEncounter(getPlainsBossEncounterIndex());
+  startEncounter();
+  addFixedLog("system", "調試：直接進入平原首領戰。");
+  return "已直接進入平原首領戰。";
+}
+
+function triggerDebugPlainsStory() {
+  prepareDebugRunAtEncounter(getPlainsBossEncounterIndex());
+  state.defeatedBoss = true;
+  showPlainsStory();
+  return "已觸發星神劇情殺。";
+}
+
+function returnDebugToCamp() {
+  returnToCamp();
+  return "已回到營地。";
+}
+
+function deleteDebugSave() {
+  try {
+    deleteStoredSave();
+  } catch {
+    // Keep the in-memory reset usable if storage is blocked.
+  }
+  saveData = createDefaultSave();
+  saveGameSafe();
+  syncSelectionFromSave();
+  closeEndPanel();
+  closeSkillPanel();
+  closeMaterialInfoPanel();
+  closeStoryPanel();
+  closeExportSaveCodeDialog();
+  closeImportSaveCodeDialog();
+  closeDeleteSaveDialog();
+  restart();
+  return "已刪除存檔並建立空白存檔。";
+}
+
+function prepareDebugRunAtEncounter(encounterIndex) {
+  saveData.settings.selectedRegionId = "plains";
+  saveGameSafe();
+  syncSelectionFromSave();
+  state.run += 1;
+  state.encounterIndex = encounterIndex;
+  state.turn = 0;
+  state.hero = buildHeroFromProgression(state.selectedHeroId);
+  state.hero.fleesRemaining = RUN_STARTING_FLEES;
+  state.enemy = null;
+  state.phase = "danger";
+  state.awaitingBlessing = false;
+  state.ended = false;
+  state.defeatedEnemies = encounterIndex;
+  state.defeatedBoss = false;
+  state.deathCause = null;
+  state.runStats = createRunStats();
+  state.canRest = false;
+  state.hasRested = false;
+  state.ambushAdvantage = false;
+  state.log = [];
+  state.runStats.startLevel = state.hero.level;
+  state.runStats.endLevel = state.hero.level;
+  els.blessingPanel.classList.remove("is-visible");
+  els.endPanel.classList.remove("is-visible");
+  closeSkillPanel();
+  closeMaterialInfoPanel();
+  closeStoryPanel();
+  closeExportSaveCodeDialog();
+  closeImportSaveCodeDialog();
+  closeDeleteSaveDialog();
+  els.nextButton.disabled = false;
+  showScreen("gameScreen");
+}
+
+function getPlainsBossEncounterIndex() {
+  const bossIndex = regionDefinitions.plains.encounterPlan.findIndex((encounterType) => encounterType === "boss");
+  return bossIndex >= 0 ? bossIndex : regionDefinitions.plains.encounterPlan.length - 1;
+}
+
+function rebuildDebugHero() {
+  if (!state.hero) {
+    return;
+  }
+  const fleesRemaining = state.hero.fleesRemaining;
+  const poison = state.hero.poison || 0;
+  state.hero = buildHeroFromProgression(state.selectedHeroId);
+  state.hero.fleesRemaining = fleesRemaining ?? RUN_STARTING_FLEES;
+  state.hero.poison = poison;
+}
+
+function refreshAfterDebugChange() {
+  const activeScreen = document.querySelector(".screen.is-active")?.id;
+  if (activeScreen === "gameScreen" && state.hero) {
+    render();
+    return;
+  }
+  if (activeScreen) {
+    showScreen(activeScreen);
+  }
+}
+
+function clampDebugInteger(value, min, max) {
+  const parsed = Number.isFinite(value) ? Math.floor(value) : min;
+  return Math.max(min, Math.min(max, parsed));
 }
 
 function format(templateId, values = {}) {
@@ -1499,3 +1712,7 @@ function bindEvents() {
 
 syncSelectionFromSave();
 bindEvents();
+initDebugPanel({
+  enabled: isDebugModeEnabled(),
+  actions: createDebugActions()
+});

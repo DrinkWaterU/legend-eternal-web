@@ -1,0 +1,173 @@
+@media (min-width: 821px) {
+  .menu-layout,
+  .intro-panel {
+    max-width: 700px;
+  }
+
+  .camp-layout {
+    max-width: 660px;
+  }
+
+  .selection-panel {
+    max-width: 840px;
+  }
+
+  .menu-copy h2,
+  .menu-copy .body-text {
+    max-width: 620px;
+  }
+
+  .blessing-dialog,
+  .end-dialog {
+    width: min(640px, 100%);
+  }
+}
+
+@media (max-width: 820px) {
+  .app-shell {
+    width: min(100% - 20px, 720px);
+    padding-top: 18px;
+  }
+
+  .topbar {
+    display: block;
+  }
+
+  .menu-copy {
+    margin-bottom: 18px;
+  }
+
+  .back-button,
+  .section-heading .secondary-button {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .run-summary {
+    margin-top: 16px;
+  }
+
+  .log-panel {
+    margin-top: 14px;
+    min-height: auto;
+  }
+
+  .battle-log {
+    height: 360px;
+  }
+
+  .stat-list {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-list {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .compact-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .camp-screen {
+    padding: 18px 8px;
+  }
+
+  .camp-status {
+    grid-template-columns: 1fr;
+  }
+
+  .combat-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .combat-actions .secondary-button {
+    min-width: 0;
+  }
+
+  .primary-button {
+    width: 100%;
+  }
+
+  .save-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .storage-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-info-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-info-primary,
+  .detail-info-secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .story-star-strip {
+    min-height: 118px;
+  }
+
+  .story-phoenix-strip {
+    min-height: 126px;
+  }
+
+  .debug-panel {
+    right: 12px;
+    bottom: 12px;
+    width: calc(100vw - 24px);
+  }
+
+  .debug-body {
+    max-height: min(62vh, 520px);
+    overflow-y: auto;
+  }
+
+  .debug-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+}
+
+@media (min-width: 821px) {
+  body[data-scene="camp"] {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(5, 7, 10, 0.2) 0%,
+        rgba(5, 7, 10, 0.5) 30%,
+        rgba(5, 7, 10, 0.72) 50%,
+        rgba(5, 7, 10, 0.5) 70%,
+        rgba(5, 7, 10, 0.22) 100%
+      ),
+      linear-gradient(180deg, rgba(5, 7, 10, 0.08) 0%, rgba(5, 7, 10, 0.38) 100%),
+      url("../../assets/images/camp/camp-desktop.png") center / cover fixed no-repeat;
+  }
+
+  body[data-scene="region"][data-region="plains"] {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(5, 7, 10, 0.32) 0%,
+        rgba(5, 7, 10, 0.56) 30%,
+        rgba(5, 7, 10, 0.72) 50%,
+        rgba(5, 7, 10, 0.56) 70%,
+        rgba(5, 7, 10, 0.34) 100%
+      ),
+      linear-gradient(180deg, rgba(5, 7, 10, 0.18) 0%, rgba(5, 7, 10, 0.68) 100%),
+      url("../../assets/images/regions/plains/plains-morning.png") center / cover fixed no-repeat;
+  }
+
+  .camp-screen {
+    min-height: calc(100vh - 210px);
+    border-radius: 0;
+    background: linear-gradient(180deg, rgba(5, 7, 10, 0.04) 0%, rgba(5, 7, 10, 0.18) 100%);
+  }
+}
