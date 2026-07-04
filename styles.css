@@ -55,6 +55,20 @@ body.is-camp-view {
     url("./assets/images/camp/camp-mobile.png") center / cover fixed no-repeat;
 }
 
+body.is-region-view[data-region="plains"] {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 7, 10, 0.42) 0%,
+      rgba(5, 7, 10, 0.66) 28%,
+      rgba(5, 7, 10, 0.78) 50%,
+      rgba(5, 7, 10, 0.66) 72%,
+      rgba(5, 7, 10, 0.42) 100%
+    ),
+    linear-gradient(180deg, rgba(5, 7, 10, 0.24) 0%, rgba(5, 7, 10, 0.74) 100%),
+    url("./assets/images/regions/plains/plains-morning-mobile.png") center / cover fixed no-repeat;
+}
+
 button {
   font: inherit;
 }
@@ -535,10 +549,34 @@ dd {
   text-align: left;
 }
 
-.skill-section h3 {
+.skill-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.skill-section-heading h3,
+.skill-group h4 {
   margin: 0 0 12px;
   color: var(--sky);
   font-size: 0.95rem;
+}
+
+.skill-section-heading h3 {
+  margin-bottom: 0;
+}
+
+.skill-section-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.skill-group + .skill-group {
+  margin-top: 16px;
 }
 
 .skill-chip-list {
@@ -548,6 +586,7 @@ dd {
 }
 
 .skill-chip {
+  appearance: none;
   min-height: 34px;
   padding: 7px 11px;
   border: 1px solid rgba(241, 211, 134, 0.28);
@@ -555,13 +594,118 @@ dd {
   background:
     linear-gradient(180deg, rgba(33, 40, 42, 0.86), rgba(16, 20, 21, 0.86));
   color: var(--ink);
+  cursor: pointer;
   font-size: 0.92rem;
   font-weight: 800;
   line-height: 1.35;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.skill-chip:hover,
+.skill-chip:focus-visible {
+  border-color: rgba(241, 211, 134, 0.62);
+  color: var(--gold);
+  transform: translateY(-1px);
 }
 
 .skill-chip.is-empty {
+  cursor: default;
   color: var(--muted);
+}
+
+.skill-chip.is-empty:hover {
+  border-color: rgba(241, 211, 134, 0.28);
+  color: var(--muted);
+  transform: none;
+}
+
+.next-skill-list {
+  display: grid;
+  gap: 10px;
+}
+
+.next-skill-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(111, 176, 193, 0.28);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(111, 176, 193, 0.12), transparent 54%),
+    rgba(13, 18, 19, 0.76);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.next-skill-card:hover,
+.next-skill-card:focus-visible {
+  border-color: rgba(111, 176, 193, 0.62);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
+}
+
+.next-skill-card > span {
+  display: grid;
+  gap: 4px;
+}
+
+.next-skill-card strong,
+.next-skill-card small,
+.next-skill-card > span:last-child {
+  display: block;
+}
+
+.next-skill-card strong {
+  color: var(--gold);
+  font-size: 1rem;
+}
+
+.next-skill-card small {
+  color: var(--sky);
+  font-weight: 800;
+}
+
+.next-skill-card > span:last-child {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.next-skill-card.is-empty {
+  cursor: default;
+  color: var(--muted);
+}
+
+.next-skill-card.is-empty:hover {
+  border-color: rgba(111, 176, 193, 0.28);
+  box-shadow: none;
+  transform: none;
+}
+
+.skill-type-milestone {
+  border-color: rgba(111, 176, 193, 0.52);
+}
+
+.skill-type-rare {
+  border-color: rgba(241, 211, 134, 0.62);
+}
+
+.skill-info-dialog {
+  max-width: 560px;
+}
+
+.skill-info-meta {
+  margin: 0 0 12px;
+  color: var(--sky);
+  font-weight: 800;
 }
 
 .save-tools {
@@ -586,6 +730,29 @@ dd {
 
 .save-notice[data-type="error"] {
   color: var(--danger);
+}
+
+.save-code-dialog {
+  max-width: 680px;
+}
+
+.save-code-textarea {
+  width: 100%;
+  min-height: 160px;
+  margin: 10px 0 8px;
+  padding: 12px;
+  border: 1px solid rgba(217, 199, 150, 0.24);
+  border-radius: 8px;
+  background: rgba(6, 9, 10, 0.82);
+  color: var(--ink);
+  font: 0.86rem/1.55 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  resize: vertical;
+}
+
+.save-code-textarea:focus {
+  border-color: rgba(241, 211, 134, 0.62);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(241, 211, 134, 0.12);
 }
 
 .danger-zone {
@@ -1499,6 +1666,20 @@ dd {
       ),
       linear-gradient(180deg, rgba(5, 7, 10, 0.08) 0%, rgba(5, 7, 10, 0.38) 100%),
       url("./assets/images/camp/camp-desktop.png") center / cover fixed no-repeat;
+  }
+
+  body.is-region-view[data-region="plains"] {
+    background:
+      linear-gradient(
+        90deg,
+        rgba(5, 7, 10, 0.32) 0%,
+        rgba(5, 7, 10, 0.56) 30%,
+        rgba(5, 7, 10, 0.72) 50%,
+        rgba(5, 7, 10, 0.56) 70%,
+        rgba(5, 7, 10, 0.34) 100%
+      ),
+      linear-gradient(180deg, rgba(5, 7, 10, 0.18) 0%, rgba(5, 7, 10, 0.68) 100%),
+      url("./assets/images/regions/plains/plains-morning.png") center / cover fixed no-repeat;
   }
 
   .camp-screen {

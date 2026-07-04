@@ -1,4 +1,5 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION, SAVE_KEY, SAVE_SCHEMA_VERSION } from "../config.js";
+import { normalizeInventory } from "./rewards.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { toSafeInteger, toSafeNumber } from "../utils.js";
@@ -82,6 +83,7 @@ export function migrateSave(rawSave, options = {}) {
   save.profile.exportedAt = rawSave.profile?.exportedAt || save.profile.exportedAt;
   mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
   save.inventory.gold = toSafeNumber(rawSave.inventory?.gold);
+  normalizeInventory(save.inventory);
   migrateStoryFlags(save, rawSave);
   migrateAchievements(save, rawSave);
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.1.2-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.2.3.1-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
             </p>
-            <p class="version-label">v0.2.1.2-alpha</p>
+            <p class="version-label">v0.2.2.3.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -145,9 +145,19 @@
             </div>
             <p id="characterDetailDescription" class="body-text"></p>
             <dl id="characterDetailStats" class="stat-list"></dl>
-            <section class="skill-section" aria-label="已學技能">
-              <h3>已學技能</h3>
-              <div id="characterSkillList" class="skill-chip-list"></div>
+            <section class="skill-section" aria-label="角色技能">
+              <div class="skill-section-heading">
+                <h3>技能</h3>
+                <p>點擊技能查看效果。</p>
+              </div>
+              <div class="skill-group">
+                <h4>已學技能</h4>
+                <div id="characterSkillList" class="skill-chip-list"></div>
+              </div>
+              <div class="skill-group">
+                <h4>下一技能</h4>
+                <div id="characterNextSkillPanel" class="next-skill-list"></div>
+              </div>
             </section>
             <button id="selectCharacterButton" class="primary-button" type="button">使用冒險者</button>
           </div>
@@ -180,7 +190,7 @@
             <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
           <p class="body-text">
-            這裡會保存這個瀏覽器上的冒險紀錄。更換裝置前可以先匯出存檔，再於新裝置匯入。
+            這裡會保存這個瀏覽器上的冒險紀錄。更換裝置前可以先匯出存檔碼，再於新裝置匯入。
           </p>
           <div class="tab-list" aria-label="統計分類">
             <button class="tab-button is-active" type="button" data-statistics-view="overview">總覽</button>
@@ -215,9 +225,8 @@
 
           <div id="statisticsSaveView" class="statistics-view">
             <div class="save-tools">
-              <button id="exportSaveButton" class="secondary-button" type="button">匯出存檔</button>
-              <button id="importSaveButton" class="secondary-button" type="button">匯入存檔</button>
-              <input id="importSaveInput" class="visually-hidden" type="file" accept="application/json,.json" />
+              <button id="exportSaveCodeButton" class="secondary-button" type="button">匯出存檔碼</button>
+              <button id="importSaveCodeButton" class="secondary-button" type="button">匯入存檔碼</button>
               <p id="saveNotice" class="save-notice" aria-live="polite"></p>
             </div>
             <div class="danger-zone">
@@ -335,8 +344,55 @@
           </div>
         </div>
       </section>
+
+      <section id="skillInfoPanel" class="end-panel skill-info-panel" aria-label="技能資訊" aria-modal="true">
+        <div class="end-dialog skill-info-dialog">
+          <div>
+            <p class="eyebrow" id="skillInfoStatus">技能資訊</p>
+            <h2 id="skillInfoTitle">技能名稱</h2>
+            <p id="skillInfoMeta" class="skill-info-meta"></p>
+            <p id="skillInfoDescription" class="body-text"></p>
+          </div>
+          <div class="end-actions">
+            <button id="closeSkillInfoButton" class="primary-button" type="button">關閉</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="exportSaveCodePanel" class="end-panel save-code-panel" aria-label="匯出存檔碼" aria-modal="true">
+        <div class="end-dialog save-code-dialog">
+          <div>
+            <p class="eyebrow">存檔轉移</p>
+            <h2>匯出存檔碼</h2>
+            <p class="body-text">複製這段文字碼，就能在另一台裝置匯入目前存檔。</p>
+            <textarea id="exportSaveCodeText" class="save-code-textarea" rows="7" readonly></textarea>
+            <p id="exportSaveCodeNotice" class="save-notice" aria-live="polite"></p>
+          </div>
+          <div class="end-actions">
+            <button id="copySaveCodeButton" class="primary-button" type="button">複製存檔碼</button>
+            <button id="closeExportSaveCodeButton" class="secondary-button" type="button">關閉</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="importSaveCodePanel" class="end-panel save-code-panel" aria-label="匯入存檔碼" aria-modal="true">
+        <div class="end-dialog save-code-dialog">
+          <div>
+            <p class="eyebrow">存檔轉移</p>
+            <h2>匯入存檔碼</h2>
+            <p class="body-text">貼上存檔碼後先檢查內容，確認後才會覆蓋目前存檔。</p>
+            <textarea id="importSaveCodeText" class="save-code-textarea" rows="7" placeholder="貼上 LE_SAVE_1 開頭的存檔碼"></textarea>
+            <p id="importSaveCodeNotice" class="save-notice" aria-live="polite"></p>
+          </div>
+          <div class="end-actions">
+            <button id="checkSaveCodeButton" class="secondary-button" type="button">檢查存檔碼</button>
+            <button id="confirmImportSaveCodeButton" class="primary-button" type="button" hidden>確認覆蓋匯入</button>
+            <button id="closeImportSaveCodeButton" class="secondary-button" type="button">關閉</button>
+          </div>
+        </div>
+      </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.1.2-alpha"></script>
+    <script type="module" src="game.js?v=0.2.2.3.1-alpha"></script>
   </body>
 </html>

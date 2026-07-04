@@ -1,15 +1,28 @@
-import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID } from "./src/config.js";
+import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/config.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
 import { applyEndOfTurnEffects, buildEnemy, resolveEnemyAction, resolveHeroAction } from "./src/core/combat.js";
+import {
+  applyProgressionEffects,
+  buildHeroFromProgression as buildHeroFromProgressionCore,
+  createSkillState,
+  getCharacterMaxLevel,
+  getExpToNextLevel,
+  getGrowthForLevel,
+  getSkillsForLevel,
+  normalizeCharacterProgress as normalizeCharacterProgressCore
+} from "./src/core/progression.js";
+import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, formatRewards, mergeRewards, rollEnemyRewards } from "./src/core/rewards.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
 import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
 import { els } from "./src/ui/dom.js";
+import { renderCharacterSkills } from "./src/ui/characterSkillsView.js";
 import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderCurrentStats, renderStatList, setMeter } from "./src/ui/renderHelpers.js";
+import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
-import { clone, roll, weightedRandomItem } from "./src/utils.js";
+import { roll, weightedRandomItem } from "./src/utils.js";
 
 const RUN_STARTING_FLEES = 2;
 const NORMAL_FLEE_CHANCE = 0.8;
@@ -67,9 +80,19 @@ const uiState = {
 };
 
 let saveData = loadSave();
+let pendingSaveCodeImport = null;
 
 function showScreen(screenId) {
-  document.body.classList.toggle("is-camp-view", screenId === "campScreen");
+  const isCampView = screenId === "campScreen";
+  const isRegionView = screenId === "gameScreen";
+  document.body.classList.toggle("is-camp-view", isCampView);
+  document.body.classList.toggle("is-region-view", isRegionView);
+  if (isRegionView) {
+    document.body.dataset.region = state.selectedRegionId;
+  } else {
+    delete document.body.dataset.region;
+  }
+
   document.querySelectorAll(".screen").forEach((screen) => {
     screen.classList.toggle("is-active", screen.id === screenId);
   });
@@ -143,15 +166,19 @@ function renderCampScreen() {
   const lastResult = state.lastRunSummary
     ? `${state.lastRunSummary.result}，抵達第 ${state.lastRunSummary.reachedEncounter} / ${region.encounterPlan.length} 場`
     : "尚無紀錄";
-
-  renderStatList(els.campStatusList, [
+  const inventorySummary = formatInventorySummary(saveData.inventory);
+  const campStats = [
     ["目前角色", character.name],
     ["角色等級", `Lv. ${progress.level}`],
     ["經驗", `${progress.exp} / ${expToNext}`],
     ["目前地區", region.name],
     ["地區難度", region.difficulty],
     ["最近冒險", lastResult]
-  ]);
+  ];
+  if (hasPhoenixBlessing()) {
+    campStats.splice(3, 0, ["目前金幣", inventorySummary.gold]);
+  }
+  renderStatList(els.campStatusList, campStats);
   if (els.campWarning) {
     els.campWarning.textContent = hasPhoenixBlessing()
       ? "鳳凰的加護已覺醒。死亡會結束本輪冒險，但角色等級與經驗會保留。"
@@ -217,7 +244,6 @@ function renderCharacterScreen() {
     const character = characterDefinitions[state.selectedHeroId];
     const preview = buildHeroFromProgression(state.selectedHeroId);
     const progress = getCharacterProgress(state.selectedHeroId);
-    const nextSkill = (character.skills || []).find((skill) => skill.level > progress.level);
     els.characterDetailName.textContent = character.name;
     els.characterDetailDescription.textContent = character.description;
     renderStatList(els.characterDetailStats, [
@@ -226,32 +252,17 @@ function renderCharacterScreen() {
       ["最大生命", preview.maxHp],
       ["攻擊", preview.attack],
       ["防禦", preview.defense],
-      ["暴擊", `${Math.round(preview.critChance * 100)}%`],
-      ["下一技能", nextSkill ? `Lv. ${nextSkill.level} ${nextSkill.name}` : "已達目前上限"]
+      ["暴擊", `${Math.round(preview.critChance * 100)}%`]
     ]);
-    renderSkillChips(character, progress.learnedSkills);
+    renderCharacterSkills({
+      learnedListElement: els.characterSkillList,
+      nextSkillElement: els.characterNextSkillPanel,
+      character,
+      progress,
+      onSkillClick: showSkillInfo
+    });
     els.selectCharacterButton.textContent = `使用${character.name}`;
   }
-}
-
-function renderSkillChips(character, skillIds) {
-  if (!els.characterSkillList) {
-    return;
-  }
-  els.characterSkillList.innerHTML = "";
-  if (!skillIds || skillIds.length === 0) {
-    const empty = document.createElement("span");
-    empty.className = "skill-chip is-empty";
-    empty.textContent = "尚未學會技能";
-    els.characterSkillList.append(empty);
-    return;
-  }
-  skillIds.forEach((skillId) => {
-    const chip = document.createElement("span");
-    chip.className = "skill-chip";
-    chip.textContent = getSkillName(character, skillId);
-    els.characterSkillList.append(chip);
-  });
 }
 
 function createRunStats() {
@@ -270,7 +281,8 @@ function createRunStats() {
     safeEscapes: 0,
     counterEscapes: 0,
     evacuationEscapes: 0,
-    retreated: false
+    retreated: false,
+    rewards: createEmptyRewards()
   };
 }
 
@@ -282,85 +294,16 @@ function getCharacterDefinition(characterId = state.selectedHeroId) {
   return characterDefinitions[characterId];
 }
 
-function getCharacterMaxLevel(character = getCharacterDefinition()) {
-  return character.levelCurve?.maxLevel || 1;
-}
-
-function getExpToNextLevel(level, character = getCharacterDefinition()) {
-  const curve = character.levelCurve;
-  if (!curve || level >= getCharacterMaxLevel(character)) {
-    return "MAX";
-  }
-  return Math.floor(
-    (curve.base || 0) * level ** (curve.exponent || 1)
-    + (curve.linear || 0) * level
-    + (curve.offset || 0)
-  );
-}
-
-function getSkillsForLevel(character, level) {
-  return (character.skills || []).filter((skill) => skill.level <= level);
-}
-
-function getGrowthForLevel(character, level) {
-  return (character.levelGrowth || []).find((growth) => growth.level === level);
-}
-
-function getSkillName(character, skillId) {
-  return (character.skills || []).find((skill) => skill.id === skillId)?.name || skillId;
-}
-
 function normalizeCharacterProgress(characterId = state.selectedHeroId) {
   const character = getCharacterDefinition(characterId);
   const progress = getCharacterProgress(characterId);
-  progress.level = Math.max(1, Math.min(getCharacterMaxLevel(character), Math.floor(progress.level || 1)));
-  progress.exp = Math.max(0, Math.floor(progress.exp || 0));
-  progress.learnedSkills = getSkillsForLevel(character, progress.level).map((skill) => skill.id);
-  return progress;
+  return normalizeCharacterProgressCore(progress, character);
 }
 
 function buildHeroFromProgression(characterId = state.selectedHeroId) {
   const character = getCharacterDefinition(characterId);
   const progress = normalizeCharacterProgress(characterId);
-  const hero = clone(character.template);
-  hero.level = progress.level;
-  hero.exp = progress.exp;
-  hero.expToNext = getExpToNextLevel(progress.level, character);
-  hero.skills = [...progress.learnedSkills];
-  hero.skillState = createSkillState();
-  hero.critDamageMultiplier = hero.critDamageMultiplier || 1.7;
-
-  (character.levelGrowth || []).forEach((growth) => {
-    if (growth.level <= progress.level) {
-      applyProgressionEffects(hero, growth.effects || [], { recover: false });
-    }
-  });
-
-  getSkillsForLevel(character, progress.level).forEach((skill) => {
-    applyProgressionEffects(hero, skill.effects || [], { recover: false });
-  });
-
-  hero.hp = hero.maxHp;
-  return hero;
-}
-
-function createSkillState() {
-  return {
-    emergencyBandageUsed: false,
-    lastStandUsed: false
-  };
-}
-
-function applyProgressionEffects(hero, effects, options = {}) {
-  const { recover = true } = options;
-  effects.forEach((effect) => {
-    if (effect.type === "add") {
-      hero[effect.stat] = (hero[effect.stat] || 0) + effect.amount;
-      if (recover && effect.stat === "maxHp") {
-        hero.hp = Math.min(hero.maxHp, (hero.hp || 0) + effect.amount);
-      }
-    }
-  });
+  return buildHeroFromProgressionCore(character, progress);
 }
 
 function gainCharacterExp(amount) {
@@ -567,48 +510,84 @@ function setSaveNotice(message, type = "status") {
   els.saveNotice.dataset.type = type;
 }
 
-function exportSave() {
+function openExportSaveCodeDialog() {
   const exportData = migrateSave(saveData);
   exportData.profile.exportedAt = new Date().toISOString();
-  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `legend-eternal-save-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-  setSaveNotice("存檔已匯出。請妥善保存下載的備份檔。");
+  els.exportSaveCodeText.value = createSaveTransferCode(exportData, GAME_VERSION);
+  setSaveCodeNotice(els.exportSaveCodeNotice, "存檔碼已產生。");
+  els.exportSaveCodePanel.classList.add("is-visible");
+  els.exportSaveCodeText.focus();
+  els.exportSaveCodeText.select();
 }
 
-function openImportSavePicker() {
-  els.importSaveInput.value = "";
-  els.importSaveInput.click();
+function closeExportSaveCodeDialog() {
+  els.exportSaveCodePanel.classList.remove("is-visible");
 }
 
-function importSaveFromFile(event) {
-  const [file] = event.target.files;
-  if (!file) {
+async function copySaveCode() {
+  try {
+    await copyText(els.exportSaveCodeText.value);
+    setSaveCodeNotice(els.exportSaveCodeNotice, "已複製存檔碼。");
+  } catch {
+    els.exportSaveCodeText.focus();
+    els.exportSaveCodeText.select();
+    setSaveCodeNotice(els.exportSaveCodeNotice, "無法自動複製，請手動選取文字碼。", "error");
+  }
+}
+
+function openImportSaveCodeDialog() {
+  pendingSaveCodeImport = null;
+  els.importSaveCodeText.value = "";
+  els.confirmImportSaveCodeButton.hidden = true;
+  setSaveCodeNotice(els.importSaveCodeNotice, "貼上存檔碼後先檢查內容。");
+  els.importSaveCodePanel.classList.add("is-visible");
+  els.importSaveCodeText.focus();
+}
+
+function closeImportSaveCodeDialog() {
+  pendingSaveCodeImport = null;
+  els.importSaveCodePanel.classList.remove("is-visible");
+}
+
+function checkImportSaveCode() {
+  pendingSaveCodeImport = null;
+  els.confirmImportSaveCodeButton.hidden = true;
+  try {
+    const payload = parseSaveTransferCode(els.importSaveCodeText.value);
+    if (!isImportableSave(payload.save)) {
+      throw new Error("Invalid save payload");
+    }
+    const migrated = migrateSave(payload.save);
+    pendingSaveCodeImport = migrated;
+    els.confirmImportSaveCodeButton.hidden = false;
+    setSaveCodeNotice(
+      els.importSaveCodeNotice,
+      `存檔碼可匯入。來源版本：${payload.gameVersion || "未知"}。確認後會覆蓋目前存檔。`
+    );
+  } catch {
+    setSaveCodeNotice(els.importSaveCodeNotice, "存檔碼無法匯入，請確認是否完整複製。", "error");
+  }
+}
+
+function confirmImportSaveCode() {
+  if (!pendingSaveCodeImport) {
+    setSaveCodeNotice(els.importSaveCodeNotice, "請先檢查存檔碼。", "error");
     return;
   }
 
-  const reader = new FileReader();
-  reader.addEventListener("load", () => {
-    try {
-      const importedSave = JSON.parse(reader.result);
-      if (!isImportableSave(importedSave)) {
-        throw new Error("Invalid save file");
-      }
-      saveData = migrateSave(importedSave, { persist: true });
-      syncSelectionFromSave();
-      renderStatistics();
-      setSaveNotice("存檔已匯入並轉換為目前版本。");
-    } catch {
-      setSaveNotice("匯入失敗。請確認檔案是傳說永恆的存檔備份。", "error");
-    }
-  });
-  reader.readAsText(file);
+  saveData = migrateSave(pendingSaveCodeImport, { persist: true });
+  pendingSaveCodeImport = null;
+  syncSelectionFromSave();
+  renderStatistics();
+  closeImportSaveCodeDialog();
+  setSaveNotice("存檔碼已匯入並轉換為目前版本。");
+  els.resultLabel.textContent = "存檔已匯入";
+  els.encounterLabel.textContent = "統計數據";
+}
+
+function setSaveCodeNotice(element, message, type = "status") {
+  element.textContent = message;
+  element.dataset.type = type;
 }
 
 function openDeleteSaveDialog() {
@@ -617,6 +596,24 @@ function openDeleteSaveDialog() {
 
 function closeDeleteSaveDialog() {
   els.deleteSavePanel.classList.remove("is-visible");
+}
+
+function showSkillInfo(skill, context) {
+  const type = context?.type || { label: "技能" };
+  const remaining = context?.levelsRemaining || 0;
+  const status = context?.learned
+    ? "已學會"
+    : `Lv. ${skill.level} 解鎖，還差 ${remaining} 等`;
+
+  els.skillInfoStatus.textContent = status;
+  els.skillInfoTitle.textContent = skill.name;
+  els.skillInfoMeta.textContent = `Lv. ${skill.level} ${type.label}`;
+  els.skillInfoDescription.textContent = skill.description || "尚未記錄技能說明。";
+  els.skillInfoPanel.classList.add("is-visible");
+}
+
+function closeSkillPanel() {
+  els.skillInfoPanel.classList.remove("is-visible");
 }
 
 function deleteSave() {
@@ -684,6 +681,9 @@ function startRun() {
   showScreen("gameScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeSkillPanel();
+  closeExportSaveCodeDialog();
+  closeImportSaveCodeDialog();
   closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = false;
@@ -696,6 +696,9 @@ function restart() {
   showScreen("menuScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeSkillPanel();
+  closeExportSaveCodeDialog();
+  closeImportSaveCodeDialog();
   closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = true;
@@ -711,6 +714,9 @@ function returnToCamp() {
   showScreen("campScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeSkillPanel();
+  closeExportSaveCodeDialog();
+  closeImportSaveCodeDialog();
   closeStoryPanel();
   closeDeleteSaveDialog();
   state.awaitingBlessing = false;
@@ -797,6 +803,7 @@ function winEncounter() {
   const defeatedBoss = state.enemy.kind === "首領";
   addLog("system", "victory", { target: enemyName });
   gainCharacterExp(getEnemyExpReward(state.enemy));
+  awardEnemyRewards(state.enemy);
   recordEnemyDefeated(defeatedBoss);
   state.defeatedEnemies += 1;
   state.defeatedBoss = state.defeatedBoss || defeatedBoss;
@@ -821,6 +828,16 @@ function winEncounter() {
   }
 
   showBlessings();
+}
+
+function awardEnemyRewards(enemy) {
+  if (!hasPhoenixBlessing()) {
+    return;
+  }
+  const rewards = rollEnemyRewards(enemy);
+  state.runStats.rewards = mergeRewards(state.runStats.rewards, rewards);
+  applyRewardsToInventory(saveData.inventory, rewards);
+  saveGameSafe();
 }
 
 function getEnemyExpReward(enemy) {
@@ -968,6 +985,11 @@ function renderEndSummary(outcome, region) {
     ["逃跑", `成功 ${state.runStats?.fleeSuccesses || 0} / 失敗 ${state.runStats?.fleeFailures || 0}`],
     ["選擇祝福", blessings]
   ];
+  if (hasPhoenixBlessing()) {
+    const rewards = formatRewards(state.runStats?.rewards);
+    items.push(["本輪金幣", rewards.gold]);
+    items.push(["本輪素材", rewards.materials]);
+  }
 
   if (state.runStats?.levelUps.length > 0) {
     items.push(["升級", state.runStats.levelUps.map((level) => `Lv. ${level}`).join("、")]);
@@ -1347,12 +1369,32 @@ function bindEvents() {
   els.continueButton.addEventListener("click", continueAdventure);
   els.restButton.addEventListener("click", restAtSafeRoute);
   els.retreatButton.addEventListener("click", retreatRun);
-  els.exportSaveButton.addEventListener("click", exportSave);
-  els.importSaveButton.addEventListener("click", openImportSavePicker);
-  els.importSaveInput.addEventListener("change", importSaveFromFile);
+  els.exportSaveCodeButton.addEventListener("click", openExportSaveCodeDialog);
+  els.importSaveCodeButton.addEventListener("click", openImportSaveCodeDialog);
+  els.copySaveCodeButton.addEventListener("click", copySaveCode);
+  els.closeExportSaveCodeButton.addEventListener("click", closeExportSaveCodeDialog);
+  els.checkSaveCodeButton.addEventListener("click", checkImportSaveCode);
+  els.confirmImportSaveCodeButton.addEventListener("click", confirmImportSaveCode);
+  els.closeImportSaveCodeButton.addEventListener("click", closeImportSaveCodeDialog);
   els.deleteSaveButton.addEventListener("click", openDeleteSaveDialog);
   els.confirmDeleteSaveButton.addEventListener("click", deleteSave);
   els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
+  els.closeSkillInfoButton.addEventListener("click", closeSkillPanel);
+  els.skillInfoPanel.addEventListener("click", (event) => {
+    if (event.target === els.skillInfoPanel) {
+      closeSkillPanel();
+    }
+  });
+  els.exportSaveCodePanel.addEventListener("click", (event) => {
+    if (event.target === els.exportSaveCodePanel) {
+      closeExportSaveCodeDialog();
+    }
+  });
+  els.importSaveCodePanel.addEventListener("click", (event) => {
+    if (event.target === els.importSaveCodePanel) {
+      closeImportSaveCodeDialog();
+    }
+  });
 }
 
 syncSelectionFromSave();

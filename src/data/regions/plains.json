@@ -3,6 +3,13 @@
   "name": "平原",
   "description": "城鎮外圍的開闊草地。野豬、史萊姆與草原狼經常出沒，是新手冒險者最常踏入的第一片野外。",
   "difficulty": "入門",
+  "visual": {
+    "background": {
+      "desktop": "assets/images/regions/plains/plains-morning.png",
+      "mobile": "assets/images/regions/plains/plains-morning-mobile.png",
+      "tone": "morning-plains"
+    }
+  },
   "encounterPlan": [
     "normal",
     "normal",
@@ -38,6 +45,21 @@
       "defense": 0,
       "critChance": 0,
       "expReward": 8,
+      "rewards": {
+        "gold": {
+          "min": 1,
+          "max": 3
+        },
+        "materials": [
+          {
+            "id": "slime_gel",
+            "name": "史萊姆凝膠",
+            "chance": 1,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
       "intro": "史萊姆在草葉間緩慢蠕動。"
     },
     {
@@ -90,12 +112,12 @@
       "kind": "精英",
       "family": "beast",
       "weight": 100,
-      "maxHp": 70,
-      "attack": 11,
+      "maxHp": 66,
+      "attack": 10,
       "defense": 2,
-      "critChance": 0.05,
+      "critChance": 0.03,
       "chargeEvery": 3,
-      "chargeMultiplier": 1.6,
+      "chargeMultiplier": 1.45,
       "expReward": 28,
       "intro": "巨大野豬用沉重鼻息震動草梗。"
     },
@@ -105,8 +127,8 @@
       "kind": "精英",
       "family": "slime",
       "weight": 100,
-      "maxHp": 64,
-      "attack": 8,
+      "maxHp": 68,
+      "attack": 9,
       "defense": 1,
       "critChance": 0,
       "regenEvery": 3,

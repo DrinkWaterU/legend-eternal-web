@@ -6,7 +6,7 @@
   const KNOWN_GAME_REGIONS = [
     { id: "plains", name: "平原", path: "../src/data/regions/plains.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.2.1.2-alpha";
+  const DEFAULT_GAME_VERSION = "v0.2.2.3.1-alpha";
 
   const state = {
     package: createEmptyPackage(),
@@ -210,7 +210,8 @@
           min: goldMin,
           max: goldMax
         },
-        drops: clone(state.dropsDraft)
+        drops: clone(state.dropsDraft),
+        materials: state.dropsDraft.map(toRewardMaterial)
       }
     };
 
@@ -432,7 +433,11 @@
     setValue("monsterGoldMin", gold.min, 0);
     setValue("monsterGoldMax", gold.max, 0);
 
-    state.dropsDraft = Array.isArray(rewards.drops) ? clone(rewards.drops) : [];
+    state.dropsDraft = Array.isArray(rewards.drops)
+      ? clone(rewards.drops)
+      : Array.isArray(rewards.materials)
+        ? rewards.materials.map(normalizeDrop)
+        : [];
     renderDropList();
     els.monsterForm.querySelector("button[type='submit']").textContent = "更新目前怪物";
     showToast(`已載入怪物：${monster.name}`);
@@ -894,7 +899,16 @@
           min: numberOr(gold.min, 0),
           max: numberOr(gold.max, 0)
         },
-        drops: Array.isArray(rewards.drops) ? rewards.drops.map(normalizeDrop) : []
+        drops: Array.isArray(rewards.drops)
+          ? rewards.drops.map(normalizeDrop)
+          : Array.isArray(rewards.materials)
+            ? rewards.materials.map(normalizeDrop)
+            : [],
+        materials: Array.isArray(rewards.materials)
+          ? rewards.materials.map(toRewardMaterial)
+          : Array.isArray(rewards.drops)
+            ? rewards.drops.map(toRewardMaterial)
+            : []
       }
     };
   }
@@ -917,6 +931,17 @@
       chance: numberOr(drop.chance, 0),
       min: numberOr(drop.min, 1),
       max: numberOr(drop.max, 1)
+    };
+  }
+
+  function toRewardMaterial(drop) {
+    const normalizedDrop = normalizeDrop(drop);
+    return {
+      id: normalizedDrop.itemId,
+      name: normalizedDrop.name,
+      chance: normalizedDrop.chance,
+      min: normalizedDrop.min,
+      max: normalizedDrop.max
     };
   }
 
@@ -1029,12 +1054,19 @@
     if (exp > 0) gameMonster.expReward = exp;
 
     const gold = rewards.gold || {};
-    if (numberOr(gold.min, 0) > 0 || numberOr(gold.max, 0) > 0) {
-      gameMonster.goldReward = { min: numberOr(gold.min, 0), max: numberOr(gold.max, 0) };
-    }
-
-    if (Array.isArray(rewards.drops) && rewards.drops.length > 0) {
-      gameMonster.drops = rewards.drops.map(normalizeDrop);
+    const rewardMaterials = Array.isArray(rewards.materials)
+      ? rewards.materials.map(toRewardMaterial)
+      : Array.isArray(rewards.drops)
+        ? rewards.drops.map(toRewardMaterial)
+        : [];
+    if (numberOr(gold.min, 0) > 0 || numberOr(gold.max, 0) > 0 || rewardMaterials.length > 0) {
+      gameMonster.rewards = {
+        gold: {
+          min: numberOr(gold.min, 0),
+          max: numberOr(gold.max, 0)
+        },
+        materials: rewardMaterials
+      };
     }
 
     Object.assign(gameMonster, clone(meta.extraFields || {}));

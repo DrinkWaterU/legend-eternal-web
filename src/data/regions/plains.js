@@ -10,6 +10,7 @@ export const plainsRegion = {
   id: plainsData.id,
   name: plainsData.name,
   description: plainsData.description,
+  visual: plainsData.visual,
   encounterCount: plainsData.encounterPlan.length,
   bossName: plainsData.boss.name,
   difficulty: plainsData.difficulty,
