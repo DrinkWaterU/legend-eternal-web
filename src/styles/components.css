@@ -72,6 +72,7 @@
   gap: 0.75rem;
   align-items: end;
   width: min(100%, 520px);
+  margin-bottom: 0.35rem;
 }
 
 .storage-toolbar label {
@@ -103,23 +104,28 @@
 .inventory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-  gap: 0.75rem;
+  gap: 0.85rem;
   width: min(100%, 680px);
 }
 
 .inventory-slot {
+  --slot-border: rgba(241, 211, 134, 0.24);
+  --slot-glow: rgba(241, 211, 134, 0.08);
   position: relative;
   display: grid;
   grid-template-rows: auto 1fr auto;
   align-items: start;
   min-height: 116px;
-  border: 1px solid rgba(241, 211, 134, 0.22);
+  border: 2px solid var(--slot-border);
   border-radius: 8px;
   background: linear-gradient(145deg, rgba(13, 21, 21, 0.96), rgba(23, 29, 27, 0.9));
   color: var(--text);
   padding: 0.7rem;
   text-align: left;
   cursor: pointer;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    0 0 14px var(--slot-glow);
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -127,7 +133,10 @@
 .inventory-slot:focus-visible {
   transform: translateY(-1px);
   border-color: rgba(241, 211, 134, 0.58);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 18px var(--slot-glow),
+    0 12px 28px rgba(0, 0, 0, 0.28);
   outline: none;
 }
 
@@ -158,25 +167,28 @@
 }
 
 .inventory-slot.rarity-common {
-  border-color: rgba(180, 190, 184, 0.32);
+  --slot-border: rgba(174, 180, 174, 0.48);
+  --slot-glow: transparent;
 }
 
 .inventory-slot.rarity-uncommon {
-  border-color: rgba(101, 191, 130, 0.5);
-  box-shadow: inset 0 0 0 1px rgba(101, 191, 130, 0.08);
+  --slot-border: rgba(101, 191, 130, 0.78);
+  --slot-glow: rgba(101, 191, 130, 0.18);
 }
 
 .inventory-slot.rarity-rare {
-  border-color: rgba(241, 211, 134, 0.62);
-  box-shadow: inset 0 0 0 1px rgba(241, 211, 134, 0.12);
+  --slot-border: rgba(241, 211, 134, 0.9);
+  --slot-glow: rgba(241, 211, 134, 0.24);
 }
 
 .inventory-slot.rarity-epic {
-  border-color: rgba(181, 139, 235, 0.58);
+  --slot-border: rgba(181, 139, 235, 0.86);
+  --slot-glow: rgba(181, 139, 235, 0.22);
 }
 
 .inventory-slot.rarity-quest {
-  border-color: rgba(124, 191, 235, 0.58);
+  --slot-border: rgba(124, 191, 235, 0.86);
+  --slot-glow: rgba(124, 191, 235, 0.22);
 }
 
 .material-info-dialog {
