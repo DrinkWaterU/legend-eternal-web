@@ -44,7 +44,8 @@ function renderStatisticsOverview(els, stats) {
     ["擊敗敵人", stats.totalEnemiesDefeated],
     ["擊敗首領", stats.bossesDefeated],
     ["逃跑成功", stats.fleeSuccesses],
-    ["逃跑失敗", stats.fleeFailures]
+    ["逃跑失敗", stats.fleeFailures],
+    ["撤離逃跑", stats.evacuationEscapes]
   ];
   renderStatList(els.statisticsOverviewList, items);
 }

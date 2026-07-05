@@ -31,10 +31,9 @@ import { clone, roll, weightedRandomItem } from "./src/utils.js";
 const RUN_STARTING_FLEES = 2;
 const NORMAL_FLEE_CHANCE = 0.8;
 const ELITE_FLEE_CHANCE = 0.55;
-const FLEE_RESULTS = [
-  { id: "safe", weight: 65 },
-  { id: "counter", weight: 25 },
-  { id: "evacuation", weight: 10 }
+const TACTICAL_FLEE_RESULTS = [
+  { id: "safe", weight: 75 },
+  { id: "counter", weight: 25 }
 ];
 const REST_HEAL_RATIO = 0.15;
 const PLAINS_TRIAL_ACHIEVEMENT_ID = "plains_trial";
@@ -424,6 +423,7 @@ function createRunStats() {
     safeEscapes: 0,
     counterEscapes: 0,
     evacuationEscapes: 0,
+    evacuated: false,
     retreated: false,
     bossId: null,
     bossName: null,
@@ -551,6 +551,7 @@ function recordRunFinished(outcome) {
   const characterProgress = saveData.progression.characters[state.selectedHeroId];
   const cleared = outcome === "clear";
   const retreated = outcome === "retreat";
+  const evacuated = retreated && Boolean(state.runStats?.evacuated);
   const bestEncounter = cleared ? currentRegion().encounterCount : state.encounterIndex + 1;
 
   regionStats.bestEncounter = Math.max(regionStats.bestEncounter, bestEncounter);
@@ -570,7 +571,7 @@ function recordRunFinished(outcome) {
     characterStats.clears += 1;
     regionProgress.clears += 1;
     characterProgress.clears += 1;
-  } else if (retreated) {
+  } else if (retreated && !evacuated) {
     stats.totalRetreats += 1;
     regionStats.retreats += 1;
     characterStats.retreats += 1;
@@ -1449,6 +1450,7 @@ function finishRun(outcome) {
   const cleared = outcome === "clear";
   const retreated = outcome === "retreat";
   const defeated = outcome === "defeat";
+  const evacuated = retreated && Boolean(state.runStats?.evacuated);
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "ended";
@@ -1459,11 +1461,11 @@ function finishRun(outcome) {
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.add("is-visible");
-  els.endTitle.textContent = cleared ? "冒險成功" : retreated ? "冒險撤退" : "冒險失敗";
+  els.endTitle.textContent = cleared ? "冒險成功" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
   els.endText.textContent = getEndText(outcome, region);
   els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
   renderEndSummary(outcome, region);
-  els.resultLabel.textContent = cleared ? `${region.name}突破` : retreated ? "回到營地" : "本輪結束";
+  els.resultLabel.textContent = cleared ? `${region.name}突破` : evacuated ? "撤離成功" : retreated ? "回到營地" : "本輪結束";
   setCombatActionState();
   render();
 }
@@ -1473,6 +1475,9 @@ function getEndText(outcome, region) {
     return `你完成了${region.name}的挑戰。`;
   }
   if (outcome === "retreat") {
+    if (state.runStats?.evacuated) {
+      return "你在追擊中找到回營地的路線，結束了這輪冒險。本輪的臨時祝福會重置，角色等級與經驗會保留。";
+    }
     return "你回到營地。本輪的臨時祝福會重置，角色等級與經驗會保留。";
   }
   if (hasPhoenixBlessing()) {
@@ -1485,16 +1490,17 @@ function getEndText(outcome, region) {
 function renderEndSummary(outcome, region) {
   const cleared = outcome === "clear";
   const retreated = outcome === "retreat";
+  const evacuated = retreated && Boolean(state.runStats?.evacuated);
   const reachedEncounter = getReachedEncounter(cleared, region);
   const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
   const progress = getCharacterProgress();
   state.lastRunSummary = {
-    result: cleared ? "成功" : retreated ? "撤退" : "失敗",
+    result: cleared ? "成功" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
     reachedEncounter,
     runLevel: state.runStats?.endLevel || progress.level
   };
   const items = [
-    ["結果", cleared ? "冒險成功" : retreated ? "冒險撤退" : "冒險失敗"],
+    ["結果", cleared ? "冒險成功" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗"],
     ["抵達", `第 ${reachedEncounter} / ${region.encounterPlan.length} 場`],
     ["角色等級", `Lv. ${progress.level}`],
     ["本輪經驗", `${state.runStats?.expGained || 0}`],
@@ -1503,6 +1509,9 @@ function renderEndSummary(outcome, region) {
     ["逃跑", `成功 ${state.runStats?.fleeSuccesses || 0} / 失敗 ${state.runStats?.fleeFailures || 0}`],
     ["選擇祝福", blessings]
   ];
+  if (state.runStats?.evacuationEscapes) {
+    items.splice(7, 0, ["撤離逃跑", `${state.runStats.evacuationEscapes} 次`]);
+  }
   if (state.runStats?.bossName) {
     items.splice(6, 0, ["本輪首領", state.runStats.bossName]);
   }
@@ -1551,11 +1560,14 @@ function tryFlee() {
   if (!state.hero || !state.enemy || state.ended || state.awaitingBlessing || state.phase === "safe") {
     return;
   }
-  if (state.hero.fleesRemaining <= 0 || state.enemy.kind === "首領") {
+  if (state.enemy.kind === "首領") {
     return;
   }
 
-  state.hero.fleesRemaining -= 1;
+  const hasTacticalFlees = state.hero.fleesRemaining > 0;
+  if (hasTacticalFlees) {
+    state.hero.fleesRemaining -= 1;
+  }
   state.runStats.fleeAttempts += 1;
   addLog("system", "fleeAttempt", { enemy: state.enemy.name });
 
@@ -1565,15 +1577,16 @@ function tryFlee() {
     return;
   }
 
-  state.runStats.fleeSuccesses += 1;
-  state.encounterIndex = Math.max(0, state.encounterIndex - 1);
-  const result = weightedRandomItem(FLEE_RESULTS, (item) => item.weight);
-  if (result.id === "counter") {
-    resolveCounterEscape();
+  if (!hasTacticalFlees) {
+    resolveEvacuationEscape();
     return;
   }
-  if (result.id === "evacuation") {
-    resolveEvacuationEscape();
+
+  state.runStats.fleeSuccesses += 1;
+  state.encounterIndex = Math.max(0, state.encounterIndex - 1);
+  const result = weightedRandomItem(TACTICAL_FLEE_RESULTS, (item) => item.weight);
+  if (result.id === "counter") {
+    resolveCounterEscape();
     return;
   }
   resolveSafeEscape();
@@ -1646,6 +1659,7 @@ function resolveCounterEscape() {
 
 function resolveEvacuationEscape() {
   state.runStats.evacuationEscapes += 1;
+  state.runStats.evacuated = true;
   state.runStats.retreated = true;
   addLog("system", "evacuationEscape");
   finishRun("retreat");
@@ -1831,7 +1845,7 @@ function setCombatActionState() {
   const inGame = state.hero && !state.ended && !state.awaitingBlessing;
   const safe = state.phase === "safe";
   const canFight = inGame && hasEnemy && !safe;
-  const canFlee = canFight && !isBoss && state.hero.fleesRemaining > 0;
+  const canFlee = canFight && !isBoss;
   const canContinue = inGame && safe;
   const canRest = canContinue && state.canRest && !state.hasRested && state.hero.hp < state.hero.maxHp;
 
@@ -1842,6 +1856,8 @@ function setCombatActionState() {
   els.fleeButton.hidden = !canFight;
   els.fleeButton.textContent = isBoss
     ? "首領無法逃跑"
+    : (state.hero?.fleesRemaining ?? 0) <= 0
+    ? "撤離逃跑（需成功）"
     : `逃跑（剩餘 ${state.hero?.fleesRemaining ?? 0} / ${RUN_STARTING_FLEES}）`;
   els.continueButton.hidden = !canContinue;
   els.continueButton.disabled = !canContinue;
