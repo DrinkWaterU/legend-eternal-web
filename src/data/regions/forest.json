@@ -76,10 +76,10 @@
       "family": "beast",
       "weight": 100,
       "maxHp": 118,
-      "attack": 24,
+      "attack": 22,
       "defense": 4,
       "critChance": 0.12,
-      "ambushDamage": 8,
+      "ambushDamage": 6,
       "expReward": 42,
       "rewards": {
         "materials": [
@@ -155,7 +155,7 @@
       "family": "insect",
       "weight": 90,
       "maxHp": 98,
-      "attack": 26,
+      "attack": 24,
       "defense": 2,
       "critChance": 0.1,
       "poisonPower": 2,
@@ -184,11 +184,11 @@
       "kind": "普通",
       "family": "plant",
       "weight": 90,
-      "maxHp": 150,
+      "maxHp": 138,
       "attack": 20,
       "defense": 7,
       "critChance": 0,
-      "entangleChance": 0.28,
+      "entangleChance": 0.24,
       "expReward": 52,
       "rewards": {
         "materials": [
@@ -239,9 +239,9 @@
       "kind": "普通",
       "family": "insect",
       "weight": 70,
-      "maxHp": 168,
+      "maxHp": 150,
       "attack": 18,
-      "defense": 10,
+      "defense": 8,
       "critChance": 0,
       "expReward": 56,
       "rewards": {
@@ -263,10 +263,10 @@
       "family": "goblin",
       "weight": 15,
       "maxHp": 110,
-      "attack": 28,
+      "attack": 26,
       "defense": 3,
       "critChance": 0.14,
-      "ambushDamage": 10,
+      "ambushDamage": 8,
       "expReward": 58,
       "rewards": {
         "materials": [
@@ -460,12 +460,12 @@
       "eventTitle": "溪石刃痕",
       "eventText": "你在溪邊找到帶有細密刃痕的石塊，用它重新整理武器。",
       "flavorText": "林水冰涼，刀鋒在濕光裡變得更沉也更準。",
-      "effectText": "攻擊力 +2。",
+      "effectText": "攻擊力 +3。",
       "effects": [
         {
           "type": "add",
           "stat": "attack",
-          "amount": 2
+          "amount": 3
         }
       ]
     },
@@ -477,17 +477,17 @@
       "eventTitle": "苔石落腳",
       "eventText": "你沿著被苔蘚覆蓋的石面練習落腳，調整護具與重心。",
       "flavorText": "森林的地面不平，但你開始知道該把重量交給哪一步。",
-      "effectText": "防禦 +1，每場戰鬥開始獲得 4 點護盾。",
+      "effectText": "防禦 +2，每場戰鬥開始獲得 6 點護盾。",
       "effects": [
         {
           "type": "add",
           "stat": "defense",
-          "amount": 1
+          "amount": 2
         },
         {
           "type": "add",
           "stat": "shieldStart",
-          "amount": 4
+          "amount": 6
         }
       ]
     },
@@ -499,11 +499,17 @@
       "eventTitle": "樹根清泉",
       "eventText": "你在盤根之間找到一汪清泉，停下來清洗傷口與喉嚨。",
       "flavorText": "泉水帶著土與葉的味道，卻讓胸口重新穩定下來。",
-      "effectText": "恢復 22 點生命。",
+      "effectText": "立即恢復 24 點生命。接下來 3 場戰鬥中，每 3 回合恢復最大生命 4%。",
       "effects": [
         {
           "type": "recoverHp",
-          "amount": 22
+          "amount": 24
+        },
+        {
+          "type": "addTimedRegen",
+          "durationEncounters": 3,
+          "everyTurns": 3,
+          "maxHpRatio": 0.04
         }
       ]
     },
@@ -515,12 +521,12 @@
       "eventTitle": "暗葉毒草",
       "eventText": "你認出幾株葉脈發黑的毒草，將汁液薄薄抹在武器邊緣。",
       "flavorText": "這不是致命毒藥，但森林知道如何讓微小傷口慢慢發作。",
-      "effectText": "攻擊時使敵人中毒，每回合結束失去 2 點生命。",
+      "effectText": "攻擊時使敵人中毒，每回合結束失去 3 點生命。",
       "effects": [
         {
           "type": "add",
           "stat": "poisonPower",
-          "amount": 2
+          "amount": 3
         }
       ]
     },
@@ -532,17 +538,17 @@
       "eventTitle": "斷枝足跡",
       "eventText": "你在斷枝、爪痕與濕土腳印間辨認出野獸常走的路線。",
       "flavorText": "獵物與獵人只差一步，差別在於誰先看懂森林留下的痕跡。",
-      "effectText": "暴擊率 +6%，對野獸類敵人的傷害 +6%。",
+      "effectText": "暴擊率 +8%，對野獸類敵人的傷害 +8%。",
       "effects": [
         {
           "type": "add",
           "stat": "critChance",
-          "amount": 0.06
+          "amount": 0.08
         },
         {
           "type": "addFamilyDamageBonus",
           "family": "beast",
-          "amount": 0.06
+          "amount": 0.08
         }
       ]
     },
@@ -554,17 +560,17 @@
       "eventTitle": "韌性蛛絲",
       "eventText": "你收集幾束仍有韌性的蛛絲，纏在護腕與袖口外側。",
       "flavorText": "蛛絲黏著皮革，也隔開了一些刺進血肉前的毒意。",
-      "effectText": "防禦 +1，受到的中毒傷害降低 35%。",
+      "effectText": "防禦 +2，受到的中毒傷害降低 40%。",
       "effects": [
         {
           "type": "add",
           "stat": "defense",
-          "amount": 1
+          "amount": 2
         },
         {
           "type": "max",
           "stat": "damageReduction",
-          "value": 0.35
+          "value": 0.4
         }
       ]
     },
@@ -576,12 +582,12 @@
       "eventTitle": "微光孢子",
       "eventText": "你避開濃厚孢子，只吸入少量帶微光的清淡粉塵。",
       "flavorText": "森林的氣味沉進肺裡，讓疲憊慢慢變得可承受。",
-      "effectText": "擊敗敵人後恢復 8 點生命，每 4 回合恢復 4 點生命。",
+      "effectText": "擊敗敵人後恢復 12 點生命，每 4 回合恢復 5 點生命。",
       "effects": [
         {
           "type": "add",
           "stat": "killHeal",
-          "amount": 8
+          "amount": 12
         },
         {
           "type": "set",
@@ -591,7 +597,7 @@
         {
           "type": "add",
           "stat": "regenAmount",
-          "amount": 4
+          "amount": 5
         }
       ]
     },
@@ -603,17 +609,17 @@
       "eventTitle": "剝落樹皮",
       "eventText": "你找到幾片堅韌老樹皮，裁成能塞進護具縫隙的形狀。",
       "flavorText": "它們不像鐵片那樣冰冷，卻有承受歲月的硬度。",
-      "effectText": "最大生命 +8，每場戰鬥開始獲得 6 點護盾。",
+      "effectText": "最大生命 +12，每場戰鬥開始獲得 8 點護盾。",
       "effects": [
         {
           "type": "add",
           "stat": "maxHp",
-          "amount": 8
+          "amount": 12
         },
         {
           "type": "add",
           "stat": "shieldStart",
-          "amount": 6
+          "amount": 8
         }
       ]
     },
@@ -625,22 +631,22 @@
       "eventTitle": "活藤低語",
       "eventText": "你從會自行收縮的藤蔓上取下一段，將汁液抹入武器刻痕。",
       "flavorText": "藤蔓沒有聲音，但每次揮擊都像有細小根鬚跟著鑽入傷口。",
-      "effectText": "攻擊 +1，攻擊時使敵人中毒 2 點；若敵人已中毒，暴擊率 +4%。",
+      "effectText": "攻擊 +2，攻擊時使敵人中毒 3 點；若敵人已中毒，暴擊率 +6%。",
       "effects": [
         {
           "type": "add",
           "stat": "attack",
-          "amount": 1
-        },
-        {
-          "type": "add",
-          "stat": "poisonPower",
           "amount": 2
         },
         {
           "type": "add",
+          "stat": "poisonPower",
+          "amount": 3
+        },
+        {
+          "type": "add",
           "stat": "poisonedCritChance",
-          "amount": 0.04
+          "amount": 0.06
         }
       ]
     },
@@ -652,12 +658,12 @@
       "eventTitle": "林心微光",
       "eventText": "一縷綠金色微光穿過枝葉，短暫照出植物與蟲群的行動脈絡。",
       "flavorText": "森林沒有讓路，但它讓你看懂了其中一部分規則。",
-      "effectText": "對植物與昆蟲類敵人的傷害 +10%。接下來更容易遇到植物或昆蟲類敵人。",
+      "effectText": "對植物與昆蟲類敵人的傷害 +14%。接下來更容易遇到植物或昆蟲類敵人。",
       "effects": [
         {
           "type": "addFamilyDamageBonus",
           "families": ["plant", "insect"],
-          "amount": 0.1
+          "amount": 0.14
         }
       ],
       "encounterBias": {

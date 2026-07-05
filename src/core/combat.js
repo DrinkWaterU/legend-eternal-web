@@ -291,10 +291,32 @@ export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
     log.template("heal", "heal", { target: hero.name, amount: hero.regenAmount });
   }
 
+  applyTimedRegens(hero, turn, log);
+
   if (enemy.regenEvery > 0 && turn % enemy.regenEvery === 0 && enemy.hp > 0) {
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.regenAmount);
     log.template("heal", "heal", { target: enemy.name, amount: enemy.regenAmount });
   }
 
   return { heroDeathCause };
+}
+
+function applyTimedRegens(hero, turn, log) {
+  if (!Array.isArray(hero.timedRegens) || hero.hp <= 0) {
+    return;
+  }
+
+  hero.timedRegens.forEach((effect) => {
+    if (effect.remainingEncounters <= 0 || effect.everyTurns <= 0 || turn % effect.everyTurns !== 0) {
+      return;
+    }
+
+    const amount = Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio));
+    hero.hp = Math.min(hero.maxHp, hero.hp + amount);
+    log.template("heal", "timedRegen", {
+      source: effect.source,
+      target: hero.name,
+      amount
+    });
+  });
 }

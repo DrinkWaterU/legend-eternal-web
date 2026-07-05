@@ -168,14 +168,22 @@ function applyRegionBackgroundStage() {
   const mobile = stage?.mobile || stage?.desktop || region.visual?.background?.mobile || region.visual?.background?.desktop || "";
   const desktop = stage?.desktop || stage?.mobile || region.visual?.background?.desktop || region.visual?.background?.mobile || "";
   if (mobile) {
-    document.body.style.setProperty("--region-bg-mobile", `url("${mobile}")`);
+    document.body.style.setProperty("--region-bg-mobile", `url("${resolveAssetUrl(mobile)}")`);
   } else {
     document.body.style.removeProperty("--region-bg-mobile");
   }
   if (desktop) {
-    document.body.style.setProperty("--region-bg-desktop", `url("${desktop}")`);
+    document.body.style.setProperty("--region-bg-desktop", `url("${resolveAssetUrl(desktop)}")`);
   } else {
     document.body.style.removeProperty("--region-bg-desktop");
+  }
+}
+
+function resolveAssetUrl(path) {
+  try {
+    return new URL(path, document.baseURI).href;
+  } catch {
+    return path;
   }
 }
 
@@ -1253,6 +1261,7 @@ function winEncounter() {
     addLog("heal", "heal", { target: state.hero.name, amount: state.hero.killHeal });
   }
   applyVictorySkills();
+  consumeBattleLimitedEffects();
 
   state.encounterIndex += 1;
   render();
@@ -1389,6 +1398,18 @@ function applyVictorySkills() {
   const amount = Math.max(1, Math.round(state.hero.maxHp * (baseRatio + (state.hero.victoryHealBonusRatio || 0))));
   state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
   addLog("heal", "adventurerPace", { amount });
+}
+
+function consumeBattleLimitedEffects() {
+  if (!Array.isArray(state.hero?.timedRegens)) {
+    return;
+  }
+  state.hero.timedRegens = state.hero.timedRegens
+    .map((effect) => ({
+      ...effect,
+      remainingEncounters: Math.max(0, (effect.remainingEncounters || 0) - 1)
+    }))
+    .filter((effect) => effect.remainingEncounters > 0);
 }
 
 function enterSafeState(options = {}) {
@@ -1587,12 +1608,14 @@ function resolveFleeFailure() {
 function resolveSafeEscape() {
   state.runStats.safeEscapes += 1;
   addLog("system", "safeEscape");
+  consumeBattleLimitedEffects();
   enterSafeState({ canRest: true });
 }
 
 function resolveCounterEscape() {
   state.runStats.counterEscapes += 1;
   addLog("system", "counterEscape");
+  consumeBattleLimitedEffects();
   state.phase = "danger";
   state.turn = 0;
   state.awaitingBlessing = false;

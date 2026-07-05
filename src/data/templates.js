@@ -10,6 +10,7 @@ export const templates = {
   entangleBreak: "{target} 掙脫了纏繞。",
   entangleHold: "{target} 沒能掙脫纏繞，錯過了這次攻擊。",
   heal: "{target} 恢復了 {amount} 點生命。",
+  timedRegen: "{source} 的餘韻讓 {target} 恢復了 {amount} 點生命。",
   charge: "{actor} 準備衝撞。",
   shield: "{target} 獲得了 {amount} 點護盾。",
   victory: "{target} 倒下了。戰鬥勝利。",

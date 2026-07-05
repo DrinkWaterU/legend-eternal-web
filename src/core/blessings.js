@@ -2,11 +2,11 @@ import { clone } from "../utils.js";
 
 export function applyBlessingEffects(hero, blessing) {
   registerBlessingFlows(hero, blessing);
-  blessing.effects.forEach((effect) => applyEffect(hero, effect));
+  blessing.effects.forEach((effect) => applyEffect(hero, effect, blessing));
   applyEncounterBias(hero, blessing.encounterBias);
 }
 
-function applyEffect(hero, effect) {
+function applyEffect(hero, effect, blessing) {
   if (effect.type === "addFamilyDamageBonus") {
     hero.familyDamageBonus = hero.familyDamageBonus || {};
     getEffectFamilies(effect).forEach((family) => {
@@ -32,7 +32,39 @@ function applyEffect(hero, effect) {
 
   if (effect.type === "recoverHp") {
     hero.hp = Math.min(hero.maxHp, hero.hp + effect.amount);
+    return;
   }
+
+  if (effect.type === "addTimedRegen") {
+    addTimedRegen(hero, effect, blessing);
+  }
+}
+
+function addTimedRegen(hero, effect, blessing) {
+  const id = effect.id || blessing.id || "timed-regen";
+  const runtimeEffect = {
+    id,
+    source: effect.source || blessing.name || "祝福",
+    remainingEncounters: Math.max(0, Math.floor(effect.durationEncounters || 0)),
+    everyTurns: Math.max(1, Math.floor(effect.everyTurns || 1)),
+    maxHpRatio: Math.max(0, Number(effect.maxHpRatio) || 0)
+  };
+
+  if (runtimeEffect.remainingEncounters <= 0 || runtimeEffect.maxHpRatio <= 0) {
+    return;
+  }
+
+  hero.timedRegens = Array.isArray(hero.timedRegens) ? hero.timedRegens : [];
+  const existing = hero.timedRegens.find((item) => item.id === id);
+  if (!existing) {
+    hero.timedRegens.push(runtimeEffect);
+    return;
+  }
+
+  existing.source = runtimeEffect.source;
+  existing.remainingEncounters = Math.max(existing.remainingEncounters, runtimeEffect.remainingEncounters);
+  existing.everyTurns = Math.min(existing.everyTurns, runtimeEffect.everyTurns);
+  existing.maxHpRatio = Math.max(existing.maxHpRatio, runtimeEffect.maxHpRatio);
 }
 
 function applyEncounterBias(hero, encounterBias) {
@@ -67,6 +99,9 @@ function inferBlessingFlows(blessing) {
   const flows = new Set();
   (blessing.effects || []).forEach((effect) => {
     if (effect.type === "recoverHp") {
+      flows.add("healing");
+    }
+    if (effect.type === "addTimedRegen") {
       flows.add("healing");
     }
     if (effect.type === "addFamilyDamageBonus") {

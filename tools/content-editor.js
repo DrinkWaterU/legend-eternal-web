@@ -2,12 +2,12 @@
   "use strict";
 
   const SCHEMA_VERSION = 1;
-  const TOOL_VERSION = "v0.1.4";
+  const TOOL_VERSION = "v0.1.5";
   const KNOWN_GAME_REGIONS = [
     { id: "plains", name: "平原", path: "../src/data/regions/plains.json" },
     { id: "forest", name: "森林", path: "../src/data/regions/forest.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.2.3.0-alpha";
+  const DEFAULT_GAME_VERSION = "v0.2.3.0.1-alpha";
 
   const state = {
     package: createEmptyPackage(),
@@ -337,15 +337,23 @@
     els.effectList.innerHTML = "";
     state.effectsDraft.forEach((effect, index) => {
       const li = document.createElement("li");
-      li.textContent = effect.type === "recoverHp"
-        ? `${effect.type}: ${effect.value}`
-        : `${effect.type} ${effect.target}: ${effect.value}`;
+      li.textContent = formatEffectDraft(effect);
       li.appendChild(makeSmallDeleteButton(() => {
         state.effectsDraft.splice(index, 1);
         renderEffectList();
       }));
       els.effectList.appendChild(li);
     });
+  }
+
+  function formatEffectDraft(effect) {
+    if (effect.type === "recoverHp") {
+      return `${effect.type}: ${effect.value}`;
+    }
+    if (effect.type === "addTimedRegen") {
+      return `${effect.type}: ${effect.durationEncounters} battles / ${effect.everyTurns} turns / ${formatPercent(effect.maxHpRatio)}`;
+    }
+    return `${effect.type} ${effect.target}: ${effect.value}`;
   }
 
   function renderContentLists() {
@@ -749,6 +757,15 @@
       return { type: "recoverHp", value: numberOr(effect.value ?? effect.amount, 0) };
     }
 
+    if (effect.type === "addTimedRegen") {
+      return {
+        type: "addTimedRegen",
+        durationEncounters: numberOr(effect.durationEncounters, 0),
+        everyTurns: numberOr(effect.everyTurns, 0),
+        maxHpRatio: numberOr(effect.maxHpRatio, 0)
+      };
+    }
+
     if (effect.type === "addFamilyDamageBonus") {
       return {
         type: "addFamilyDamageBonus",
@@ -966,6 +983,15 @@
       return { type: "recoverHp", value: numberOr(effect.value ?? effect.amount, 0) };
     }
 
+    if (effect.type === "addTimedRegen") {
+      return {
+        type: "addTimedRegen",
+        durationEncounters: numberOr(effect.durationEncounters, 0),
+        everyTurns: numberOr(effect.everyTurns, 0),
+        maxHpRatio: numberOr(effect.maxHpRatio, 0)
+      };
+    }
+
     if (effect.type === "addFamilyDamageBonus") {
       return {
         type: "addFamilyDamageBonus",
@@ -1096,6 +1122,14 @@
   function convertEffectToGameFormat(effect) {
     if (effect.type === "recoverHp") {
       return { type: "recoverHp", amount: numberOr(effect.value, 0) };
+    }
+    if (effect.type === "addTimedRegen") {
+      return {
+        type: "addTimedRegen",
+        durationEncounters: numberOr(effect.durationEncounters, 0),
+        everyTurns: numberOr(effect.everyTurns, 0),
+        maxHpRatio: numberOr(effect.maxHpRatio, 0)
+      };
     }
     if (effect.type === "set" || effect.type === "max") {
       return {
