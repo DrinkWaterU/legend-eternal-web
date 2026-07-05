@@ -1,7 +1,12 @@
+import { isBlessingFlowId } from "../data/blessingFlows.js";
 import { clone } from "../utils.js";
+
+const FLOW_MOMENTUM_DECAY = 0.7;
+const FLOW_MOMENTUM_GAIN = 1;
 
 export function applyBlessingEffects(hero, blessing) {
   registerBlessingFlows(hero, blessing);
+  updateBlessingFlowMomentum(hero, blessing);
   blessing.effects.forEach((effect) => applyEffect(hero, effect, blessing));
   applyEncounterBias(hero, blessing.encounterBias);
 }
@@ -16,7 +21,12 @@ function applyEffect(hero, effect, blessing) {
   }
 
   if (effect.type === "add") {
-    hero[effect.stat] += effect.amount;
+    const currentValue = Number.isFinite(hero[effect.stat]) ? hero[effect.stat] : 0;
+    const amount = Number(effect.amount);
+    if (!Number.isFinite(amount)) {
+      return;
+    }
+    hero[effect.stat] = currentValue + amount;
     return;
   }
 
@@ -93,6 +103,35 @@ function registerBlessingFlows(hero, blessing) {
       hero.blessingFlows.push(flow);
     }
   });
+}
+
+function updateBlessingFlowMomentum(hero, blessing) {
+  const primaryFlow = resolveBlessingPrimaryFlow(blessing);
+  if (!primaryFlow) {
+    return;
+  }
+
+  const currentMomentum = hero.blessingFlowMomentum && typeof hero.blessingFlowMomentum === "object"
+    ? hero.blessingFlowMomentum
+    : {};
+  const nextMomentum = {};
+
+  Object.entries(currentMomentum).forEach(([flow, value]) => {
+    const decayedValue = Math.max(0, Number(value) || 0) * FLOW_MOMENTUM_DECAY;
+    if (decayedValue > 0) {
+      nextMomentum[flow] = decayedValue;
+    }
+  });
+
+  nextMomentum[primaryFlow] = (Number(nextMomentum[primaryFlow]) || 0) + FLOW_MOMENTUM_GAIN;
+  hero.blessingFlowMomentum = nextMomentum;
+}
+
+function resolveBlessingPrimaryFlow(blessing) {
+  if (isBlessingFlowId(blessing?.primaryFlow)) {
+    return blessing.primaryFlow;
+  }
+  return inferBlessingFlows(blessing).find(isBlessingFlowId) || null;
 }
 
 function inferBlessingFlows(blessing) {

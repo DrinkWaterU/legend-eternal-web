@@ -15,6 +15,7 @@ import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, fo
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
 import { achievementDefinitions } from "./src/data/achievements.js";
+import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
 import { materialDefinitions } from "./src/data/materials.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
 import { getBlessingRarity } from "./src/data/rarities.js";
@@ -31,14 +32,15 @@ import { clone, roll, weightedRandomItem } from "./src/utils.js";
 const RUN_STARTING_FLEES = 2;
 const NORMAL_FLEE_CHANCE = 0.8;
 const ELITE_FLEE_CHANCE = 0.55;
-const SAFE_ESCAPE_ENEMY_HEAL_RATIO = 0.2;
-const COUNTER_ESCAPE_ENEMY_HEAL_RATIO = 0.12;
+const SAFE_ESCAPE_ENEMY_HEAL_RATIO = 0.05;
+const COUNTER_ESCAPE_ENEMY_HEAL_RATIO = 0.05;
 const COUNTER_ESCAPE_HEAL_RATIO = 0.1;
 const COUNTER_ESCAPE_SCALING_OFFSET = 3;
 const TACTICAL_FLEE_RESULTS = [
   { id: "safe", weight: 75 },
   { id: "counter", weight: 25 }
 ];
+const LAST_BAG_FLOW_WEIGHT_MULTIPLIER = 0.6;
 const REST_HEAL_RATIO = 0.15;
 const PLAINS_TRIAL_ACHIEVEMENT_ID = "plains_trial";
 const FOREST_TRIAL_ACHIEVEMENT_ID = "forest_trial";
@@ -87,6 +89,7 @@ const state = {
   ambushAdvantage: false,
   pendingThreat: null,
   blessingContext: "normal",
+  debugBuildRun: false,
   storyTimer: null,
   log: []
 };
@@ -462,6 +465,11 @@ function gainCharacterExp(amount) {
     return;
   }
 
+  if (state.debugBuildRun) {
+    state.runStats.expGained += amount;
+    return;
+  }
+
   const character = getCharacterDefinition();
   const progress = getCharacterProgress();
   progress.exp += amount;
@@ -542,6 +550,9 @@ function recordRunStarted() {
 }
 
 function recordEnemyDefeated(isBoss) {
+  if (state.debugBuildRun) {
+    return;
+  }
   saveData.statistics.totalEnemiesDefeated += 1;
   if (isBoss) {
     saveData.statistics.bossesDefeated += 1;
@@ -550,6 +561,9 @@ function recordEnemyDefeated(isBoss) {
 }
 
 function recordRunFinished(outcome) {
+  if (state.debugBuildRun) {
+    return;
+  }
   const stats = saveData.statistics;
   const regionStats = stats.regions[state.selectedRegionId];
   const characterStats = stats.characters[state.selectedHeroId];
@@ -828,6 +842,8 @@ function createDebugActions() {
     clearInventory: clearDebugInventory,
     startPlainsBoss: startDebugPlainsBoss,
     startForestBoss: startDebugForestBoss,
+    getBlessingBuildCatalog: getDebugBlessingBuildCatalog,
+    startBossWithBlessingBuild: startDebugBossWithBlessingBuild,
     triggerPlainsStory: triggerDebugPlainsStory,
     returnToCamp: returnDebugToCamp,
     deleteSave: deleteDebugSave
@@ -946,6 +962,96 @@ function startDebugForestBoss(bossId = null) {
   return `已直接進入森林首領戰${state.selectedBoss ? `：${state.selectedBoss.name}` : ""}。`;
 }
 
+function getDebugBlessingBuildCatalog() {
+  return Object.entries(regionDefinitions)
+    .map(([regionId, region]) => ({
+      id: regionId,
+      name: region.name,
+      standardBlessingSlots: getBossEncounterIndex(regionId),
+      blessings: (region.blessings || []).map((blessing) => ({
+        id: blessing.id,
+        name: blessing.name
+      })),
+      bosses: getRegionBosses(region).map((boss) => ({
+        id: boss.id,
+        name: boss.name
+      }))
+    }))
+    .filter((region) => region.blessings.length > 0 && region.bosses.length > 0);
+}
+
+function startDebugBossWithBlessingBuild(options = {}) {
+  if (!isDebugModeEnabled()) {
+    throw new Error("自訂 Blessing Build 僅能在 ?debug=1 使用。");
+  }
+
+  const region = regionDefinitions[options.regionId];
+  if (!region) {
+    throw new Error("找不到指定地區。");
+  }
+
+  const bossIndex = getBossEncounterIndex(options.regionId);
+  const boss = getRegionBosses(region).find((candidate) => candidate.id === options.bossId);
+  if (!boss) {
+    throw new Error("找不到指定首領。");
+  }
+
+  const blessingIds = Array.isArray(options.blessingIds) ? options.blessingIds : [];
+  if (blessingIds.length > bossIndex) {
+    throw new Error(`標準首領測試最多 ${bossIndex} 個 Blessing。`);
+  }
+
+  const blessingsById = new Map((region.blessings || []).map((blessing) => [blessing.id, blessing]));
+  blessingIds.forEach((blessingId) => {
+    if (!blessingsById.has(blessingId)) {
+      throw new Error(`找不到 Blessing：${blessingId}`);
+    }
+  });
+
+  const debugHero = buildDebugMaxLevelHero(state.selectedHeroId);
+  prepareDebugRunForRegion(options.regionId, bossIndex, {
+    bossId: boss.id,
+    hero: debugHero,
+    debugBuildRun: true,
+    persistSelection: false
+  });
+
+  applyDebugBlessingBuild(region, blessingIds, bossIndex);
+  const hpPercent = Math.max(1, Math.min(100, Number(options.hpPercent) || 100));
+  state.hero.hp = Math.max(1, Math.round(state.hero.maxHp * hpPercent / 100));
+  startEncounter();
+  addFixedLog(
+    "system",
+    `調試：Lv. ${state.hero.level} 自訂 Build（${blessingIds.length} 個 Blessing、${hpPercent}% HP）進入${state.selectedBoss.name}。`
+  );
+  return `已用 ${blessingIds.length} 個 Blessing、${hpPercent}% HP 進入${state.selectedBoss.name}。`;
+}
+
+function buildDebugMaxLevelHero(characterId) {
+  const character = getCharacterDefinition(characterId);
+  return buildHeroFromProgressionCore(character, {
+    level: getCharacterMaxLevel(character),
+    exp: 0,
+    learnedSkills: []
+  });
+}
+
+function applyDebugBlessingBuild(region, blessingIds, blessingSlots) {
+  const blessingsById = new Map((region.blessings || []).map((blessing) => [blessing.id, blessing]));
+  for (let slot = 0; slot < blessingSlots; slot += 1) {
+    const blessingId = blessingIds[slot];
+    if (blessingId) {
+      const blessing = blessingsById.get(blessingId);
+      applyBlessingEffects(state.hero, blessing);
+      state.hero.blessings.push(blessing.name);
+    }
+
+    if (slot < blessingSlots - 1) {
+      consumeBattleLimitedEffects();
+    }
+  }
+}
+
 function triggerDebugPlainsStory() {
   prepareDebugRunAtEncounter(getPlainsBossEncounterIndex());
   state.defeatedBoss = true;
@@ -983,13 +1089,18 @@ function prepareDebugRunAtEncounter(encounterIndex) {
 }
 
 function prepareDebugRunForRegion(regionId, encounterIndex, options = {}) {
-  saveData.settings.selectedRegionId = regionId;
-  saveGameSafe();
-  syncSelectionFromSave();
+  state.debugBuildRun = Boolean(options.debugBuildRun);
+  if (options.persistSelection === false) {
+    setRuntimeSelection(regionId, saveData.settings.selectedCharacterId);
+  } else {
+    saveData.settings.selectedRegionId = regionId;
+    saveGameSafe();
+    syncSelectionFromSave();
+  }
   state.run += 1;
   state.encounterIndex = encounterIndex;
   state.turn = 0;
-  state.hero = buildHeroFromProgression(state.selectedHeroId);
+  state.hero = options.hero || buildHeroFromProgression(state.selectedHeroId);
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
   state.enemy = null;
   state.selectedBoss = selectRunBoss(currentRegion(), options.bossId);
@@ -1030,11 +1141,24 @@ function getBossEncounterIndex(regionId) {
   return bossIndex >= 0 ? bossIndex : region.encounterPlan.length - 1;
 }
 
+function getRegionBosses(region) {
+  return Array.isArray(region.bosses) && region.bosses.length > 0 ? region.bosses : [region.boss].filter(Boolean);
+}
+
 function selectRunBoss(region, bossId = null) {
-  const bosses = Array.isArray(region.bosses) && region.bosses.length > 0 ? region.bosses : [region.boss];
+  const bosses = getRegionBosses(region);
   const selected = bossId ? bosses.find((boss) => boss.id === bossId) : null;
   const boss = selected || weightedRandomItem(bosses, (candidate) => Number(candidate.weight) || 100);
   return clone(boss);
+}
+
+function setRuntimeSelection(regionId, characterId) {
+  const resolvedRegionId = regionDefinitions[regionId] ? regionId : DEFAULT_REGION_ID;
+  const resolvedCharacterId = characterDefinitions[characterId] ? characterId : DEFAULT_CHARACTER_ID;
+  state.selectedRegionId = resolvedRegionId;
+  state.selectedHeroId = resolvedCharacterId;
+  state.selectedRegion = regionDefinitions[resolvedRegionId].name;
+  state.selectedHero = characterDefinitions[resolvedCharacterId].name;
 }
 
 function recordSelectedBossInRunStats() {
@@ -1195,6 +1319,7 @@ function buildCounterEnemy(region, encounterIndex) {
 
 function startRun() {
   syncSelectionFromSave();
+  state.debugBuildRun = false;
   state.run += 1;
   state.encounterIndex = 0;
   state.turn = 0;
@@ -1235,6 +1360,8 @@ function startRun() {
 }
 
 function restart() {
+  state.debugBuildRun = false;
+  syncSelectionFromSave();
   showScreen("menuScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
@@ -1258,6 +1385,8 @@ function restart() {
 }
 
 function returnToCamp() {
+  state.debugBuildRun = false;
+  syncSelectionFromSave();
   showScreen("campScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
@@ -1405,7 +1534,7 @@ function finishCounterEncounterVictory() {
 }
 
 function awardEnemyRewards(enemy) {
-  if (!hasPhoenixBlessing()) {
+  if (state.debugBuildRun || !hasPhoenixBlessing()) {
     return;
   }
   const rewards = rollEnemyRewards(enemy);
@@ -1437,30 +1566,56 @@ function applyBattleStartSkills() {
     return;
   }
 
-  if (hasBlessingFlow("defense")) {
-    const amount = 6;
-    state.hero.shield = (state.hero.shield || 0) + amount;
-    addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus: `護盾 +${amount}` });
-    return;
+  const satchelFlow = getVersatileSatchelFlow();
+  const satchelEffectId = satchelFlow?.satchelEffectId || "battle_attack";
+  const satchelEffect = VERSATILE_SATCHEL_EFFECT_HANDLERS[satchelEffectId]
+    || VERSATILE_SATCHEL_EFFECT_HANDLERS.battle_attack;
+  const bonus = satchelEffect(state.hero);
+  if (satchelFlow?.id) {
+    state.hero.lastBagFlow = satchelFlow.id;
   }
-  if (hasBlessingFlow("crit")) {
-    state.hero.battleCritBonus = (state.hero.battleCritBonus || 0) + 0.03;
-    addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus: "暴擊率 +3%" });
-    return;
-  }
-  if (hasBlessingFlow("debuff")) {
-    state.hero.statusFamiliarityLimitBonus = 1;
-    addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus: "狀態判讀上限 +1" });
-    return;
-  }
-  if (hasBlessingFlow("healing")) {
-    state.hero.victoryHealBonusRatio = (state.hero.victoryHealBonusRatio || 0) + 0.03;
-    addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus: "勝利恢復 +3%" });
-    return;
-  }
+  addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus });
+}
 
-  state.hero.battleAttackBonus = (state.hero.battleAttackBonus || 0) + 1;
-  addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus: "攻擊 +1" });
+const VERSATILE_SATCHEL_EFFECT_HANDLERS = Object.freeze({
+  battle_attack(hero) {
+    hero.battleAttackBonus = (hero.battleAttackBonus || 0) + 1;
+    return "攻擊 +1";
+  },
+  battle_shield(hero) {
+    const amount = 6;
+    hero.shield = (hero.shield || 0) + amount;
+    return `護盾 +${amount}`;
+  },
+  battle_crit(hero) {
+    hero.battleCritBonus = (hero.battleCritBonus || 0) + 0.03;
+    return "暴擊率 +3%";
+  },
+  status_familiarity(hero) {
+    hero.statusFamiliarityLimitBonus = (hero.statusFamiliarityLimitBonus || 0) + 1;
+    return "狀態判讀上限 +1";
+  },
+  victory_heal(hero) {
+    hero.victoryHealBonusRatio = (hero.victoryHealBonusRatio || 0) + 0.03;
+    return "勝利恢復 +3%";
+  }
+});
+
+function getVersatileSatchelFlow() {
+  const momentum = state.hero?.blessingFlowMomentum || {};
+  const candidates = getBlessingFlowDefinitions()
+    .map((flow) => {
+      const baseWeight = Math.max(0, Number(momentum[flow.id]) || 0);
+      const weight = flow.id === state.hero?.lastBagFlow
+        ? baseWeight * LAST_BAG_FLOW_WEIGHT_MULTIPLIER
+        : baseWeight;
+      return { ...flow, weight };
+    })
+    .filter((flow) => flow.weight > 0);
+
+  return candidates.length > 0
+    ? weightedRandomItem(candidates, (flow) => flow.weight)
+    : null;
 }
 
 function hasBlessingFlow(flow) {
@@ -1555,6 +1710,10 @@ function loseRun() {
 }
 
 function handleDefeatProgression() {
+  if (state.debugBuildRun) {
+    state.runStats.endLevel = state.hero?.level || 1;
+    return;
+  }
   const progress = getCharacterProgress();
   state.runStats.endLevel = progress.level;
   if (hasPhoenixBlessing()) {
@@ -1597,6 +1756,11 @@ function finishRun(outcome) {
 }
 
 function getEndText(outcome, region) {
+  if (state.debugBuildRun) {
+    return outcome === "clear"
+      ? `自訂 Build 已擊敗${region.name}首領。正式存檔未變更。`
+      : "自訂 Build 測試結束。正式存檔未變更。";
+  }
   if (outcome === "clear") {
     return `你完成了${region.name}的挑戰。`;
   }
@@ -1620,15 +1784,18 @@ function renderEndSummary(outcome, region) {
   const reachedEncounter = getReachedEncounter(cleared, region);
   const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
   const progress = getCharacterProgress();
-  state.lastRunSummary = {
-    result: cleared ? "成功" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
-    reachedEncounter,
-    runLevel: state.runStats?.endLevel || progress.level
-  };
+  const displayLevel = state.debugBuildRun ? state.hero.level : progress.level;
+  if (!state.debugBuildRun) {
+    state.lastRunSummary = {
+      result: cleared ? "成功" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
+      reachedEncounter,
+      runLevel: state.runStats?.endLevel || displayLevel
+    };
+  }
   const items = [
     ["結果", cleared ? "冒險成功" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗"],
     ["抵達", `第 ${reachedEncounter} / ${region.encounterPlan.length} 場`],
-    ["角色等級", `Lv. ${progress.level}`],
+    ["角色等級", `Lv. ${displayLevel}`],
     ["本輪經驗", `${state.runStats?.expGained || 0}`],
     ["擊敗敵人", `${state.defeatedEnemies} 隻`],
     ["擊敗首領", state.defeatedBoss ? "是" : "否"],
@@ -1928,6 +2095,9 @@ function shouldTriggerPlainsStory() {
 }
 
 function unlockRegionClearAchievements() {
+  if (state.debugBuildRun) {
+    return;
+  }
   if (state.selectedRegionId === "forest") {
     unlockAchievement(FOREST_TRIAL_ACHIEVEMENT_ID);
     saveData.storyFlags.achievementSystemUnlocked = true;

@@ -1,0 +1,27 @@
+{
+  "attack": {
+    "id": "attack",
+    "label": "攻擊",
+    "satchelEffectId": "battle_attack"
+  },
+  "defense": {
+    "id": "defense",
+    "label": "防禦",
+    "satchelEffectId": "battle_shield"
+  },
+  "healing": {
+    "id": "healing",
+    "label": "回復",
+    "satchelEffectId": "victory_heal"
+  },
+  "debuff": {
+    "id": "debuff",
+    "label": "負面狀態",
+    "satchelEffectId": "status_familiarity"
+  },
+  "crit": {
+    "id": "crit",
+    "label": "暴擊",
+    "satchelEffectId": "battle_crit"
+  }
+}

@@ -216,7 +216,7 @@
         {
           "type": "add",
           "stat": "attack",
-          "amount": 1
+          "amount": 2
         }
       ]
     },
