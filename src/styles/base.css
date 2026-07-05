@@ -55,7 +55,7 @@ body[data-scene="camp"] {
     url("../../assets/images/camp/camp-mobile.png") center / cover fixed no-repeat;
 }
 
-body[data-scene="region"][data-region="plains"] {
+body[data-scene="region"] {
   background:
     linear-gradient(
       90deg,
@@ -66,7 +66,7 @@ body[data-scene="region"][data-region="plains"] {
       rgba(5, 7, 10, 0.42) 100%
     ),
     linear-gradient(180deg, rgba(5, 7, 10, 0.24) 0%, rgba(5, 7, 10, 0.74) 100%),
-    url("../../assets/images/regions/plains/plains-morning-mobile.png") center / cover fixed no-repeat;
+    var(--region-bg-mobile, url("../../assets/images/regions/plains/plains-morning-mobile.png")) center / cover fixed no-repeat;
 }
 
 button {

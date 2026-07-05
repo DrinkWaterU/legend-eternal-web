@@ -151,7 +151,7 @@
       url("../../assets/images/camp/camp-desktop.png") center / cover fixed no-repeat;
   }
 
-  body[data-scene="region"][data-region="plains"] {
+  body[data-scene="region"] {
     background:
       linear-gradient(
         90deg,
@@ -162,7 +162,7 @@
         rgba(5, 7, 10, 0.34) 100%
       ),
       linear-gradient(180deg, rgba(5, 7, 10, 0.18) 0%, rgba(5, 7, 10, 0.68) 100%),
-      url("../../assets/images/regions/plains/plains-morning.png") center / cover fixed no-repeat;
+      var(--region-bg-desktop, url("../../assets/images/regions/plains/plains-morning.png")) center / cover fixed no-repeat;
   }
 
   .camp-screen {

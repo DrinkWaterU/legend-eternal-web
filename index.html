@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.2.6-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.3.0.4-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -25,9 +25,9 @@
             <p class="eyebrow">主選單</p>
             <h2>傳說大陸的旅程從這裡開始。</h2>
             <p class="body-text">
-              選擇地區後開始冒險。現在的第一版只開放平原與冒險者。
+              選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.2.6-alpha</p>
+            <p class="version-label">v0.2.3.0.4-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -276,8 +276,6 @@
       <section id="gameScreen" class="screen">
         <div class="combat-layout">
           <aside class="status-panel" aria-label="角色狀態">
-            <button class="secondary-button home-button" type="button" data-target="menuScreen">回主選單</button>
-
             <div class="entity-block">
               <div class="entity-heading">
                 <h2 id="heroName">冒險者</h2>
@@ -305,17 +303,20 @@
 
           <section class="log-panel" aria-label="戰鬥紀錄">
             <div class="log-header">
-              <h2>戰鬥紀錄</h2>
+              <h2 id="battleLogTitle">戰鬥紀錄</h2>
               <div class="combat-actions">
                 <button id="nextButton" class="secondary-button action-combat" type="button">下一回合</button>
                 <button id="fleeButton" class="secondary-button action-flee" type="button">嘗試逃跑</button>
                 <button id="restButton" class="secondary-button action-rest" type="button">原地修整</button>
                 <button id="continueButton" class="secondary-button action-forward" type="button">繼續前進</button>
                 <button id="retreatButton" class="secondary-button action-retreat" type="button">撤退</button>
+                <button id="viewBlessingsButton" class="secondary-button action-info" type="button">祝福 0</button>
               </div>
             </div>
             <ol id="battleLog" class="battle-log"></ol>
           </section>
+
+          <button class="secondary-button home-button combat-home-button" type="button" data-target="menuScreen">回主選單</button>
         </div>
 
         <section id="blessingPanel" class="blessing-panel" aria-label="平原祝福" aria-modal="true">
@@ -340,6 +341,19 @@
               <button id="retryButton" class="primary-button" type="button">回到營地</button>
               <button id="viewLogButton" class="secondary-button" type="button">查看戰鬥紀錄</button>
               <button id="restartButton" class="secondary-button" type="button">回主選單</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="blessingInfoPanel" class="end-panel blessing-info-panel" aria-label="目前祝福" aria-modal="true">
+          <div class="end-dialog blessing-info-dialog">
+            <div>
+              <p class="eyebrow">臨時祝福</p>
+              <h2>目前祝福</h2>
+              <div id="blessingInfoList" class="blessing-info-list"></div>
+            </div>
+            <div class="end-actions">
+              <button id="closeBlessingInfoButton" class="primary-button" type="button">關閉</button>
             </div>
           </div>
         </section>
@@ -441,6 +455,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.2.6-alpha"></script>
+    <script type="module" src="game.js?v=0.2.3.0.4-alpha"></script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION, SAVE_KEY, SAVE_SCHEMA_VERSION } from "../config.js";
 import { normalizeInventory } from "./rewards.js";
+import { achievementDefinitions } from "../data/achievements.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { toSafeInteger, toSafeNumber } from "../utils.js";
@@ -126,7 +127,7 @@ function createDefaultRegionProgression() {
   return Object.fromEntries(Object.keys(regionDefinitions).map((regionId) => [
     regionId,
     {
-      unlocked: regionId === DEFAULT_REGION_ID,
+      unlocked: true,
       bestEncounter: 0,
       clears: 0
     }
@@ -156,12 +157,13 @@ function createDefaultStoryFlags() {
 }
 
 function createDefaultAchievements() {
-  return {
-    plains_trial: {
+  return Object.fromEntries(Object.keys(achievementDefinitions).map((achievementId) => [
+    achievementId,
+    {
       unlocked: false,
       unlockedAt: null
     }
-  };
+  ]));
 }
 
 function createDefaultRegionStatistics() {

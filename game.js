@@ -1,6 +1,6 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/config.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
-import { applyEndOfTurnEffects, buildEnemy, resolveEnemyAction, resolveHeroAction } from "./src/core/combat.js";
+import { applyEndOfTurnEffects, buildEnemy, resolveEnemyAction, resolveHeroAction, resolveHeroEntangle } from "./src/core/combat.js";
 import {
   applyProgressionEffects,
   buildHeroFromProgression as buildHeroFromProgressionCore,
@@ -14,6 +14,8 @@ import {
 import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, formatRewards, mergeRewards, normalizeInventory, rollEnemyRewards } from "./src/core/rewards.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
+import { achievementDefinitions } from "./src/data/achievements.js";
+import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
 import { materialDefinitions } from "./src/data/materials.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
 import { getBlessingRarity } from "./src/data/rarities.js";
@@ -25,18 +27,23 @@ import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderCurrent
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
-import { roll, weightedRandomItem } from "./src/utils.js";
+import { clone, roll, weightedRandomItem } from "./src/utils.js";
 
 const RUN_STARTING_FLEES = 2;
 const NORMAL_FLEE_CHANCE = 0.8;
 const ELITE_FLEE_CHANCE = 0.55;
-const FLEE_RESULTS = [
-  { id: "safe", weight: 65 },
-  { id: "counter", weight: 25 },
-  { id: "evacuation", weight: 10 }
+const SAFE_ESCAPE_ENEMY_HEAL_RATIO = 0.05;
+const COUNTER_ESCAPE_ENEMY_HEAL_RATIO = 0.05;
+const COUNTER_ESCAPE_HEAL_RATIO = 0.1;
+const COUNTER_ESCAPE_SCALING_OFFSET = 3;
+const TACTICAL_FLEE_RESULTS = [
+  { id: "safe", weight: 75 },
+  { id: "counter", weight: 25 }
 ];
+const LAST_BAG_FLOW_WEIGHT_MULTIPLIER = 0.6;
 const REST_HEAL_RATIO = 0.15;
 const PLAINS_TRIAL_ACHIEVEMENT_ID = "plains_trial";
+const FOREST_TRIAL_ACHIEVEMENT_ID = "forest_trial";
 const STORY_LINE_DELAY_MS = 1500;
 const STORY_FINISH_EXTRA_DELAY_MS = 1700;
 const PLAINS_STORY_LINES = [
@@ -68,6 +75,7 @@ const state = {
   turn: 0,
   hero: null,
   enemy: null,
+  selectedBoss: null,
   phase: "camp",
   awaitingBlessing: false,
   ended: false,
@@ -79,6 +87,9 @@ const state = {
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
+  pendingThreat: null,
+  blessingContext: "normal",
+  debugBuildRun: false,
   storyTimer: null,
   log: []
 };
@@ -143,9 +154,57 @@ function applySceneContext(screenId) {
 
   if (scene === "region") {
     document.body.dataset.region = state.selectedRegionId;
+    applyRegionBackgroundStage();
   } else {
     delete document.body.dataset.region;
+    delete document.body.dataset.regionDepth;
+    document.body.style.removeProperty("--region-bg-mobile");
+    document.body.style.removeProperty("--region-bg-desktop");
   }
+}
+
+function applyRegionBackgroundStage() {
+  const region = currentRegion();
+  const stage = getRegionBackgroundStage(region, state.encounterIndex);
+
+  if (stage?.id) {
+    document.body.dataset.regionDepth = stage.id;
+  } else {
+    delete document.body.dataset.regionDepth;
+  }
+
+  const mobile = stage?.mobile || stage?.desktop || region.visual?.background?.mobile || region.visual?.background?.desktop || "";
+  const desktop = stage?.desktop || stage?.mobile || region.visual?.background?.desktop || region.visual?.background?.mobile || "";
+  if (mobile) {
+    document.body.style.setProperty("--region-bg-mobile", `url("${resolveAssetUrl(mobile)}")`);
+  } else {
+    document.body.style.removeProperty("--region-bg-mobile");
+  }
+  if (desktop) {
+    document.body.style.setProperty("--region-bg-desktop", `url("${resolveAssetUrl(desktop)}")`);
+  } else {
+    document.body.style.removeProperty("--region-bg-desktop");
+  }
+}
+
+function resolveAssetUrl(path) {
+  try {
+    return new URL(path, document.baseURI).href;
+  } catch {
+    return path;
+  }
+}
+
+function getRegionBackgroundStage(region, encounterIndex) {
+  const encounterNumber = Math.max(1, Math.min(region.encounterCount || 1, encounterIndex + 1));
+  const stages = region.visual?.backgroundStages;
+  if (!Array.isArray(stages) || stages.length === 0) {
+    return region.visual?.background || null;
+  }
+  return stages.find((stage) => (
+    encounterNumber >= (stage.fromEncounter || 1)
+    && encounterNumber <= (stage.toEncounter || region.encounterCount || encounterNumber)
+  )) || region.visual?.background || null;
 }
 
 function showScreen(screenId) {
@@ -261,7 +320,7 @@ function renderRegionScreen() {
 
   renderChoiceList(els.regionChoiceList, Object.entries(regionDefinitions).map(([regionId, region]) => ({
     title: region.name,
-    meta: region.difficulty,
+    meta: region.recommendedLevel ? `${region.difficulty}｜${region.recommendedLevel}` : region.difficulty,
     description: `${region.encounterCount} 場遭遇，首領：${region.bossName}`,
     action: "查看地區",
     onClick: () => showRegionDetail(regionId)
@@ -270,11 +329,14 @@ function renderRegionScreen() {
   if (uiState.regionView === "detail") {
     const region = currentRegion();
     els.regionDetailName.textContent = region.name;
-    els.regionDetailDescription.textContent = region.description;
+    els.regionDetailDescription.textContent = region.note
+      ? `${region.description}\n${region.note}`
+      : region.description;
     renderStatList(els.regionDetailStats, [
       ["遭遇數", region.encounterCount],
       ["首領", region.bossName],
       ["難度", region.difficulty],
+      ["推薦等級", region.recommendedLevel || "Lv.1+"],
       ["角色", state.selectedHero]
     ]);
     els.startButton.textContent = `開始${region.name}冒險`;
@@ -370,7 +432,10 @@ function createRunStats() {
     safeEscapes: 0,
     counterEscapes: 0,
     evacuationEscapes: 0,
+    evacuated: false,
     retreated: false,
+    bossId: null,
+    bossName: null,
     rewards: createEmptyRewards()
   };
 }
@@ -397,6 +462,11 @@ function buildHeroFromProgression(characterId = state.selectedHeroId) {
 
 function gainCharacterExp(amount) {
   if (!state.hero || amount <= 0) {
+    return;
+  }
+
+  if (state.debugBuildRun) {
+    state.runStats.expGained += amount;
     return;
   }
 
@@ -480,6 +550,9 @@ function recordRunStarted() {
 }
 
 function recordEnemyDefeated(isBoss) {
+  if (state.debugBuildRun) {
+    return;
+  }
   saveData.statistics.totalEnemiesDefeated += 1;
   if (isBoss) {
     saveData.statistics.bossesDefeated += 1;
@@ -488,6 +561,9 @@ function recordEnemyDefeated(isBoss) {
 }
 
 function recordRunFinished(outcome) {
+  if (state.debugBuildRun) {
+    return;
+  }
   const stats = saveData.statistics;
   const regionStats = stats.regions[state.selectedRegionId];
   const characterStats = stats.characters[state.selectedHeroId];
@@ -495,6 +571,7 @@ function recordRunFinished(outcome) {
   const characterProgress = saveData.progression.characters[state.selectedHeroId];
   const cleared = outcome === "clear";
   const retreated = outcome === "retreat";
+  const evacuated = retreated && Boolean(state.runStats?.evacuated);
   const bestEncounter = cleared ? currentRegion().encounterCount : state.encounterIndex + 1;
 
   regionStats.bestEncounter = Math.max(regionStats.bestEncounter, bestEncounter);
@@ -514,7 +591,7 @@ function recordRunFinished(outcome) {
     characterStats.clears += 1;
     regionProgress.clears += 1;
     characterProgress.clears += 1;
-  } else if (retreated) {
+  } else if (retreated && !evacuated) {
     stats.totalRetreats += 1;
     regionStats.retreats += 1;
     characterStats.retreats += 1;
@@ -523,6 +600,22 @@ function recordRunFinished(outcome) {
   }
 
   saveGameSafe();
+}
+
+function unlockAchievement(achievementId) {
+  if (!achievementDefinitions[achievementId]) {
+    return false;
+  }
+  const achievement = saveData.achievements[achievementId] || {
+    unlocked: false,
+    unlockedAt: null
+  };
+  if (!achievement.unlocked) {
+    achievement.unlocked = true;
+    achievement.unlockedAt = new Date().toISOString();
+  }
+  saveData.achievements[achievementId] = achievement;
+  return true;
 }
 
 function renderStatistics() {
@@ -552,16 +645,27 @@ function renderAchievementScreen() {
   if (!unlocked) {
     return;
   }
-  const achievement = saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID];
-  const item = document.createElement("div");
-  item.className = "achievement-card";
-  item.innerHTML = `
-    <strong>平原的試煉</strong>
-    <span>擊敗平原首領</span>
-    <p>你跨過了第一片野外的終點，並在死亡邊緣觸及了新的命運。</p>
-    <small>${achievement?.unlockedAt ? `解鎖於 ${new Date(achievement.unlockedAt).toLocaleString("zh-TW")}` : "已解鎖"}</small>
-  `;
-  els.achievementList.append(item);
+  Object.values(achievementDefinitions).forEach((definition) => {
+    const achievement = saveData.achievements[definition.id] || {};
+    const item = document.createElement("div");
+    item.className = "achievement-card";
+    item.classList.toggle("is-locked", !achievement.unlocked);
+
+    const title = document.createElement("strong");
+    const condition = document.createElement("span");
+    const description = document.createElement("p");
+    const meta = document.createElement("small");
+    title.textContent = definition.title;
+    condition.textContent = definition.conditionText;
+    description.textContent = achievement.unlocked ? definition.description : "尚未解鎖。";
+    meta.textContent = achievement.unlocked
+      ? achievement.unlockedAt
+        ? `解鎖於 ${new Date(achievement.unlockedAt).toLocaleString("zh-TW")}`
+        : "已解鎖"
+      : "未解鎖";
+    item.append(title, condition, description, meta);
+    els.achievementList.append(item);
+  });
 }
 
 function showStatisticsScreen(contextId = uiState.navigationContext) {
@@ -734,8 +838,12 @@ function createDebugActions() {
     unlockPhoenix: unlockDebugPhoenix,
     removePhoenix: removeDebugPhoenix,
     givePlainsMaterials: giveDebugPlainsMaterials,
+    giveForestMaterials: giveDebugForestMaterials,
     clearInventory: clearDebugInventory,
     startPlainsBoss: startDebugPlainsBoss,
+    startForestBoss: startDebugForestBoss,
+    getBlessingBuildCatalog: getDebugBlessingBuildCatalog,
+    startBossWithBlessingBuild: startDebugBossWithBlessingBuild,
     triggerPlainsStory: triggerDebugPlainsStory,
     returnToCamp: returnDebugToCamp,
     deleteSave: deleteDebugSave
@@ -784,6 +892,7 @@ function healDebugHero() {
 function unlockDebugPhoenix() {
   saveData.storyFlags.phoenixBlessingUnlocked = true;
   saveData.storyFlags.achievementSystemUnlocked = true;
+  unlockAchievement(PLAINS_TRIAL_ACHIEVEMENT_ID);
   saveGameSafe();
   refreshAfterDebugChange();
   return "已解鎖鳳凰加護。";
@@ -793,19 +902,31 @@ function removeDebugPhoenix() {
   saveData.storyFlags.phoenixBlessingUnlocked = false;
   saveData.storyFlags.plainsBossStorySeen = false;
   saveData.storyFlags.achievementSystemUnlocked = false;
-  saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID] = {
-    unlocked: false,
-    unlockedAt: null
-  };
+  Object.keys(saveData.achievements).forEach((achievementId) => {
+    saveData.achievements[achievementId] = {
+      unlocked: false,
+      unlockedAt: null
+    };
+  });
   saveGameSafe();
   refreshAfterDebugChange();
   return "已移除鳳凰加護並重置平原劇情旗標。";
 }
 
 function giveDebugPlainsMaterials() {
+  giveDebugMaterialsByTag("plains");
+  return "已給予少量平原素材。";
+}
+
+function giveDebugForestMaterials() {
+  giveDebugMaterialsByTag("forest");
+  return "已給予少量森林素材。";
+}
+
+function giveDebugMaterialsByTag(tag) {
   const rewards = createEmptyRewards();
   Object.entries(materialDefinitions)
-    .filter(([, material]) => Array.isArray(material.tags) && material.tags.includes("plains"))
+    .filter(([, material]) => Array.isArray(material.tags) && material.tags.includes(tag))
     .forEach(([materialId, material]) => {
       rewards.materials[materialId] = {
         id: materialId,
@@ -816,7 +937,6 @@ function giveDebugPlainsMaterials() {
   applyRewardsToInventory(saveData.inventory, rewards);
   saveGameSafe();
   refreshAfterDebugChange();
-  return "已給予少量平原素材。";
 }
 
 function clearDebugInventory() {
@@ -833,6 +953,103 @@ function startDebugPlainsBoss() {
   startEncounter();
   addFixedLog("system", "調試：直接進入平原首領戰。");
   return "已直接進入平原首領戰。";
+}
+
+function startDebugForestBoss(bossId = null) {
+  prepareDebugRunForRegion("forest", getBossEncounterIndex("forest"), { bossId });
+  startEncounter();
+  addFixedLog("system", `調試：直接進入森林首領戰${state.selectedBoss ? `（${state.selectedBoss.name}）` : ""}。`);
+  return `已直接進入森林首領戰${state.selectedBoss ? `：${state.selectedBoss.name}` : ""}。`;
+}
+
+function getDebugBlessingBuildCatalog() {
+  return Object.entries(regionDefinitions)
+    .map(([regionId, region]) => ({
+      id: regionId,
+      name: region.name,
+      standardBlessingSlots: getBossEncounterIndex(regionId),
+      blessings: (region.blessings || []).map((blessing) => ({
+        id: blessing.id,
+        name: blessing.name
+      })),
+      bosses: getRegionBosses(region).map((boss) => ({
+        id: boss.id,
+        name: boss.name
+      }))
+    }))
+    .filter((region) => region.blessings.length > 0 && region.bosses.length > 0);
+}
+
+function startDebugBossWithBlessingBuild(options = {}) {
+  if (!isDebugModeEnabled()) {
+    throw new Error("自訂 Blessing Build 僅能在 ?debug=1 使用。");
+  }
+
+  const region = regionDefinitions[options.regionId];
+  if (!region) {
+    throw new Error("找不到指定地區。");
+  }
+
+  const bossIndex = getBossEncounterIndex(options.regionId);
+  const boss = getRegionBosses(region).find((candidate) => candidate.id === options.bossId);
+  if (!boss) {
+    throw new Error("找不到指定首領。");
+  }
+
+  const blessingIds = Array.isArray(options.blessingIds) ? options.blessingIds : [];
+  if (blessingIds.length > bossIndex) {
+    throw new Error(`標準首領測試最多 ${bossIndex} 個 Blessing。`);
+  }
+
+  const blessingsById = new Map((region.blessings || []).map((blessing) => [blessing.id, blessing]));
+  blessingIds.forEach((blessingId) => {
+    if (!blessingsById.has(blessingId)) {
+      throw new Error(`找不到 Blessing：${blessingId}`);
+    }
+  });
+
+  const debugHero = buildDebugMaxLevelHero(state.selectedHeroId);
+  prepareDebugRunForRegion(options.regionId, bossIndex, {
+    bossId: boss.id,
+    hero: debugHero,
+    debugBuildRun: true,
+    persistSelection: false
+  });
+
+  applyDebugBlessingBuild(region, blessingIds, bossIndex);
+  const hpPercent = Math.max(1, Math.min(100, Number(options.hpPercent) || 100));
+  state.hero.hp = Math.max(1, Math.round(state.hero.maxHp * hpPercent / 100));
+  startEncounter();
+  addFixedLog(
+    "system",
+    `調試：Lv. ${state.hero.level} 自訂 Build（${blessingIds.length} 個 Blessing、${hpPercent}% HP）進入${state.selectedBoss.name}。`
+  );
+  return `已用 ${blessingIds.length} 個 Blessing、${hpPercent}% HP 進入${state.selectedBoss.name}。`;
+}
+
+function buildDebugMaxLevelHero(characterId) {
+  const character = getCharacterDefinition(characterId);
+  return buildHeroFromProgressionCore(character, {
+    level: getCharacterMaxLevel(character),
+    exp: 0,
+    learnedSkills: []
+  });
+}
+
+function applyDebugBlessingBuild(region, blessingIds, blessingSlots) {
+  const blessingsById = new Map((region.blessings || []).map((blessing) => [blessing.id, blessing]));
+  for (let slot = 0; slot < blessingSlots; slot += 1) {
+    const blessingId = blessingIds[slot];
+    if (blessingId) {
+      const blessing = blessingsById.get(blessingId);
+      applyBlessingEffects(state.hero, blessing);
+      state.hero.blessings.push(blessing.name);
+    }
+
+    if (slot < blessingSlots - 1) {
+      consumeBattleLimitedEffects();
+    }
+  }
 }
 
 function triggerDebugPlainsStory() {
@@ -868,15 +1085,25 @@ function deleteDebugSave() {
 }
 
 function prepareDebugRunAtEncounter(encounterIndex) {
-  saveData.settings.selectedRegionId = "plains";
-  saveGameSafe();
-  syncSelectionFromSave();
+  prepareDebugRunForRegion("plains", encounterIndex);
+}
+
+function prepareDebugRunForRegion(regionId, encounterIndex, options = {}) {
+  state.debugBuildRun = Boolean(options.debugBuildRun);
+  if (options.persistSelection === false) {
+    setRuntimeSelection(regionId, saveData.settings.selectedCharacterId);
+  } else {
+    saveData.settings.selectedRegionId = regionId;
+    saveGameSafe();
+    syncSelectionFromSave();
+  }
   state.run += 1;
   state.encounterIndex = encounterIndex;
   state.turn = 0;
-  state.hero = buildHeroFromProgression(state.selectedHeroId);
+  state.hero = options.hero || buildHeroFromProgression(state.selectedHeroId);
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
   state.enemy = null;
+  state.selectedBoss = selectRunBoss(currentRegion(), options.bossId);
   state.phase = "danger";
   state.awaitingBlessing = false;
   state.ended = false;
@@ -890,6 +1117,7 @@ function prepareDebugRunAtEncounter(encounterIndex) {
   state.log = [];
   state.runStats.startLevel = state.hero.level;
   state.runStats.endLevel = state.hero.level;
+  recordSelectedBossInRunStats();
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
   closeSkillPanel();
@@ -905,6 +1133,40 @@ function prepareDebugRunAtEncounter(encounterIndex) {
 function getPlainsBossEncounterIndex() {
   const bossIndex = regionDefinitions.plains.encounterPlan.findIndex((encounterType) => encounterType === "boss");
   return bossIndex >= 0 ? bossIndex : regionDefinitions.plains.encounterPlan.length - 1;
+}
+
+function getBossEncounterIndex(regionId) {
+  const region = regionDefinitions[regionId];
+  const bossIndex = region.encounterPlan.findIndex((encounterType) => encounterType === "boss");
+  return bossIndex >= 0 ? bossIndex : region.encounterPlan.length - 1;
+}
+
+function getRegionBosses(region) {
+  return Array.isArray(region.bosses) && region.bosses.length > 0 ? region.bosses : [region.boss].filter(Boolean);
+}
+
+function selectRunBoss(region, bossId = null) {
+  const bosses = getRegionBosses(region);
+  const selected = bossId ? bosses.find((boss) => boss.id === bossId) : null;
+  const boss = selected || weightedRandomItem(bosses, (candidate) => Number(candidate.weight) || 100);
+  return clone(boss);
+}
+
+function setRuntimeSelection(regionId, characterId) {
+  const resolvedRegionId = regionDefinitions[regionId] ? regionId : DEFAULT_REGION_ID;
+  const resolvedCharacterId = characterDefinitions[characterId] ? characterId : DEFAULT_CHARACTER_ID;
+  state.selectedRegionId = resolvedRegionId;
+  state.selectedHeroId = resolvedCharacterId;
+  state.selectedRegion = regionDefinitions[resolvedRegionId].name;
+  state.selectedHero = characterDefinitions[resolvedCharacterId].name;
+}
+
+function recordSelectedBossInRunStats() {
+  if (!state.runStats || !state.selectedBoss) {
+    return;
+  }
+  state.runStats.bossId = state.selectedBoss.id;
+  state.runStats.bossName = state.selectedBoss.name;
 }
 
 function rebuildDebugHero() {
@@ -958,14 +1220,113 @@ function createCombatLogger() {
   };
 }
 
+function clearPendingThreat() {
+  state.pendingThreat = null;
+}
+
+function savePendingThreat(source) {
+  if (!state.enemy) {
+    clearPendingThreat();
+    return;
+  }
+  state.pendingThreat = {
+    enemy: clone(state.enemy),
+    encounterIndex: state.encounterIndex,
+    turn: state.turn,
+    source
+  };
+}
+
+function hasPendingThreat(source = null) {
+  return Boolean(state.pendingThreat && (!source || state.pendingThreat.source === source));
+}
+
+function resetHeroBattleState() {
+  state.hero.poison = 0;
+  state.hero.entangle = null;
+  state.hero.battleAttackBonus = 0;
+  state.hero.battleCritBonus = 0;
+  state.hero.statusFamiliarityLimitBonus = 0;
+  state.hero.victoryHealBonusRatio = 0;
+  state.hero.shield = state.hero.shieldStart;
+  state.hero.skillState = createSkillState();
+}
+
+function healPendingThreat(ratio) {
+  if (!state.pendingThreat?.enemy) {
+    return 0;
+  }
+  const enemy = state.pendingThreat.enemy;
+  const amount = Math.max(1, Math.round(enemy.maxHp * ratio));
+  const before = enemy.hp;
+  enemy.hp = Math.min(enemy.maxHp, enemy.hp + amount);
+  return enemy.hp - before;
+}
+
+function resumePendingThreat(options = {}) {
+  if (!state.pendingThreat?.enemy) {
+    return false;
+  }
+
+  const { healRatio = 0, introText = "" } = options;
+  const threat = state.pendingThreat;
+  const enemy = clone(threat.enemy);
+  const healed = healRatio > 0 ? healPendingThreat(healRatio) : 0;
+  if (healRatio > 0) {
+    enemy.hp = state.pendingThreat.enemy.hp;
+  }
+
+  state.enemy = enemy;
+  state.encounterIndex = threat.encounterIndex;
+  state.turn = 0;
+  state.awaitingBlessing = false;
+  state.phase = "danger";
+  state.canRest = false;
+  state.hasRested = false;
+  state.ambushAdvantage = false;
+  state.log = [];
+  resetHeroBattleState();
+  clearPendingThreat();
+  applyBattleStartSkills();
+
+  if (introText) {
+    addFixedLog("system", introText);
+  }
+  addLog("system", "encounter", { enemy: state.enemy.name });
+  if (healed > 0) {
+    addLog("heal", "enemyRecover", { enemy: state.enemy.name, amount: healed });
+  }
+  if (state.hero.shield > 0) {
+    addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
+  }
+  setCombatActionState();
+  render();
+  return true;
+}
+
+function buildCounterEnemy(region, encounterIndex) {
+  const base = weightedRandomItem(region.enemies, (enemy) => Number(enemy.weight) || 100);
+  const enemy = clone(base);
+  const scaling = region.scaling || {};
+  const scalingIndex = Math.max(0, encounterIndex - COUNTER_ESCAPE_SCALING_OFFSET);
+  const hpScale = 1 + scalingIndex * (Number(scaling.hpPerEncounter) || 0.08);
+  const attackScale = 1 + scalingIndex * (Number(scaling.attackPerEncounter) || 0.08);
+  enemy.maxHp = Math.round(enemy.maxHp * hpScale);
+  enemy.hp = enemy.maxHp;
+  enemy.attack = Math.round(enemy.attack * attackScale);
+  return enemy;
+}
+
 function startRun() {
   syncSelectionFromSave();
+  state.debugBuildRun = false;
   state.run += 1;
   state.encounterIndex = 0;
   state.turn = 0;
   state.hero = buildHeroFromProgression(state.selectedHeroId);
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
   state.enemy = null;
+  state.selectedBoss = selectRunBoss(currentRegion());
   state.phase = "danger";
   state.awaitingBlessing = false;
   state.ended = false;
@@ -976,9 +1337,12 @@ function startRun() {
   state.canRest = false;
   state.hasRested = false;
   state.ambushAdvantage = false;
+  clearPendingThreat();
+  state.blessingContext = "normal";
   state.log = [];
   state.runStats.startLevel = state.hero.level;
   state.runStats.endLevel = state.hero.level;
+  recordSelectedBossInRunStats();
 
   showScreen("gameScreen");
   els.blessingPanel.classList.remove("is-visible");
@@ -986,6 +1350,7 @@ function startRun() {
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = false;
@@ -995,12 +1360,15 @@ function startRun() {
 }
 
 function restart() {
+  state.debugBuildRun = false;
+  syncSelectionFromSave();
   showScreen("menuScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = true;
@@ -1008,28 +1376,39 @@ function restart() {
   state.awaitingBlessing = false;
   state.ended = true;
   state.phase = "camp";
+  state.selectedBoss = null;
+  clearPendingThreat();
+  state.blessingContext = "normal";
   els.resultLabel.textContent = "冒險準備中";
   els.encounterLabel.textContent = "尚未開始";
+  els.battleLogTitle.textContent = "戰鬥紀錄";
 }
 
 function returnToCamp() {
+  state.debugBuildRun = false;
+  syncSelectionFromSave();
   showScreen("campScreen");
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
   state.awaitingBlessing = false;
   state.ended = true;
   state.phase = "camp";
+  state.selectedBoss = null;
+  clearPendingThreat();
+  state.blessingContext = "normal";
   setCombatActionState();
 }
 
 function startEncounter() {
   const region = currentRegion();
   const encounterType = region.encounterPlan[state.encounterIndex];
+  applySceneContext("gameScreen");
   state.turn = 0;
   state.awaitingBlessing = false;
   state.phase = "danger";
@@ -1037,20 +1416,20 @@ function startEncounter() {
   state.hasRested = false;
   state.ambushAdvantage = false;
   state.log = [];
-  state.enemy = buildEnemy(region, state.encounterIndex, state.hero);
+  state.enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
   state.enemy.poison = 0;
-  state.hero.poison = 0;
-  state.hero.shield = state.hero.shieldStart;
-  state.hero.skillState = createSkillState();
+  resetHeroBattleState();
+  applyBattleStartSkills();
 
   els.blessingPanel.classList.remove("is-visible");
   setCombatActionState();
 
   if (encounterType === "boss") {
-    addLog("system", "boss");
+    addLog("system", "boss", { region: region.name });
   }
   addLog("system", "encounter", { enemy: state.enemy.name });
   addFixedLog("status", state.enemy.intro);
+  applyEnemyAmbush();
   if (state.hero.shield > 0) {
     addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
   }
@@ -1065,10 +1444,13 @@ function playTurn() {
   const log = createCombatLogger();
   state.phase = "combat";
   state.turn += 1;
-  resolveHeroAction({ hero: state.hero, enemy: state.enemy, log });
-  if (state.enemy.hp <= 0) {
-    winEncounter();
-    return;
+  const heroEntangled = resolveHeroEntangle({ hero: state.hero, log });
+  if (!heroEntangled) {
+    resolveHeroAction({ hero: state.hero, enemy: state.enemy, log });
+    if (state.enemy.hp <= 0) {
+      winEncounter();
+      return;
+    }
   }
 
   const enemyAction = resolveEnemyAction({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
@@ -1115,16 +1497,23 @@ function winEncounter() {
     addLog("heal", "heal", { target: state.hero.name, amount: state.hero.killHeal });
   }
   applyVictorySkills();
+  consumeBattleLimitedEffects();
+
+  if (hasPendingThreat("counterEscape")) {
+    finishCounterEncounterVictory();
+    return;
+  }
 
   state.encounterIndex += 1;
   render();
 
   if (state.encounterIndex >= currentRegion().encounterPlan.length) {
-    addLog("system", "clear");
+    addLog("system", "clear", { region: currentRegion().name });
     if (shouldTriggerPlainsStory()) {
       showPlainsStory();
       return;
     }
+    unlockRegionClearAchievements();
     finishRun("clear");
     return;
   }
@@ -1132,8 +1521,20 @@ function winEncounter() {
   showBlessings();
 }
 
+function finishCounterEncounterVictory() {
+  const amount = Math.max(1, Math.round(state.hero.maxHp * COUNTER_ESCAPE_HEAL_RATIO));
+  const before = state.hero.hp;
+  state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
+  const healed = state.hero.hp - before;
+  if (healed > 0) {
+    addFixedLog("heal", `你從反制戰中穩住呼吸，恢復了 ${healed} 點生命。`);
+  }
+  render();
+  showBlessings("counterEscape");
+}
+
 function awardEnemyRewards(enemy) {
-  if (!hasPhoenixBlessing()) {
+  if (state.debugBuildRun || !hasPhoenixBlessing()) {
     return;
   }
   const rewards = rollEnemyRewards(enemy);
@@ -1153,6 +1554,82 @@ function getEnemyExpReward(enemy) {
     return 26;
   }
   return 9;
+}
+
+function applyBattleStartSkills() {
+  if (hasHeroSkill("status-familiarity") && !hasBlessingFlow("debuff")) {
+    state.hero.battleAttackBonus = (state.hero.battleAttackBonus || 0) + 1;
+    addFixedLog("skill", `${state.hero.name} 沒有可判讀的負面狀態，改以經驗調整攻勢，攻擊提升。`);
+  }
+
+  if (!hasHeroSkill("versatile-satchel")) {
+    return;
+  }
+
+  const satchelFlow = getVersatileSatchelFlow();
+  const satchelEffectId = satchelFlow?.satchelEffectId || "battle_attack";
+  const satchelEffect = VERSATILE_SATCHEL_EFFECT_HANDLERS[satchelEffectId]
+    || VERSATILE_SATCHEL_EFFECT_HANDLERS.battle_attack;
+  const bonus = satchelEffect(state.hero);
+  if (satchelFlow?.id) {
+    state.hero.lastBagFlow = satchelFlow.id;
+  }
+  addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus });
+}
+
+const VERSATILE_SATCHEL_EFFECT_HANDLERS = Object.freeze({
+  battle_attack(hero) {
+    hero.battleAttackBonus = (hero.battleAttackBonus || 0) + 1;
+    return "攻擊 +1";
+  },
+  battle_shield(hero) {
+    const amount = 6;
+    hero.shield = (hero.shield || 0) + amount;
+    return `護盾 +${amount}`;
+  },
+  battle_crit(hero) {
+    hero.battleCritBonus = (hero.battleCritBonus || 0) + 0.03;
+    return "暴擊率 +3%";
+  },
+  status_familiarity(hero) {
+    hero.statusFamiliarityLimitBonus = (hero.statusFamiliarityLimitBonus || 0) + 1;
+    return "狀態判讀上限 +1";
+  },
+  victory_heal(hero) {
+    hero.victoryHealBonusRatio = (hero.victoryHealBonusRatio || 0) + 0.03;
+    return "勝利恢復 +3%";
+  }
+});
+
+function getVersatileSatchelFlow() {
+  const momentum = state.hero?.blessingFlowMomentum || {};
+  const candidates = getBlessingFlowDefinitions()
+    .map((flow) => {
+      const baseWeight = Math.max(0, Number(momentum[flow.id]) || 0);
+      const weight = flow.id === state.hero?.lastBagFlow
+        ? baseWeight * LAST_BAG_FLOW_WEIGHT_MULTIPLIER
+        : baseWeight;
+      return { ...flow, weight };
+    })
+    .filter((flow) => flow.weight > 0);
+
+  return candidates.length > 0
+    ? weightedRandomItem(candidates, (flow) => flow.weight)
+    : null;
+}
+
+function hasBlessingFlow(flow) {
+  return Array.isArray(state.hero?.blessingFlows) && state.hero.blessingFlows.includes(flow);
+}
+
+function applyEnemyAmbush() {
+  const amount = Number(state.enemy?.ambushDamage) || 0;
+  if (amount <= 0 || state.hero.hp <= 1) {
+    return;
+  }
+  const damage = Math.min(amount, state.hero.hp - 1);
+  state.hero.hp -= damage;
+  addFixedLog("enemy-damage", `${state.enemy.name} 伏擊了你，造成 ${damage} 點傷害。`);
 }
 
 function applyEmergencyBandage() {
@@ -1184,6 +1661,11 @@ function cleanseOneNegativeEffect() {
   if (state.hero.poison > 0) {
     state.hero.poison = 0;
     addLog("status", "cleanse", { actor: state.hero.name, effect: "中毒" });
+    return;
+  }
+  if (state.hero.entangle) {
+    state.hero.entangle = null;
+    addLog("status", "cleanse", { actor: state.hero.name, effect: "纏繞" });
   }
 }
 
@@ -1191,9 +1673,22 @@ function applyVictorySkills() {
   if (!hasHeroSkill("adventurer-pace")) {
     return;
   }
-  const amount = Math.max(1, Math.round(state.hero.maxHp * 0.1));
+  const baseRatio = hasHeroSkill("expedition-pace") ? 0.15 : 0.1;
+  const amount = Math.max(1, Math.round(state.hero.maxHp * (baseRatio + (state.hero.victoryHealBonusRatio || 0))));
   state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
   addLog("heal", "adventurerPace", { amount });
+}
+
+function consumeBattleLimitedEffects() {
+  if (!Array.isArray(state.hero?.timedRegens)) {
+    return;
+  }
+  state.hero.timedRegens = state.hero.timedRegens
+    .map((effect) => ({
+      ...effect,
+      remainingEncounters: Math.max(0, (effect.remainingEncounters || 0) - 1)
+    }))
+    .filter((effect) => effect.remainingEncounters > 0);
 }
 
 function enterSafeState(options = {}) {
@@ -1215,6 +1710,10 @@ function loseRun() {
 }
 
 function handleDefeatProgression() {
+  if (state.debugBuildRun) {
+    state.runStats.endLevel = state.hero?.level || 1;
+    return;
+  }
   const progress = getCharacterProgress();
   state.runStats.endLevel = progress.level;
   if (hasPhoenixBlessing()) {
@@ -1233,6 +1732,7 @@ function finishRun(outcome) {
   const cleared = outcome === "clear";
   const retreated = outcome === "retreat";
   const defeated = outcome === "defeat";
+  const evacuated = retreated && Boolean(state.runStats?.evacuated);
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "ended";
@@ -1240,23 +1740,34 @@ function finishRun(outcome) {
     handleDefeatProgression();
   }
   recordRunFinished(outcome);
+  clearPendingThreat();
+  state.blessingContext = "normal";
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
+  closeBlessingInfoPanel();
   els.endPanel.classList.add("is-visible");
-  els.endTitle.textContent = cleared ? "冒險成功" : retreated ? "冒險撤退" : "冒險失敗";
+  els.endTitle.textContent = cleared ? "冒險成功" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
   els.endText.textContent = getEndText(outcome, region);
   els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
   renderEndSummary(outcome, region);
-  els.resultLabel.textContent = cleared ? `${region.name}突破` : retreated ? "回到營地" : "本輪結束";
+  els.resultLabel.textContent = cleared ? `${region.name}突破` : evacuated ? "撤離成功" : retreated ? "回到營地" : "本輪結束";
   setCombatActionState();
   render();
 }
 
 function getEndText(outcome, region) {
+  if (state.debugBuildRun) {
+    return outcome === "clear"
+      ? `自訂 Build 已擊敗${region.name}首領。正式存檔未變更。`
+      : "自訂 Build 測試結束。正式存檔未變更。";
+  }
   if (outcome === "clear") {
     return `你完成了${region.name}的挑戰。`;
   }
   if (outcome === "retreat") {
+    if (state.runStats?.evacuated) {
+      return "你在追擊中找到回營地的路線，結束了這輪冒險。本輪的臨時祝福會重置，角色等級與經驗會保留。";
+    }
     return "你回到營地。本輪的臨時祝福會重置，角色等級與經驗會保留。";
   }
   if (hasPhoenixBlessing()) {
@@ -1269,24 +1780,34 @@ function getEndText(outcome, region) {
 function renderEndSummary(outcome, region) {
   const cleared = outcome === "clear";
   const retreated = outcome === "retreat";
+  const evacuated = retreated && Boolean(state.runStats?.evacuated);
   const reachedEncounter = getReachedEncounter(cleared, region);
   const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
   const progress = getCharacterProgress();
-  state.lastRunSummary = {
-    result: cleared ? "成功" : retreated ? "撤退" : "失敗",
-    reachedEncounter,
-    runLevel: state.runStats?.endLevel || progress.level
-  };
+  const displayLevel = state.debugBuildRun ? state.hero.level : progress.level;
+  if (!state.debugBuildRun) {
+    state.lastRunSummary = {
+      result: cleared ? "成功" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
+      reachedEncounter,
+      runLevel: state.runStats?.endLevel || displayLevel
+    };
+  }
   const items = [
-    ["結果", cleared ? "冒險成功" : retreated ? "冒險撤退" : "冒險失敗"],
+    ["結果", cleared ? "冒險成功" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗"],
     ["抵達", `第 ${reachedEncounter} / ${region.encounterPlan.length} 場`],
-    ["角色等級", `Lv. ${progress.level}`],
+    ["角色等級", `Lv. ${displayLevel}`],
     ["本輪經驗", `${state.runStats?.expGained || 0}`],
     ["擊敗敵人", `${state.defeatedEnemies} 隻`],
     ["擊敗首領", state.defeatedBoss ? "是" : "否"],
     ["逃跑", `成功 ${state.runStats?.fleeSuccesses || 0} / 失敗 ${state.runStats?.fleeFailures || 0}`],
     ["選擇祝福", blessings]
   ];
+  if (state.runStats?.evacuationEscapes) {
+    items.splice(7, 0, ["撤離逃跑", `${state.runStats.evacuationEscapes} 次`]);
+  }
+  if (state.runStats?.bossName) {
+    items.splice(6, 0, ["本輪首領", state.runStats.bossName]);
+  }
   if (hasPhoenixBlessing()) {
     const rewards = formatRewards(state.runStats?.rewards, materialDefinitions);
     if (rewards.gold > 0) {
@@ -1320,7 +1841,8 @@ function getReachedEncounter(cleared, region) {
   return Math.min(state.encounterIndex + 1, region.encounterPlan.length);
 }
 
-function showBlessings() {
+function showBlessings(context = "normal") {
+  state.blessingContext = context;
   state.awaitingBlessing = true;
   els.nextButton.disabled = true;
   els.blessingPanel.classList.add("is-visible");
@@ -1332,11 +1854,14 @@ function tryFlee() {
   if (!state.hero || !state.enemy || state.ended || state.awaitingBlessing || state.phase === "safe") {
     return;
   }
-  if (state.hero.fleesRemaining <= 0 || state.enemy.kind === "首領") {
+  if (state.enemy.kind === "首領") {
     return;
   }
 
-  state.hero.fleesRemaining -= 1;
+  const hasTacticalFlees = state.hero.fleesRemaining > 0;
+  if (hasTacticalFlees) {
+    state.hero.fleesRemaining -= 1;
+  }
   state.runStats.fleeAttempts += 1;
   addLog("system", "fleeAttempt", { enemy: state.enemy.name });
 
@@ -1346,15 +1871,15 @@ function tryFlee() {
     return;
   }
 
-  state.runStats.fleeSuccesses += 1;
-  state.encounterIndex = Math.max(0, state.encounterIndex - 1);
-  const result = weightedRandomItem(FLEE_RESULTS, (item) => item.weight);
-  if (result.id === "counter") {
-    resolveCounterEscape();
+  if (!hasTacticalFlees) {
+    resolveEvacuationEscape();
     return;
   }
-  if (result.id === "evacuation") {
-    resolveEvacuationEscape();
+
+  state.runStats.fleeSuccesses += 1;
+  const result = weightedRandomItem(TACTICAL_FLEE_RESULTS, (item) => item.weight);
+  if (result.id === "counter") {
+    resolveCounterEscape();
     return;
   }
   resolveSafeEscape();
@@ -1388,13 +1913,17 @@ function resolveFleeFailure() {
 
 function resolveSafeEscape() {
   state.runStats.safeEscapes += 1;
-  addLog("system", "safeEscape");
+  savePendingThreat("safeEscape");
+  addLog("system", "safeEscape", { enemy: state.pendingThreat?.enemy?.name || "敵人" });
+  consumeBattleLimitedEffects();
   enterSafeState({ canRest: true });
 }
 
 function resolveCounterEscape() {
   state.runStats.counterEscapes += 1;
+  savePendingThreat("counterEscape");
   addLog("system", "counterEscape");
+  consumeBattleLimitedEffects();
   state.phase = "danger";
   state.turn = 0;
   state.awaitingBlessing = false;
@@ -1402,10 +1931,10 @@ function resolveCounterEscape() {
   state.hasRested = false;
   state.ambushAdvantage = true;
   state.log = [];
-  state.enemy = buildEnemy(currentRegion(), state.encounterIndex, state.hero);
+  state.enemy = buildCounterEnemy(currentRegion(), state.encounterIndex);
   state.enemy.poison = 0;
-  state.hero.poison = 0;
-  state.hero.shield = state.hero.shieldStart;
+  resetHeroBattleState();
+  applyBattleStartSkills();
   const reducedHp = Math.max(1, Math.round(state.enemy.maxHp * 0.85));
   const reducedAmount = state.enemy.maxHp - reducedHp;
   state.enemy.hp = reducedHp;
@@ -1418,13 +1947,22 @@ function resolveCounterEscape() {
 
 function resolveEvacuationEscape() {
   state.runStats.evacuationEscapes += 1;
+  state.runStats.evacuated = true;
   state.runStats.retreated = true;
+  clearPendingThreat();
   addLog("system", "evacuationEscape");
   finishRun("retreat");
 }
 
 function continueAdventure() {
   if (state.phase !== "safe" || state.ended) {
+    return;
+  }
+  if (hasPendingThreat("safeEscape")) {
+    resumePendingThreat({
+      healRatio: SAFE_ESCAPE_ENEMY_HEAL_RATIO,
+      introText: "你重新回到原本的戰鬥。"
+    });
     return;
   }
   startEncounter();
@@ -1448,6 +1986,7 @@ function retreatRun() {
     return;
   }
   state.runStats.retreated = true;
+  clearPendingThreat();
   addLog("system", "retreat");
   finishRun("retreat");
 }
@@ -1480,11 +2019,67 @@ function chooseBlessing(blessing) {
   applyBlessingEffects(state.hero, blessing);
   state.hero.blessings.push(blessing.name);
   addLog("system", "blessing", { blessing: blessing.name });
+  if (state.blessingContext === "counterEscape" && hasPendingThreat("counterEscape")) {
+    state.blessingContext = "normal";
+    els.blessingPanel.classList.remove("is-visible");
+    resumePendingThreat({
+      healRatio: COUNTER_ESCAPE_ENEMY_HEAL_RATIO,
+      introText: `你帶著新的臨時祝福「${blessing.name}」回到原本的戰鬥。`
+    });
+    return;
+  }
+  state.blessingContext = "normal";
   enterSafeState({ canRest: false });
 }
 
 function closeEndPanel() {
   els.endPanel.classList.remove("is-visible");
+}
+
+function openBlessingInfoPanel() {
+  renderBlessingInfo();
+  els.blessingInfoPanel.classList.add("is-visible");
+}
+
+function closeBlessingInfoPanel() {
+  els.blessingInfoPanel.classList.remove("is-visible");
+}
+
+function renderBlessingInfo() {
+  els.blessingInfoList.replaceChildren();
+  const blessingNames = Array.isArray(state.hero?.blessings) ? state.hero.blessings : [];
+  if (blessingNames.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "blessing-info-empty";
+    empty.textContent = "目前沒有臨時祝福。";
+    els.blessingInfoList.append(empty);
+    return;
+  }
+
+  blessingNames.forEach((name) => {
+    const blessing = currentRegion().blessings.find((item) => item.name === name);
+    const rarity = getBlessingRarity(blessing?.rarity);
+    const card = document.createElement("article");
+    const meta = document.createElement("small");
+    const title = document.createElement("strong");
+    const effect = document.createElement("p");
+    const flavor = document.createElement("em");
+    const event = document.createElement("span");
+    const rarityLabel = document.createElement("i");
+
+    card.className = `blessing-info-card rarity-${rarity.id}`;
+    event.textContent = blessing?.eventTitle || "臨時祝福";
+    rarityLabel.textContent = rarity.label;
+    meta.append(event, rarityLabel);
+    title.textContent = name;
+    effect.textContent = blessing?.effectText || "效果資料尚未整理。";
+    flavor.textContent = blessing?.flavorText || "";
+    card.append(meta, title, effect);
+    if (flavor.textContent) {
+      card.append(flavor);
+    }
+    els.blessingInfoList.append(card);
+  });
 }
 
 function closeStoryPanel() {
@@ -1499,15 +2094,29 @@ function shouldTriggerPlainsStory() {
   return state.selectedRegionId === "plains" && !saveData.storyFlags.plainsBossStorySeen;
 }
 
+function unlockRegionClearAchievements() {
+  if (state.debugBuildRun) {
+    return;
+  }
+  if (state.selectedRegionId === "forest") {
+    unlockAchievement(FOREST_TRIAL_ACHIEVEMENT_ID);
+    saveData.storyFlags.achievementSystemUnlocked = true;
+    saveGameSafe();
+  }
+}
+
 function showPlainsStory() {
   setNavigationContext("story");
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "story";
+  clearPendingThreat();
+  state.blessingContext = "normal";
   recordRunFinished("clear");
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeBlessingInfoPanel();
   els.storyPanel.classList.add("is-visible");
   els.resultLabel.textContent = "命運覺醒";
   els.encounterLabel.textContent = "星穹之外";
@@ -1552,14 +2161,10 @@ function completePlainsStory() {
 }
 
 function unlockPhoenixBlessing() {
-  const now = new Date().toISOString();
   saveData.storyFlags.phoenixBlessingUnlocked = true;
   saveData.storyFlags.plainsBossStorySeen = true;
   saveData.storyFlags.achievementSystemUnlocked = true;
-  saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID] = {
-    unlocked: true,
-    unlockedAt: saveData.achievements[PLAINS_TRIAL_ACHIEVEMENT_ID]?.unlockedAt || now
-  };
+  unlockAchievement(PLAINS_TRIAL_ACHIEVEMENT_ID);
   saveGameSafe();
 }
 
@@ -1579,6 +2184,7 @@ function render() {
   els.enemyHealthText.textContent = enemy ? `${enemy.hp} / ${enemy.maxHp}` : "0 / 0";
 
   els.encounterLabel.textContent = `第 ${Math.min(state.encounterIndex + 1, region.encounterPlan.length)} / ${region.encounterPlan.length} 場`;
+  els.battleLogTitle.textContent = `戰鬥紀錄｜第 ${Math.min(state.encounterIndex + 1, region.encounterPlan.length)} / ${region.encounterPlan.length} 場`;
   if (!state.ended) {
     els.resultLabel.textContent = state.awaitingBlessing
       ? "選擇祝福"
@@ -1599,9 +2205,10 @@ function setCombatActionState() {
   const inGame = state.hero && !state.ended && !state.awaitingBlessing;
   const safe = state.phase === "safe";
   const canFight = inGame && hasEnemy && !safe;
-  const canFlee = canFight && !isBoss && state.hero.fleesRemaining > 0;
+  const canFlee = canFight && !isBoss;
   const canContinue = inGame && safe;
   const canRest = canContinue && state.canRest && !state.hasRested && state.hero.hp < state.hero.maxHp;
+  const canViewBlessings = Boolean(state.hero) && !state.ended && !state.awaitingBlessing;
 
   els.nextButton.disabled = !canFight;
   els.nextButton.hidden = !canFight;
@@ -1610,14 +2217,20 @@ function setCombatActionState() {
   els.fleeButton.hidden = !canFight;
   els.fleeButton.textContent = isBoss
     ? "首領無法逃跑"
+    : (state.hero?.fleesRemaining ?? 0) <= 0
+    ? "撤離逃跑（需成功）"
     : `逃跑（剩餘 ${state.hero?.fleesRemaining ?? 0} / ${RUN_STARTING_FLEES}）`;
   els.continueButton.hidden = !canContinue;
   els.continueButton.disabled = !canContinue;
+  els.continueButton.textContent = hasPendingThreat("safeEscape") ? "繼續挑戰" : "繼續前進";
   els.restButton.hidden = !canContinue;
   els.restButton.disabled = !canRest;
   els.restButton.textContent = state.canRest && !state.hasRested ? "原地修整" : "已修整";
   els.retreatButton.hidden = !canContinue;
   els.retreatButton.disabled = !canContinue;
+  els.viewBlessingsButton.hidden = !canViewBlessings;
+  els.viewBlessingsButton.disabled = !canViewBlessings;
+  els.viewBlessingsButton.textContent = `祝福 ${state.hero?.blessings?.length || 0}`;
 }
 
 function renderLog() {
@@ -1676,6 +2289,8 @@ function bindEvents() {
   els.continueButton.addEventListener("click", continueAdventure);
   els.restButton.addEventListener("click", restAtSafeRoute);
   els.retreatButton.addEventListener("click", retreatRun);
+  els.viewBlessingsButton.addEventListener("click", openBlessingInfoPanel);
+  els.closeBlessingInfoButton.addEventListener("click", closeBlessingInfoPanel);
   els.exportSaveCodeButton.addEventListener("click", openExportSaveCodeDialog);
   els.importSaveCodeButton.addEventListener("click", openImportSaveCodeDialog);
   els.copySaveCodeButton.addEventListener("click", copySaveCode);

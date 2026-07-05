@@ -6,21 +6,27 @@ const HEAVY_STRIKE_CHANCE = 0.2;
 const HEAVY_STRIKE_MULTIPLIER = 1.4;
 const STEADY_STANCE_CHANCE = 0.25;
 const STEADY_STANCE_REDUCTION = 0.3;
+const STEADY_STANCE_PLUS_CHANCE = 0.3;
+const STEADY_STANCE_PLUS_REDUCTION = 0.35;
 const FOLLOW_UP_CHANCE = 0.25;
 const FOLLOW_UP_ATTACK_RATIO = 0.5;
+const ENTANGLE_ESCAPE_CHANCES = [0.45, 0.7, 0.9, 1];
+const STATUS_FAMILIARITY_MAX_STACKS = 3;
 
-export function buildEnemy(region, encounterIndex, hero) {
+export function buildEnemy(region, encounterIndex, hero, options = {}) {
   const encounterType = region.encounterPlan[encounterIndex];
   const base = encounterType === "boss"
-    ? region.boss
+    ? options.boss || region.boss
     : encounterType === "elite"
       ? pickEnemy(region.elites, hero, "elite")
       : pickEnemy(region.enemies, hero, "normal");
   const enemy = clone(base);
-  const scale = 1 + encounterIndex * 0.08;
-  enemy.maxHp = Math.round(enemy.maxHp * scale);
+  const scaling = region.scaling || {};
+  const hpScale = 1 + encounterIndex * (Number(scaling.hpPerEncounter) || 0.08);
+  const attackScale = 1 + encounterIndex * (Number(scaling.attackPerEncounter) || 0.08);
+  enemy.maxHp = Math.round(enemy.maxHp * hpScale);
   enemy.hp = enemy.maxHp;
-  enemy.attack = Math.round(enemy.attack * scale);
+  enemy.attack = Math.round(enemy.attack * attackScale);
   return enemy;
 }
 
@@ -28,7 +34,7 @@ function pickEnemy(enemies, hero, encounterType) {
   const activeBiases = getActiveEncounterBiases(hero, encounterType);
   const guaranteeBias = activeBiases.find((bias) => shouldGuaranteeFamily(enemies, bias, encounterType));
   const selected = guaranteeBias
-    ? randomItem(enemies.filter((enemy) => enemy.family === guaranteeBias.family))
+    ? randomItem(enemies.filter((enemy) => hasBiasedFamily(enemy, guaranteeBias)))
     : weightedRandomItem(enemies, (enemy) => getBiasedEnemyWeight(enemy, activeBiases, encounterType));
 
   updateEncounterBiases(hero, encounterType, selected);
@@ -51,14 +57,14 @@ function shouldGuaranteeFamily(enemies, bias, encounterType) {
   return Boolean(
     mode.guaranteeAfter
     && mode.misses + 1 >= mode.guaranteeAfter
-    && enemies.some((enemy) => enemy.family === bias.family)
+    && enemies.some((enemy) => hasBiasedFamily(enemy, bias))
   );
 }
 
 function getBiasedEnemyWeight(enemy, activeBiases, encounterType) {
   const baseWeight = Number(enemy.weight) || DEFAULT_ENEMY_WEIGHT;
   return activeBiases.reduce((weight, bias) => {
-    if (enemy.family !== bias.family) {
+    if (!hasBiasedFamily(enemy, bias)) {
       return weight;
     }
     return weight + (Number(bias[encounterType].bonusWeight) || 0);
@@ -77,12 +83,35 @@ function updateEncounterBiases(hero, encounterType, selectedEnemy) {
     }
 
     mode.remaining -= 1;
-    mode.misses = selectedEnemy.family === bias.family ? 0 : mode.misses + 1;
+    mode.misses = hasBiasedFamily(selectedEnemy, bias) ? 0 : mode.misses + 1;
   });
 
   hero.encounterBiases = hero.encounterBiases.filter((bias) => {
     return ["normal", "elite"].some((type) => bias[type] && bias[type].remaining > 0);
   });
+}
+
+function hasBiasedFamily(enemy, bias) {
+  const families = Array.isArray(bias.families) ? bias.families : [bias.family];
+  return families.includes(enemy.family);
+}
+
+export function resolveHeroEntangle({ hero, log }) {
+  if (!hero.entangle) {
+    return false;
+  }
+
+  const attempts = Math.max(0, hero.entangle.attempts || 0);
+  const chance = ENTANGLE_ESCAPE_CHANCES[Math.min(attempts, ENTANGLE_ESCAPE_CHANCES.length - 1)];
+  if (roll(chance)) {
+    hero.entangle = null;
+    log.template("status", "entangleBreak", { target: hero.name });
+    return false;
+  }
+
+  hero.entangle.attempts = attempts + 1;
+  log.template("status", "entangleHold", { target: hero.name });
+  return true;
 }
 
 export function resolveHeroAction({ hero, enemy, log }) {
@@ -91,7 +120,7 @@ export function resolveHeroAction({ hero, enemy, log }) {
     return;
   }
 
-  let damage = Math.max(1, hero.attack - enemy.defense);
+  let damage = Math.max(1, getHeroAttack(hero) - enemy.defense);
   if (hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
     damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
     log.template("skill", "heavyStrike", { actor: hero.name });
@@ -100,7 +129,10 @@ export function resolveHeroAction({ hero, enemy, log }) {
   if (familyBonus > 0) {
     damage = Math.round(damage * (1 + familyBonus));
   }
-  if (roll(hero.critChance)) {
+  const critChance = hero.critChance
+    + (hero.battleCritBonus || 0)
+    + (enemy.poison > 0 ? hero.poisonedCritChance || 0 : 0);
+  if (roll(critChance)) {
     damage = Math.round(damage * (hero.critDamageMultiplier || 1.7));
     log.template("critical", "critical", { actor: hero.name });
   }
@@ -125,6 +157,7 @@ export function resolveHeroAction({ hero, enemy, log }) {
   if (hero.poisonPower > 0 && enemy.hp > 0) {
     enemy.poison = Math.max(enemy.poison || 0, hero.poisonPower);
     log.template("status", "poisonApply", { target: enemy.name });
+    applyStatusFamiliarity(hero, log);
   }
 }
 
@@ -151,8 +184,9 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
       : `${enemy.name}的暴擊`;
   }
 
-  if (damage > 1 && hasSkill(hero, "steady-stance") && roll(STEADY_STANCE_CHANCE)) {
-    const reduced = Math.max(1, Math.min(damage - 1, Math.round(damage * STEADY_STANCE_REDUCTION)));
+  const steadyStance = getSteadyStance(hero);
+  if (damage > 1 && steadyStance.enabled && roll(steadyStance.chance)) {
+    const reduced = Math.max(1, Math.min(damage - 1, Math.round(damage * steadyStance.reduction)));
     damage -= reduced;
     log.template("skill", "steadyStance", { actor: hero.name, amount: reduced });
   }
@@ -176,6 +210,11 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
     log.template("status", "poisonApply", { target: hero.name });
   }
 
+  if (enemy.entangleChance && hero.hp > 0 && !hero.entangle && roll(enemy.entangleChance)) {
+    hero.entangle = { attempts: 0 };
+    log.template("status", "entangleApply", { target: hero.name });
+  }
+
   return damageSource;
 }
 
@@ -187,6 +226,44 @@ function getFamilyDamageBonus(hero, family) {
   const familyDamageBonus = hero.familyDamageBonus || {};
   const legacySlimeBonus = family === "slime" ? hero.slimeBonus || 0 : 0;
   return (familyDamageBonus[family] || 0) + legacySlimeBonus;
+}
+
+function getHeroAttack(hero) {
+  return hero.attack + (hero.battleAttackBonus || 0);
+}
+
+function getSteadyStance(hero) {
+  if (hasSkill(hero, "steady-stance-plus")) {
+    return {
+      enabled: true,
+      chance: STEADY_STANCE_PLUS_CHANCE,
+      reduction: STEADY_STANCE_PLUS_REDUCTION
+    };
+  }
+  return {
+    enabled: hasSkill(hero, "steady-stance"),
+    chance: STEADY_STANCE_CHANCE,
+    reduction: STEADY_STANCE_REDUCTION
+  };
+}
+
+function applyStatusFamiliarity(hero, log) {
+  if (!hasSkill(hero, "status-familiarity")) {
+    return;
+  }
+
+  hero.skillState.statusFamiliarityStacks = hero.skillState.statusFamiliarityStacks || 0;
+  const maxStacks = STATUS_FAMILIARITY_MAX_STACKS + (hero.statusFamiliarityLimitBonus || 0);
+  if (hero.skillState.statusFamiliarityStacks >= maxStacks) {
+    return;
+  }
+
+  hero.skillState.statusFamiliarityStacks += 1;
+  hero.battleAttackBonus = (hero.battleAttackBonus || 0) + 1;
+  log.template("skill", "statusFamiliarity", {
+    actor: hero.name,
+    stacks: hero.skillState.statusFamiliarityStacks
+  });
 }
 
 export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
@@ -214,10 +291,32 @@ export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
     log.template("heal", "heal", { target: hero.name, amount: hero.regenAmount });
   }
 
+  applyTimedRegens(hero, turn, log);
+
   if (enemy.regenEvery > 0 && turn % enemy.regenEvery === 0 && enemy.hp > 0) {
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.regenAmount);
     log.template("heal", "heal", { target: enemy.name, amount: enemy.regenAmount });
   }
 
   return { heroDeathCause };
+}
+
+function applyTimedRegens(hero, turn, log) {
+  if (!Array.isArray(hero.timedRegens) || hero.hp <= 0) {
+    return;
+  }
+
+  hero.timedRegens.forEach((effect) => {
+    if (effect.remainingEncounters <= 0 || effect.everyTurns <= 0 || turn % effect.everyTurns !== 0) {
+      return;
+    }
+
+    const amount = Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio));
+    hero.hp = Math.min(hero.maxHp, hero.hp + amount);
+    log.template("heal", "timedRegen", {
+      source: effect.source,
+      target: hero.name,
+      amount
+    });
+  });
 }

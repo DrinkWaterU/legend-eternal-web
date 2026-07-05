@@ -58,7 +58,8 @@ export function buildHeroFromProgression(character, progress) {
 export function createSkillState() {
   return {
     emergencyBandageUsed: false,
-    lastStandUsed: false
+    lastStandUsed: false,
+    statusFamiliarityStacks: 0
   };
 }
 

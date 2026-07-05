@@ -98,7 +98,13 @@
 
 .home-button {
   width: 100%;
-  margin-bottom: 20px;
+  margin: 0;
+}
+
+.combat-home-button {
+  width: min(100%, 260px);
+  justify-self: center;
+  margin: 0 auto;
 }
 
 .log-panel {
@@ -133,6 +139,11 @@
 .combat-actions .secondary-button {
   flex: 1 1 132px;
   min-width: 132px;
+}
+
+.combat-actions .action-info {
+  border-color: rgba(111, 176, 193, 0.44);
+  color: var(--sky);
 }
 
 .entity-heading h2,
@@ -295,6 +306,62 @@
   max-height: min(680px, calc(100vh - 36px));
   padding: 22px;
   overflow: auto;
+}
+
+.blessing-info-dialog {
+  max-width: 620px;
+}
+
+.blessing-info-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.blessing-info-card {
+  padding: 14px;
+  border: 1px solid rgba(217, 199, 150, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 70%),
+    rgba(13, 17, 18, 0.88);
+  box-shadow: var(--inner-light);
+}
+
+.blessing-info-card small {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--sky);
+  font-weight: 800;
+}
+
+.blessing-info-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.blessing-info-card p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.blessing-info-card em {
+  display: block;
+  margin-top: 8px;
+  color: var(--gold);
+  font-style: normal;
+  line-height: 1.6;
+}
+
+.blessing-info-empty {
+  margin: 16px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .blessing-grid {
@@ -774,7 +841,7 @@
   right: 18px;
   bottom: 18px;
   z-index: 70;
-  width: min(320px, calc(100vw - 24px));
+  width: min(420px, calc(100vw - 24px));
   color: var(--ink);
   font-size: 0.9rem;
 }
@@ -796,6 +863,8 @@
   border: 1px solid rgba(241, 211, 134, 0.26);
   border-radius: 8px;
   padding: 12px;
+  max-height: min(82vh, 760px);
+  overflow-y: auto;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%),
     rgba(13, 17, 18, 0.94);
@@ -827,7 +896,9 @@
   font-weight: 700;
 }
 
-.debug-panel input {
+.debug-panel input,
+.debug-panel select,
+.debug-panel textarea {
   width: 100%;
   border: 1px solid rgba(173, 148, 102, 0.3);
   border-radius: 8px;
@@ -835,6 +906,11 @@
   background: rgba(5, 8, 9, 0.76);
   color: var(--ink);
   font: inherit;
+}
+
+.debug-panel textarea {
+  resize: vertical;
+  min-height: 82px;
 }
 
 .debug-grid {
@@ -859,6 +935,138 @@
 .debug-grid button:focus-visible {
   border-color: rgba(241, 211, 134, 0.62);
   color: #fff4d8;
+}
+
+.debug-build-section {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(241, 211, 134, 0.2);
+}
+
+.debug-build-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.debug-build-heading strong {
+  color: #fff4d8;
+}
+
+.debug-build-heading small,
+.debug-build-note {
+  color: var(--muted);
+}
+
+.debug-build-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.debug-build-add-row label {
+  margin-bottom: 0;
+}
+
+.debug-build-add,
+.debug-build-clear,
+.debug-build-parse,
+.debug-build-bosses button,
+.debug-build-item-controls button {
+  border: 1px solid rgba(173, 148, 102, 0.28);
+  border-radius: 8px;
+  background: rgba(24, 30, 31, 0.94);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.debug-build-add,
+.debug-build-clear,
+.debug-build-parse,
+.debug-build-bosses button {
+  min-height: 36px;
+  padding: 8px 10px;
+}
+
+.debug-build-add:hover,
+.debug-build-clear:hover,
+.debug-build-parse:hover,
+.debug-build-bosses button:hover,
+.debug-build-item-controls button:hover,
+.debug-build-add:focus-visible,
+.debug-build-clear:focus-visible,
+.debug-build-parse:focus-visible,
+.debug-build-bosses button:focus-visible,
+.debug-build-item-controls button:focus-visible {
+  border-color: rgba(241, 211, 134, 0.62);
+  color: #fff4d8;
+}
+
+.debug-build-list {
+  display: grid;
+  gap: 6px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.debug-build-empty {
+  margin: 0;
+  padding: 10px;
+  border: 1px dashed rgba(173, 148, 102, 0.24);
+  border-radius: 8px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.debug-build-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 7px 6px 10px;
+  border: 1px solid rgba(173, 148, 102, 0.2);
+  border-radius: 8px;
+  background: rgba(8, 12, 13, 0.6);
+}
+
+.debug-build-item > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.debug-build-item-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.debug-build-item-controls button {
+  min-width: 32px;
+  min-height: 30px;
+  padding: 4px 6px;
+  font-size: 0.76rem;
+}
+
+.debug-build-item-controls button:disabled,
+.debug-build-add:disabled,
+.debug-build-parse:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.debug-build-bosses {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .debug-status {

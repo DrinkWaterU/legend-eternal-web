@@ -31,7 +31,7 @@
     "exponent": 1.55,
     "linear": 8,
     "offset": 0,
-    "maxLevel": 15
+    "maxLevel": 25
   },
   "levelGrowth": [
     {
@@ -186,6 +186,121 @@
           "amount": 10
         }
       ]
+    },
+    {
+      "level": 16,
+      "name": "遠行體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 17,
+      "name": "護具調整",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 18,
+      "name": "攻勢銜接",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "level": 19,
+      "name": "長途耐受",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 20,
+      "name": "遠征整備",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 21,
+      "name": "冷靜應對",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        }
+      ]
+    },
+    {
+      "level": 22,
+      "name": "林路適應",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 23,
+      "name": "武器熟練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 24,
+      "name": "狀態判讀",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 25,
+      "name": "萬用整備",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 12
+        }
+      ]
     }
   ],
   "skills": [
@@ -249,6 +364,55 @@
       "type": "rare",
       "name": "死地求生",
       "description": "每場戰鬥第一次受到致命傷害時保留 1 HP，恢復最大生命 15%，並清除 1 個負面效果。"
+    },
+    {
+      "id": "exploit-weakness-plus",
+      "level": 18,
+      "type": "minor",
+      "targetSkillId": "exploit-weakness",
+      "name": "破綻判斷強化",
+      "description": "強化破綻判斷：暴擊率額外 +3%，暴擊傷害倍率再提升 10%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        },
+        {
+          "type": "add",
+          "stat": "critDamageMultiplier",
+          "amount": 0.1
+        }
+      ]
+    },
+    {
+      "id": "expedition-pace",
+      "level": 20,
+      "type": "milestone",
+      "name": "遠征步調",
+      "description": "強化冒險者步調：每場勝利後恢復最大生命 15%。"
+    },
+    {
+      "id": "steady-stance-plus",
+      "level": 21,
+      "type": "minor",
+      "targetSkillId": "steady-stance",
+      "name": "穩定架勢強化",
+      "description": "強化穩定架勢：受到敵人直接攻擊時有 30% 機率降低本次傷害 35%。"
+    },
+    {
+      "id": "status-familiarity",
+      "level": 24,
+      "type": "minor",
+      "name": "狀態熟悉",
+      "description": "當你施加負面狀態時，獲得 1 層判讀，每層攻擊 +1，最多 3 層，持續到本場戰鬥結束；若本輪沒有可施加負面狀態的祝福，攻擊 +1。"
+    },
+    {
+      "id": "versatile-satchel",
+      "level": 25,
+      "type": "milestone",
+      "name": "萬用行囊",
+      "description": "每場戰鬥開始時，根據本輪祝福流派獲得一項小加成；若沒有明確流派，攻擊 +1。"
     }
   ]
 }

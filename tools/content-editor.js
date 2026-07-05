@@ -2,26 +2,31 @@
   "use strict";
 
   const SCHEMA_VERSION = 1;
-  const TOOL_VERSION = "v0.1.3";
+  const TOOL_VERSION = "v0.1.6";
   const KNOWN_GAME_REGIONS = [
-    { id: "plains", name: "平原", path: "../src/data/regions/plains.json" }
+    { id: "plains", name: "平原", path: "../src/data/regions/plains.json" },
+    { id: "forest", name: "森林", path: "../src/data/regions/forest.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.2.2.6-alpha";
+  const DEFAULT_GAME_VERSION = "v0.2.3.0.4-alpha";
+  const BLESSING_FLOW_REGISTRY_PATH = "../src/data/blessingFlows.json";
 
   const state = {
     package: createEmptyPackage(),
     dropsDraft: [],
     effectsDraft: [],
+    blessingFlowDefinitions: [],
+    blessingFlowRegistryReady: false,
     activeTab: "monster"
   };
 
   const els = {};
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     bindElements();
     populateKnownGameRegions();
     bindEvents();
     syncRegionFieldsFromState();
+    await loadBlessingFlowRegistry();
     renderAll();
   });
 
@@ -39,6 +44,81 @@
       monsters: [],
       blessings: []
     };
+  }
+
+
+  async function loadBlessingFlowRegistry() {
+    try {
+      const response = await fetch(BLESSING_FLOW_REGISTRY_PATH, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`讀取失敗：HTTP ${response.status}`);
+      }
+      const registry = await response.json();
+      state.blessingFlowDefinitions = normalizeBlessingFlowRegistry(registry);
+      state.blessingFlowRegistryReady = true;
+      populateBlessingPrimaryFlowOptions();
+    } catch (error) {
+      state.blessingFlowDefinitions = [];
+      state.blessingFlowRegistryReady = false;
+      populateBlessingPrimaryFlowOptions();
+      showToast(`載入 Blessing Flow registry 失敗：${error.message}`, true);
+    }
+  }
+
+  function normalizeBlessingFlowRegistry(registry) {
+    if (!registry || typeof registry !== "object" || Array.isArray(registry)) {
+      throw new Error("Flow registry 根節點必須是物件。");
+    }
+
+    const definitions = Object.entries(registry).map(([flowId, definition]) => {
+      const id = String(definition?.id || "").trim();
+      const label = String(definition?.label || "").trim();
+      const satchelEffectId = String(definition?.satchelEffectId || "").trim();
+      if (!id || id !== flowId || !label || !satchelEffectId) {
+        throw new Error(`Flow「${flowId}」定義不完整或 id 不一致。`);
+      }
+      return { id, label, satchelEffectId };
+    });
+
+    if (definitions.length === 0) {
+      throw new Error("Flow registry 不可為空。");
+    }
+    return definitions;
+  }
+
+  function populateBlessingPrimaryFlowOptions() {
+    els.blessingPrimaryFlow.innerHTML = "";
+    if (!state.blessingFlowRegistryReady) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "Flow registry 載入失敗";
+      els.blessingPrimaryFlow.appendChild(option);
+      els.blessingPrimaryFlow.disabled = true;
+      return;
+    }
+
+    state.blessingFlowDefinitions.forEach((flow) => {
+      const option = document.createElement("option");
+      option.value = flow.id;
+      option.textContent = `${flow.label} / ${flow.id}`;
+      els.blessingPrimaryFlow.appendChild(option);
+    });
+    els.blessingPrimaryFlow.disabled = false;
+  }
+
+  function isRegisteredBlessingFlow(flowId) {
+    return state.blessingFlowDefinitions.some((flow) => flow.id === flowId);
+  }
+
+  function validateBlessingPrimaryFlows() {
+    if (!state.blessingFlowRegistryReady) {
+      return fail("Blessing Flow registry 尚未成功載入，無法匯出正式遊戲 JSON。", "blessingPrimaryFlow");
+    }
+    const invalidBlessing = state.package.blessings.find((blessing) => !isRegisteredBlessingFlow(blessing.primaryFlow));
+    if (invalidBlessing) {
+      return fail(`Buff「${invalidBlessing.title}」缺少有效的主要流派。`, "blessingPrimaryFlow");
+    }
+    return { ok: true };
   }
 
 
@@ -61,7 +141,7 @@
       "monsterPoisonPower", "monsterRegenEvery", "monsterRegenAmount", "monsterChargeEvery", "monsterChargeMultiplier", "monsterDamageReduction",
       "monsterExp", "monsterGoldMin", "monsterGoldMax", "dropItemId", "dropName", "dropChance", "dropMin", "dropMax",
       "addDropButton", "dropList", "copyMonsterDraftButton", "resetMonsterButton",
-      "blessingId", "blessingTitle", "blessingRarity", "blessingEventTitle", "blessingStory", "blessingFlavor", "blessingEffectText",
+      "blessingId", "blessingTitle", "blessingRarity", "blessingPrimaryFlow", "blessingEventTitle", "blessingStory", "blessingFlavor", "blessingEffectText",
       "effectType", "effectTarget", "effectValue", "addEffectButton", "effectList", "copyBlessingDraftButton", "resetBlessingButton",
       "monsterList", "blessingList", "monsterCount", "blessingCount", "jsonOutput", "gameJsonOutput", "jsonImport", "copyPreviewButton", "copyGamePreviewButton", "loadPreviewButton", "clearPackageButton", "toast"
     ];
@@ -77,7 +157,7 @@
     els.gameRegionFileInput.addEventListener("change", importGameRegionFile);
     els.copyPackageButton.addEventListener("click", () => copyText(toPrettyJson(state.package), "已複製整包 JSON。"));
     els.downloadPackageButton.addEventListener("click", downloadPackageJson);
-    els.copyGameRegionButton.addEventListener("click", () => copyText(toPrettyJson(buildGameRegionJson()), "已複製遊戲地區 JSON。"));
+    els.copyGameRegionButton.addEventListener("click", copyGameRegionJson);
     els.downloadGameRegionButton.addEventListener("click", downloadGameRegionJson);
 
     els.monsterTab.addEventListener("click", () => setActiveTab("monster"));
@@ -94,7 +174,7 @@
     els.resetBlessingButton.addEventListener("click", resetBlessingForm);
 
     els.copyPreviewButton.addEventListener("click", () => copyText(els.jsonOutput.value, "已複製工具預覽 JSON。"));
-    els.copyGamePreviewButton.addEventListener("click", () => copyText(els.gameJsonOutput.value, "已複製遊戲預覽 JSON。"));
+    els.copyGamePreviewButton.addEventListener("click", copyGameRegionJson);
     els.loadPreviewButton.addEventListener("click", importPackageFromText);
     els.clearPackageButton.addEventListener("click", clearPackage);
 
@@ -272,9 +352,12 @@
   function buildBlessingFromForm() {
     const id = normalizeId(els.blessingId.value);
     const title = els.blessingTitle.value.trim();
+    const primaryFlow = els.blessingPrimaryFlow.value;
 
     if (!id) return fail("Buff ID 不能空白。", "blessingId");
     if (!title) return fail("Buff 標題不能空白。", "blessingTitle");
+    if (!state.blessingFlowRegistryReady) return fail("Blessing Flow registry 尚未成功載入。", "blessingPrimaryFlow");
+    if (!isRegisteredBlessingFlow(primaryFlow)) return fail("請選擇有效的主要流派。", "blessingPrimaryFlow");
     if (state.effectsDraft.length === 0) return fail("至少需要新增一個效果。", "effectValue");
 
     return {
@@ -284,6 +367,7 @@
         id,
         title,
         rarity: els.blessingRarity.value,
+        primaryFlow,
         eventTitle: els.blessingEventTitle.value.trim(),
         story: els.blessingStory.value.trim(),
         flavor: els.blessingFlavor.value.trim(),
@@ -336,15 +420,23 @@
     els.effectList.innerHTML = "";
     state.effectsDraft.forEach((effect, index) => {
       const li = document.createElement("li");
-      li.textContent = effect.type === "recoverHp"
-        ? `${effect.type}: ${effect.value}`
-        : `${effect.type} ${effect.target}: ${effect.value}`;
+      li.textContent = formatEffectDraft(effect);
       li.appendChild(makeSmallDeleteButton(() => {
         state.effectsDraft.splice(index, 1);
         renderEffectList();
       }));
       els.effectList.appendChild(li);
     });
+  }
+
+  function formatEffectDraft(effect) {
+    if (effect.type === "recoverHp") {
+      return `${effect.type}: ${effect.value}`;
+    }
+    if (effect.type === "addTimedRegen") {
+      return `${effect.type}: ${effect.durationEncounters} battles / ${effect.everyTurns} turns / ${formatPercent(effect.maxHpRatio)}`;
+    }
+    return `${effect.type} ${effect.target}: ${effect.value}`;
   }
 
   function renderContentLists() {
@@ -452,6 +544,7 @@
     els.blessingId.value = blessing.id || "";
     els.blessingTitle.value = blessing.title || "";
     els.blessingRarity.value = blessing.rarity || "common";
+    els.blessingPrimaryFlow.value = blessing.primaryFlow || "";
     els.blessingEventTitle.value = blessing.eventTitle || "";
     els.blessingStory.value = blessing.story || "";
     els.blessingFlavor.value = blessing.flavor || "";
@@ -628,7 +721,7 @@
     const monsters = [
       ...toArray(regionData.enemies).map((monster) => normalizeGameMonster(monster, "normal")),
       ...toArray(regionData.elites).map((monster) => normalizeGameMonster(monster, "elite")),
-      ...toArray(regionData.boss ? [regionData.boss] : []).map((monster) => normalizeGameMonster(monster, "boss"))
+      ...toArray(regionData.bosses || (regionData.boss ? [regionData.boss] : [])).map((monster) => normalizeGameMonster(monster, "boss"))
     ];
 
     return {
@@ -652,7 +745,7 @@
   function extractRegionMeta(regionData) {
     const extraFields = {};
     Object.entries(regionData || {}).forEach(([key, value]) => {
-      if (["id", "name", "description", "difficulty", "encounterPlan", "enemies", "elites", "boss", "blessings"].includes(key)) {
+      if (["id", "name", "description", "difficulty", "encounterPlan", "enemies", "elites", "boss", "bosses", "blessings"].includes(key)) {
         return;
       }
       extraFields[key] = clone(value);
@@ -730,6 +823,7 @@
       id: blessing.id,
       title: blessing.title || blessing.name,
       rarity: blessing.rarity || "common",
+      primaryFlow: blessing.primaryFlow || "",
       eventTitle: blessing.eventTitle,
       story: blessing.story || blessing.eventText || blessing.description,
       flavor: blessing.flavor || blessing.flavorText,
@@ -746,6 +840,15 @@
   function normalizeGameEffect(effect) {
     if (effect.type === "recoverHp") {
       return { type: "recoverHp", value: numberOr(effect.value ?? effect.amount, 0) };
+    }
+
+    if (effect.type === "addTimedRegen") {
+      return {
+        type: "addTimedRegen",
+        durationEncounters: numberOr(effect.durationEncounters, 0),
+        everyTurns: numberOr(effect.everyTurns, 0),
+        maxHpRatio: numberOr(effect.maxHpRatio, 0)
+      };
     }
 
     if (effect.type === "addFamilyDamageBonus") {
@@ -768,7 +871,7 @@
   function collectExtraBlessingFields(blessing) {
     const extraFields = {};
     Object.entries(blessing || {}).forEach(([key, value]) => {
-      if (["id", "category", "name", "title", "rarity", "eventTitle", "story", "eventText", "description", "flavor", "flavorText", "effectText", "effects"].includes(key)) {
+      if (["id", "category", "name", "title", "rarity", "primaryFlow", "eventTitle", "story", "eventText", "description", "flavor", "flavorText", "effectText", "effects"].includes(key)) {
         return;
       }
       extraFields[key] = clone(value);
@@ -951,6 +1054,7 @@
       id: normalizeId(blessing.id || "blessing"),
       title: String(blessing.title || blessing.name || "未命名 Buff"),
       rarity: blessing.rarity || "common",
+      primaryFlow: String(blessing.primaryFlow || ""),
       eventTitle: String(blessing.eventTitle || ""),
       story: String(blessing.story || blessing.description || ""),
       flavor: String(blessing.flavor || ""),
@@ -963,6 +1067,15 @@
   function normalizeEffect(effect) {
     if (effect.type === "recoverHp") {
       return { type: "recoverHp", value: numberOr(effect.value ?? effect.amount, 0) };
+    }
+
+    if (effect.type === "addTimedRegen") {
+      return {
+        type: "addTimedRegen",
+        durationEncounters: numberOr(effect.durationEncounters, 0),
+        everyTurns: numberOr(effect.everyTurns, 0),
+        maxHpRatio: numberOr(effect.maxHpRatio, 0)
+      };
     }
 
     if (effect.type === "addFamilyDamageBonus") {
@@ -1001,13 +1114,14 @@
       encounterPlan: clone(meta.encounterPlan),
       enemies: state.package.monsters.filter((item) => item.type === "normal").map((item) => convertMonsterToGameFormat(item, "normal")),
       elites: state.package.monsters.filter((item) => item.type === "elite").map((item) => convertMonsterToGameFormat(item, "elite")),
-      boss: null,
       blessings: state.package.blessings.map(convertBlessingToGameFormat)
     };
 
-    const bossMonster = state.package.monsters.find((item) => item.type === "boss");
-    if (bossMonster) {
-      gameRegion.boss = convertMonsterToGameFormat(bossMonster, "boss");
+    const bossMonsters = state.package.monsters.filter((item) => item.type === "boss");
+    if (bossMonsters.length > 1) {
+      gameRegion.bosses = bossMonsters.map((item) => convertMonsterToGameFormat(item, "boss"));
+    } else if (bossMonsters.length === 1) {
+      gameRegion.boss = convertMonsterToGameFormat(bossMonsters[0], "boss");
     }
 
     Object.assign(gameRegion, clone(meta.extraFields || {}));
@@ -1079,6 +1193,7 @@
       id: normalizeId(blessing.id || "blessing"),
       category: meta.category || "misc",
       rarity: blessing.rarity || "common",
+      primaryFlow: String(blessing.primaryFlow || ""),
       name: meta.name || blessing.title || "未命名 Buff",
       eventTitle: String(blessing.eventTitle || ""),
       eventText: String(blessing.story || ""),
@@ -1094,6 +1209,14 @@
   function convertEffectToGameFormat(effect) {
     if (effect.type === "recoverHp") {
       return { type: "recoverHp", amount: numberOr(effect.value, 0) };
+    }
+    if (effect.type === "addTimedRegen") {
+      return {
+        type: "addTimedRegen",
+        durationEncounters: numberOr(effect.durationEncounters, 0),
+        everyTurns: numberOr(effect.everyTurns, 0),
+        maxHpRatio: numberOr(effect.maxHpRatio, 0)
+      };
     }
     if (effect.type === "set" || effect.type === "max") {
       return {
@@ -1116,7 +1239,23 @@
     };
   }
 
+  function copyGameRegionJson() {
+    const validation = validateBlessingPrimaryFlows();
+    if (!validation.ok) {
+      showToast(validation.message, true);
+      focusById(validation.focusId);
+      return;
+    }
+    copyText(toPrettyJson(buildGameRegionJson()), "已複製遊戲地區 JSON。");
+  }
+
   function downloadGameRegionJson() {
+    const validation = validateBlessingPrimaryFlows();
+    if (!validation.ok) {
+      showToast(validation.message, true);
+      focusById(validation.focusId);
+      return;
+    }
     const regionId = state.package.region.id || "region";
     const filename = `${regionId}.json`;
     const blob = new Blob([toPrettyJson(buildGameRegionJson())], { type: "application/json;charset=utf-8" });
