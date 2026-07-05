@@ -1,11 +1,14 @@
 export const templates = {
-  encounter: "{enemy} 出現在平原上。",
+  encounter: "{enemy} 出現在前方。",
   heroDamage: "{actor} 攻擊了 {target}，造成 {amount} 點傷害。",
   enemyDamage: "{actor} 攻擊了 {target}，造成 {amount} 點傷害。",
   critical: "{actor} 打出了暴擊。",
   block: "{target} 擋下了一部分攻擊。",
   poisonApply: "{target} 中毒了。",
   poisonTick: "{target} 受到毒素影響，失去 {amount} 點生命。",
+  entangleApply: "{target} 被藤蔓與蛛絲纏住了。",
+  entangleBreak: "{target} 掙脫了纏繞。",
+  entangleHold: "{target} 沒能掙脫纏繞，錯過了這次攻擊。",
   heal: "{target} 恢復了 {amount} 點生命。",
   charge: "{actor} 準備衝撞。",
   shield: "{target} 獲得了 {amount} 點護盾。",
@@ -18,6 +21,8 @@ export const templates = {
   heavyStrike: "{actor} 使出了重擊。",
   steadyStance: "{actor} 穩住架勢，降低了 {amount} 點傷害。",
   skilledFollowUp: "{actor} 追擊了 {target}，追加 {amount} 點傷害。",
+  statusFamiliarity: "{actor} 判讀了負面狀態，攻擊提升。判讀 {stacks} 層。",
+  versatileSatchel: "{actor} 從萬用行囊中取出合適工具：{bonus}。",
   emergencyBandage: "{actor} 使用應急包紮，恢復了 {amount} 點生命。",
   adventurerPace: "冒險者步調讓你調整呼吸，恢復了 {amount} 點生命。",
   lastStand: "{actor} 在死地中撐住了，恢復了 {amount} 點生命。",
@@ -33,6 +38,6 @@ export const templates = {
   evacuationEscape: "撤離逃跑成功。你找到回營地的路線。",
   retreat: "你選擇撤退，帶著本輪經驗回到營地。",
   ambushAdvantage: "{enemy} 被你搶先壓制，生命降低了 {amount} 點。",
-  boss: "平原深處傳來沉重的腳步聲。",
-  clear: "你擊敗了平原的首領。這次冒險成功了。"
+  boss: "{region}深處傳來首領的氣息。",
+  clear: "你擊敗了{region}的首領。這次冒險成功了。"
 };

@@ -1,0 +1,677 @@
+{
+  "id": "forest",
+  "name": "森林",
+  "description": "平原之外的長程冒險地區。清晨霧氣、古木根系與濕潤苔石遮住前路，森林本身不邪惡，卻會試探每一位踏入深處的冒險者。",
+  "difficulty": "進階",
+  "recommendedLevel": "Lv.15+",
+  "note": "長程冒險地區，建議準備充足後挑戰。",
+  "visual": {
+    "background": {
+      "desktop": "assets/images/regions/forest/forest-outer.jpg",
+      "mobile": "assets/images/regions/forest/forest-outer-mobile.jpg",
+      "tone": "forest-outer"
+    },
+    "backgroundStages": [
+      {
+        "id": "outer",
+        "fromEncounter": 1,
+        "toEncounter": 4,
+        "desktop": "assets/images/regions/forest/forest-outer.jpg",
+        "mobile": "assets/images/regions/forest/forest-outer-mobile.jpg",
+        "tone": "forest-outer"
+      },
+      {
+        "id": "mid",
+        "fromEncounter": 5,
+        "toEncounter": 8,
+        "desktop": "assets/images/regions/forest/forest-mid.jpg",
+        "mobile": "assets/images/regions/forest/forest-mid-mobile.jpg",
+        "tone": "forest-mid"
+      },
+      {
+        "id": "deep",
+        "fromEncounter": 9,
+        "toEncounter": 13,
+        "desktop": "assets/images/regions/forest/forest-deep.jpg",
+        "mobile": "assets/images/regions/forest/forest-deep-mobile.jpg",
+        "tone": "forest-deep"
+      },
+      {
+        "id": "heart",
+        "fromEncounter": 14,
+        "toEncounter": 16,
+        "desktop": "assets/images/regions/forest/forest-heart.jpg",
+        "mobile": "assets/images/regions/forest/forest-heart-mobile.jpg",
+        "tone": "forest-heart"
+      }
+    ]
+  },
+  "encounterPlan": [
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "elite",
+    "normal",
+    "normal",
+    "normal",
+    "elite",
+    "normal",
+    "normal",
+    "boss"
+  ],
+  "scaling": {
+    "hpPerEncounter": 0.025,
+    "attackPerEncounter": 0.018
+  },
+  "enemies": [
+    {
+      "id": "forest-wolf",
+      "name": "森林狼",
+      "kind": "普通",
+      "family": "beast",
+      "weight": 100,
+      "maxHp": 118,
+      "attack": 24,
+      "defense": 4,
+      "critChance": 0.12,
+      "ambushDamage": 8,
+      "expReward": 42,
+      "rewards": {
+        "materials": [
+          {
+            "id": "forest_pelt",
+            "chance": 0.32,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "森林狼從霧後現身，低伏著身體觀察你的破綻。"
+    },
+    {
+      "id": "spider",
+      "name": "蜘蛛",
+      "kind": "普通",
+      "family": "insect",
+      "weight": 95,
+      "maxHp": 126,
+      "attack": 21,
+      "defense": 4,
+      "critChance": 0.06,
+      "entangleChance": 0.18,
+      "expReward": 44,
+      "rewards": {
+        "materials": [
+          {
+            "id": "spider_silk",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "蛛絲掛在枝影之間，蜘蛛沿著樹幹緩慢逼近。"
+    },
+    {
+      "id": "venom-spider",
+      "name": "毒蜘蛛",
+      "kind": "普通",
+      "family": "insect",
+      "weight": 75,
+      "maxHp": 132,
+      "attack": 20,
+      "defense": 4,
+      "critChance": 0.04,
+      "poisonPower": 4,
+      "entangleChance": 0.2,
+      "expReward": 50,
+      "rewards": {
+        "materials": [
+          {
+            "id": "spider_silk",
+            "chance": 0.28,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "venom_sac",
+            "chance": 0.16,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "毒蜘蛛的獠牙滲出暗綠毒液，蛛網在霧中輕晃。"
+    },
+    {
+      "id": "bee",
+      "name": "蜜蜂",
+      "kind": "普通",
+      "family": "insect",
+      "weight": 90,
+      "maxHp": 98,
+      "attack": 26,
+      "defense": 2,
+      "critChance": 0.1,
+      "poisonPower": 2,
+      "expReward": 42,
+      "rewards": {
+        "materials": [
+          {
+            "id": "bee_wing",
+            "chance": 0.3,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "amber_honey",
+            "chance": 0.08,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "蜜蜂群在花影間散開，尖銳振翅聲貼近耳側。"
+    },
+    {
+      "id": "vine-creature",
+      "name": "藤蔓怪",
+      "kind": "普通",
+      "family": "plant",
+      "weight": 90,
+      "maxHp": 150,
+      "attack": 20,
+      "defense": 7,
+      "critChance": 0,
+      "entangleChance": 0.28,
+      "expReward": 52,
+      "rewards": {
+        "materials": [
+          {
+            "id": "vine_fiber",
+            "chance": 0.4,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "藤蔓怪從濕土裡抬起根鬚，像要把你的腳步拖回森林。"
+    },
+    {
+      "id": "mushroom-creature",
+      "name": "蘑菇怪",
+      "kind": "普通",
+      "family": "plant",
+      "weight": 85,
+      "maxHp": 138,
+      "attack": 19,
+      "defense": 5,
+      "critChance": 0,
+      "regenEvery": 4,
+      "regenAmount": 8,
+      "expReward": 48,
+      "rewards": {
+        "materials": [
+          {
+            "id": "mushroom_cap",
+            "chance": 0.38,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "glowing_spore",
+            "chance": 0.12,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "蘑菇怪抖落微亮孢子，潮濕空氣變得難以分辨方向。"
+    },
+    {
+      "id": "bark-beetle",
+      "name": "樹皮甲蟲",
+      "kind": "普通",
+      "family": "insect",
+      "weight": 70,
+      "maxHp": 168,
+      "attack": 18,
+      "defense": 10,
+      "critChance": 0,
+      "expReward": 56,
+      "rewards": {
+        "materials": [
+          {
+            "id": "bark_shell",
+            "chance": 0.28,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "樹皮甲蟲縮起厚殼，像一塊會移動的老樹皮。"
+    },
+    {
+      "id": "goblin-scout",
+      "name": "哥布林偵查兵",
+      "kind": "普通",
+      "family": "goblin",
+      "weight": 15,
+      "maxHp": 110,
+      "attack": 28,
+      "defense": 3,
+      "critChance": 0.14,
+      "ambushDamage": 10,
+      "expReward": 58,
+      "rewards": {
+        "materials": [
+          {
+            "id": "spider_silk",
+            "chance": 0.1,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "哥布林偵查兵從灌木後探頭，短矛上掛著粗糙布條。"
+    }
+  ],
+  "elites": [
+    {
+      "id": "mist-hunter-wolf",
+      "name": "迷霧獵狼",
+      "kind": "精英",
+      "family": "beast",
+      "weight": 100,
+      "maxHp": 285,
+      "attack": 34,
+      "defense": 7,
+      "critChance": 0.14,
+      "ambushDamage": 14,
+      "expReward": 105,
+      "rewards": {
+        "materials": [
+          {
+            "id": "forest_pelt",
+            "chance": 0.65,
+            "min": 1,
+            "max": 2
+          }
+        ]
+      },
+      "intro": "迷霧獵狼踩著無聲步伐繞到側面，眼裡映出冷光。"
+    },
+    {
+      "id": "ancient-vine-guard",
+      "name": "古藤守衛",
+      "kind": "精英",
+      "family": "plant",
+      "weight": 100,
+      "maxHp": 330,
+      "attack": 28,
+      "defense": 12,
+      "critChance": 0,
+      "entangleChance": 0.34,
+      "regenEvery": 4,
+      "regenAmount": 10,
+      "expReward": 112,
+      "rewards": {
+        "materials": [
+          {
+            "id": "vine_fiber",
+            "chance": 0.7,
+            "min": 1,
+            "max": 2
+          },
+          {
+            "id": "bark_shell",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "古藤守衛從老樹根下伸展身軀，枝節摩擦出低沉聲響。"
+    },
+    {
+      "id": "venom-hive-queen",
+      "name": "毒巢蜂后",
+      "kind": "精英",
+      "family": "insect",
+      "weight": 100,
+      "maxHp": 300,
+      "attack": 31,
+      "defense": 7,
+      "critChance": 0.08,
+      "poisonPower": 5,
+      "expReward": 116,
+      "rewards": {
+        "materials": [
+          {
+            "id": "bee_wing",
+            "chance": 0.6,
+            "min": 1,
+            "max": 2
+          },
+          {
+            "id": "venom_sac",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "amber_honey",
+            "chance": 0.3,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "毒巢蜂后振動半透明翅翼，蜂群的影子在樹間交錯。"
+    }
+  ],
+  "bosses": [
+    {
+      "id": "ancient-wood-warden",
+      "name": "古木守衛",
+      "kind": "首領",
+      "family": "plant",
+      "weight": 100,
+      "maxHp": 620,
+      "attack": 38,
+      "defense": 15,
+      "critChance": 0.02,
+      "entangleChance": 0.36,
+      "regenEvery": 4,
+      "regenAmount": 16,
+      "expReward": 210,
+      "rewards": {
+        "materials": [
+          {
+            "id": "ancient_wood_core",
+            "chance": 1,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "bark_shell",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "vine_fiber",
+            "chance": 0.6,
+            "min": 1,
+            "max": 2
+          }
+        ]
+      },
+      "intro": "古木守衛立於林心，樹根像沉睡巨獸般在地面下翻動。"
+    },
+    {
+      "id": "verdant-stag-king",
+      "name": "翠影鹿王",
+      "kind": "首領",
+      "family": "beast",
+      "weight": 100,
+      "maxHp": 540,
+      "attack": 44,
+      "defense": 9,
+      "critChance": 0.12,
+      "ambushDamage": 16,
+      "expReward": 210,
+      "rewards": {
+        "materials": [
+          {
+            "id": "verdant_antler",
+            "chance": 1,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "forest_pelt",
+            "chance": 0.65,
+            "min": 1,
+            "max": 2
+          },
+          {
+            "id": "glowing_spore",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "翠影鹿王踏入空地，角上綠光像林間晨星般閃爍。"
+    }
+  ],
+  "blessings": [
+    {
+      "id": "forest-whetstone",
+      "category": "attack",
+      "rarity": "common",
+      "name": "林間磨刃",
+      "eventTitle": "溪石刃痕",
+      "eventText": "你在溪邊找到帶有細密刃痕的石塊，用它重新整理武器。",
+      "flavorText": "林水冰涼，刀鋒在濕光裡變得更沉也更準。",
+      "effectText": "攻擊力 +2。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "moss-stone-guard",
+      "category": "defense",
+      "rarity": "common",
+      "name": "苔石護步",
+      "eventTitle": "苔石落腳",
+      "eventText": "你沿著被苔蘚覆蓋的石面練習落腳，調整護具與重心。",
+      "flavorText": "森林的地面不平，但你開始知道該把重量交給哪一步。",
+      "effectText": "防禦 +1，每場戰鬥開始獲得 4 點護盾。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "spring-rest",
+      "category": "healing",
+      "rarity": "common",
+      "name": "清泉短歇",
+      "eventTitle": "樹根清泉",
+      "eventText": "你在盤根之間找到一汪清泉，停下來清洗傷口與喉嚨。",
+      "flavorText": "泉水帶著土與葉的味道，卻讓胸口重新穩定下來。",
+      "effectText": "恢復 22 點生命。",
+      "effects": [
+        {
+          "type": "recoverHp",
+          "amount": 22
+        }
+      ]
+    },
+    {
+      "id": "poison-herb-coating",
+      "category": "attack",
+      "rarity": "common",
+      "name": "毒草塗層",
+      "eventTitle": "暗葉毒草",
+      "eventText": "你認出幾株葉脈發黑的毒草，將汁液薄薄抹在武器邊緣。",
+      "flavorText": "這不是致命毒藥，但森林知道如何讓微小傷口慢慢發作。",
+      "effectText": "攻擊時使敵人中毒，每回合結束失去 2 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "poisonPower",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "hunter-path-reading",
+      "category": "attack",
+      "rarity": "uncommon",
+      "name": "獵徑判讀",
+      "eventTitle": "斷枝足跡",
+      "eventText": "你在斷枝、爪痕與濕土腳印間辨認出野獸常走的路線。",
+      "flavorText": "獵物與獵人只差一步，差別在於誰先看懂森林留下的痕跡。",
+      "effectText": "暴擊率 +6%，對野獸類敵人的傷害 +6%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.06
+        },
+        {
+          "type": "addFamilyDamageBonus",
+          "family": "beast",
+          "amount": 0.06
+        }
+      ]
+    },
+    {
+      "id": "webbed-bracer",
+      "category": "survival",
+      "rarity": "uncommon",
+      "name": "蛛網護腕",
+      "eventTitle": "韌性蛛絲",
+      "eventText": "你收集幾束仍有韌性的蛛絲，纏在護腕與袖口外側。",
+      "flavorText": "蛛絲黏著皮革，也隔開了一些刺進血肉前的毒意。",
+      "effectText": "防禦 +1，受到的中毒傷害降低 35%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        },
+        {
+          "type": "max",
+          "stat": "damageReduction",
+          "value": 0.35
+        }
+      ]
+    },
+    {
+      "id": "spore-breathing",
+      "category": "healing",
+      "rarity": "uncommon",
+      "name": "孢子調息",
+      "eventTitle": "微光孢子",
+      "eventText": "你避開濃厚孢子，只吸入少量帶微光的清淡粉塵。",
+      "flavorText": "森林的氣味沉進肺裡，讓疲憊慢慢變得可承受。",
+      "effectText": "擊敗敵人後恢復 8 點生命，每 4 回合恢復 4 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHeal",
+          "amount": 8
+        },
+        {
+          "type": "set",
+          "stat": "regenEvery",
+          "value": 4
+        },
+        {
+          "type": "add",
+          "stat": "regenAmount",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "bark-reinforcement",
+      "category": "defense",
+      "rarity": "uncommon",
+      "name": "樹皮加固",
+      "eventTitle": "剝落樹皮",
+      "eventText": "你找到幾片堅韌老樹皮，裁成能塞進護具縫隙的形狀。",
+      "flavorText": "它們不像鐵片那樣冰冷，卻有承受歲月的硬度。",
+      "effectText": "最大生命 +8，每場戰鬥開始獲得 6 點護盾。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        },
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "id": "vine-binding-strike",
+      "category": "attack",
+      "rarity": "rare",
+      "name": "藤蔓纏擊",
+      "eventTitle": "活藤低語",
+      "eventText": "你從會自行收縮的藤蔓上取下一段，將汁液抹入武器刻痕。",
+      "flavorText": "藤蔓沒有聲音，但每次揮擊都像有細小根鬚跟著鑽入傷口。",
+      "effectText": "攻擊 +1，攻擊時使敵人中毒 2 點；若敵人已中毒，暴擊率 +4%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "poisonPower",
+          "amount": 2
+        },
+        {
+          "type": "add",
+          "stat": "poisonedCritChance",
+          "amount": 0.04
+        }
+      ]
+    },
+    {
+      "id": "heartwood-guidance",
+      "category": "attack",
+      "rarity": "rare",
+      "name": "林心指引",
+      "eventTitle": "林心微光",
+      "eventText": "一縷綠金色微光穿過枝葉，短暫照出植物與蟲群的行動脈絡。",
+      "flavorText": "森林沒有讓路，但它讓你看懂了其中一部分規則。",
+      "effectText": "對植物與昆蟲類敵人的傷害 +10%。接下來更容易遇到植物或昆蟲類敵人。",
+      "effects": [
+        {
+          "type": "addFamilyDamageBonus",
+          "families": ["plant", "insect"],
+          "amount": 0.1
+        }
+      ],
+      "encounterBias": {
+        "families": ["plant", "insect"],
+        "normal": {
+          "bonusWeight": 160,
+          "duration": 3,
+          "guaranteeAfter": 3
+        },
+        "elite": {
+          "bonusWeight": 120,
+          "duration": 2
+        }
+      }
+    }
+  ]
+}

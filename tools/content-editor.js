@@ -2,11 +2,12 @@
   "use strict";
 
   const SCHEMA_VERSION = 1;
-  const TOOL_VERSION = "v0.1.3";
+  const TOOL_VERSION = "v0.1.4";
   const KNOWN_GAME_REGIONS = [
-    { id: "plains", name: "平原", path: "../src/data/regions/plains.json" }
+    { id: "plains", name: "平原", path: "../src/data/regions/plains.json" },
+    { id: "forest", name: "森林", path: "../src/data/regions/forest.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.2.2.6-alpha";
+  const DEFAULT_GAME_VERSION = "v0.2.3.0-alpha";
 
   const state = {
     package: createEmptyPackage(),
@@ -628,7 +629,7 @@
     const monsters = [
       ...toArray(regionData.enemies).map((monster) => normalizeGameMonster(monster, "normal")),
       ...toArray(regionData.elites).map((monster) => normalizeGameMonster(monster, "elite")),
-      ...toArray(regionData.boss ? [regionData.boss] : []).map((monster) => normalizeGameMonster(monster, "boss"))
+      ...toArray(regionData.bosses || (regionData.boss ? [regionData.boss] : [])).map((monster) => normalizeGameMonster(monster, "boss"))
     ];
 
     return {
@@ -652,7 +653,7 @@
   function extractRegionMeta(regionData) {
     const extraFields = {};
     Object.entries(regionData || {}).forEach(([key, value]) => {
-      if (["id", "name", "description", "difficulty", "encounterPlan", "enemies", "elites", "boss", "blessings"].includes(key)) {
+      if (["id", "name", "description", "difficulty", "encounterPlan", "enemies", "elites", "boss", "bosses", "blessings"].includes(key)) {
         return;
       }
       extraFields[key] = clone(value);
@@ -1001,13 +1002,14 @@
       encounterPlan: clone(meta.encounterPlan),
       enemies: state.package.monsters.filter((item) => item.type === "normal").map((item) => convertMonsterToGameFormat(item, "normal")),
       elites: state.package.monsters.filter((item) => item.type === "elite").map((item) => convertMonsterToGameFormat(item, "elite")),
-      boss: null,
       blessings: state.package.blessings.map(convertBlessingToGameFormat)
     };
 
-    const bossMonster = state.package.monsters.find((item) => item.type === "boss");
-    if (bossMonster) {
-      gameRegion.boss = convertMonsterToGameFormat(bossMonster, "boss");
+    const bossMonsters = state.package.monsters.filter((item) => item.type === "boss");
+    if (bossMonsters.length > 1) {
+      gameRegion.bosses = bossMonsters.map((item) => convertMonsterToGameFormat(item, "boss"));
+    } else if (bossMonsters.length === 1) {
+      gameRegion.boss = convertMonsterToGameFormat(bossMonsters[0], "boss");
     }
 
     Object.assign(gameRegion, clone(meta.extraFields || {}));

@@ -27,8 +27,12 @@ export function initDebugPanel({ enabled, actions }) {
         <button type="button" data-action="unlock-phoenix">解鎖加護</button>
         <button type="button" data-action="remove-phoenix">移除加護</button>
         <button type="button" data-action="give-materials">給平原素材</button>
+        <button type="button" data-action="give-forest-materials">給森林素材</button>
         <button type="button" data-action="clear-inventory">清空資源</button>
         <button type="button" data-action="boss">首領戰</button>
+        <button type="button" data-action="forest-boss-random">森林首領</button>
+        <button type="button" data-action="forest-boss-wood">古木守衛</button>
+        <button type="button" data-action="forest-boss-stag">翠影鹿王</button>
         <button type="button" data-action="story">劇情殺</button>
         <button type="button" data-action="camp">回營地</button>
         <button type="button" data-action="delete-save">刪存檔</button>
@@ -68,8 +72,12 @@ function runDebugAction(action, context) {
     "unlock-phoenix": () => actions.unlockPhoenix(),
     "remove-phoenix": () => confirmDanger("要移除鳳凰加護並重置平原劇情旗標嗎？") && actions.removePhoenix(),
     "give-materials": () => actions.givePlainsMaterials(),
+    "give-forest-materials": () => actions.giveForestMaterials(),
     "clear-inventory": () => confirmDanger("要清空金幣與素材嗎？") && actions.clearInventory(),
     boss: () => actions.startPlainsBoss(),
+    "forest-boss-random": () => actions.startForestBoss(),
+    "forest-boss-wood": () => actions.startForestBoss("ancient-wood-warden"),
+    "forest-boss-stag": () => actions.startForestBoss("verdant-stag-king"),
     story: () => actions.triggerPlainsStory(),
     camp: () => actions.returnToCamp(),
     "delete-save": () => confirmDanger("要刪除目前存檔嗎？這個動作無法復原。") && actions.deleteSave()
