@@ -98,7 +98,13 @@
 
 .home-button {
   width: 100%;
-  margin-bottom: 20px;
+  margin: 0;
+}
+
+.combat-home-button {
+  width: min(100%, 260px);
+  justify-self: center;
+  margin: 0 auto;
 }
 
 .log-panel {
@@ -133,6 +139,11 @@
 .combat-actions .secondary-button {
   flex: 1 1 132px;
   min-width: 132px;
+}
+
+.combat-actions .action-info {
+  border-color: rgba(111, 176, 193, 0.44);
+  color: var(--sky);
 }
 
 .entity-heading h2,
@@ -295,6 +306,62 @@
   max-height: min(680px, calc(100vh - 36px));
   padding: 22px;
   overflow: auto;
+}
+
+.blessing-info-dialog {
+  max-width: 620px;
+}
+
+.blessing-info-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.blessing-info-card {
+  padding: 14px;
+  border: 1px solid rgba(217, 199, 150, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 70%),
+    rgba(13, 17, 18, 0.88);
+  box-shadow: var(--inner-light);
+}
+
+.blessing-info-card small {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--sky);
+  font-weight: 800;
+}
+
+.blessing-info-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.blessing-info-card p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.blessing-info-card em {
+  display: block;
+  margin-top: 8px;
+  color: var(--gold);
+  font-style: normal;
+  line-height: 1.6;
+}
+
+.blessing-info-empty {
+  margin: 16px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .blessing-grid {

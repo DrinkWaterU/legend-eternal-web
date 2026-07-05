@@ -34,11 +34,12 @@ export const templates = {
   rest: "你原地修整，恢復了 {amount} 點生命。",
   fleeAttempt: "你嘗試脫離 {enemy} 的追擊。",
   fleeFail: "逃跑失敗，{enemy} 追上了你。",
-  safeEscape: "安全逃跑成功。你退回較安全的路段。",
-  counterEscape: "遇敵反制。你在退回途中發現新的敵人，取得偷襲優勢。",
+  safeEscape: "你拉開距離，暫時脫離了 {enemy} 的攻勢。",
+  counterEscape: "你撤向林間空隙，卻撞見了追來的小型敵人。",
   evacuationEscape: "撤離逃跑成功。你找到回營地的路線。",
   retreat: "你選擇撤退，帶著本輪經驗回到營地。",
   ambushAdvantage: "{enemy} 被你搶先壓制，生命降低了 {amount} 點。",
+  enemyRecover: "{enemy} 在追擊中恢復了 {amount} 點生命。",
   boss: "{region}深處傳來首領的氣息。",
   clear: "你擊敗了{region}的首領。這次冒險成功了。"
 };

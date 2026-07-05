@@ -7,7 +7,7 @@
     { id: "plains", name: "平原", path: "../src/data/regions/plains.json" },
     { id: "forest", name: "森林", path: "../src/data/regions/forest.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.2.3.0.2-alpha";
+  const DEFAULT_GAME_VERSION = "v0.2.3.0.3-alpha";
 
   const state = {
     package: createEmptyPackage(),

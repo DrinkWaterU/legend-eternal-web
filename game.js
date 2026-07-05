@@ -31,6 +31,10 @@ import { clone, roll, weightedRandomItem } from "./src/utils.js";
 const RUN_STARTING_FLEES = 2;
 const NORMAL_FLEE_CHANCE = 0.8;
 const ELITE_FLEE_CHANCE = 0.55;
+const SAFE_ESCAPE_ENEMY_HEAL_RATIO = 0.2;
+const COUNTER_ESCAPE_ENEMY_HEAL_RATIO = 0.12;
+const COUNTER_ESCAPE_HEAL_RATIO = 0.1;
+const COUNTER_ESCAPE_SCALING_OFFSET = 3;
 const TACTICAL_FLEE_RESULTS = [
   { id: "safe", weight: 75 },
   { id: "counter", weight: 25 }
@@ -81,6 +85,8 @@ const state = {
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
+  pendingThreat: null,
+  blessingContext: "normal",
   storyTimer: null,
   log: []
 };
@@ -1090,6 +1096,103 @@ function createCombatLogger() {
   };
 }
 
+function clearPendingThreat() {
+  state.pendingThreat = null;
+}
+
+function savePendingThreat(source) {
+  if (!state.enemy) {
+    clearPendingThreat();
+    return;
+  }
+  state.pendingThreat = {
+    enemy: clone(state.enemy),
+    encounterIndex: state.encounterIndex,
+    turn: state.turn,
+    source
+  };
+}
+
+function hasPendingThreat(source = null) {
+  return Boolean(state.pendingThreat && (!source || state.pendingThreat.source === source));
+}
+
+function resetHeroBattleState() {
+  state.hero.poison = 0;
+  state.hero.entangle = null;
+  state.hero.battleAttackBonus = 0;
+  state.hero.battleCritBonus = 0;
+  state.hero.statusFamiliarityLimitBonus = 0;
+  state.hero.victoryHealBonusRatio = 0;
+  state.hero.shield = state.hero.shieldStart;
+  state.hero.skillState = createSkillState();
+}
+
+function healPendingThreat(ratio) {
+  if (!state.pendingThreat?.enemy) {
+    return 0;
+  }
+  const enemy = state.pendingThreat.enemy;
+  const amount = Math.max(1, Math.round(enemy.maxHp * ratio));
+  const before = enemy.hp;
+  enemy.hp = Math.min(enemy.maxHp, enemy.hp + amount);
+  return enemy.hp - before;
+}
+
+function resumePendingThreat(options = {}) {
+  if (!state.pendingThreat?.enemy) {
+    return false;
+  }
+
+  const { healRatio = 0, introText = "" } = options;
+  const threat = state.pendingThreat;
+  const enemy = clone(threat.enemy);
+  const healed = healRatio > 0 ? healPendingThreat(healRatio) : 0;
+  if (healRatio > 0) {
+    enemy.hp = state.pendingThreat.enemy.hp;
+  }
+
+  state.enemy = enemy;
+  state.encounterIndex = threat.encounterIndex;
+  state.turn = 0;
+  state.awaitingBlessing = false;
+  state.phase = "danger";
+  state.canRest = false;
+  state.hasRested = false;
+  state.ambushAdvantage = false;
+  state.log = [];
+  resetHeroBattleState();
+  clearPendingThreat();
+  applyBattleStartSkills();
+
+  if (introText) {
+    addFixedLog("system", introText);
+  }
+  addLog("system", "encounter", { enemy: state.enemy.name });
+  if (healed > 0) {
+    addLog("heal", "enemyRecover", { enemy: state.enemy.name, amount: healed });
+  }
+  if (state.hero.shield > 0) {
+    addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
+  }
+  setCombatActionState();
+  render();
+  return true;
+}
+
+function buildCounterEnemy(region, encounterIndex) {
+  const base = weightedRandomItem(region.enemies, (enemy) => Number(enemy.weight) || 100);
+  const enemy = clone(base);
+  const scaling = region.scaling || {};
+  const scalingIndex = Math.max(0, encounterIndex - COUNTER_ESCAPE_SCALING_OFFSET);
+  const hpScale = 1 + scalingIndex * (Number(scaling.hpPerEncounter) || 0.08);
+  const attackScale = 1 + scalingIndex * (Number(scaling.attackPerEncounter) || 0.08);
+  enemy.maxHp = Math.round(enemy.maxHp * hpScale);
+  enemy.hp = enemy.maxHp;
+  enemy.attack = Math.round(enemy.attack * attackScale);
+  return enemy;
+}
+
 function startRun() {
   syncSelectionFromSave();
   state.run += 1;
@@ -1109,6 +1212,8 @@ function startRun() {
   state.canRest = false;
   state.hasRested = false;
   state.ambushAdvantage = false;
+  clearPendingThreat();
+  state.blessingContext = "normal";
   state.log = [];
   state.runStats.startLevel = state.hero.level;
   state.runStats.endLevel = state.hero.level;
@@ -1120,6 +1225,7 @@ function startRun() {
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = false;
@@ -1135,6 +1241,7 @@ function restart() {
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
   els.nextButton.disabled = true;
@@ -1143,8 +1250,11 @@ function restart() {
   state.ended = true;
   state.phase = "camp";
   state.selectedBoss = null;
+  clearPendingThreat();
+  state.blessingContext = "normal";
   els.resultLabel.textContent = "冒險準備中";
   els.encounterLabel.textContent = "尚未開始";
+  els.battleLogTitle.textContent = "戰鬥紀錄";
 }
 
 function returnToCamp() {
@@ -1154,12 +1264,15 @@ function returnToCamp() {
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
   state.awaitingBlessing = false;
   state.ended = true;
   state.phase = "camp";
   state.selectedBoss = null;
+  clearPendingThreat();
+  state.blessingContext = "normal";
   setCombatActionState();
 }
 
@@ -1176,14 +1289,7 @@ function startEncounter() {
   state.log = [];
   state.enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
   state.enemy.poison = 0;
-  state.hero.poison = 0;
-  state.hero.entangle = null;
-  state.hero.battleAttackBonus = 0;
-  state.hero.battleCritBonus = 0;
-  state.hero.statusFamiliarityLimitBonus = 0;
-  state.hero.victoryHealBonusRatio = 0;
-  state.hero.shield = state.hero.shieldStart;
-  state.hero.skillState = createSkillState();
+  resetHeroBattleState();
   applyBattleStartSkills();
 
   els.blessingPanel.classList.remove("is-visible");
@@ -1264,6 +1370,11 @@ function winEncounter() {
   applyVictorySkills();
   consumeBattleLimitedEffects();
 
+  if (hasPendingThreat("counterEscape")) {
+    finishCounterEncounterVictory();
+    return;
+  }
+
   state.encounterIndex += 1;
   render();
 
@@ -1279,6 +1390,18 @@ function winEncounter() {
   }
 
   showBlessings();
+}
+
+function finishCounterEncounterVictory() {
+  const amount = Math.max(1, Math.round(state.hero.maxHp * COUNTER_ESCAPE_HEAL_RATIO));
+  const before = state.hero.hp;
+  state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
+  const healed = state.hero.hp - before;
+  if (healed > 0) {
+    addFixedLog("heal", `你從反制戰中穩住呼吸，恢復了 ${healed} 點生命。`);
+  }
+  render();
+  showBlessings("counterEscape");
 }
 
 function awardEnemyRewards(enemy) {
@@ -1458,8 +1581,11 @@ function finishRun(outcome) {
     handleDefeatProgression();
   }
   recordRunFinished(outcome);
+  clearPendingThreat();
+  state.blessingContext = "normal";
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
+  closeBlessingInfoPanel();
   els.endPanel.classList.add("is-visible");
   els.endTitle.textContent = cleared ? "冒險成功" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
   els.endText.textContent = getEndText(outcome, region);
@@ -1548,7 +1674,8 @@ function getReachedEncounter(cleared, region) {
   return Math.min(state.encounterIndex + 1, region.encounterPlan.length);
 }
 
-function showBlessings() {
+function showBlessings(context = "normal") {
+  state.blessingContext = context;
   state.awaitingBlessing = true;
   els.nextButton.disabled = true;
   els.blessingPanel.classList.add("is-visible");
@@ -1583,7 +1710,6 @@ function tryFlee() {
   }
 
   state.runStats.fleeSuccesses += 1;
-  state.encounterIndex = Math.max(0, state.encounterIndex - 1);
   const result = weightedRandomItem(TACTICAL_FLEE_RESULTS, (item) => item.weight);
   if (result.id === "counter") {
     resolveCounterEscape();
@@ -1620,13 +1746,15 @@ function resolveFleeFailure() {
 
 function resolveSafeEscape() {
   state.runStats.safeEscapes += 1;
-  addLog("system", "safeEscape");
+  savePendingThreat("safeEscape");
+  addLog("system", "safeEscape", { enemy: state.pendingThreat?.enemy?.name || "敵人" });
   consumeBattleLimitedEffects();
   enterSafeState({ canRest: true });
 }
 
 function resolveCounterEscape() {
   state.runStats.counterEscapes += 1;
+  savePendingThreat("counterEscape");
   addLog("system", "counterEscape");
   consumeBattleLimitedEffects();
   state.phase = "danger";
@@ -1636,16 +1764,9 @@ function resolveCounterEscape() {
   state.hasRested = false;
   state.ambushAdvantage = true;
   state.log = [];
-  state.enemy = buildEnemy(currentRegion(), state.encounterIndex, state.hero);
+  state.enemy = buildCounterEnemy(currentRegion(), state.encounterIndex);
   state.enemy.poison = 0;
-  state.hero.poison = 0;
-  state.hero.entangle = null;
-  state.hero.battleAttackBonus = 0;
-  state.hero.battleCritBonus = 0;
-  state.hero.statusFamiliarityLimitBonus = 0;
-  state.hero.victoryHealBonusRatio = 0;
-  state.hero.shield = state.hero.shieldStart;
-  state.hero.skillState = createSkillState();
+  resetHeroBattleState();
   applyBattleStartSkills();
   const reducedHp = Math.max(1, Math.round(state.enemy.maxHp * 0.85));
   const reducedAmount = state.enemy.maxHp - reducedHp;
@@ -1661,12 +1782,20 @@ function resolveEvacuationEscape() {
   state.runStats.evacuationEscapes += 1;
   state.runStats.evacuated = true;
   state.runStats.retreated = true;
+  clearPendingThreat();
   addLog("system", "evacuationEscape");
   finishRun("retreat");
 }
 
 function continueAdventure() {
   if (state.phase !== "safe" || state.ended) {
+    return;
+  }
+  if (hasPendingThreat("safeEscape")) {
+    resumePendingThreat({
+      healRatio: SAFE_ESCAPE_ENEMY_HEAL_RATIO,
+      introText: "你重新回到原本的戰鬥。"
+    });
     return;
   }
   startEncounter();
@@ -1690,6 +1819,7 @@ function retreatRun() {
     return;
   }
   state.runStats.retreated = true;
+  clearPendingThreat();
   addLog("system", "retreat");
   finishRun("retreat");
 }
@@ -1722,11 +1852,67 @@ function chooseBlessing(blessing) {
   applyBlessingEffects(state.hero, blessing);
   state.hero.blessings.push(blessing.name);
   addLog("system", "blessing", { blessing: blessing.name });
+  if (state.blessingContext === "counterEscape" && hasPendingThreat("counterEscape")) {
+    state.blessingContext = "normal";
+    els.blessingPanel.classList.remove("is-visible");
+    resumePendingThreat({
+      healRatio: COUNTER_ESCAPE_ENEMY_HEAL_RATIO,
+      introText: `你帶著新的臨時祝福「${blessing.name}」回到原本的戰鬥。`
+    });
+    return;
+  }
+  state.blessingContext = "normal";
   enterSafeState({ canRest: false });
 }
 
 function closeEndPanel() {
   els.endPanel.classList.remove("is-visible");
+}
+
+function openBlessingInfoPanel() {
+  renderBlessingInfo();
+  els.blessingInfoPanel.classList.add("is-visible");
+}
+
+function closeBlessingInfoPanel() {
+  els.blessingInfoPanel.classList.remove("is-visible");
+}
+
+function renderBlessingInfo() {
+  els.blessingInfoList.replaceChildren();
+  const blessingNames = Array.isArray(state.hero?.blessings) ? state.hero.blessings : [];
+  if (blessingNames.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "blessing-info-empty";
+    empty.textContent = "目前沒有臨時祝福。";
+    els.blessingInfoList.append(empty);
+    return;
+  }
+
+  blessingNames.forEach((name) => {
+    const blessing = currentRegion().blessings.find((item) => item.name === name);
+    const rarity = getBlessingRarity(blessing?.rarity);
+    const card = document.createElement("article");
+    const meta = document.createElement("small");
+    const title = document.createElement("strong");
+    const effect = document.createElement("p");
+    const flavor = document.createElement("em");
+    const event = document.createElement("span");
+    const rarityLabel = document.createElement("i");
+
+    card.className = `blessing-info-card rarity-${rarity.id}`;
+    event.textContent = blessing?.eventTitle || "臨時祝福";
+    rarityLabel.textContent = rarity.label;
+    meta.append(event, rarityLabel);
+    title.textContent = name;
+    effect.textContent = blessing?.effectText || "效果資料尚未整理。";
+    flavor.textContent = blessing?.flavorText || "";
+    card.append(meta, title, effect);
+    if (flavor.textContent) {
+      card.append(flavor);
+    }
+    els.blessingInfoList.append(card);
+  });
 }
 
 function closeStoryPanel() {
@@ -1754,10 +1940,13 @@ function showPlainsStory() {
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "story";
+  clearPendingThreat();
+  state.blessingContext = "normal";
   recordRunFinished("clear");
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeBlessingInfoPanel();
   els.storyPanel.classList.add("is-visible");
   els.resultLabel.textContent = "命運覺醒";
   els.encounterLabel.textContent = "星穹之外";
@@ -1825,6 +2014,7 @@ function render() {
   els.enemyHealthText.textContent = enemy ? `${enemy.hp} / ${enemy.maxHp}` : "0 / 0";
 
   els.encounterLabel.textContent = `第 ${Math.min(state.encounterIndex + 1, region.encounterPlan.length)} / ${region.encounterPlan.length} 場`;
+  els.battleLogTitle.textContent = `戰鬥紀錄｜第 ${Math.min(state.encounterIndex + 1, region.encounterPlan.length)} / ${region.encounterPlan.length} 場`;
   if (!state.ended) {
     els.resultLabel.textContent = state.awaitingBlessing
       ? "選擇祝福"
@@ -1848,6 +2038,7 @@ function setCombatActionState() {
   const canFlee = canFight && !isBoss;
   const canContinue = inGame && safe;
   const canRest = canContinue && state.canRest && !state.hasRested && state.hero.hp < state.hero.maxHp;
+  const canViewBlessings = Boolean(state.hero) && !state.ended && !state.awaitingBlessing;
 
   els.nextButton.disabled = !canFight;
   els.nextButton.hidden = !canFight;
@@ -1861,11 +2052,15 @@ function setCombatActionState() {
     : `逃跑（剩餘 ${state.hero?.fleesRemaining ?? 0} / ${RUN_STARTING_FLEES}）`;
   els.continueButton.hidden = !canContinue;
   els.continueButton.disabled = !canContinue;
+  els.continueButton.textContent = hasPendingThreat("safeEscape") ? "繼續挑戰" : "繼續前進";
   els.restButton.hidden = !canContinue;
   els.restButton.disabled = !canRest;
   els.restButton.textContent = state.canRest && !state.hasRested ? "原地修整" : "已修整";
   els.retreatButton.hidden = !canContinue;
   els.retreatButton.disabled = !canContinue;
+  els.viewBlessingsButton.hidden = !canViewBlessings;
+  els.viewBlessingsButton.disabled = !canViewBlessings;
+  els.viewBlessingsButton.textContent = `祝福 ${state.hero?.blessings?.length || 0}`;
 }
 
 function renderLog() {
@@ -1924,6 +2119,8 @@ function bindEvents() {
   els.continueButton.addEventListener("click", continueAdventure);
   els.restButton.addEventListener("click", restAtSafeRoute);
   els.retreatButton.addEventListener("click", retreatRun);
+  els.viewBlessingsButton.addEventListener("click", openBlessingInfoPanel);
+  els.closeBlessingInfoButton.addEventListener("click", closeBlessingInfoPanel);
   els.exportSaveCodeButton.addEventListener("click", openExportSaveCodeDialog);
   els.importSaveCodeButton.addEventListener("click", openImportSaveCodeDialog);
   els.copySaveCodeButton.addEventListener("click", copySaveCode);
