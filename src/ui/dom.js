@@ -87,6 +87,7 @@ export const els = {
   endSummary: document.querySelector("#endSummary"),
   viewLogButton: document.querySelector("#viewLogButton"),
   blessingInfoPanel: document.querySelector("#blessingInfoPanel"),
+  blessingInfoFilters: document.querySelector("#blessingInfoFilters"),
   blessingInfoList: document.querySelector("#blessingInfoList"),
   closeBlessingInfoButton: document.querySelector("#closeBlessingInfoButton"),
   storyPanel: document.querySelector("#storyPanel"),

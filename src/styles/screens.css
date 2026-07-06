@@ -312,10 +312,44 @@
   max-width: 620px;
 }
 
+.blessing-info-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.blessing-info-filter {
+  min-height: 34px;
+  border: 1px solid rgba(217, 199, 150, 0.24);
+  border-radius: 999px;
+  background: rgba(10, 15, 16, 0.72);
+  color: var(--muted);
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.blessing-info-filter:hover,
+.blessing-info-filter:focus-visible {
+  border-color: rgba(241, 211, 134, 0.56);
+  color: var(--ink);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.blessing-info-filter.is-active {
+  border-color: rgba(241, 211, 134, 0.72);
+  background: rgba(91, 73, 34, 0.48);
+  color: var(--gold);
+}
+
 .blessing-info-list {
   display: grid;
   gap: 12px;
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 .blessing-info-card {
@@ -330,11 +364,66 @@
 
 .blessing-info-card small {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 8px;
   color: var(--sky);
   font-weight: 800;
+}
+
+.blessing-info-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.blessing-info-flow-tag,
+.blessing-info-rarity-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid rgba(217, 199, 150, 0.28);
+  border-radius: 999px;
+  background: rgba(7, 11, 12, 0.54);
+  padding: 2px 8px;
+  font-size: 0.74rem;
+  font-style: normal;
+  line-height: 1.2;
+}
+
+.blessing-info-flow-tag[data-flow="attack"] {
+  border-color: rgba(224, 179, 93, 0.46);
+  color: var(--amber);
+}
+
+.blessing-info-flow-tag[data-flow="defense"] {
+  border-color: rgba(158, 200, 214, 0.46);
+  color: var(--sky);
+}
+
+.blessing-info-flow-tag[data-flow="healing"] {
+  border-color: rgba(143, 189, 112, 0.48);
+  color: var(--grass);
+}
+
+.blessing-info-flow-tag[data-flow="debuff"] {
+  border-color: rgba(156, 131, 207, 0.5);
+  color: var(--violet);
+}
+
+.blessing-info-flow-tag[data-flow="crit"] {
+  border-color: rgba(184, 95, 114, 0.5);
+  color: var(--wine);
+}
+
+.blessing-info-flow-tag[data-flow="unknown"] {
+  color: var(--muted);
+}
+
+.blessing-info-rarity-tag {
+  color: var(--gold);
 }
 
 .blessing-info-card strong {

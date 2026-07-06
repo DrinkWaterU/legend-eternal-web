@@ -134,6 +134,19 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .blessing-info-filter {
+    flex: 0 0 auto;
+  }
+
+  .blessing-info-card small {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .blessing-info-tags {
+    justify-content: flex-start;
+  }
+
 }
 
 @media (min-width: 821px) {
