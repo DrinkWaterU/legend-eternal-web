@@ -390,7 +390,8 @@
       "level": 20,
       "type": "milestone",
       "name": "遠征步調",
-      "description": "強化冒險者步調：每場勝利後恢復最大生命 15%。"
+      "description": "強化冒險者步調：每場勝利後恢復最大生命 15%。",
+      "targetSkillId": "adventurer-pace"
     },
     {
       "id": "steady-stance-plus",
@@ -412,7 +413,7 @@
       "level": 25,
       "type": "milestone",
       "name": "萬用行囊",
-      "description": "每場戰鬥開始時，根據本輪祝福流派獲得一項小加成；若沒有明確流派，攻擊 +1。"
+      "description": "每場戰鬥開始時，較容易獲得符合近期祝福流派的小加成。流派判定不只看持有數量；若沒有明確傾向，攻擊 +1。"
     }
   ]
 }

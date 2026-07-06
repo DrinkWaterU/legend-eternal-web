@@ -134,7 +134,7 @@ function resolveBlessingPrimaryFlow(blessing) {
   return inferBlessingFlows(blessing).find(isBlessingFlowId) || null;
 }
 
-function inferBlessingFlows(blessing) {
+export function inferBlessingFlows(blessing) {
   const flows = new Set();
   (blessing.effects || []).forEach((effect) => {
     if (effect.type === "recoverHp") {
@@ -149,7 +149,7 @@ function inferBlessingFlows(blessing) {
     if (effect.stat === "shieldStart" || effect.stat === "defense" || effect.stat === "damageReduction") {
       flows.add("defense");
     }
-    if (effect.stat === "critChance" || effect.stat === "critDamageMultiplier" || effect.stat === "poisonedCritChance") {
+    if (["critChance", "critDamageMultiplier", "poisonedCritChance", "openingCritChance", "woundedTargetCritChance"].includes(effect.stat)) {
       flows.add("crit");
     }
     if (effect.stat === "poisonPower") {

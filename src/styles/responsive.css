@@ -134,6 +134,19 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .blessing-info-filter {
+    flex: 0 0 auto;
+  }
+
+  .blessing-info-card small {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .blessing-info-tags {
+    justify-content: flex-start;
+  }
+
 }
 
 @media (min-width: 821px) {
@@ -169,5 +182,25 @@
     min-height: calc(100vh - 210px);
     border-radius: 0;
     background: linear-gradient(180deg, rgba(5, 7, 10, 0.04) 0%, rgba(5, 7, 10, 0.18) 100%);
+  }
+}
+
+@media (max-width: 820px) {
+  .event-layout {
+    width: 100%;
+  }
+
+  .event-panel {
+    padding: 22px 18px;
+  }
+
+  .event-narrative {
+    font-size: 0.96rem;
+    line-height: 1.82;
+  }
+
+  .event-actions,
+  .event-actions .primary-button {
+    width: 100%;
   }
 }

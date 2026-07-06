@@ -1,0 +1,149 @@
+{
+  "id": "forest",
+  "enemies": [
+    {
+      "id": "goblin-warrior",
+      "name": "哥布林戰士",
+      "kind": "事件敵人",
+      "family": "goblin",
+      "maxHp": 160,
+      "attack": 25,
+      "defense": 5,
+      "critChance": 0.12,
+      "expReward": 60,
+      "intro": "哥布林戰士壓低身體，握著粗製武器朝你逼近。"
+    }
+  ],
+  "events": [
+    {
+      "id": "forest-campfire",
+      "weight": 100,
+      "eyebrow": "森林事件",
+      "title": "林間營火",
+      "transitionText": [
+        "你繼續深入森林……",
+        "遠處，似乎有火光。"
+      ],
+      "narrative": [
+        "你穿過濕冷的林間小徑，遠處忽然透出一抹不自然的火光。",
+        "幾道矮小的身影正圍坐在營火旁。",
+        "粗啞的笑聲、散落的皮袋，以及插在泥地上的破舊兵器，在火光旁堆成凌亂的影子。",
+        "那是一群哥布林。",
+        "牠們似乎還沒有發現你。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "attack-goblins",
+          "meta": "主動介入",
+          "title": "攻擊哥布林",
+          "description": "趁牠們毫無防備時發動攻擊。你可能需要連續面對營火旁的守衛。",
+          "action": "風險：戰鬥｜可能取得較稀有的哥布林祝福",
+          "battleSequence": [
+            {
+              "enemyId": "goblin-warrior",
+              "introText": [
+                "你壓低身體，握緊武器。",
+                "火光遮住了你的腳步聲。",
+                "等其中一隻哥布林察覺異狀時，你已經衝出林間。"
+              ]
+            },
+            {
+              "enemyId": "goblin-warrior",
+              "introText": [
+                "哥布林戰士倒在營火旁。",
+                "但勝利的聲響立刻驚動了另一側的哥布林。",
+                "一道矮小的身影抓起武器，尖叫著朝你衝來。"
+              ]
+            }
+          ],
+          "result": {
+            "narrative": [
+              "最後一隻哥布林倒下。",
+              "林間重新安靜，只剩營火中的木柴偶爾發出爆裂聲。",
+              "你翻看牠們散落的行囊，在一堆粗製工具與破布之間，找到了一件值得研究的東西。",
+              "你從哥布林留下的物品中學到了一種新的戰鬥手段。"
+            ],
+            "effects": [
+              {
+                "type": "grantBlessing",
+                "poolId": "goblin",
+                "rarity": "uncommon"
+              }
+            ],
+            "postEffectNarrative": [
+              "你正準備離開時，忽然注意到營火旁的泥地。",
+              "幾串凌亂的腳印一路穿過灌木，朝森林更深處延伸。",
+              "那些腳印不像臨時逃竄留下的痕跡。",
+              "牠們似乎經常往返同一個方向。",
+              "你記下腳印延伸的方向，重新踏回森林中的小徑。"
+            ],
+            "resultIds": [
+              "campfire-goblins-defeated",
+              "goblin-trail-discovered"
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "followUpChoices": []
+          }
+        },
+        {
+          "id": "steal-supplies",
+          "meta": "偷偷摸摸",
+          "title": "偷竊哥布林的素材",
+          "description": "繞到營火後方，趁牠們爭吵時摸走一件看起來有用的東西。",
+          "action": "風險：低｜可能取得哥布林祝福",
+          "result": {
+            "narrative": [
+              "你繞過低矮的灌木，慢慢靠近營火後方。",
+              "幾隻哥布林仍在為一塊烤焦的肉大聲爭吵，完全沒有注意到身後。",
+              "你伸手抓起一只散落的皮袋，迅速退回陰影之中。",
+              "直到那些粗啞的叫聲逐漸遠去，你才停下腳步檢查偷來的東西。",
+              "裡頭的東西雖然粗製，卻似乎藏著某種實用的手段。"
+            ],
+            "effects": [
+              {
+                "type": "grantBlessing",
+                "poolId": "goblin",
+                "rarity": "common"
+              }
+            ],
+            "postEffectNarrative": [
+              "你收好戰利品，若無其事地繼續深入森林。"
+            ],
+            "resultIds": [
+              "goblin-supplies-stolen"
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "followUpChoices": []
+          }
+        },
+        {
+          "id": "leave",
+          "meta": "保持距離",
+          "title": "直接離開",
+          "description": "這不是你非得插手的麻煩。悄悄退回林間，繼續原本的旅程。",
+          "action": "返回目前森林冒險",
+          "result": {
+            "narrative": [
+              "你在陰影中停留片刻，最後還是放開了握住武器的手。",
+              "沒有必要為幾隻尚未發現你的哥布林冒險。",
+              "你繞開營火的方向，重新找到原本的小徑。",
+              "身後的笑聲逐漸被森林吞沒。",
+              "你繼續原本的旅程。"
+            ],
+            "effects": [],
+            "resultIds": [],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "followUpChoices": []
+          }
+        }
+      ]
+    }
+  ]
+}

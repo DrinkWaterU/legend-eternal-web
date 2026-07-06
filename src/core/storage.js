@@ -195,6 +195,11 @@ function migrateStoryFlags(save, rawSave) {
   Object.keys(save.storyFlags).forEach((flag) => {
     save.storyFlags[flag] = Boolean(rawStoryFlags[flag]);
   });
+
+  if (save.storyFlags.phoenixBlessingUnlocked) {
+    save.storyFlags.plainsBossStorySeen = true;
+    save.storyFlags.achievementSystemUnlocked = true;
+  }
 }
 
 function migrateAchievements(save, rawSave) {

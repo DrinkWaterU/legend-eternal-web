@@ -17,6 +17,7 @@ export const forestRegion = {
   difficulty: forestData.difficulty,
   recommendedLevel: forestData.recommendedLevel,
   scaling: forestData.scaling,
+  events: forestData.events || null,
   encounterPlan: forestData.encounterPlan,
   enemies: forestData.enemies,
   elites: forestData.elites,
