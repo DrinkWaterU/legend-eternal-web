@@ -1578,7 +1578,7 @@ function buildEventRewardLines(appliedEffects) {
   const rewards = [];
   appliedEffects.forEach((effect) => {
     if (effect.type === "grantBlessing" && effect.result?.name) {
-      rewards.push(`獲得 Blessing｜${effect.result.name}`);
+      rewards.push(`獲得祝福｜${effect.result.name}`);
     }
     if (effect.type === "grantMaterials" && effect.result) {
       const summary = formatRewards(effect.result, materialDefinitions);
