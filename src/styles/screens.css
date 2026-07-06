@@ -1098,3 +1098,129 @@
   border: 0;
 }
 
+
+.event-layout {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.event-layout[hidden],
+.combat-layout[hidden] {
+  display: none;
+}
+
+.event-panel {
+  width: 100%;
+  padding: clamp(22px, 4vw, 38px);
+  border: 1px solid rgba(224, 179, 93, 0.34);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 32%),
+    rgba(16, 20, 21, 0.94);
+  box-shadow: var(--shadow), var(--inner-light);
+}
+
+.event-panel h2 {
+  margin-bottom: 22px;
+  color: #fff4d8;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+}
+
+.event-narrative {
+  max-width: 660px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+.event-narrative p {
+  margin: 0 0 12px;
+}
+
+.event-narrative .event-narrative-emphasis {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.event-prompt {
+  margin: 26px 0 14px;
+  color: var(--ink);
+  font-weight: 900;
+  font-size: 1.08rem;
+}
+
+.event-choice-list {
+  margin-top: 12px;
+}
+
+.event-choice-list .choice-button:disabled {
+  transform: none;
+  opacity: 0.58;
+  cursor: wait;
+}
+
+.event-reward {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(241, 211, 134, 0.42);
+  border-radius: 8px;
+  background: rgba(76, 59, 27, 0.34);
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.event-reward[hidden] {
+  display: none;
+}
+
+.event-reward p {
+  margin: 0;
+}
+
+.event-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.event-actions .primary-button {
+  min-width: 180px;
+}
+
+.event-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  background: rgba(5, 8, 9, 0.9);
+  transition: opacity 280ms ease, visibility 280ms ease;
+}
+
+.event-transition.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.event-transition-text {
+  margin: 0;
+  color: #fff4d8;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.7;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 280ms ease;
+}
+
+.event-transition-text.is-changing {
+  opacity: 0;
+}

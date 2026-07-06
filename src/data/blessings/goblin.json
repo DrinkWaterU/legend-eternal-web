@@ -1,0 +1,144 @@
+{
+  "id": "goblin",
+  "name": "哥布林",
+  "blessings": [
+    {
+      "id": "sleeve-shard",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "crit",
+      "name": "藏袖碎刃",
+      "eventTitle": "藏起碎刃",
+      "eventText": "你從哥布林的破布與皮帶間找到一截磨亮的碎刃，學著把出手藏到最後一刻。",
+      "flavorText": "不必漂亮，只要對方來不及反應。",
+      "effectText": "暴擊率 +7%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.07
+        }
+      ]
+    },
+    {
+      "id": "coarse-saw-blade",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "crit",
+      "name": "粗齒鋸刃",
+      "eventTitle": "粗齒缺口",
+      "eventText": "你研究哥布林武器上刻意留下的鋸齒缺口，重新調整自己的刃口。",
+      "flavorText": "粗糙不代表無用，有時傷口越難看，越難被忽視。",
+      "effectText": "攻擊 +2，暴擊傷害倍率 +10%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 2
+        },
+        {
+          "type": "add",
+          "stat": "critDamageMultiplier",
+          "amount": 0.1
+        }
+      ]
+    },
+    {
+      "id": "crude-frenzy-tonic",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "attack",
+      "name": "劣質狂藥",
+      "eventTitle": "刺鼻藥渣",
+      "eventText": "皮袋裡殘留著一股刺鼻藥味。你沒有照搬哥布林的配方，只留下其中能撐住攻勢的部分。",
+      "flavorText": "哥布林的藥很糟，但糟東西偶爾也有值得偷學的地方。",
+      "effectText": "攻擊 +2，擊敗敵人後恢復 5 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 2
+        },
+        {
+          "type": "add",
+          "stat": "killHeal",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "knife-in-the-back",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "crit",
+      "name": "背後下刀",
+      "eventTitle": "先手惡意",
+      "eventText": "你回想哥布林如何把真正的殺意藏在第一次出手裡，開始練習在敵人尚未站穩前搶先刺入破口。",
+      "flavorText": "公平是活下來之後才有空談的事。",
+      "effectText": "每場第一次實際攻擊額外 +35% 暴擊率，暴擊傷害倍率 +10%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "openingCritChance",
+          "amount": 0.35
+        },
+        {
+          "type": "add",
+          "stat": "critDamageMultiplier",
+          "amount": 0.1
+        }
+      ]
+    },
+    {
+      "id": "pick-the-wound",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "crit",
+      "name": "專挑傷口",
+      "eventTitle": "盯住傷處",
+      "eventText": "哥布林留下的粗糙記號讓你意識到，牠們會反覆攻擊同一處傷口。你把這種卑劣習慣改成自己的判斷方式。",
+      "flavorText": "已經裂開的地方，不需要第二次尋找入口。",
+      "effectText": "攻擊 +1；敵人生命低於 50% 時，額外 +15% 暴擊率。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "woundedTargetCritChance",
+          "amount": 0.15
+        }
+      ]
+    },
+    {
+      "id": "reckless-gamble",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "attack",
+      "name": "鋌而走險",
+      "eventTitle": "不要命的打法",
+      "eventText": "你看懂了哥布林武器與護具之間荒謬的取捨：少顧一點自己，把所有力氣塞進下一次攻擊。",
+      "flavorText": "活著很好，但先讓對方倒下更重要。",
+      "effectText": "攻擊 +4，暴擊率 +5%，防禦 -2。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 4
+        },
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.05
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": -2
+        }
+      ]
+    }
+  ]
+}

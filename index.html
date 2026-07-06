@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.3.0.4-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.3.1-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -27,7 +27,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.3.0.4-alpha</p>
+            <p class="version-label">v0.2.3.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -274,7 +274,7 @@
       </section>
 
       <section id="gameScreen" class="screen">
-        <div class="combat-layout">
+        <div id="combatLayout" class="combat-layout">
           <aside class="status-panel" aria-label="角色狀態">
             <div class="entity-block">
               <div class="entity-heading">
@@ -317,6 +317,24 @@
           </section>
 
           <button class="secondary-button home-button combat-home-button" type="button" data-target="menuScreen">回主選單</button>
+        </div>
+
+        <section id="eventLayout" class="event-layout" aria-label="冒險事件" hidden>
+          <article class="event-panel">
+            <p id="eventEyebrow" class="eyebrow">森林事件</p>
+            <h2 id="eventTitle">林間營火</h2>
+            <div id="eventNarrative" class="event-narrative"></div>
+            <p id="eventPrompt" class="event-prompt">你打算怎麼做？</p>
+            <div id="eventReward" class="event-reward" aria-live="polite" hidden></div>
+            <div id="eventChoices" class="choice-list event-choice-list"></div>
+            <div class="event-actions">
+              <button id="eventContinueButton" class="primary-button" type="button" hidden>繼續冒險</button>
+            </div>
+          </article>
+        </section>
+
+        <div id="eventTransition" class="event-transition" aria-live="polite" aria-atomic="true">
+          <p id="eventTransitionText" class="event-transition-text"></p>
         </div>
 
         <section id="blessingPanel" class="blessing-panel" aria-label="平原祝福" aria-modal="true">
@@ -455,6 +473,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.3.0.4-alpha"></script>
+    <script type="module" src="game.js?v=0.2.3.1-alpha"></script>
   </body>
 </html>

@@ -20,10 +20,18 @@ export function buildEnemy(region, encounterIndex, hero, options = {}) {
     : encounterType === "elite"
       ? pickEnemy(region.elites, hero, "elite")
       : pickEnemy(region.enemies, hero, "normal");
-  const enemy = clone(base);
-  const scaling = region.scaling || {};
-  const hpScale = 1 + encounterIndex * (Number(scaling.hpPerEncounter) || 0.08);
-  const attackScale = 1 + encounterIndex * (Number(scaling.attackPerEncounter) || 0.08);
+  return buildScaledEnemy(base, region, encounterIndex);
+}
+
+export function buildScaledEnemy(baseEnemy, region, encounterIndex) {
+  if (!baseEnemy) {
+    throw new Error("缺少敵人 definition。");
+  }
+  const enemy = clone(baseEnemy);
+  const scaling = region?.scaling || {};
+  const scalingIndex = Math.max(0, Math.floor(Number(encounterIndex) || 0));
+  const hpScale = 1 + scalingIndex * (Number(scaling.hpPerEncounter) || 0.08);
+  const attackScale = 1 + scalingIndex * (Number(scaling.attackPerEncounter) || 0.08);
   enemy.maxHp = Math.round(enemy.maxHp * hpScale);
   enemy.hp = enemy.maxHp;
   enemy.attack = Math.round(enemy.attack * attackScale);
@@ -115,6 +123,9 @@ export function resolveHeroEntangle({ hero, log }) {
 }
 
 export function resolveHeroAction({ hero, enemy, log }) {
+  const openingCritChance = hero.hasAttackedThisBattle ? 0 : (hero.openingCritChance || 0);
+  hero.hasAttackedThisBattle = true;
+
   if (enemy.dodgeChance && roll(enemy.dodgeChance)) {
     log.fixed("status", `${enemy.name} 閃開了攻擊。`);
     return;
@@ -131,7 +142,9 @@ export function resolveHeroAction({ hero, enemy, log }) {
   }
   const critChance = hero.critChance
     + (hero.battleCritBonus || 0)
-    + (enemy.poison > 0 ? hero.poisonedCritChance || 0 : 0);
+    + (enemy.poison > 0 ? hero.poisonedCritChance || 0 : 0)
+    + openingCritChance
+    + (enemy.hp < enemy.maxHp * 0.5 ? hero.woundedTargetCritChance || 0 : 0);
   if (roll(critChance)) {
     damage = Math.round(damage * (hero.critDamageMultiplier || 1.7));
     log.template("critical", "critical", { actor: hero.name });

@@ -689,5 +689,16 @@
         }
       }
     }
-  ]
+  ],
+  "events": {
+    "scheduleChance": 0.3,
+    "triggerBeforeEncounters": [
+      6,
+      7,
+      8
+    ],
+    "pool": [
+      "forest-campfire"
+    ]
+  }
 }
