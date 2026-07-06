@@ -390,7 +390,8 @@
       "level": 20,
       "type": "milestone",
       "name": "遠征步調",
-      "description": "強化冒險者步調：每場勝利後恢復最大生命 15%。"
+      "description": "強化冒險者步調：每場勝利後恢復最大生命 15%。",
+      "targetSkillId": "adventurer-pace"
     },
     {
       "id": "steady-stance-plus",
