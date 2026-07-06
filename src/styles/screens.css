@@ -77,112 +77,9 @@
   color: var(--moss);
 }
 
-.combat-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.status-panel,
-.log-panel {
-  width: 100%;
-  padding: 22px;
-}
-
-.status-panel {
-  min-height: auto;
-  border-color: rgba(143, 189, 112, 0.25);
-}
-
 .home-button {
   width: 100%;
   margin: 0;
-}
-
-.combat-home-button {
-  width: min(100%, 260px);
-  justify-self: center;
-  margin: 0 auto;
-}
-
-.log-panel {
-  min-height: 560px;
-  border-color: rgba(156, 131, 207, 0.24);
-}
-
-.entity-block + .entity-block {
-  margin-top: 24px;
-}
-
-.entity-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.log-header {
-  display: grid;
-  gap: 12px;
-}
-
-.combat-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: stretch;
-  gap: 8px;
-  width: 100%;
-}
-
-.combat-actions .secondary-button {
-  flex: 1 1 132px;
-  min-width: 132px;
-}
-
-.combat-actions .action-info {
-  border-color: rgba(111, 176, 193, 0.44);
-  color: var(--sky);
-}
-
-.entity-heading h2,
-.log-header h2 {
-  margin-bottom: 0;
-  font-size: 1.15rem;
-}
-
-.entity-heading span {
-  color: var(--muted);
-  font-size: 0.86rem;
-}
-
-.meter {
-  height: 14px;
-  margin-top: 12px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(5, 8, 9, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.meter span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #78b86b, #80c6b5);
-  transition: width 250ms ease;
-}
-
-.meter.enemy span {
-  background: linear-gradient(90deg, var(--gold), var(--clay), var(--wine));
-}
-
-.meter-text {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
 }
 
 .compact-stats {
@@ -191,14 +88,6 @@
 
 .compact-stats div {
   min-height: 64px;
-}
-
-.battle-log {
-  height: 472px;
-  margin: 18px 0 0;
-  padding: 0;
-  overflow: auto;
-  list-style: none;
 }
 
 .battle-log li {

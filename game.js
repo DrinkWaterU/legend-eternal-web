@@ -1,6 +1,26 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/config.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
-import { applyEndOfTurnEffects, buildEnemy, buildScaledEnemy, resolveEnemyAction, resolveHeroAction, resolveHeroEntangle } from "./src/core/combat.js";
+import {
+  applyEnemyEndOfTurnNegativeEffects,
+  applyEnemyEndOfTurnRecoveryEffects,
+  applyHeroEndOfTurnNegativeEffects,
+  applyHeroEndOfTurnRecoveryEffects,
+  buildEnemy,
+  buildScaledEnemy,
+  resolveEnemyAction,
+  resolveHeroAction,
+  resolveHeroEntangle
+} from "./src/core/combat.js";
+import {
+  createRuntimeEnemyGroup,
+  getEnemyDisplayName,
+  getEnemyGroupLabel,
+  getEnemyGroupThreatKind,
+  getLivingEnemies,
+  resolveTargetEnemy,
+  resolveTargetEnemyId,
+  restoreRuntimeEnemyGroup
+} from "./src/core/enemyGroups.js";
 import { applyEventEffects, appendRunEventRecord, createEventContext, getAvailableFollowUpChoices, getEventChoice, scheduleRegionEvent, shouldTriggerScheduledEvent, validateEventTarget } from "./src/core/events.js";
 import {
   applyProgressionEffects,
@@ -26,12 +46,14 @@ import { templates } from "./src/data/templates.js";
 import { els } from "./src/ui/dom.js";
 import { renderCharacterSkills } from "./src/ui/characterSkillsView.js";
 import { initDebugPanel } from "./src/ui/debugPanel.js";
+import { renderBlessingInfoView } from "./src/ui/blessingInfoView.js";
+import { renderCombatView, renderCurrentAbilityView } from "./src/ui/combatView.js";
 import { hideEventTransition, renderEventChoicesView, renderEventResultView, setEventChoiceButtonsDisabled, setEventTransitionChanging, setEventTransitionText, showCombatLayout, showEventTransition } from "./src/ui/eventView.js";
-import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderCurrentStats, renderStatList, setMeter } from "./src/ui/renderHelpers.js";
+import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatList } from "./src/ui/renderHelpers.js";
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
-import { clone, roll, weightedRandomItem } from "./src/utils.js";
+import { clone, randomItem, roll, weightedRandomItem } from "./src/utils.js";
 
 const RUN_STARTING_FLEES = 2;
 const NORMAL_FLEE_CHANCE = 0.8;
@@ -81,7 +103,8 @@ const state = {
   encounterIndex: 0,
   turn: 0,
   hero: null,
-  enemy: null,
+  enemies: [],
+  targetEnemyId: null,
   selectedBoss: null,
   phase: "camp",
   awaitingBlessing: false,
@@ -857,6 +880,7 @@ function createDebugActions() {
     startPlainsBoss: startDebugPlainsBoss,
     startForestBoss: startDebugForestBoss,
     startForestCampfire: startDebugForestCampfire,
+    startMultiEnemyGoblin: startDebugMultiEnemyGoblin,
     getBlessingBuildCatalog: getDebugBlessingBuildCatalog,
     startBossWithBlessingBuild: startDebugBossWithBlessingBuild,
     triggerPlainsStory: triggerDebugPlainsStory,
@@ -988,6 +1012,36 @@ function startDebugForestCampfire() {
   enterSafeState({ canRest: false });
   addFixedLog("system", "調試：下一次繼續前進將觸發森林事件。");
   return "已準備林間營火事件；請按「繼續前進」。";
+}
+
+function startDebugMultiEnemyGoblin() {
+  const enemyDefinition = getEventEnemyDefinition("goblin-warrior");
+  if (!enemyDefinition) {
+    throw new Error("找不到哥布林戰士事件敵人。");
+  }
+
+  prepareDebugRunForRegion("forest", 5);
+  state.turn = 0;
+  state.phase = "danger";
+  state.battleSource = "main";
+  state.log = [];
+  const first = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
+  const second = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
+  first.poison = 0;
+  second.poison = 0;
+  setEnemyGroup([
+    { enemy: first },
+    { enemy: second, statScale: 0.75, rewardScale: 0.5 }
+  ]);
+  resetHeroBattleState();
+  applyBattleStartSkills();
+  addFixedLog("system", "調試：多敵人戰鬥測試，第二名哥布林套用 statScale 0.75 / rewardScale 0.5。");
+  logCurrentEnemyGroupEncounter();
+  if (state.hero.shield > 0) {
+    addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
+  }
+  render();
+  return "已進入哥布林戰士 ×2 多敵人測試。";
 }
 
 function getDebugBlessingBuildCatalog() {
@@ -1130,7 +1184,7 @@ function prepareDebugRunForRegion(regionId, encounterIndex, options = {}) {
   state.turn = 0;
   state.hero = options.hero || buildHeroFromProgression(state.selectedHeroId);
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
-  state.enemy = null;
+  clearEnemyGroup();
   state.selectedBoss = selectRunBoss(currentRegion(), options.bossId);
   state.phase = "danger";
   state.awaitingBlessing = false;
@@ -1143,6 +1197,8 @@ function prepareDebugRunForRegion(regionId, encounterIndex, options = {}) {
   state.hasRested = false;
   state.ambushAdvantage = false;
   state.battleSource = "main";
+  clearPendingThreat();
+  state.blessingContext = "normal";
   resetEventRunState();
   state.log = [];
   state.runStats.startLevel = state.hero.level;
@@ -1250,17 +1306,55 @@ function createCombatLogger() {
   };
 }
 
+function clearEnemyGroup() {
+  state.enemies = [];
+  state.targetEnemyId = null;
+}
+
+function setEnemyGroup(entries, options = {}) {
+  const { restore = false } = options;
+  state.enemies = restore
+    ? restoreRuntimeEnemyGroup(entries)
+    : createRuntimeEnemyGroup(entries);
+  state.targetEnemyId = resolveTargetEnemyId(state.enemies, null);
+}
+
+function currentTargetEnemy() {
+  const target = resolveTargetEnemy(state.enemies, state.targetEnemyId);
+  state.targetEnemyId = target?.runtimeId || null;
+  return target;
+}
+
+function selectEnemyTarget(runtimeId) {
+  const target = getLivingEnemies(state.enemies).find((enemy) => enemy.runtimeId === runtimeId);
+  if (!target || state.ended || state.awaitingBlessing || state.phase === "safe") {
+    return;
+  }
+  state.targetEnemyId = target.runtimeId;
+  render();
+}
+
+function logCurrentEnemyGroupEncounter() {
+  getLivingEnemies(state.enemies).forEach((enemy) => {
+    addLog("system", "encounter", { enemy: getEnemyDisplayName(enemy) });
+    if (enemy.intro) {
+      addFixedLog("status", enemy.intro);
+    }
+  });
+}
+
 function clearPendingThreat() {
   state.pendingThreat = null;
 }
 
 function savePendingThreat(source) {
-  if (!state.enemy) {
+  const livingEnemies = getLivingEnemies(state.enemies);
+  if (livingEnemies.length === 0) {
     clearPendingThreat();
     return;
   }
   state.pendingThreat = {
-    enemy: clone(state.enemy),
+    enemies: clone(livingEnemies),
     encounterIndex: state.encounterIndex,
     turn: state.turn,
     source,
@@ -1284,31 +1378,29 @@ function resetHeroBattleState() {
   state.hero.skillState = createSkillState();
 }
 
-function healPendingThreat(ratio) {
-  if (!state.pendingThreat?.enemy) {
-    return 0;
-  }
-  const enemy = state.pendingThreat.enemy;
-  const amount = Math.max(1, Math.round(enemy.maxHp * ratio));
-  const before = enemy.hp;
-  enemy.hp = Math.min(enemy.maxHp, enemy.hp + amount);
-  return enemy.hp - before;
+function healThreatEnemies(enemies, ratio) {
+  return enemies.map((enemy) => {
+    if (ratio <= 0 || enemy.hp <= 0) {
+      return { enemy, healed: 0 };
+    }
+    const amount = Math.max(1, Math.round(enemy.maxHp * ratio));
+    const before = enemy.hp;
+    enemy.hp = Math.min(enemy.maxHp, enemy.hp + amount);
+    return { enemy, healed: enemy.hp - before };
+  });
 }
 
 function resumePendingThreat(options = {}) {
-  if (!state.pendingThreat?.enemy) {
+  if (!Array.isArray(state.pendingThreat?.enemies) || state.pendingThreat.enemies.length === 0) {
     return false;
   }
 
   const { healRatio = 0, introText = "" } = options;
   const threat = state.pendingThreat;
-  const enemy = clone(threat.enemy);
-  const healed = healRatio > 0 ? healPendingThreat(healRatio) : 0;
-  if (healRatio > 0) {
-    enemy.hp = state.pendingThreat.enemy.hp;
-  }
+  const restoredEnemies = restoreRuntimeEnemyGroup(threat.enemies);
+  const healedEnemies = healThreatEnemies(restoredEnemies, healRatio);
 
-  state.enemy = enemy;
+  setEnemyGroup(restoredEnemies, { restore: true });
   state.battleSource = threat.battleSource || "main";
   state.encounterIndex = threat.encounterIndex;
   state.turn = 0;
@@ -1325,10 +1417,12 @@ function resumePendingThreat(options = {}) {
   if (introText) {
     addFixedLog("system", introText);
   }
-  addLog("system", "encounter", { enemy: state.enemy.name });
-  if (healed > 0) {
-    addLog("heal", "enemyRecover", { enemy: state.enemy.name, amount: healed });
-  }
+  logCurrentEnemyGroupEncounter();
+  healedEnemies.forEach(({ enemy, healed }) => {
+    if (healed > 0) {
+      addLog("heal", "enemyRecover", { enemy: getEnemyDisplayName(enemy), amount: healed });
+    }
+  });
   if (state.hero.shield > 0) {
     addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
   }
@@ -1376,7 +1470,7 @@ async function beginScheduledEvent() {
   state.eventContext = createEventContext(event.id);
   state.eventInputLocked = true;
   state.phase = "event";
-  state.enemy = null;
+  clearEnemyGroup();
   setCombatActionState();
 
   const token = state.eventTransitionToken + 1;
@@ -1452,14 +1546,15 @@ function startEventBattle(battleStep) {
   state.ambushAdvantage = false;
   state.battleSource = "event";
   state.log = [];
-  state.enemy = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
-  state.enemy.poison = 0;
+  const enemy = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
+  enemy.poison = 0;
+  setEnemyGroup([enemy]);
   resetHeroBattleState();
   applyBattleStartSkills();
 
   (battleStep.introText || []).forEach((text) => addFixedLog("system", text));
-  addLog("system", "encounter", { enemy: state.enemy.name });
-  addFixedLog("status", state.enemy.intro);
+  logCurrentEnemyGroupEncounter();
+  applyEnemyAmbushes();
   if (state.hero.shield > 0) {
     addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
   }
@@ -1549,7 +1644,7 @@ function grantEventMaterials(effect) {
 function renderEventResult(event, result, effectResult) {
   state.eventInputLocked = true;
   state.phase = "event";
-  state.enemy = null;
+  clearEnemyGroup();
   state.battleSource = "main";
 
   const followUpChoices = getAvailableFollowUpChoices(result, state.runEventRecords);
@@ -1626,7 +1721,7 @@ function startRun() {
   state.turn = 0;
   state.hero = buildHeroFromProgression(state.selectedHeroId);
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
-  state.enemy = null;
+  clearEnemyGroup();
   state.selectedBoss = selectRunBoss(currentRegion());
   state.phase = "danger";
   state.awaitingBlessing = false;
@@ -1654,6 +1749,7 @@ function startRun() {
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
@@ -1672,6 +1768,7 @@ function restart() {
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
@@ -1698,6 +1795,7 @@ function returnToCamp() {
   closeSkillPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
+  closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   closeStoryPanel();
   closeDeleteSaveDialog();
@@ -1726,8 +1824,9 @@ function startEncounter() {
   state.hasRested = false;
   state.ambushAdvantage = false;
   state.log = [];
-  state.enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
-  state.enemy.poison = 0;
+  const enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
+  enemy.poison = 0;
+  setEnemyGroup([enemy]);
   resetHeroBattleState();
   applyBattleStartSkills();
 
@@ -1737,9 +1836,8 @@ function startEncounter() {
   if (encounterType === "boss") {
     addLog("system", "boss", { region: region.name });
   }
-  addLog("system", "encounter", { enemy: state.enemy.name });
-  addFixedLog("status", state.enemy.intro);
-  applyEnemyAmbush();
+  logCurrentEnemyGroupEncounter();
+  applyEnemyAmbushes();
   if (state.hero.shield > 0) {
     addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
   }
@@ -1747,7 +1845,7 @@ function startEncounter() {
 }
 
 function playTurn() {
-  if (state.ended || state.awaitingBlessing || !state.enemy || state.phase === "safe") {
+  if (state.ended || state.awaitingBlessing || getLivingEnemies(state.enemies).length === 0 || state.phase === "safe") {
     return;
   }
 
@@ -1756,24 +1854,43 @@ function playTurn() {
   state.turn += 1;
   const heroEntangled = resolveHeroEntangle({ hero: state.hero, log });
   if (!heroEntangled) {
-    resolveHeroAction({ hero: state.hero, enemy: state.enemy, log });
-    if (state.enemy.hp <= 0) {
+    const target = currentTargetEnemy();
+    if (!target) {
+      return;
+    }
+    resolveHeroAction({ hero: state.hero, enemy: target, log });
+    settleDefeatedEnemies();
+    if (getLivingEnemies(state.enemies).length === 0) {
       winEncounter();
       return;
     }
   }
 
-  const enemyAction = resolveEnemyAction({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
-  applyEmergencyBandage();
-  if (state.hero.hp <= 0) {
-    state.deathCause = enemyAction;
-    if (!tryLastStand()) {
-      loseRun();
-      return;
+  const actingEnemies = [...getLivingEnemies(state.enemies)];
+  for (const enemy of actingEnemies) {
+    if (enemy.hp <= 0 || state.ended) {
+      continue;
+    }
+    const enemyAction = resolveEnemyAction({ hero: state.hero, enemy, turn: state.turn, log });
+    applyEmergencyBandage();
+    if (state.hero.hp <= 0) {
+      state.deathCause = enemyAction;
+      if (!tryLastStand()) {
+        loseRun();
+        return;
+      }
     }
   }
 
-  const endOfTurn = applyEndOfTurnEffects({ hero: state.hero, enemy: state.enemy, turn: state.turn, log });
+  const endOfTurn = applyHeroEndOfTurnNegativeEffects({ hero: state.hero, log });
+  getLivingEnemies(state.enemies).forEach((enemy) => {
+    applyEnemyEndOfTurnNegativeEffects({ enemy, log });
+  });
+  applyHeroEndOfTurnRecoveryEffects({ hero: state.hero, turn: state.turn, log });
+  state.enemies.forEach((enemy) => {
+    applyEnemyEndOfTurnRecoveryEffects({ enemy, turn: state.turn, log });
+  });
+
   if (state.hero.hp <= 0) {
     state.deathCause = endOfTurn.heroDeathCause || {
       type: "other",
@@ -1784,7 +1901,9 @@ function playTurn() {
       return;
     }
   }
-  if (state.enemy.hp <= 0) {
+
+  settleDefeatedEnemies();
+  if (getLivingEnemies(state.enemies).length === 0) {
     winEncounter();
     return;
   }
@@ -1822,12 +1941,24 @@ function winEncounter() {
   showBlessings();
 }
 
-function settleBattleVictory() {
-  const enemyName = state.enemy.name;
-  const defeatedBoss = state.enemy.kind === "首領";
-  addLog("system", "victory", { target: enemyName });
-  gainCharacterExp(getEnemyExpReward(state.enemy));
-  awardEnemyRewards(state.enemy);
+function settleDefeatedEnemies() {
+  const defeatedEnemies = state.enemies.filter((enemy) => enemy && enemy.hp <= 0);
+  defeatedEnemies.forEach(settleEnemyDefeated);
+  if (defeatedEnemies.length === 0) {
+    return 0;
+  }
+
+  state.enemies = getLivingEnemies(state.enemies);
+  state.targetEnemyId = resolveTargetEnemyId(state.enemies, state.targetEnemyId);
+  return defeatedEnemies.length;
+}
+
+function settleEnemyDefeated(enemy) {
+  const enemyName = getEnemyDisplayName(enemy);
+  const defeatedBoss = enemy.kind === "首領";
+  addLog("system", "enemyDefeated", { target: enemyName });
+  gainCharacterExp(getEnemyExpReward(enemy));
+  awardEnemyRewards(enemy);
   recordEnemyDefeated(defeatedBoss);
   state.defeatedEnemies += 1;
   state.defeatedBoss = state.defeatedBoss || defeatedBoss;
@@ -1836,6 +1967,10 @@ function settleBattleVictory() {
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + state.hero.killHeal);
     addLog("heal", "heal", { target: state.hero.name, amount: state.hero.killHeal });
   }
+}
+
+function settleBattleVictory() {
+  addLog("system", "battleVictory");
   applyVictorySkills();
   consumeBattleLimitedEffects();
 }
@@ -1863,16 +1998,17 @@ function awardEnemyRewards(enemy) {
 }
 
 function getEnemyExpReward(enemy) {
-  if (Number.isFinite(enemy.expReward)) {
-    return enemy.expReward;
-  }
-  if (enemy.kind === "首領") {
-    return 48;
-  }
-  if (enemy.kind === "精英") {
-    return 26;
-  }
-  return 9;
+  const baseReward = Number.isFinite(enemy.expReward)
+    ? enemy.expReward
+    : enemy.kind === "首領"
+      ? 48
+      : enemy.kind === "精英"
+        ? 26
+        : 9;
+  const rewardScale = Number.isFinite(enemy.rewardScale) && enemy.rewardScale >= 0
+    ? enemy.rewardScale
+    : 1;
+  return Math.max(1, Math.round(baseReward * rewardScale));
 }
 
 function applyBattleStartSkills() {
@@ -1941,14 +2077,16 @@ function hasBlessingFlow(flow) {
   return Array.isArray(state.hero?.blessingFlows) && state.hero.blessingFlows.includes(flow);
 }
 
-function applyEnemyAmbush() {
-  const amount = Number(state.enemy?.ambushDamage) || 0;
-  if (amount <= 0 || state.hero.hp <= 1) {
-    return;
-  }
-  const damage = Math.min(amount, state.hero.hp - 1);
-  state.hero.hp -= damage;
-  addFixedLog("enemy-damage", `${state.enemy.name} 伏擊了你，造成 ${damage} 點傷害。`);
+function applyEnemyAmbushes() {
+  getLivingEnemies(state.enemies).forEach((enemy) => {
+    const amount = Number(enemy.ambushDamage) || 0;
+    if (amount <= 0 || state.hero.hp <= 1) {
+      return;
+    }
+    const damage = Math.min(amount, state.hero.hp - 1);
+    state.hero.hp -= damage;
+    addFixedLog("enemy-damage", `${getEnemyDisplayName(enemy)} 伏擊了你，造成 ${damage} 點傷害。`);
+  });
 }
 
 function applyEmergencyBandage() {
@@ -2014,7 +2152,7 @@ function enterSafeState(options = {}) {
   const { canRest = false } = options;
   state.phase = "safe";
   state.awaitingBlessing = false;
-  state.enemy = null;
+  clearEnemyGroup();
   state.canRest = canRest;
   state.hasRested = false;
   els.blessingPanel.classList.remove("is-visible");
@@ -2063,6 +2201,7 @@ function finishRun(outcome) {
   state.blessingContext = "normal";
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
+  closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   els.endPanel.classList.add("is-visible");
   els.endTitle.textContent = cleared ? "冒險成功" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
@@ -2170,10 +2309,13 @@ function showBlessings(context = "normal") {
 }
 
 function tryFlee() {
-  if (!state.hero || !state.enemy || state.ended || state.awaitingBlessing || state.phase === "safe") {
+  const livingEnemies = getLivingEnemies(state.enemies);
+  if (!state.hero || livingEnemies.length === 0 || state.ended || state.awaitingBlessing || state.phase === "safe") {
     return;
   }
-  if (state.enemy.kind === "首領") {
+
+  const threatKind = getEnemyGroupThreatKind(livingEnemies);
+  if (threatKind === "首領") {
     return;
   }
 
@@ -2182,9 +2324,10 @@ function tryFlee() {
     state.hero.fleesRemaining -= 1;
   }
   state.runStats.fleeAttempts += 1;
-  addLog("system", "fleeAttempt", { enemy: state.enemy.name });
+  const groupLabel = getEnemyGroupLabel(livingEnemies);
+  addLog("system", "fleeAttempt", { enemy: groupLabel });
 
-  const fleeChance = state.enemy.kind === "精英" ? ELITE_FLEE_CHANCE : NORMAL_FLEE_CHANCE;
+  const fleeChance = threatKind === "精英" ? ELITE_FLEE_CHANCE : NORMAL_FLEE_CHANCE;
   if (!roll(fleeChance)) {
     resolveFleeFailure();
     return;
@@ -2205,12 +2348,17 @@ function tryFlee() {
 }
 
 function resolveFleeFailure() {
+  const attacker = randomItem(getLivingEnemies(state.enemies));
+  if (!attacker) {
+    return;
+  }
+
   state.runStats.fleeFailures += 1;
-  addLog("system", "fleeFail", { enemy: state.enemy.name });
+  addLog("system", "fleeFail", { enemy: getEnemyGroupLabel(state.enemies) });
   const log = createCombatLogger();
-  const enemyAction = resolveEnemyAction({
+  resolveEnemyAction({
     hero: state.hero,
-    enemy: state.enemy,
+    enemy: attacker,
     turn: Math.max(1, state.turn),
     log
   });
@@ -2218,9 +2366,8 @@ function resolveFleeFailure() {
   if (state.hero.hp <= 0) {
     state.deathCause = {
       type: "fleeFailure",
-      label: `逃跑失敗後被${state.enemy.name}擊倒`
+      label: `逃跑失敗後被${getEnemyDisplayName(attacker)}擊倒`
     };
-    state.deathCause = state.deathCause || enemyAction;
     if (!tryLastStand()) {
       loseRun();
       return;
@@ -2233,7 +2380,7 @@ function resolveFleeFailure() {
 function resolveSafeEscape() {
   state.runStats.safeEscapes += 1;
   savePendingThreat("safeEscape");
-  addLog("system", "safeEscape", { enemy: state.pendingThreat?.enemy?.name || "敵人" });
+  addLog("system", "safeEscape", { enemy: getEnemyGroupLabel(state.pendingThreat?.enemies || []) });
   consumeBattleLimitedEffects();
   enterSafeState({ canRest: true });
 }
@@ -2251,16 +2398,18 @@ function resolveCounterEscape() {
   state.ambushAdvantage = true;
   state.battleSource = "counterEscape";
   state.log = [];
-  state.enemy = buildCounterEnemy(currentRegion(), state.encounterIndex);
-  state.enemy.poison = 0;
+  const counterEnemy = buildCounterEnemy(currentRegion(), state.encounterIndex);
+  counterEnemy.poison = 0;
+  setEnemyGroup([counterEnemy]);
   resetHeroBattleState();
   applyBattleStartSkills();
-  const reducedHp = Math.max(1, Math.round(state.enemy.maxHp * 0.85));
-  const reducedAmount = state.enemy.maxHp - reducedHp;
-  state.enemy.hp = reducedHp;
+  const enemy = currentTargetEnemy();
+  const reducedHp = Math.max(1, Math.round(enemy.maxHp * 0.85));
+  const reducedAmount = enemy.maxHp - reducedHp;
+  enemy.hp = reducedHp;
   addLog("system", "counterEscape");
-  addLog("system", "encounter", { enemy: state.enemy.name });
-  addLog("hero-damage", "ambushAdvantage", { enemy: state.enemy.name, amount: reducedAmount });
+  addLog("system", "encounter", { enemy: getEnemyDisplayName(enemy) });
+  addLog("hero-damage", "ambushAdvantage", { enemy: getEnemyDisplayName(enemy), amount: reducedAmount });
   setCombatActionState();
   render();
 }
@@ -2372,52 +2521,37 @@ function closeEndPanel() {
   els.endPanel.classList.remove("is-visible");
 }
 
+function openAbilityInfoPanel() {
+  if (!state.hero) {
+    return;
+  }
+  renderCurrentAbilityView(els.abilityInfoList, state.hero);
+  els.abilityInfoPanel.classList.add("is-visible");
+}
+
+function closeAbilityInfoPanel() {
+  els.abilityInfoPanel.classList.remove("is-visible");
+}
+
 function openBlessingInfoPanel() {
-  renderBlessingInfo();
+  if (!state.hero) {
+    return;
+  }
+  renderBlessingInfoView({
+    filtersElement: els.blessingInfoFilters,
+    listElement: els.blessingInfoList,
+    blessingNames: state.hero.blessings,
+    blessingDefinitions: [
+      ...(currentRegion().blessings || []),
+      ...getAllIndependentBlessings()
+    ],
+    resetFilter: true
+  });
   els.blessingInfoPanel.classList.add("is-visible");
 }
 
 function closeBlessingInfoPanel() {
   els.blessingInfoPanel.classList.remove("is-visible");
-}
-
-function renderBlessingInfo() {
-  els.blessingInfoList.replaceChildren();
-  const blessingNames = Array.isArray(state.hero?.blessings) ? state.hero.blessings : [];
-  if (blessingNames.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "blessing-info-empty";
-    empty.textContent = "目前沒有臨時祝福。";
-    els.blessingInfoList.append(empty);
-    return;
-  }
-
-  const independentBlessings = getAllIndependentBlessings();
-  blessingNames.forEach((name) => {
-    const blessing = currentRegion().blessings.find((item) => item.name === name)
-      || independentBlessings.find((item) => item.name === name);
-    const rarity = getBlessingRarity(blessing?.rarity);
-    const card = document.createElement("article");
-    const meta = document.createElement("small");
-    const title = document.createElement("strong");
-    const effect = document.createElement("p");
-    const flavor = document.createElement("em");
-    const event = document.createElement("span");
-    const rarityLabel = document.createElement("i");
-
-    card.className = `blessing-info-card rarity-${rarity.id}`;
-    event.textContent = blessing?.eventTitle || "臨時祝福";
-    rarityLabel.textContent = rarity.label;
-    meta.append(event, rarityLabel);
-    title.textContent = name;
-    effect.textContent = blessing?.effectText || "效果資料尚未整理。";
-    flavor.textContent = blessing?.flavorText || "";
-    card.append(meta, title, effect);
-    if (flavor.textContent) {
-      card.append(flavor);
-    }
-    els.blessingInfoList.append(card);
-  });
 }
 
 function closeStoryPanel() {
@@ -2456,6 +2590,7 @@ function showPlainsStory() {
   els.nextButton.disabled = true;
   els.blessingPanel.classList.remove("is-visible");
   els.endPanel.classList.remove("is-visible");
+  closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   els.storyPanel.classList.add("is-visible");
   els.resultLabel.textContent = "命運覺醒";
@@ -2510,18 +2645,23 @@ function unlockPhoenixBlessing() {
 
 function render() {
   const hero = state.hero;
-  const enemy = state.enemy;
   const region = currentRegion();
+  if (!hero) {
+    return;
+  }
 
-  els.heroName.textContent = hero.name;
-  els.heroLevel.textContent = `第 ${state.run} 輪｜角色 Lv. ${hero.level || 1}`;
-  setMeter(els.heroHealthBar, hero.hp, hero.maxHp);
-  els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}`;
-
-  els.enemyName.textContent = enemy ? enemy.name : state.phase === "safe" ? "安全路段" : "敵人";
-  els.enemyKind.textContent = enemy ? enemy.kind : state.phase === "safe" ? "暫無遭遇" : "普通";
-  setMeter(els.enemyHealthBar, enemy ? enemy.hp : 0, enemy ? enemy.maxHp : 1);
-  els.enemyHealthText.textContent = enemy ? `${enemy.hp} / ${enemy.maxHp}` : "0 / 0";
+  state.targetEnemyId = resolveTargetEnemyId(state.enemies, state.targetEnemyId);
+  renderCombatView({
+    els,
+    hero,
+    enemies: state.enemies,
+    targetEnemyId: state.targetEnemyId,
+    phase: state.phase,
+    onTargetSelect: selectEnemyTarget
+  });
+  if (els.abilityInfoPanel.classList.contains("is-visible")) {
+    renderCurrentAbilityView(els.abilityInfoList, hero);
+  }
 
   const encounterNumber = Math.min(state.encounterIndex + 1, region.encounterPlan.length);
   els.encounterLabel.textContent = state.eventContext
@@ -2545,12 +2685,13 @@ function render() {
   }
 
   setCombatActionState();
-  renderCurrentStats(els.currentStats, hero);
 }
 
 function setCombatActionState() {
-  const hasEnemy = Boolean(state.enemy);
-  const isBoss = state.enemy?.kind === "首領";
+  const livingEnemies = getLivingEnemies(state.enemies);
+  const hasEnemy = livingEnemies.length > 0;
+  const threatKind = getEnemyGroupThreatKind(livingEnemies);
+  const isBoss = threatKind === "首領";
   const inGame = state.hero && !state.ended && !state.awaitingBlessing && !state.eventInputLocked;
   const safe = state.phase === "safe";
   const canFight = inGame && hasEnemy && !safe;
@@ -2562,6 +2703,7 @@ function setCombatActionState() {
     && (!state.eventContext || resumingSafeThreat);
   const canRest = canContinue && state.canRest && !state.hasRested && state.hero.hp < state.hero.maxHp;
   const canViewBlessings = Boolean(state.hero) && !state.ended && !state.awaitingBlessing && state.phase !== "event";
+  const canViewAbility = Boolean(state.hero) && state.phase !== "event";
 
   els.nextButton.disabled = !canFight;
   els.nextButton.hidden = !canFight;
@@ -2581,9 +2723,10 @@ function setCombatActionState() {
   els.restButton.textContent = state.canRest && !state.hasRested ? "原地修整" : "已修整";
   els.retreatButton.hidden = !canContinue;
   els.retreatButton.disabled = !canContinue;
-  els.viewBlessingsButton.hidden = !canViewBlessings;
   els.viewBlessingsButton.disabled = !canViewBlessings;
-  els.viewBlessingsButton.textContent = `祝福 ${state.hero?.blessings?.length || 0}`;
+  els.openAbilityFromAttack.disabled = !canViewAbility;
+  els.openAbilityFromDefense.disabled = !canViewAbility;
+  els.openAbilityFromCrit.disabled = !canViewAbility;
 }
 
 function renderLog() {
@@ -2643,6 +2786,10 @@ function bindEvents() {
   els.eventContinueButton.addEventListener("click", continueEventResult);
   els.restButton.addEventListener("click", restAtSafeRoute);
   els.retreatButton.addEventListener("click", retreatRun);
+  els.openAbilityFromAttack.addEventListener("click", openAbilityInfoPanel);
+  els.openAbilityFromDefense.addEventListener("click", openAbilityInfoPanel);
+  els.openAbilityFromCrit.addEventListener("click", openAbilityInfoPanel);
+  els.closeAbilityInfoButton.addEventListener("click", closeAbilityInfoPanel);
   els.viewBlessingsButton.addEventListener("click", openBlessingInfoPanel);
   els.closeBlessingInfoButton.addEventListener("click", closeBlessingInfoPanel);
   els.exportSaveCodeButton.addEventListener("click", openExportSaveCodeDialog);
@@ -2665,6 +2812,16 @@ function bindEvents() {
   els.materialInfoPanel.addEventListener("click", (event) => {
     if (event.target === els.materialInfoPanel) {
       closeMaterialInfoPanel();
+    }
+  });
+  els.abilityInfoPanel.addEventListener("click", (event) => {
+    if (event.target === els.abilityInfoPanel) {
+      closeAbilityInfoPanel();
+    }
+  });
+  els.blessingInfoPanel.addEventListener("click", (event) => {
+    if (event.target === els.blessingInfoPanel) {
+      closeBlessingInfoPanel();
     }
   });
   els.exportSaveCodePanel.addEventListener("click", (event) => {

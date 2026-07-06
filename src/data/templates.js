@@ -13,6 +13,8 @@ export const templates = {
   timedRegen: "{source} 的餘韻讓 {target} 恢復了 {amount} 點生命。",
   charge: "{actor} 準備衝撞。",
   shield: "{target} 獲得了 {amount} 點護盾。",
+  enemyDefeated: "{target} 倒下了。",
+  battleVictory: "戰鬥勝利。",
   victory: "{target} 倒下了。戰鬥勝利。",
   defeat: "{target} 倒下了。本輪冒險結束。",
   blessing: "你接受了祝福：{blessing}。",

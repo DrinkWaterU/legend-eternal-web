@@ -47,15 +47,6 @@
     margin-top: 16px;
   }
 
-  .log-panel {
-    margin-top: 14px;
-    min-height: auto;
-  }
-
-  .battle-log {
-    height: 360px;
-  }
-
   .stat-list {
     grid-template-columns: 1fr;
   }
@@ -74,16 +65,6 @@
 
   .camp-status {
     grid-template-columns: 1fr;
-  }
-
-  .combat-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
-
-  .combat-actions .secondary-button {
-    min-width: 0;
   }
 
   .primary-button {
