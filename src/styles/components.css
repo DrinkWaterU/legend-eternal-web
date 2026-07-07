@@ -42,6 +42,59 @@
   font-weight: 800;
 }
 
+.music-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.music-toggle-button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid rgba(241, 211, 134, 0.34);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(31, 39, 39, 0.94), rgba(15, 19, 20, 0.94));
+  color: var(--gold);
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--inner-light);
+}
+
+.music-toggle-button[aria-pressed="false"] {
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.music-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(31, 39, 39, 0.9), rgba(15, 19, 20, 0.9));
+  color: var(--muted);
+  font-size: 0.82rem;
+  box-shadow: var(--inner-light);
+}
+
+.music-volume-control input {
+  width: 112px;
+  min-width: 72px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+.music-volume-control output {
+  min-width: 3ch;
+  color: var(--sky);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .primary-button:hover,
 .secondary-button:hover,
 .danger-button:hover,

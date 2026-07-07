@@ -3,6 +3,9 @@
   "name": "平原",
   "description": "城鎮外圍的開闊草地。野豬、史萊姆與草原狼經常出沒，是新手冒險者最常踏入的第一片野外。",
   "difficulty": "入門",
+  "audio": {
+    "bgmId": "plains"
+  },
   "visual": {
     "background": {
       "desktop": "assets/images/regions/plains/plains-morning.png",

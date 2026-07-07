@@ -33,6 +33,18 @@ class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Expires", "0")
         super().end_headers()
 
+    def copyfile(self, source, outputfile) -> None:  # type: ignore[no-untyped-def]
+        """Ignore expected client disconnects while streaming static assets."""
+
+        try:
+            super().copyfile(source, outputfile)
+        except (ConnectionResetError, BrokenPipeError):
+            # Browsers may cancel an in-flight media/image response when the
+            # current scene changes or the page reloads. The request is already
+            # obsolete from the client's perspective, so this is not a server
+            # failure and should not print a traceback during local development.
+            return
+
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(

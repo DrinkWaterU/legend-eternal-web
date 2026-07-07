@@ -11,6 +11,7 @@ export const forestRegion = {
   name: forestData.name,
   description: forestData.description,
   note: forestData.note,
+  audio: forestData.audio,
   visual: forestData.visual,
   encounterCount: forestData.encounterPlan.length,
   bossName: forestData.bosses.map((boss) => boss.name).join(" / "),

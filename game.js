@@ -1,4 +1,5 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/config.js";
+import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
 import {
   applyEnemyEndOfTurnNegativeEffects,
@@ -39,6 +40,7 @@ import { achievementDefinitions } from "./src/data/achievements.js";
 import { getAllIndependentBlessings, getBlessingPool } from "./src/data/blessings/index.js";
 import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
 import { materialDefinitions } from "./src/data/materials.js";
+import { musicDefinitions } from "./src/data/music.js";
 import { getEventDefinition, getEventEnemyDefinition } from "./src/data/events/index.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
 import { getBlessingRarity } from "./src/data/rarities.js";
@@ -144,6 +146,7 @@ const uiState = {
 
 let saveData = loadSave();
 let pendingSaveCodeImport = null;
+const musicManager = createMusicManager({ trackDefinitions: musicDefinitions });
 
 function isDebugModeEnabled() {
   return new URLSearchParams(window.location.search).get("debug") === "1";
@@ -173,6 +176,30 @@ function syncRootScreenContext(screenId) {
   }
 }
 
+function resolveSceneMusicTrackId(screenId) {
+  if (uiState.navigationContext === "story") {
+    return undefined;
+  }
+  if (screenId === "gameScreen" || uiState.navigationContext === "adventure") {
+    return currentRegion()?.audio?.bgmId ?? null;
+  }
+  if (uiState.navigationContext === "camp") {
+    return "camp";
+  }
+  if (uiState.navigationContext === "menu") {
+    return "menu";
+  }
+  return null;
+}
+
+function syncSceneMusic(screenId) {
+  const trackId = resolveSceneMusicTrackId(screenId);
+  if (trackId === undefined) {
+    return;
+  }
+  void musicManager.requestTrack(trackId);
+}
+
 function applySceneContext(screenId) {
   const context = getNavigationContext();
   const scene = screenId === "gameScreen"
@@ -198,6 +225,8 @@ function applySceneContext(screenId) {
     document.body.style.removeProperty("--region-bg-mobile");
     document.body.style.removeProperty("--region-bg-desktop");
   }
+
+  syncSceneMusic(screenId);
 }
 
 function applyRegionBackgroundStage() {
@@ -297,6 +326,38 @@ function syncSelectionFromSave() {
   state.selectedHeroId = characterId;
   state.selectedRegion = regionDefinitions[regionId].name;
   state.selectedHero = characterDefinitions[characterId].name;
+}
+
+function syncMusicSettingsFromSave() {
+  const volume = musicManager.setVolume(saveData.settings.musicVolume);
+  void musicManager.setEnabled(saveData.settings.musicEnabled);
+  renderMusicControls(saveData.settings.musicEnabled, volume);
+}
+
+function renderMusicControls(enabled = saveData.settings.musicEnabled, volume = saveData.settings.musicVolume) {
+  els.musicToggleButton.textContent = enabled ? "BGM：開" : "BGM：關";
+  els.musicToggleButton.setAttribute("aria-pressed", String(enabled));
+  els.musicVolumeInput.value = String(volume);
+  els.musicVolumeValue.textContent = `${Math.round(volume * 100)}%`;
+}
+
+function toggleMusicEnabled() {
+  saveData.settings.musicEnabled = !saveData.settings.musicEnabled;
+  void musicManager.setEnabled(saveData.settings.musicEnabled);
+  renderMusicControls();
+  saveGameSafe();
+}
+
+function previewMusicVolume() {
+  const volume = musicManager.setVolume(Number(els.musicVolumeInput.value));
+  saveData.settings.musicVolume = volume;
+  els.musicVolumeValue.textContent = `${Math.round(volume * 100)}%`;
+}
+
+function commitMusicVolume() {
+  previewMusicVolume();
+  renderMusicControls();
+  saveGameSafe();
 }
 
 function showRegionList(contextId = uiState.navigationContext) {
@@ -809,6 +870,7 @@ function confirmImportSaveCode() {
   saveData = migrateSave(pendingSaveCodeImport, { persist: true });
   pendingSaveCodeImport = null;
   syncSelectionFromSave();
+  syncMusicSettingsFromSave();
   renderStatistics();
   closeImportSaveCodeDialog();
   setSaveNotice("存檔碼已匯入並轉換為目前版本。");
@@ -860,6 +922,7 @@ function deleteSave() {
   saveData = createDefaultSave();
   saveGameSafe();
   syncSelectionFromSave();
+  syncMusicSettingsFromSave();
   closeDeleteSaveDialog();
   renderStatistics();
   setSaveNotice("存檔已刪除，新的空白存檔已建立。");
@@ -1163,6 +1226,7 @@ function deleteDebugSave() {
   closeImportSaveCodeDialog();
   closeDeleteSaveDialog();
   restart();
+  syncMusicSettingsFromSave();
   return "已刪除存檔並建立空白存檔。";
 }
 
@@ -2748,6 +2812,9 @@ function bindEvents() {
   els.openCharacterButton.addEventListener("click", () => showCharacterList("menu"));
   els.openStatisticsButton.addEventListener("click", () => showStatisticsScreen("menu"));
   els.openAchievementButton.addEventListener("click", () => showScreenInContext("achievementScreen", "menu"));
+  els.musicToggleButton.addEventListener("click", toggleMusicEnabled);
+  els.musicVolumeInput.addEventListener("input", previewMusicVolume);
+  els.musicVolumeInput.addEventListener("change", commitMusicVolume);
   els.campStartButton.addEventListener("click", startRun);
   els.campRegionButton.addEventListener("click", () => showRegionList("camp"));
   els.campCharacterButton.addEventListener("click", () => showCharacterList("camp"));
@@ -2834,11 +2901,16 @@ function bindEvents() {
       closeImportSaveCodeDialog();
     }
   });
+  document.addEventListener("click", () => {
+    void musicManager.handleUserInteraction();
+  });
 }
 
 syncSelectionFromSave();
+syncMusicSettingsFromSave();
 bindEvents();
 initDebugPanel({
   enabled: isDebugModeEnabled(),
   actions: createDebugActions()
 });
+applySceneContext("menuScreen");

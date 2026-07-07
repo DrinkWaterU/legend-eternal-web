@@ -47,6 +47,21 @@
     margin-top: 16px;
   }
 
+  .music-controls {
+    width: 100%;
+  }
+
+  .music-volume-control {
+    flex: 1 1 220px;
+    justify-content: center;
+    max-width: 360px;
+  }
+
+  .music-volume-control input {
+    flex: 1 1 auto;
+    width: auto;
+  }
+
   .stat-list {
     grid-template-columns: 1fr;
   }

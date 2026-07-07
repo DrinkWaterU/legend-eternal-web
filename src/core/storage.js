@@ -45,7 +45,9 @@ export function createDefaultSave() {
     },
     settings: {
       selectedRegionId: DEFAULT_REGION_ID,
-      selectedCharacterId: DEFAULT_CHARACTER_ID
+      selectedCharacterId: DEFAULT_CHARACTER_ID,
+      musicEnabled: true,
+      musicVolume: 0.35
     }
   };
 }
@@ -93,6 +95,12 @@ export function migrateSave(rawSave, options = {}) {
 
   save.settings.selectedRegionId = regionDefinitions[rawSave.settings?.selectedRegionId] ? rawSave.settings.selectedRegionId : DEFAULT_REGION_ID;
   save.settings.selectedCharacterId = characterDefinitions[rawSave.settings?.selectedCharacterId] ? rawSave.settings.selectedCharacterId : DEFAULT_CHARACTER_ID;
+  save.settings.musicEnabled = typeof rawSave.settings?.musicEnabled === "boolean"
+    ? rawSave.settings.musicEnabled
+    : save.settings.musicEnabled;
+  save.settings.musicVolume = Number.isFinite(rawSave.settings?.musicVolume)
+    ? Math.min(1, Math.max(0, rawSave.settings.musicVolume))
+    : save.settings.musicVolume;
 
   if (persist) {
     saveGame(save);
