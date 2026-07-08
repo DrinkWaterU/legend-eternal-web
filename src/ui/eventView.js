@@ -1,6 +1,8 @@
+import { normalizeRouteEndingRole, normalizeRouteEndingTone, ROUTE_ENDING_TONES } from "../data/routes/endingSemantics.js";
 import { renderChoiceList } from "./renderHelpers.js";
 
 export function showCombatLayout(els) {
+  resetRouteEndingPresentation(els);
   els.combatLayout.hidden = false;
   els.eventLayout.hidden = true;
 }
@@ -31,6 +33,7 @@ export function hideEventTransition(els) {
 }
 
 export function renderEventChoicesView({ els, event, onChoice }) {
+  resetRouteEndingPresentation(els);
   showEventLayout(els);
   els.eventEyebrow.textContent = event.eyebrow || "冒險事件";
   els.eventTitle.textContent = event.title || "未知事件";
@@ -49,7 +52,8 @@ export function renderEventChoicesView({ els, event, onChoice }) {
   })));
 }
 
-export function renderEventResultView({ els, event, narrative, rewardLines, followUpChoices, onFollowUp }) {
+export function renderEventResultView({ els, event, narrative, rewardLines, followUpChoices, onFollowUp, hasDefaultTarget = true, defaultActionLabel = "繼續冒險" }) {
+  resetRouteEndingPresentation(els);
   showEventLayout(els);
   els.eventEyebrow.textContent = event.eyebrow || "冒險事件";
   els.eventTitle.textContent = event.title || "未知事件";
@@ -66,19 +70,61 @@ export function renderEventResultView({ els, event, narrative, rewardLines, foll
       action: choice.action || "選擇",
       onClick: () => onFollowUp(choice)
     })));
-    els.eventContinueButton.hidden = true;
-    return true;
   }
 
+  els.eventContinueButton.hidden = !hasDefaultTarget;
+  els.eventContinueButton.disabled = false;
+  els.eventContinueButton.textContent = defaultActionLabel;
+  return followUpChoices.length > 0;
+}
+
+export function renderRouteEndingView({ els, eyebrow = "冒險結尾", title, narrative, tone = "cold", actionLabel = "繼續" }) {
+  applyRouteEndingPresentation(els, tone);
+  showEventLayout(els);
+  els.eventEyebrow.textContent = eyebrow;
+  els.eventTitle.textContent = title || "旅途結尾";
+  renderRouteEndingNarrative(els, narrative);
+  els.eventPrompt.hidden = true;
+  els.eventChoices.replaceChildren();
+  renderEventRewardLines(els, []);
   els.eventContinueButton.hidden = false;
   els.eventContinueButton.disabled = false;
-  els.eventContinueButton.textContent = "繼續冒險";
-  return false;
+  els.eventContinueButton.textContent = actionLabel;
 }
 
 export function setEventChoiceButtonsDisabled(els, disabled) {
   els.eventChoices.querySelectorAll("button").forEach((button) => {
     button.disabled = disabled;
+  });
+}
+
+function applyRouteEndingPresentation(els, tone) {
+  resetRouteEndingPresentation(els);
+  const normalizedTone = normalizeRouteEndingTone(tone);
+  const panel = els.eventNarrative.closest(".event-panel");
+  panel?.classList.add("route-ending-panel", `route-ending-tone-${normalizedTone}`);
+  els.eventNarrative.classList.add("route-ending-narrative");
+}
+
+function resetRouteEndingPresentation(els) {
+  const panel = els.eventNarrative?.closest(".event-panel");
+  if (panel) {
+    panel.classList.remove("route-ending-panel");
+    ROUTE_ENDING_TONES.forEach((tone) => {
+      panel.classList.remove(`route-ending-tone-${tone}`);
+    });
+  }
+  els.eventNarrative?.classList.remove("route-ending-narrative");
+}
+
+function renderRouteEndingNarrative(els, lines = []) {
+  els.eventNarrative.replaceChildren();
+  (Array.isArray(lines) ? lines : []).forEach((line) => {
+    const paragraph = document.createElement("p");
+    const role = normalizeRouteEndingRole(line?.role);
+    paragraph.classList.add("route-ending-line", `route-ending-line-${role}`);
+    paragraph.textContent = typeof line === "string" ? line : (line?.text || "");
+    els.eventNarrative.append(paragraph);
   });
 }
 

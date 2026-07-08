@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.3.1.1-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.3.3.1-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -13,9 +13,19 @@
           <p class="eyebrow">文字冒險 Roguelite</p>
           <h1>傳說永恆</h1>
         </div>
-        <div class="run-summary">
-          <span id="encounterLabel">尚未開始</span>
-          <span id="resultLabel">冒險準備中</span>
+        <div class="topbar-status">
+          <div class="run-summary">
+            <span id="encounterLabel">尚未開始</span>
+            <span id="resultLabel">冒險準備中</span>
+          </div>
+          <div class="music-controls" aria-label="背景音樂控制">
+            <button id="musicToggleButton" class="music-toggle-button" type="button" aria-pressed="true">BGM：開</button>
+            <label class="music-volume-control" for="musicVolumeInput">
+              <span>BGM 音量</span>
+              <input id="musicVolumeInput" type="range" min="0" max="1" step="0.05" value="0.35" />
+              <output id="musicVolumeValue" for="musicVolumeInput">35%</output>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -27,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.3.1.1-alpha</p>
+            <p class="version-label">v0.2.3.3.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -275,30 +285,55 @@
 
       <section id="gameScreen" class="screen">
         <div id="combatLayout" class="combat-layout">
-          <aside class="status-panel" aria-label="角色狀態">
-            <div class="entity-block">
-              <div class="entity-heading">
+          <aside class="status-panel" aria-label="戰鬥即時資訊與目前狀態摘要">
+            <section class="hero-combat-status" aria-label="玩家即時狀態">
+              <div class="hero-combat-heading">
                 <h2 id="heroName">冒險者</h2>
-                <span id="heroLevel">第 1 輪</span>
+                <span id="heroLevel" class="hero-level">角色 Lv. 1</span>
               </div>
-              <div class="meter" aria-label="冒險者生命">
-                <span id="heroHealthBar"></span>
+              <div id="heroHealthMeter" class="layered-meter" role="meter" aria-label="冒險者生命">
+                <span id="heroHealthBar" class="meter-layer hp"></span>
+                <span id="heroPendingHealthBar" class="meter-layer pending-loss"></span>
+                <span id="heroShieldBar" class="meter-layer shield"></span>
               </div>
-              <p id="heroHealthText" class="meter-text">100 / 100</p>
-            </div>
+              <div class="meter-meta">
+                <p id="heroHealthText" class="meter-text">100 / 100</p>
+                <div id="heroStatusList" class="combat-statuses" aria-label="玩家戰鬥狀態"></div>
+              </div>
+            </section>
 
-            <div class="entity-block">
-              <div class="entity-heading">
-                <h2 id="enemyName">敵人</h2>
-                <span id="enemyKind">普通</span>
+            <section class="enemy-zone" aria-label="敵群">
+              <div class="enemy-section-heading">
+                <h3>敵群</h3>
+                <span id="enemyCountLabel">暫無遭遇</span>
               </div>
-              <div class="meter enemy" aria-label="敵人生命">
-                <span id="enemyHealthBar"></span>
-              </div>
-              <p id="enemyHealthText" class="meter-text">0 / 0</p>
-            </div>
+              <div id="enemyRoster" class="enemy-roster" aria-label="敵人列表"></div>
+            </section>
 
-            <dl id="currentStats" class="compact-stats"></dl>
+            <section class="current-status-summary" aria-label="目前狀態摘要">
+              <div class="summary-heading">
+                <strong>目前狀態摘要</strong>
+                <small>點擊查看完整資訊</small>
+              </div>
+              <div class="summary-grid">
+                <button id="openAbilityFromAttack" class="summary-tile" type="button">
+                  <span class="summary-label">攻擊</span>
+                  <span id="currentAttackSummary" class="summary-value">0</span>
+                </button>
+                <button id="openAbilityFromDefense" class="summary-tile" type="button">
+                  <span class="summary-label">防禦</span>
+                  <span id="currentDefenseSummary" class="summary-value">0</span>
+                </button>
+                <button id="openAbilityFromCrit" class="summary-tile" type="button">
+                  <span class="summary-label">暴擊率</span>
+                  <span id="currentCritSummary" class="summary-value">0%</span>
+                </button>
+                <button id="viewBlessingsButton" class="summary-tile" type="button">
+                  <span class="summary-label">目前祝福</span>
+                  <span id="currentBlessingSummary" class="summary-value">0</span>
+                </button>
+              </div>
+            </section>
           </aside>
 
           <section class="log-panel" aria-label="戰鬥紀錄">
@@ -310,7 +345,6 @@
                 <button id="restButton" class="secondary-button action-rest" type="button">原地修整</button>
                 <button id="continueButton" class="secondary-button action-forward" type="button">繼續前進</button>
                 <button id="retreatButton" class="secondary-button action-retreat" type="button">撤退</button>
-                <button id="viewBlessingsButton" class="secondary-button action-info" type="button">祝福 0</button>
               </div>
             </div>
             <ol id="battleLog" class="battle-log"></ol>
@@ -337,10 +371,10 @@
           <p id="eventTransitionText" class="event-transition-text"></p>
         </div>
 
-        <section id="blessingPanel" class="blessing-panel" aria-label="平原祝福" aria-modal="true">
+        <section id="blessingPanel" class="blessing-panel" aria-label="臨時祝福" aria-modal="true">
           <div class="blessing-dialog">
             <div>
-              <p class="eyebrow">平原事件</p>
+              <p class="eyebrow">冒險祝福</p>
               <h2>選擇一項臨時祝福</h2>
             </div>
             <div id="blessingChoices" class="blessing-grid"></div>
@@ -363,11 +397,28 @@
           </div>
         </section>
 
+        <section id="abilityInfoPanel" class="end-panel ability-info-panel" aria-label="目前能力" aria-modal="true">
+          <div class="end-dialog combat-info-dialog">
+            <div class="combat-info-header">
+              <p class="eyebrow">戰鬥資訊</p>
+              <h2>目前能力</h2>
+            </div>
+            <div class="combat-info-body">
+              <dl id="abilityInfoList" class="compact-stats ability-info-list"></dl>
+            </div>
+            <div class="end-actions">
+              <button id="closeAbilityInfoButton" class="primary-button" type="button">關閉</button>
+            </div>
+          </div>
+        </section>
+
         <section id="blessingInfoPanel" class="end-panel blessing-info-panel" aria-label="目前祝福" aria-modal="true">
           <div class="end-dialog blessing-info-dialog">
-            <div>
+            <div class="combat-info-header">
               <p class="eyebrow">臨時祝福</p>
               <h2>目前祝福</h2>
+            </div>
+            <div class="combat-info-body">
               <div id="blessingInfoFilters" class="blessing-info-filters" role="group" aria-label="祝福分類篩選"></div>
               <div id="blessingInfoList" class="blessing-info-list"></div>
             </div>
@@ -474,6 +525,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.3.1.1-alpha"></script>
+    <script type="module" src="game.js?v=0.2.3.3.1-alpha"></script>
   </body>
 </html>

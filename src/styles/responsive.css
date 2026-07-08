@@ -47,13 +47,19 @@
     margin-top: 16px;
   }
 
-  .log-panel {
-    margin-top: 14px;
-    min-height: auto;
+  .music-controls {
+    width: 100%;
   }
 
-  .battle-log {
-    height: 360px;
+  .music-volume-control {
+    flex: 1 1 220px;
+    justify-content: center;
+    max-width: 360px;
+  }
+
+  .music-volume-control input {
+    flex: 1 1 auto;
+    width: auto;
   }
 
   .stat-list {
@@ -74,16 +80,6 @@
 
   .camp-status {
     grid-template-columns: 1fr;
-  }
-
-  .combat-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
-
-  .combat-actions .secondary-button {
-    min-width: 0;
   }
 
   .primary-button {
@@ -132,6 +128,11 @@
 
   .debug-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .debug-scenario-options,
+  .debug-build-profiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .blessing-info-filter {

@@ -1,6 +1,14 @@
+import { getEnemyDefinition, sharedEnemyDefinitions } from "../enemies/index.js";
+import { routeDefinitions } from "../routes/index.js";
 import forestEventData from "./forest.json" with { type: "json" };
 
-const eventDataFiles = [forestEventData];
+const eventDataFiles = [
+  forestEventData,
+  ...Object.values(routeDefinitions).map((route) => ({
+    id: route.id,
+    events: route.eventDefinitions || []
+  }))
+];
 
 export const eventDefinitions = buildDefinitionRegistry(
   eventDataFiles.flatMap((data) => data.events || []),
@@ -12,12 +20,22 @@ export const eventEnemyDefinitions = buildDefinitionRegistry(
   "事件敵人"
 );
 
+assertNoEnemyIdAmbiguity(eventEnemyDefinitions, sharedEnemyDefinitions);
+
 export function getEventDefinition(eventId) {
   return eventDefinitions[eventId] || null;
 }
 
 export function getEventEnemyDefinition(enemyId) {
-  return eventEnemyDefinitions[enemyId] || null;
+  return getEnemyDefinition(enemyId) || eventEnemyDefinitions[enemyId] || null;
+}
+
+function assertNoEnemyIdAmbiguity(eventEnemies, sharedEnemies) {
+  Object.keys(eventEnemies).forEach((enemyId) => {
+    if (sharedEnemies[enemyId]) {
+      throw new Error(`敵人 id 同時存在共享與事件 registry：${enemyId}`);
+    }
+  });
 }
 
 function buildDefinitionRegistry(definitions, label) {

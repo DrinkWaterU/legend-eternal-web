@@ -1,3 +1,4 @@
+import { getEnemyDisplayName } from "./enemyGroups.js";
 import { clone, randomItem, roll, weightedRandomItem } from "../utils.js";
 
 const DEFAULT_ENEMY_WEIGHT = 100;
@@ -123,15 +124,18 @@ export function resolveHeroEntangle({ hero, log }) {
 }
 
 export function resolveHeroAction({ hero, enemy, log }) {
+  const enemyName = getEnemyDisplayName(enemy);
   const openingCritChance = hero.hasAttackedThisBattle ? 0 : (hero.openingCritChance || 0);
   hero.hasAttackedThisBattle = true;
 
   if (enemy.dodgeChance && roll(enemy.dodgeChance)) {
-    log.fixed("status", `${enemy.name} 閃開了攻擊。`);
+    log.fixed("status", `${enemyName} 閃開了攻擊。`);
     return;
   }
 
-  let damage = Math.max(1, getHeroAttack(hero) - enemy.defense);
+  const poisonedDefenseIgnore = enemy.poison > 0 ? Math.max(0, Number(hero.poisonedTargetDefenseIgnore) || 0) : 0;
+  const effectiveDefense = Math.max(0, (Number(enemy.defense) || 0) - poisonedDefenseIgnore);
+  let damage = Math.max(1, getHeroAttack(hero) - effectiveDefense);
   if (hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
     damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
     log.template("skill", "heavyStrike", { actor: hero.name });
@@ -153,7 +157,7 @@ export function resolveHeroAction({ hero, enemy, log }) {
   enemy.hp = Math.max(0, enemy.hp - damage);
   log.template("hero-damage", "heroDamage", {
     actor: hero.name,
-    target: enemy.name,
+    target: enemyName,
     amount: damage
   });
 
@@ -162,39 +166,40 @@ export function resolveHeroAction({ hero, enemy, log }) {
     enemy.hp = Math.max(0, enemy.hp - followUpDamage);
     log.template("hero-damage", "skilledFollowUp", {
       actor: hero.name,
-      target: enemy.name,
+      target: enemyName,
       amount: followUpDamage
     });
   }
 
   if (hero.poisonPower > 0 && enemy.hp > 0) {
     enemy.poison = Math.max(enemy.poison || 0, hero.poisonPower);
-    log.template("status", "poisonApply", { target: enemy.name });
+    log.template("status", "poisonApply", { target: enemyName });
     applyStatusFamiliarity(hero, log);
   }
 }
 
 export function resolveEnemyAction({ hero, enemy, turn, log }) {
+  const enemyName = getEnemyDisplayName(enemy);
   let damage = Math.max(1, enemy.attack - hero.defense);
   const damageSource = {
     type: "attack",
-    label: `${enemy.name}的攻擊`
+    label: `${enemyName}的攻擊`
   };
 
   if (enemy.chargeEvery && turn % enemy.chargeEvery === 0) {
-    log.template("status", "charge", { actor: enemy.name });
+    log.template("status", "charge", { actor: enemyName });
     damage = Math.round(damage * (enemy.chargeMultiplier || DEFAULT_CHARGE_MULTIPLIER));
     damageSource.type = "charge";
-    damageSource.label = `${enemy.name}的衝鋒`;
+    damageSource.label = `${enemyName}的衝鋒`;
   }
 
   if (roll(enemy.critChance || 0)) {
     damage = Math.round(damage * 1.6);
-    log.template("critical", "critical", { actor: enemy.name });
+    log.template("critical", "critical", { actor: enemyName });
     damageSource.type = damageSource.type === "charge" ? "chargeCritical" : "critical";
     damageSource.label = damageSource.type === "chargeCritical"
-      ? `${enemy.name}的衝鋒暴擊`
-      : `${enemy.name}的暴擊`;
+      ? `${enemyName}的衝鋒暴擊`
+      : `${enemyName}的暴擊`;
   }
 
   const steadyStance = getSteadyStance(hero);
@@ -213,7 +218,7 @@ export function resolveEnemyAction({ hero, enemy, turn, log }) {
 
   hero.hp = Math.max(0, hero.hp - damage);
   log.template("enemy-damage", "enemyDamage", {
-    actor: enemy.name,
+    actor: enemyName,
     target: hero.name,
     amount: damage
   });
@@ -279,11 +284,24 @@ function applyStatusFamiliarity(hero, log) {
   });
 }
 
-export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
-  let heroDeathCause = null;
+export function getHeroPendingHpLoss(hero) {
+  if (!hero || hero.poison <= 0) {
+    return 0;
+  }
+  return calculateHeroPoisonDamage(hero);
+}
 
-  if (hero.poison > 0) {
-    const poisonDamage = Math.max(1, Math.round(hero.poison * (1 - hero.damageReduction)));
+export function getEnemyPendingHpLoss(enemy) {
+  if (!enemy || enemy.poison <= 0) {
+    return 0;
+  }
+  return Math.max(0, Number(enemy.poison) || 0);
+}
+
+export function applyHeroEndOfTurnNegativeEffects({ hero, log }) {
+  let heroDeathCause = null;
+  const poisonDamage = getHeroPendingHpLoss(hero);
+  if (poisonDamage > 0) {
     hero.hp = Math.max(0, hero.hp - poisonDamage);
     log.template("enemy-damage", "poisonTick", { target: hero.name, amount: poisonDamage });
     if (hero.hp <= 0) {
@@ -293,25 +311,51 @@ export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
       };
     }
   }
+  return { heroDeathCause };
+}
 
-  if (enemy.poison > 0) {
-    enemy.hp = Math.max(0, enemy.hp - enemy.poison);
-    log.template("hero-damage", "poisonTick", { target: enemy.name, amount: enemy.poison });
+export function applyEnemyEndOfTurnNegativeEffects({ enemy, log }) {
+  const poisonDamage = getEnemyPendingHpLoss(enemy);
+  if (poisonDamage <= 0) {
+    return;
   }
+  enemy.hp = Math.max(0, enemy.hp - poisonDamage);
+  log.template("hero-damage", "poisonTick", {
+    target: getEnemyDisplayName(enemy),
+    amount: poisonDamage
+  });
+}
 
+export function applyHeroEndOfTurnRecoveryEffects({ hero, turn, log }) {
   if (hero.regenEvery > 0 && turn % hero.regenEvery === 0 && hero.hp > 0) {
     hero.hp = Math.min(hero.maxHp, hero.hp + hero.regenAmount);
     log.template("heal", "heal", { target: hero.name, amount: hero.regenAmount });
   }
-
   applyTimedRegens(hero, turn, log);
+}
 
+export function applyEnemyEndOfTurnRecoveryEffects({ enemy, turn, log }) {
   if (enemy.regenEvery > 0 && turn % enemy.regenEvery === 0 && enemy.hp > 0) {
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.regenAmount);
-    log.template("heal", "heal", { target: enemy.name, amount: enemy.regenAmount });
+    log.template("heal", "heal", {
+      target: getEnemyDisplayName(enemy),
+      amount: enemy.regenAmount
+    });
   }
+}
 
+export function applyEndOfTurnEffects({ hero, enemy, turn, log }) {
+  const { heroDeathCause } = applyHeroEndOfTurnNegativeEffects({ hero, log });
+  applyEnemyEndOfTurnNegativeEffects({ enemy, log });
+  applyHeroEndOfTurnRecoveryEffects({ hero, turn, log });
+  applyEnemyEndOfTurnRecoveryEffects({ enemy, turn, log });
   return { heroDeathCause };
+}
+
+function calculateHeroPoisonDamage(hero) {
+  const poison = Math.max(0, Number(hero.poison) || 0);
+  const damageReduction = Number(hero.damageReduction) || 0;
+  return poison > 0 ? Math.max(1, Math.round(poison * (1 - damageReduction))) : 0;
 }
 
 function applyTimedRegens(hero, turn, log) {

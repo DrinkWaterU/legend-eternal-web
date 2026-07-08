@@ -5,6 +5,9 @@
   "difficulty": "進階",
   "recommendedLevel": "Lv.15+",
   "note": "長程冒險地區，建議準備充足後挑戰。",
+  "audio": {
+    "bgmId": "forest"
+  },
   "visual": {
     "background": {
       "desktop": "assets/images/regions/forest/forest-outer.jpg",
@@ -672,12 +675,18 @@
       "effects": [
         {
           "type": "addFamilyDamageBonus",
-          "families": ["plant", "insect"],
+          "families": [
+            "plant",
+            "insect"
+          ],
           "amount": 0.14
         }
       ],
       "encounterBias": {
-        "families": ["plant", "insect"],
+        "families": [
+          "plant",
+          "insect"
+        ],
         "normal": {
           "bonusWeight": 160,
           "duration": 3,

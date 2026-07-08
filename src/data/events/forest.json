@@ -1,19 +1,5 @@
 {
   "id": "forest",
-  "enemies": [
-    {
-      "id": "goblin-warrior",
-      "name": "哥布林戰士",
-      "kind": "事件敵人",
-      "family": "goblin",
-      "maxHp": 160,
-      "attack": 25,
-      "defense": 5,
-      "critChance": 0.12,
-      "expReward": 60,
-      "intro": "哥布林戰士壓低身體，握著粗製武器朝你逼近。"
-    }
-  ],
   "events": [
     {
       "id": "forest-campfire",
@@ -75,8 +61,7 @@
               "你正準備離開時，忽然注意到營火旁的泥地。",
               "幾串凌亂的腳印一路穿過灌木，朝森林更深處延伸。",
               "那些腳印不像臨時逃竄留下的痕跡。",
-              "牠們似乎經常往返同一個方向。",
-              "你記下腳印延伸的方向，重新踏回森林中的小徑。"
+              "牠們似乎經常往返同一個方向。"
             ],
             "resultIds": [
               "campfire-goblins-defeated",
@@ -85,7 +70,23 @@
             "defaultTarget": {
               "type": "returnAdventure"
             },
-            "followUpChoices": []
+            "followUpChoices": [
+              {
+                "id": "follow-goblin-trail",
+                "meta": "隱藏路線",
+                "title": "追蹤腳印",
+                "description": "沿著反覆踩出的足跡深入森林，找出哥布林真正往返的地方。",
+                "action": "追蹤哥布林",
+                "requiresResults": [
+                  "goblin-trail-discovered"
+                ],
+                "target": {
+                  "type": "enterRoute",
+                  "routeId": "goblin-camp"
+                }
+              }
+            ],
+            "continueLabel": "記下方向，繼續森林"
           }
         },
         {

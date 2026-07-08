@@ -139,6 +139,134 @@
           "amount": -2
         }
       ]
+    },
+    {
+      "id": "rust-poison-shard",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "debuff",
+      "name": "鏽毒碎片",
+      "eventTitle": "磨碎鏽片",
+      "eventText": "你從哥布林的破刃上刮下一層混著污垢的暗色鏽屑。味道並不好聞，但牠們顯然很清楚該把這些東西抹在哪裡。",
+      "flavorText": "乾不乾淨不重要。傷口爛得夠快就好。",
+      "effectText": "攻擊 +1，中毒傷害 +2，防禦 -1。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        },
+        {
+          "type": "add",
+          "stat": "poisonPower",
+          "amount": 2
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": -1
+        }
+      ]
+    },
+    {
+      "id": "broken-pot-breastplate",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "name": "破鍋護胸",
+      "eventTitle": "綁上破鐵片",
+      "eventText": "一塊被砸凹的鐵片還掛著焦黑油漬。你重新穿過幾條皮繩，把這件哥布林眼中的「護甲」固定在胸前。",
+      "flavorText": "擋不住也沒關係。至少能多墊一層。",
+      "effectText": "最大生命 +16，防禦 -1。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 16
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": -1
+        }
+      ]
+    },
+    {
+      "id": "strike-in-chaos",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "attack",
+      "name": "趁亂下手",
+      "eventTitle": "利用混亂",
+      "eventText": "你逐漸看懂哥布林群戰時的習慣。每當有人倒下，剩下的傢伙總會露出短暫混亂——而牠們從不浪費這個機會。",
+      "flavorText": "少一個礙事的，就多一個可以放心下手的角度。",
+      "effectText": "每擊敗 1 名敵人，本場戰鬥攻擊 +2。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killAttackGain",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "acrid-hemostatic-powder",
+      "category": "healing",
+      "rarity": "uncommon",
+      "primaryFlow": "healing",
+      "name": "刺鼻止血粉",
+      "eventTitle": "撒上止血粉",
+      "eventText": "一包灰白粉末散發著刺鼻氣味。你看不出裡面混了什麼，但灑在傷口上的瞬間，劇痛至少證明它確實做了點事。",
+      "flavorText": "會痛代表還活著。哥布林大概就是這麼想的。",
+      "effectText": "生命低於 50% 時擊敗敵人，額外恢復 14 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "lowHpKillHeal",
+          "amount": 14
+        }
+      ]
+    },
+    {
+      "id": "corroded-rust-armor",
+      "category": "attack",
+      "rarity": "rare",
+      "primaryFlow": "debuff",
+      "name": "腐鏽蝕甲",
+      "eventTitle": "抹上腐鏽",
+      "eventText": "哥布林把某種發黑液體反覆塗在鏽蝕武器上。你原以為那只是疏於保養，直到看見金屬與皮革接觸後逐漸軟化。",
+      "flavorText": "毒不一定要殺死敵人。先讓護甲變得像爛布就夠了。",
+      "effectText": "中毒傷害 +2；攻擊中毒敵人時，忽略 4 點防禦。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "poisonPower",
+          "amount": 2
+        },
+        {
+          "type": "add",
+          "stat": "poisonedTargetDefenseIgnore",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "loot-the-dead",
+      "category": "healing",
+      "rarity": "rare",
+      "primaryFlow": "healing",
+      "name": "扒屍續命",
+      "eventTitle": "什麼都別浪費",
+      "eventText": "哥布林從倒下的同伴與敵人身上迅速翻走藥瓶、乾糧和還能使用的布條。你不喜歡這個習慣，但不得不承認，它很有效率。",
+      "flavorText": "死人用不到。活人正缺。",
+      "effectText": "每擊敗 1 名敵人，恢復最大生命 6%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHealRatio",
+          "amount": 0.06
+        }
+      ]
     }
   ]
 }

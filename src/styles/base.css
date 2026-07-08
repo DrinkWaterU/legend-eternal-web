@@ -93,6 +93,12 @@ button {
   width: 100%;
 }
 
+.topbar-status {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: var(--gold);

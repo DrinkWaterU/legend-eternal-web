@@ -45,7 +45,9 @@ export function createDefaultSave() {
     },
     settings: {
       selectedRegionId: DEFAULT_REGION_ID,
-      selectedCharacterId: DEFAULT_CHARACTER_ID
+      selectedCharacterId: DEFAULT_CHARACTER_ID,
+      musicEnabled: true,
+      musicVolume: 0.35
     }
   };
 }
@@ -93,6 +95,12 @@ export function migrateSave(rawSave, options = {}) {
 
   save.settings.selectedRegionId = regionDefinitions[rawSave.settings?.selectedRegionId] ? rawSave.settings.selectedRegionId : DEFAULT_REGION_ID;
   save.settings.selectedCharacterId = characterDefinitions[rawSave.settings?.selectedCharacterId] ? rawSave.settings.selectedCharacterId : DEFAULT_CHARACTER_ID;
+  save.settings.musicEnabled = typeof rawSave.settings?.musicEnabled === "boolean"
+    ? rawSave.settings.musicEnabled
+    : save.settings.musicEnabled;
+  save.settings.musicVolume = Number.isFinite(rawSave.settings?.musicVolume)
+    ? Math.min(1, Math.max(0, rawSave.settings.musicVolume))
+    : save.settings.musicVolume;
 
   if (persist) {
     saveGame(save);
@@ -152,7 +160,8 @@ function createDefaultStoryFlags() {
   return {
     phoenixBlessingUnlocked: false,
     plainsBossStorySeen: false,
-    achievementSystemUnlocked: false
+    achievementSystemUnlocked: false,
+    archerRescued: false
   };
 }
 
@@ -173,7 +182,8 @@ function createDefaultRegionStatistics() {
       runs: 0,
       clears: 0,
       retreats: 0,
-      bestEncounter: 0
+      bestEncounter: 0,
+      ...(regionId === "forest" ? { routeClears: { main: 0, goblinCamp: 0 } } : {})
     }
   ]));
 }
@@ -233,6 +243,15 @@ function migrateStatistics(save, rawSave) {
     save.statistics.regions[regionId].clears = toSafeNumber(rawRegionStats.clears);
     save.statistics.regions[regionId].retreats = toSafeNumber(rawRegionStats.retreats);
     save.statistics.regions[regionId].bestEncounter = toSafeNumber(rawRegionStats.bestEncounter);
+    if (regionId === "forest") {
+      if (rawSave.schemaVersion >= 6) {
+        save.statistics.regions[regionId].routeClears.main = toSafeNumber(rawRegionStats.routeClears?.main);
+        save.statistics.regions[regionId].routeClears.goblinCamp = toSafeNumber(rawRegionStats.routeClears?.goblinCamp);
+      } else {
+        save.statistics.regions[regionId].routeClears.main = save.statistics.regions[regionId].clears;
+        save.statistics.regions[regionId].routeClears.goblinCamp = 0;
+      }
+    }
   });
 
   Object.keys(characterDefinitions).forEach((characterId) => {

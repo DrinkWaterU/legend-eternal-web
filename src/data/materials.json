@@ -226,5 +226,53 @@
     "sellPrice": 14,
     "sortOrder": 610,
     "tags": ["forest", "beast", "boss", "antler"]
+  },
+  "goblin_scrap": {
+    "id": "goblin_scrap",
+    "name": "哥布林廢鐵",
+    "rarity": "common",
+    "category": "material",
+    "description": "從哥布林破刃、鐵片與拼裝護具上拆下的廢鐵，鏽蝕嚴重但仍有可用部分。",
+    "usage": "可重新熔煉或作為粗製裝備與工具的補強材料。",
+    "source": "森林 / 哥布林系",
+    "sellPrice": 2,
+    "sortOrder": 700,
+    "tags": ["forest", "goblin", "metal"]
+  },
+  "oily_leather_cord": {
+    "id": "oily_leather_cord",
+    "name": "油污皮繩",
+    "rarity": "common",
+    "category": "material",
+    "description": "沾滿油垢與泥土的粗皮繩，常被哥布林拿來綁武器、護甲與戰利品。",
+    "usage": "清理後可作綁帶、固定繩與簡易皮革補強。",
+    "source": "森林 / 哥布林系",
+    "sellPrice": 2,
+    "sortOrder": 710,
+    "tags": ["forest", "goblin", "leather"]
+  },
+  "crude_venom": {
+    "id": "crude_venom",
+    "name": "粗煉毒液",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "哥布林以毒草、腐敗汁液與不明分泌物粗製的毒液，成分混亂卻具有明顯毒性。",
+    "usage": "可用於毒性塗層、陷阱或抗毒材料研究。",
+    "source": "森林 / 哥布林毒鏢手、血骨薩滿",
+    "sellPrice": 5,
+    "sortOrder": 720,
+    "tags": ["forest", "goblin", "poison"]
+  },
+  "bloodbone_charm": {
+    "id": "bloodbone_charm",
+    "name": "血骨祭符",
+    "rarity": "rare",
+    "category": "material",
+    "description": "由染血骨片、獸牙與粗繩綁成的祭符，仍殘留血骨薩滿儀式中的陰冷氣息。",
+    "usage": "血祭與哥布林薩滿相關的稀有研究素材。",
+    "source": "森林 / 血骨薩滿",
+    "sellPrice": 14,
+    "sortOrder": 730,
+    "tags": ["forest", "goblin", "boss", "ritual"]
   }
 }

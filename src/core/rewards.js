@@ -7,21 +7,27 @@ export function createEmptyRewards() {
   };
 }
 
-export function rollEnemyRewards(enemy, randomFn = Math.random) {
+export function rollEnemyRewards(enemy, options = {}, randomFn = Math.random) {
+  if (typeof options === "function") {
+    randomFn = options;
+    options = {};
+  }
+
   const rewards = createEmptyRewards();
   if (!enemy?.rewards) {
     return rewards;
   }
 
-  rewards.gold = rollAmount(enemy.rewards.gold, randomFn);
+  const rewardScale = resolveRewardScale(enemy, options);
+  rewards.gold = Math.max(0, Math.round(rollAmount(enemy.rewards.gold, randomFn) * rewardScale));
 
   const materials = Array.isArray(enemy.rewards.materials) ? enemy.rewards.materials : [];
   materials.forEach((material) => {
     if (!material?.id) {
       return;
     }
-    const chance = clampChance(material.chance ?? 1);
-    if (randomFn() > chance) {
+    const chance = clampChance((material.chance ?? 1) * rewardScale);
+    if (chance <= 0 || randomFn() >= chance) {
       return;
     }
     const quantity = rollAmount(material, randomFn);
@@ -96,6 +102,11 @@ export function formatInventorySummary(inventory, materialDefinitions = {}) {
     materialCount,
     materials: materials.length > 0 ? materials.map((material) => `${material.name} x${material.quantity}`).join("、") : "尚未取得素材"
   };
+}
+
+function resolveRewardScale(enemy, options) {
+  const explicitScale = Number(options?.rewardScale ?? options?.scale ?? enemy?.rewardScale);
+  return Number.isFinite(explicitScale) && explicitScale >= 0 ? explicitScale : 1;
 }
 
 function rollAmount(value, randomFn) {

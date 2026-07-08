@@ -152,13 +152,13 @@ export function inferBlessingFlows(blessing) {
     if (["critChance", "critDamageMultiplier", "poisonedCritChance", "openingCritChance", "woundedTargetCritChance"].includes(effect.stat)) {
       flows.add("crit");
     }
-    if (effect.stat === "poisonPower") {
+    if (effect.stat === "poisonPower" || effect.stat === "poisonedTargetDefenseIgnore") {
       flows.add("debuff");
     }
-    if (effect.stat === "recoverHp" || effect.stat === "regenEvery" || effect.stat === "regenAmount" || effect.stat === "killHeal") {
+    if (["recoverHp", "regenEvery", "regenAmount", "killHeal", "lowHpKillHeal", "killHealRatio"].includes(effect.stat)) {
       flows.add("healing");
     }
-    if (effect.stat === "attack") {
+    if (effect.stat === "attack" || effect.stat === "killAttackGain") {
       flows.add("attack");
     }
   });
