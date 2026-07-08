@@ -7,7 +7,7 @@
     { id: "plains", name: "平原", path: "../src/data/regions/plains.json" },
     { id: "forest", name: "森林", path: "../src/data/regions/forest.json" }
   ];
-  const DEFAULT_GAME_VERSION = "v0.2.3.3.1-alpha";
+  const DEFAULT_GAME_VERSION = "v0.2.3.3.2-alpha";
   const BLESSING_FLOW_REGISTRY_PATH = "../src/data/blessingFlows.json";
 
   const state = {

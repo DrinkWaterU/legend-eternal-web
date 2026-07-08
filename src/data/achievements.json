@@ -18,7 +18,7 @@
   "goblin_camp_clear": {
     "id": "goblin_camp_clear",
     "title": "深入敵巢",
-    "conditionText": "完成哥布林營地 Route",
+    "conditionText": "完成哥布林營地支線",
     "description": "你循著哥布林留下的痕跡深入營地，擊敗血骨薩滿，並救出了被俘的弓箭手。",
     "category": "route",
     "regionId": "forest",

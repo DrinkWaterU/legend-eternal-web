@@ -367,7 +367,7 @@
       "level": 15,
       "type": "rare",
       "name": "死地求生",
-      "description": "每場戰鬥第一次受到致命傷害時保留 1 HP，恢復最大生命 15%，並清除 1 個負面效果。"
+      "description": "每場戰鬥第一次受到致命傷害時保留 1 點生命，恢復最大生命 15%，並清除 1 個負面效果。"
     },
     {
       "id": "exploit-weakness-plus",
