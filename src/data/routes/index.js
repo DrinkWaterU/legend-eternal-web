@@ -2,6 +2,7 @@ import { getBlessingPool } from "../blessings/index.js";
 import { getEnemyDefinition } from "../enemies/index.js";
 import { musicDefinitions } from "../music.js";
 import { regionDefinitions } from "../regions/index.js";
+import { ROUTE_ENDING_ROLES, ROUTE_ENDING_TONES } from "./endingSemantics.js";
 import goblinCampData from "./goblinCamp.json" with { type: "json" };
 
 const routeDataFiles = [goblinCampData];
@@ -54,6 +55,7 @@ function validateRouteDefinition(route, registry) {
   });
 
   validateRouteEvents(route);
+  validateRouteEnding(route);
 
   const finalEncounter = route.encounterPlan.at(-1);
   const finalGroup = groups.get(finalEncounter.groupId);
@@ -79,6 +81,38 @@ function validateRouteDefinition(route, registry) {
     }
   });
 }
+function validateRouteEnding(route) {
+  const ending = route.ending;
+  if (!ending) {
+    return;
+  }
+
+  const routeId = route.id;
+  if (!String(ending.title || "").trim()) {
+    throw new Error(`Route ${routeId} ending 缺少 title。`);
+  }
+  if (!Array.isArray(ending.pages) || ending.pages.length === 0) {
+    throw new Error(`Route ${routeId} ending.pages 不可為空。`);
+  }
+
+  ending.pages.forEach((page, pageIndex) => {
+    if (!ROUTE_ENDING_TONES.includes(page?.tone)) {
+      throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁 tone 無效：${page?.tone || "(empty)"}`);
+    }
+    if (!Array.isArray(page.lines) || page.lines.length === 0) {
+      throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁 lines 不可為空。`);
+    }
+    page.lines.forEach((line, lineIndex) => {
+      if (!ROUTE_ENDING_ROLES.includes(line?.role)) {
+        throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁第 ${lineIndex + 1} 行 role 無效：${line?.role || "(empty)"}`);
+      }
+      if (!String(line?.text || "").trim()) {
+        throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁第 ${lineIndex + 1} 行缺少 text。`);
+      }
+    });
+  });
+}
+
 function validateRouteEvents(route) {
   const routeId = route.id;
   const definitions = new Map();

@@ -322,5 +322,115 @@
     "goblin-slinger",
     "goblin-poison-dart",
     "goblin-shield-guard"
-  ]
+  ],
+  "ending": {
+    "eyebrow": "哥布林營地結尾",
+    "title": "營地深處",
+    "pages": [
+      {
+        "tone": "embers",
+        "lines": [
+          {
+            "role": "scene",
+            "text": "最後一聲低啞的咒聲消失後，祭火逐漸熄滅。"
+          },
+          {
+            "role": "narration",
+            "text": "沒有新的哥布林衝出來。"
+          },
+          {
+            "role": "narration",
+            "text": "營地深處第一次真正安靜下來。"
+          },
+          {
+            "role": "scene",
+            "text": "散亂木箱與獸皮後方，一道以粗木和鐵條拼成的牢門映入眼中。"
+          }
+        ]
+      },
+      {
+        "tone": "cold",
+        "lines": [
+          {
+            "role": "narration",
+            "text": "牢門附近散著幾支折斷的箭，其中一支只剩被硬生生折斷的木桿。"
+          },
+          {
+            "role": "narration",
+            "text": "牢籠裡的人靠著木牆坐著，手腕上纏著染血的布條。"
+          },
+          {
+            "role": "scene",
+            "text": "她抬起頭，視線先越過你，看向外頭倒下的哥布林。"
+          }
+        ]
+      },
+      {
+        "tone": "archer",
+        "lines": [
+          {
+            "role": "archer",
+            "text": "「……外面安靜了。」"
+          },
+          {
+            "role": "narration",
+            "text": "她看了你一眼。"
+          },
+          {
+            "role": "archer",
+            "text": "「看來不是換了一批哥布林看守。」"
+          },
+          {
+            "role": "archer",
+            "text": "「那個薩滿死了？」"
+          },
+          {
+            "role": "player",
+            "text": "你點了點頭。"
+          },
+          {
+            "role": "archer",
+            "text": "「難怪祭火停了。」"
+          },
+          {
+            "role": "archer",
+            "text": "「哥布林很多，但牠們行為模式也很單一。」"
+          },
+          {
+            "role": "archer",
+            "text": "「也謝謝你把我從這解救出來。」"
+          }
+        ]
+      },
+      {
+        "tone": "warm",
+        "lines": [
+          {
+            "role": "archer",
+            "text": "「我的弓被牠們拆了。」"
+          },
+          {
+            "role": "narration",
+            "text": "她低頭看了一眼手上的傷。"
+          },
+          {
+            "role": "archer",
+            "text": "「現在跟著你，只會多一個需要照顧的人。」"
+          },
+          {
+            "role": "narration",
+            "text": "她確認自己還記得離開森林的路。"
+          },
+          {
+            "role": "archer",
+            "text": "「這次算我欠你的。」"
+          },
+          {
+            "role": "ending",
+            "text": "「等我能重新拉弓，我會去找你。」"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -60,6 +60,15 @@ import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatLis
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
+import {
+  createDebugBuildProfile,
+  getDebugBuildProfiles,
+  getDebugMidChoices,
+  getDebugRouteEntryOptions,
+  getDebugScenarioBuildSlots,
+  getDebugScenarioCatalog,
+  getDebugScenarioDefinition
+} from "./src/debug/scenarios.js";
 import { clone, randomItem, roll, weightedRandomItem } from "./src/utils.js";
 
 const RUN_STARTING_FLEES = 2;
@@ -83,43 +92,6 @@ const STORY_FINISH_EXTRA_DELAY_MS = 1700;
 const EVENT_TRANSITION_FIRST_LINE_MS = 850;
 const EVENT_TRANSITION_SECOND_LINE_MS = 950;
 const EVENT_TRANSITION_FADE_MS = 320;
-const PLAINS_STORY_LINES = [
-  `魔化野豬王倒下後，牠身上的紋路化作無溫的<span class="story-mark-star">星光</span>。`,
-  `平原的風停了，你在<span class="story-mark-star">星穹之外</span>看見<span class="story-mark-star">某個存在</span>睜開了眼。`,
-  `你的思緒被那道<span class="story-mark-star">目光</span>壓碎，<span class="story-mark-death">死亡</span>隨之降臨。`,
-  `<span class="story-mark-phoenix">灰燼般的微光</span>在黑暗中燃起。`,
-  `<span class="story-mark-phoenix">鳳凰的加護</span>回應了死亡，將你帶回<span class="story-mark-phoenix">營地</span>。`
-];
-const GOBLIN_CAMP_ENDING_PAGES = Object.freeze([
-  Object.freeze([
-    "最後一聲低啞的咒聲消失後，祭火逐漸熄滅。",
-    "沒有新的哥布林衝出來。",
-    "營地深處第一次真正安靜下來。",
-    "散亂木箱與獸皮後方，一道以粗木和鐵條拼成的牢門映入眼中。"
-  ]),
-  Object.freeze([
-    "牢門附近散著幾支折斷的箭，其中一支只剩被硬生生折斷的木桿。",
-    "牢籠裡的人靠著木牆坐著，手腕上纏著染血的布條。",
-    "她抬起頭，視線先越過你，看向外頭倒下的哥布林。"
-  ]),
-  Object.freeze([
-    "「……外面安靜了。」",
-    "她看了你一眼。",
-    "「看來不是換了一批哥布林看守。」",
-    "「那個薩滿死了？」你點了點頭。",
-    "「難怪祭火停了。」",
-    "「哥布林很多，但牠們有個壞習慣。」",
-    "「總以為站在最前面的，就是最需要保護的那個。」"
-  ]),
-  Object.freeze([
-    "「我的弓被牠們拆了。」",
-    "她低頭看了一眼手上的傷。",
-    "「現在跟著你，只會多一個需要照顧的人。」",
-    "她確認自己還記得離開森林的路。",
-    "「這次算我欠你的。」",
-    "「等我能重新拉弓，我會去找你。」"
-  ])
-]);
 const NAVIGATION_CONTEXTS = Object.freeze({
   menu: { scene: null, returnTarget: "menuScreen" },
   camp: { scene: "camp", returnTarget: "campScreen" },
@@ -643,6 +615,43 @@ function createRunStats() {
   };
 }
 
+function initializeRunRuntime({ hero, encounterIndex = 0, debugBuildRun = false, bossId = null } = {}) {
+  if (!hero) {
+    throw new Error("Run runtime 初始化需要 Hero。");
+  }
+
+  resetRouteRuntime();
+  state.debugBuildRun = Boolean(debugBuildRun);
+  state.run += 1;
+  state.encounterIndex = encounterIndex;
+  state.turn = 0;
+  state.hero = hero;
+  state.hero.fleesRemaining = RUN_STARTING_FLEES;
+  clearEnemyGroup();
+  state.selectedBoss = selectRunBoss(currentRegion(), bossId);
+  state.phase = "danger";
+  state.awaitingBlessing = false;
+  state.ended = false;
+  state.defeatedEnemies = encounterIndex;
+  state.defeatedBoss = false;
+  state.deathCause = null;
+  state.runStats = createRunStats();
+  state.runResultRecorded = false;
+  state.canRest = false;
+  state.hasRested = false;
+  state.ambushAdvantage = false;
+  state.battleSource = "main";
+  state.battleEncounterType = null;
+  clearPendingThreat();
+  state.blessingContext = "normal";
+  state.blessingPoolOverrideId = null;
+  resetEventRunState();
+  state.log = [];
+  state.runStats.startLevel = state.hero.level;
+  state.runStats.endLevel = state.hero.level;
+  recordSelectedBossInRunStats();
+}
+
 function getCharacterProgress(characterId = state.selectedHeroId) {
   return saveData.progression.characters[characterId];
 }
@@ -1070,20 +1079,16 @@ function createDebugActions() {
     healHero: healDebugHero,
     unlockPhoenix: unlockDebugPhoenix,
     removePhoenix: removeDebugPhoenix,
-    givePlainsMaterials: giveDebugPlainsMaterials,
-    giveForestMaterials: giveDebugForestMaterials,
+    getMaterialGroups: getDebugMaterialGroups,
+    giveMaterials: giveDebugMaterialsByGroup,
     clearInventory: clearDebugInventory,
-    startPlainsBoss: startDebugPlainsBoss,
-    startForestBoss: startDebugForestBoss,
-    startForestCampfire: startDebugForestCampfire,
-    startMultiEnemyGoblin: startDebugMultiEnemyGoblin,
-    startGoblinCampRoute: startDebugGoblinCampRoute,
-    startGoblinCampMidEvent: startDebugGoblinCampMidEvent,
-    startGoblinCampAfterMidEvent: startDebugGoblinCampAfterMidEvent,
-    startGoblinCampBoss: startDebugGoblinCampBoss,
-    getBlessingBuildCatalog: getDebugBlessingBuildCatalog,
-    startBossWithBlessingBuild: startDebugBossWithBlessingBuild,
-    triggerPlainsStory: triggerDebugPlainsStory,
+    getScenarioCatalog: getDebugScenarioCatalog,
+    getRouteEntryOptions: getDebugRouteEntryOptions,
+    getMidChoices: getDebugMidChoices,
+    getBuildProfiles: getDebugBuildProfiles,
+    getScenarioBuildSlots: getDebugScenarioBuildSlots,
+    createBuildProfile: createDebugBuildProfile,
+    startScenario: startDebugScenario,
     returnToCamp: returnDebugToCamp,
     deleteSave: deleteDebugSave
   };
@@ -1152,20 +1157,23 @@ function removeDebugPhoenix() {
   return "已移除鳳凰加護並重置平原劇情旗標。";
 }
 
-function giveDebugPlainsMaterials() {
-  giveDebugMaterialsByTag("plains");
-  return "已給予少量平原素材。";
+function getDebugMaterialGroups() {
+  return [
+    { id: "plains", name: "平原" },
+    { id: "forest-main", name: "森林主路線" },
+    { id: "goblin", name: "哥布林" }
+  ];
 }
 
-function giveDebugForestMaterials() {
-  giveDebugMaterialsByTag("forest");
-  return "已給予少量森林素材。";
-}
+function giveDebugMaterialsByGroup(groupId) {
+  const group = getDebugMaterialGroups().find((candidate) => candidate.id === groupId);
+  if (!group) {
+    throw new Error("找不到指定素材來源。");
+  }
 
-function giveDebugMaterialsByTag(tag) {
   const rewards = createEmptyRewards();
   Object.entries(materialDefinitions)
-    .filter(([, material]) => Array.isArray(material.tags) && material.tags.includes(tag))
+    .filter(([, material]) => matchesDebugMaterialGroup(material, group.id))
     .forEach(([materialId, material]) => {
       rewards.materials[materialId] = {
         id: materialId,
@@ -1176,6 +1184,21 @@ function giveDebugMaterialsByTag(tag) {
   applyRewardsToInventory(saveData.inventory, rewards);
   saveGameSafe();
   refreshAfterDebugChange();
+  return `已給予少量${group.name}素材。`;
+}
+
+function matchesDebugMaterialGroup(material, groupId) {
+  const tags = Array.isArray(material?.tags) ? material.tags : [];
+  if (groupId === "plains") {
+    return tags.includes("plains");
+  }
+  if (groupId === "forest-main") {
+    return tags.includes("forest") && !tags.includes("goblin");
+  }
+  if (groupId === "goblin") {
+    return tags.includes("goblin");
+  }
+  return false;
 }
 
 function clearDebugInventory() {
@@ -1187,43 +1210,125 @@ function clearDebugInventory() {
   return "已清空金幣與素材。";
 }
 
-function startDebugPlainsBoss() {
-  prepareDebugRunAtEncounter(getPlainsBossEncounterIndex());
-  startEncounter();
-  addFixedLog("system", "調試：直接進入平原首領戰。");
-  return "已直接進入平原首領戰。";
-}
-
-function startDebugForestBoss(bossId = null) {
-  prepareDebugRunForRegion("forest", getBossEncounterIndex("forest"), { bossId });
-  startEncounter();
-  addFixedLog("system", `調試：直接進入森林首領戰${state.selectedBoss ? `（${state.selectedBoss.name}）` : ""}。`);
-  return `已直接進入森林首領戰${state.selectedBoss ? `：${state.selectedBoss.name}` : ""}。`;
-}
-
-function startDebugForestCampfire() {
-  const triggerBeforeEncounter = 6;
-  prepareDebugRunForRegion("forest", triggerBeforeEncounter - 1);
-  state.eventSchedule = {
-    eventId: "forest-campfire",
-    triggerBeforeEncounter
-  };
-  state.log = [];
-  enterSafeState({ canRest: false });
-  addFixedLog("system", "調試：下一次繼續前進將觸發森林事件。");
-  return "已準備林間營火事件；請按「繼續前進」。";
-}
-
-function startDebugMultiEnemyGoblin() {
-  const enemyDefinition = getEventEnemyDefinition("goblin-warrior");
-  if (!enemyDefinition) {
-    throw new Error("找不到哥布林戰士事件敵人。");
+function startDebugScenario(options = {}) {
+  if (!isDebugModeEnabled()) {
+    throw new Error("冒險場景測試僅能在 ?debug=1 使用。");
   }
 
-  prepareDebugRunForRegion("forest", 5);
+  const scenario = getDebugScenarioDefinition(options.scenarioId);
+  if (!scenario) {
+    throw new Error("找不到指定 Debug 場景。");
+  }
+
+  const scenarioOptions = {
+    routeEntryEncounter: clampDebugInteger(Number(options.routeEntryEncounter), 6, 8),
+    midChoice: options.midChoice === "blessing" ? "blessing" : "heal"
+  };
+  const buildSlots = getDebugScenarioBuildSlots(scenario.id, scenarioOptions);
+  const selections = validateDebugScenarioSelections(buildSlots, options.selections);
+  const debugHero = buildDebugMaxLevelHero(state.selectedHeroId);
+
+  if (scenario.kind === "regionBoss") {
+    prepareDebugRunForRegion(scenario.regionId, getBossEncounterIndex(scenario.regionId), {
+      bossId: scenario.bossId || null,
+      hero: debugHero,
+      debugBuildRun: true,
+      persistSelection: false
+    });
+    applyDebugScenarioBuild(buildSlots, selections);
+    setDebugScenarioHp(options.hpPercent);
+    startEncounter();
+    addFixedLog("system", `調試：Sandbox Build 直接進入${state.selectedBoss?.name || "首領"}。`);
+    return `已進入「${scenario.name}」；正式存檔不會記錄本次結果。`;
+  }
+
+  if (scenario.kind === "forestCampfire") {
+    const triggerBeforeEncounter = 6;
+    prepareDebugRunForRegion("forest", triggerBeforeEncounter - 1, {
+      hero: debugHero,
+      debugBuildRun: true,
+      persistSelection: false
+    });
+    applyDebugScenarioBuild(buildSlots, selections);
+    setDebugScenarioHp(options.hpPercent);
+    state.eventSchedule = {
+      eventId: "forest-campfire",
+      triggerBeforeEncounter
+    };
+    state.log = [];
+    enterSafeState({ canRest: false });
+    addFixedLog("system", "調試：Sandbox 已準備林間營火；下一次繼續前進觸發事件。");
+    return "已準備林間營火；請按「繼續前進」。正式存檔不會記錄本次結果。";
+  }
+
+  if (scenario.kind === "multiEnemy") {
+    prepareDebugMultiEnemyScenario(debugHero, options.hpPercent);
+    return "已進入多敵人基礎測試；正式存檔不會記錄本次結果。";
+  }
+
+  if (scenario.kind === "goblinRouteEncounter" || scenario.kind === "goblinMidEvent") {
+    const entryEncounterIndex = scenarioOptions.routeEntryEncounter - 1;
+    const scheduleEvent = scenario.id === "goblin-route-start" || scenario.kind === "goblinMidEvent";
+    prepareDebugGoblinRouteAt(scenario.routeEncounterIndex, {
+      entryEncounterIndex,
+      scheduleEvent,
+      hero: debugHero
+    });
+    applyDebugScenarioBuild(buildSlots, selections);
+    setDebugScenarioHp(options.hpPercent);
+
+    if (scenario.kind === "goblinMidEvent") {
+      enterSafeState({ canRest: false });
+      addFixedLog("system", "調試：Sandbox 視為已完成哥布林營地第 4 場；下一次繼續前進觸發中段補給事件。");
+      return "已準備「掠奪來的補給」；請按「繼續前進」。正式存檔不會記錄本次結果。";
+    }
+
+    startEncounter();
+    addFixedLog("system", `調試：Sandbox Build 直接進入「${scenario.name}」。`);
+    return `已進入「${scenario.name}」；正式存檔不會記錄本次結果。`;
+  }
+
+  if (scenario.kind === "plainsStory") {
+    prepareDebugRunForRegion("plains", getBossEncounterIndex("plains"), {
+      hero: debugHero,
+      debugBuildRun: true,
+      persistSelection: false
+    });
+    state.defeatedBoss = true;
+    showPlainsStory();
+    return "已觸發平原星神劇情 Sandbox；完成後不會解鎖鳳凰。";
+  }
+
+  if (scenario.kind === "goblinEnding") {
+    const route = getRouteDefinition("goblin-camp");
+    prepareDebugGoblinRouteAt(route.encounterPlan.length - 1, {
+      entryEncounterIndex: scenarioOptions.routeEntryEncounter - 1,
+      scheduleEvent: false,
+      hero: debugHero
+    });
+    showRouteEnding(route);
+    return "已開啟弓箭手 Route Ending Sandbox；不會救援角色或記錄通關。";
+  }
+
+  throw new Error(`尚未支援 Debug 場景類型：${scenario.kind}`);
+}
+
+function prepareDebugMultiEnemyScenario(debugHero, hpPercent) {
+  const enemyDefinition = getEventEnemyDefinition("goblin-warrior");
+  if (!enemyDefinition) {
+    throw new Error("找不到哥布林戰士敵人。");
+  }
+
+  prepareDebugRunForRegion("forest", 5, {
+    hero: debugHero,
+    debugBuildRun: true,
+    persistSelection: false
+  });
+  setDebugScenarioHp(hpPercent);
   state.turn = 0;
   state.phase = "danger";
   state.battleSource = "main";
+  state.battleEncounterType = "normal";
   state.log = [];
   const first = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
   const second = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
@@ -1235,42 +1340,12 @@ function startDebugMultiEnemyGoblin() {
   ]);
   resetHeroBattleState();
   applyBattleStartSkills();
-  addFixedLog("system", "調試：多敵人戰鬥測試，第二名哥布林套用 statScale 0.75 / rewardScale 0.5。");
+  addFixedLog("system", "調試：多敵人基礎 Sandbox；第二名哥布林套用 statScale 0.75 / rewardScale 0.5。");
   logCurrentEnemyGroupEncounter();
   if (state.hero.shield > 0) {
     addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
   }
   render();
-  return "已進入哥布林戰士 ×2 多敵人測試。";
-}
-
-function startDebugGoblinCampRoute() {
-  prepareDebugGoblinRouteAt(0);
-  startEncounter();
-  addFixedLog("system", "調試：直接從哥布林營地第 1 場開始 Route。");
-  return "已直接進入哥布林營地 Route。";
-}
-
-function startDebugGoblinCampMidEvent() {
-  prepareDebugGoblinRouteAt(4, { scheduleEvent: true });
-  enterSafeState({ canRest: false });
-  addFixedLog("system", "調試：已完成哥布林營地第 4 場；下一次繼續前進會觸發中段補給事件。");
-  return "已準備掠奪來的補給事件；請按「繼續前進」。";
-}
-
-function startDebugGoblinCampAfterMidEvent() {
-  prepareDebugGoblinRouteAt(4, { scheduleEvent: false });
-  startEncounter();
-  addFixedLog("system", "調試：略過中段事件，直接進入哥布林營地第 5 場。");
-  return "已直接進入哥布林營地第 5 場。";
-}
-
-function startDebugGoblinCampBoss() {
-  const route = getRouteDefinition("goblin-camp");
-  prepareDebugGoblinRouteAt(route.encounterPlan.length - 1, { scheduleEvent: false });
-  startEncounter();
-  addFixedLog("system", "調試：直接進入血骨薩滿首領親衛戰。");
-  return "已直接進入哥布林營地首領戰。";
 }
 
 function prepareDebugGoblinRouteAt(routeEncounterIndex, options = {}) {
@@ -1279,11 +1354,15 @@ function prepareDebugGoblinRouteAt(routeEncounterIndex, options = {}) {
     throw new Error("找不到哥布林營地 Route。");
   }
   const routeIndex = clampDebugInteger(routeEncounterIndex, 0, route.encounterPlan.length - 1);
-  const entryEncounterIndex = 5;
-  prepareDebugRunForRegion(route.regionId, entryEncounterIndex + routeIndex);
+  const entryEncounterIndex = clampDebugInteger(Number(options.entryEncounterIndex), 5, 7);
+  prepareDebugRunForRegion(route.regionId, entryEncounterIndex + routeIndex, {
+    hero: options.hero || buildDebugMaxLevelHero(state.selectedHeroId),
+    debugBuildRun: true,
+    persistSelection: false
+  });
   state.activeRouteId = route.id;
   state.routeEncounterIndex = routeIndex;
-  state.eventSchedule = options.scheduleEvent === false ? null : scheduleRegionEvent(route);
+  state.eventSchedule = options.scheduleEvent ? scheduleRegionEvent(route) : null;
   state.selectedBoss = clone(getRouteBossDefinition(route));
   recordSelectedBossInRunStats();
   state.battleEncounterType = null;
@@ -1292,69 +1371,57 @@ function prepareDebugGoblinRouteAt(routeEncounterIndex, options = {}) {
   return route;
 }
 
-function getDebugBlessingBuildCatalog() {
-  return Object.entries(regionDefinitions)
-    .map(([regionId, region]) => ({
-      id: regionId,
-      name: region.name,
-      standardBlessingSlots: getBossEncounterIndex(regionId),
-      blessings: (region.blessings || []).map((blessing) => ({
-        id: blessing.id,
-        name: blessing.name
-      })),
-      bosses: getRegionBosses(region).map((boss) => ({
-        id: boss.id,
-        name: boss.name
-      }))
-    }))
-    .filter((region) => region.blessings.length > 0 && region.bosses.length > 0);
+function validateDebugScenarioSelections(buildSlots, rawSelections) {
+  const slotsById = new Map(buildSlots.map((slot) => [slot.id, slot]));
+  const selections = new Map();
+  (Array.isArray(rawSelections) ? rawSelections : []).forEach((selection) => {
+    const slotId = String(selection?.slotId || "").trim();
+    const blessingId = String(selection?.blessingId || "").trim();
+    const slot = slotsById.get(slotId);
+    if (!slot) {
+      throw new Error(`找不到 Blessing 取得位置：${slotId || "(empty)"}`);
+    }
+    if (selections.has(slotId)) {
+      throw new Error(`Blessing 取得位置重複：${slotId}`);
+    }
+    if (!slot.blessings.some((blessing) => blessing.id === blessingId)) {
+      throw new Error(`「${slot.label}」不可取得 Blessing：${blessingId || "(empty)"}`);
+    }
+    selections.set(slotId, blessingId);
+  });
+  return selections;
 }
 
-function startDebugBossWithBlessingBuild(options = {}) {
-  if (!isDebugModeEnabled()) {
-    throw new Error("自訂 Blessing Build 僅能在 ?debug=1 使用。");
-  }
-
-  const region = regionDefinitions[options.regionId];
-  if (!region) {
-    throw new Error("找不到指定地區。");
-  }
-
-  const bossIndex = getBossEncounterIndex(options.regionId);
-  const boss = getRegionBosses(region).find((candidate) => candidate.id === options.bossId);
-  if (!boss) {
-    throw new Error("找不到指定首領。");
-  }
-
-  const blessingIds = Array.isArray(options.blessingIds) ? options.blessingIds : [];
-  if (blessingIds.length > bossIndex) {
-    throw new Error(`標準首領測試最多 ${bossIndex} 個 Blessing。`);
-  }
-
-  const blessingsById = new Map((region.blessings || []).map((blessing) => [blessing.id, blessing]));
-  blessingIds.forEach((blessingId) => {
-    if (!blessingsById.has(blessingId)) {
-      throw new Error(`找不到 Blessing：${blessingId}`);
+function applyDebugScenarioBuild(buildSlots, selections) {
+  buildSlots.forEach((slot) => {
+    const blessingId = selections.get(slot.id);
+    if (blessingId) {
+      const blessing = getDebugBlessingDefinition(blessingId);
+      applyBlessingEffects(state.hero, blessing);
+      state.hero.blessings.push(blessing.name);
+    }
+    for (let victory = 0; victory < slot.battleVictoriesAfter; victory += 1) {
+      consumeBattleLimitedEffects();
     }
   });
+}
 
-  const debugHero = buildDebugMaxLevelHero(state.selectedHeroId);
-  prepareDebugRunForRegion(options.regionId, bossIndex, {
-    bossId: boss.id,
-    hero: debugHero,
-    debugBuildRun: true,
-    persistSelection: false
-  });
+function getDebugBlessingDefinition(blessingId) {
+  const definitions = [
+    ...Object.values(regionDefinitions).flatMap((region) => region.blessings || []),
+    ...getAllIndependentBlessings()
+  ];
+  const blessing = definitions.find((candidate) => candidate.id === blessingId);
+  if (!blessing) {
+    throw new Error(`找不到 Blessing：${blessingId}`);
+  }
+  return blessing;
+}
 
-  applyDebugBlessingBuild(region, blessingIds, bossIndex);
-  const hpPercent = Math.max(1, Math.min(100, Number(options.hpPercent) || 100));
-  state.hero.hp = Math.max(1, Math.round(state.hero.maxHp * hpPercent / 100));
-  startEncounter();
-  addFixedLog(
-    "system",
-    `調試：Lv. ${state.hero.level} 自訂 Build（${blessingIds.length} 個 Blessing、${hpPercent}% HP）進入${state.selectedBoss.name}。`
-  );
-  return `已用 ${blessingIds.length} 個 Blessing、${hpPercent}% HP 進入${state.selectedBoss.name}。`;
+function setDebugScenarioHp(hpPercent) {
+  const resolvedPercent = Math.max(1, Math.min(100, Number(hpPercent) || 100));
+  state.hero.hp = Math.max(1, Math.round(state.hero.maxHp * resolvedPercent / 100));
+  return resolvedPercent;
 }
 
 function buildDebugMaxLevelHero(characterId) {
@@ -1364,29 +1431,6 @@ function buildDebugMaxLevelHero(characterId) {
     exp: 0,
     learnedSkills: []
   });
-}
-
-function applyDebugBlessingBuild(region, blessingIds, blessingSlots) {
-  const blessingsById = new Map((region.blessings || []).map((blessing) => [blessing.id, blessing]));
-  for (let slot = 0; slot < blessingSlots; slot += 1) {
-    const blessingId = blessingIds[slot];
-    if (blessingId) {
-      const blessing = blessingsById.get(blessingId);
-      applyBlessingEffects(state.hero, blessing);
-      state.hero.blessings.push(blessing.name);
-    }
-
-    if (slot < blessingSlots - 1) {
-      consumeBattleLimitedEffects();
-    }
-  }
-}
-
-function triggerDebugPlainsStory() {
-  prepareDebugRunAtEncounter(getPlainsBossEncounterIndex());
-  state.defeatedBoss = true;
-  showPlainsStory();
-  return "已觸發星神劇情殺。";
 }
 
 function returnDebugToCamp() {
@@ -1403,25 +1447,12 @@ function deleteDebugSave() {
   saveData = createDefaultSave();
   saveGameSafe();
   syncSelectionFromSave();
-  closeEndPanel();
-  closeSkillPanel();
-  closeMaterialInfoPanel();
-  closeStoryPanel();
-  closeExportSaveCodeDialog();
-  closeImportSaveCodeDialog();
-  closeDeleteSaveDialog();
   restart();
   syncMusicSettingsFromSave();
   return "已刪除存檔並建立空白存檔。";
 }
 
-function prepareDebugRunAtEncounter(encounterIndex) {
-  prepareDebugRunForRegion("plains", encounterIndex);
-}
-
 function prepareDebugRunForRegion(regionId, encounterIndex, options = {}) {
-  resetRouteRuntime();
-  state.debugBuildRun = Boolean(options.debugBuildRun);
   if (options.persistSelection === false) {
     setRuntimeSelection(regionId, saveData.settings.selectedCharacterId);
   } else {
@@ -1429,49 +1460,16 @@ function prepareDebugRunForRegion(regionId, encounterIndex, options = {}) {
     saveGameSafe();
     syncSelectionFromSave();
   }
-  state.run += 1;
-  state.encounterIndex = encounterIndex;
-  state.turn = 0;
-  state.hero = options.hero || buildHeroFromProgression(state.selectedHeroId);
-  state.hero.fleesRemaining = RUN_STARTING_FLEES;
-  clearEnemyGroup();
-  state.selectedBoss = selectRunBoss(currentRegion(), options.bossId);
-  state.phase = "danger";
-  state.awaitingBlessing = false;
-  state.ended = false;
-  state.defeatedEnemies = encounterIndex;
-  state.defeatedBoss = false;
-  state.deathCause = null;
-  state.runStats = createRunStats();
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.battleSource = "main";
-  state.battleEncounterType = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.blessingPoolOverrideId = null;
-  state.runResultRecorded = false;
-  resetEventRunState();
-  state.log = [];
-  state.runStats.startLevel = state.hero.level;
-  state.runStats.endLevel = state.hero.level;
-  recordSelectedBossInRunStats();
-  els.blessingPanel.classList.remove("is-visible");
-  els.endPanel.classList.remove("is-visible");
-  closeSkillPanel();
-  closeMaterialInfoPanel();
-  closeStoryPanel();
-  closeExportSaveCodeDialog();
-  closeImportSaveCodeDialog();
-  closeDeleteSaveDialog();
+
+  initializeRunRuntime({
+    hero: options.hero || buildHeroFromProgression(state.selectedHeroId),
+    encounterIndex,
+    debugBuildRun: options.debugBuildRun,
+    bossId: options.bossId
+  });
+  closeTransientUiPanels();
   els.nextButton.disabled = false;
   showScreen("gameScreen");
-}
-
-function getPlainsBossEncounterIndex() {
-  const bossIndex = regionDefinitions.plains.encounterPlan.findIndex((encounterType) => encounterType === "boss");
-  return bossIndex >= 0 ? bossIndex : regionDefinitions.plains.encounterPlan.length - 1;
 }
 
 function getBossEncounterIndex(regionId) {
@@ -1685,7 +1683,6 @@ function resumePendingThreat(options = {}) {
   if (state.hero.shield > 0) {
     addLog("status", "shield", { target: state.hero.name, amount: state.hero.shield });
   }
-  setCombatActionState();
   render();
   return true;
 }
@@ -1827,7 +1824,6 @@ function startEventBattle(battleStep) {
   }
   state.eventInputLocked = false;
   state.adventureProgressLocked = false;
-  setCombatActionState();
   render();
 }
 
@@ -2021,48 +2017,11 @@ function enterAdventureRoute(routeId) {
 
 function startRun() {
   syncSelectionFromSave();
-  state.debugBuildRun = false;
-  resetRouteRuntime();
-  state.run += 1;
-  state.encounterIndex = 0;
-  state.turn = 0;
-  state.hero = buildHeroFromProgression(state.selectedHeroId);
-  state.hero.fleesRemaining = RUN_STARTING_FLEES;
-  clearEnemyGroup();
-  state.selectedBoss = selectRunBoss(currentRegion());
-  state.phase = "danger";
-  state.awaitingBlessing = false;
-  state.ended = false;
-  state.defeatedEnemies = 0;
-  state.defeatedBoss = false;
-  state.deathCause = null;
-  state.runStats = createRunStats();
-  state.runResultRecorded = false;
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.battleSource = "main";
-  state.battleEncounterType = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.blessingPoolOverrideId = null;
-  resetEventRunState();
+  initializeRunRuntime({ hero: buildHeroFromProgression(state.selectedHeroId) });
   state.eventSchedule = scheduleRegionEvent(currentAdventureSource());
-  state.log = [];
-  state.runStats.startLevel = state.hero.level;
-  state.runStats.endLevel = state.hero.level;
-  recordSelectedBossInRunStats();
 
   showScreen("gameScreen");
-  els.blessingPanel.classList.remove("is-visible");
-  els.endPanel.classList.remove("is-visible");
-  closeSkillPanel();
-  closeExportSaveCodeDialog();
-  closeImportSaveCodeDialog();
-  closeAbilityInfoPanel();
-  closeBlessingInfoPanel();
-  closeStoryPanel();
-  closeDeleteSaveDialog();
+  closeTransientUiPanels();
   els.nextButton.disabled = false;
 
   recordRunStarted();
@@ -2073,15 +2032,7 @@ function restart() {
   state.debugBuildRun = false;
   syncSelectionFromSave();
   showScreen("menuScreen");
-  els.blessingPanel.classList.remove("is-visible");
-  els.endPanel.classList.remove("is-visible");
-  closeSkillPanel();
-  closeExportSaveCodeDialog();
-  closeImportSaveCodeDialog();
-  closeAbilityInfoPanel();
-  closeBlessingInfoPanel();
-  closeStoryPanel();
-  closeDeleteSaveDialog();
+  closeTransientUiPanels();
   els.nextButton.disabled = true;
   setCombatActionState();
   state.awaitingBlessing = false;
@@ -2102,15 +2053,7 @@ function returnToCamp() {
   state.debugBuildRun = false;
   syncSelectionFromSave();
   showScreen("campScreen");
-  els.blessingPanel.classList.remove("is-visible");
-  els.endPanel.classList.remove("is-visible");
-  closeSkillPanel();
-  closeExportSaveCodeDialog();
-  closeImportSaveCodeDialog();
-  closeAbilityInfoPanel();
-  closeBlessingInfoPanel();
-  closeStoryPanel();
-  closeDeleteSaveDialog();
+  closeTransientUiPanels();
   state.awaitingBlessing = false;
   state.ended = true;
   state.phase = "camp";
@@ -2544,7 +2487,6 @@ function enterSafeState(options = {}) {
   state.hasRested = false;
   els.blessingPanel.classList.remove("is-visible");
   addLog("system", "safeState");
-  setCombatActionState();
   render();
 }
 
@@ -2581,17 +2523,25 @@ function completeGoblinCampRoute() {
   })) {
     throw new Error("哥布林營地 Route completion 條件尚未成立。");
   }
-  saveData.storyFlags.archerRescued = true;
-  unlockAdventureClearAchievements({ regionId: "forest", routeId: route.id });
-  recordRunFinished("clear");
-  showGoblinCampRouteEnding();
+  if (!state.debugBuildRun) {
+    saveData.storyFlags.archerRescued = true;
+    unlockAdventureClearAchievements({ regionId: "forest", routeId: route.id });
+    recordRunFinished("clear");
+  }
+  showRouteEnding(route);
 }
 
-function showGoblinCampRouteEnding() {
+function showRouteEnding(route = currentRoute()) {
+  const ending = route?.ending;
+  if (!ending?.pages?.length) {
+    finishRun("clear");
+    return;
+  }
+
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "routeEnding";
-  state.routeEndingContext = { pageIndex: 0 };
+  state.routeEndingContext = { routeId: route.id, pageIndex: 0 };
   state.blessingContext = "normal";
   state.blessingPoolOverrideId = null;
   clearPendingThreat();
@@ -2600,41 +2550,49 @@ function showGoblinCampRouteEnding() {
   els.endPanel.classList.remove("is-visible");
   closeAbilityInfoPanel();
   closeBlessingInfoPanel();
-  renderGoblinCampRouteEndingPage();
-  setCombatActionState();
+  renderRouteEndingPage();
   render();
 }
 
-function renderGoblinCampRouteEndingPage() {
+function getActiveRouteEnding() {
+  const routeId = state.routeEndingContext?.routeId || state.activeRouteId;
+  return getRouteDefinition(routeId)?.ending || null;
+}
+
+function renderRouteEndingPage() {
+  const ending = getActiveRouteEnding();
   const pageIndex = state.routeEndingContext?.pageIndex || 0;
-  const page = GOBLIN_CAMP_ENDING_PAGES[pageIndex];
+  const page = ending?.pages?.[pageIndex];
   if (!page) {
     finishRun("clear");
     return;
   }
+
   renderRouteEndingView({
     els,
-    eyebrow: "哥布林營地結尾",
-    title: "營地深處",
-    narrative: page,
-    actionLabel: pageIndex >= GOBLIN_CAMP_ENDING_PAGES.length - 1 ? "完成冒險" : "繼續"
+    eyebrow: ending.eyebrow || "冒險結尾",
+    title: ending.title || "旅途結尾",
+    narrative: page.lines,
+    tone: page.tone,
+    actionLabel: pageIndex >= ending.pages.length - 1 ? "完成冒險" : "繼續"
   });
-  els.resultLabel.textContent = "營地深處";
-  els.encounterLabel.textContent = `哥布林營地｜${GOBLIN_CAMP_ENDING_PAGES.length} 段結尾`;
+  els.resultLabel.textContent = ending.title || "旅途結尾";
 }
 
 function continueRouteEnding() {
   if (state.phase !== "routeEnding" || !state.routeEndingContext) {
     return;
   }
+
+  const ending = getActiveRouteEnding();
   state.routeEndingContext.pageIndex += 1;
-  if (state.routeEndingContext.pageIndex >= GOBLIN_CAMP_ENDING_PAGES.length) {
+  if (!ending || state.routeEndingContext.pageIndex >= ending.pages.length) {
     state.routeEndingContext = null;
     showCombatLayout(els);
     finishRun("clear");
     return;
   }
-  renderGoblinCampRouteEndingPage();
+  renderRouteEndingPage();
 }
 
 function handleEventContinueButton() {
@@ -2671,15 +2629,14 @@ function finishRun(outcome) {
   els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
   renderEndSummary(outcome, region);
   els.resultLabel.textContent = cleared ? `${getAdventureSourceName()}突破` : evacuated ? "撤離成功" : retreated ? "回到營地" : "本輪結束";
-  setCombatActionState();
   render();
 }
 
 function getEndText(outcome, region) {
   if (state.debugBuildRun) {
     return outcome === "clear"
-      ? `自訂 Build 已擊敗${getAdventureSourceName()}首領。正式存檔未變更。`
-      : "自訂 Build 測試結束。正式存檔未變更。";
+      ? `Debug 場景已完成${getAdventureSourceName()}挑戰。正式存檔未變更。`
+      : "Debug 場景測試結束。正式存檔未變更。";
   }
   if (outcome === "clear") {
     return `你完成了${getAdventureSourceName()}的挑戰。`;
@@ -2884,7 +2841,6 @@ function resolveCounterEscape() {
   addLog("system", "counterEscape");
   addLog("system", "encounter", { enemy: getEnemyDisplayName(enemy) });
   addLog("hero-damage", "ambushAdvantage", { enemy: getEnemyDisplayName(enemy), amount: reducedAmount });
-  setCombatActionState();
   render();
 }
 
@@ -3049,6 +3005,19 @@ function closeStoryPanel() {
   els.storyPanel.classList.remove("is-visible");
 }
 
+function closeTransientUiPanels() {
+  els.blessingPanel.classList.remove("is-visible");
+  closeEndPanel();
+  closeSkillPanel();
+  closeMaterialInfoPanel();
+  closeExportSaveCodeDialog();
+  closeImportSaveCodeDialog();
+  closeAbilityInfoPanel();
+  closeBlessingInfoPanel();
+  closeStoryPanel();
+  closeDeleteSaveDialog();
+}
+
 function shouldTriggerPlainsStory() {
   return state.selectedRegionId === "plains"
     && !hasPhoenixBlessing()
@@ -3068,7 +3037,16 @@ function unlockAdventureClearAchievements({ regionId = state.selectedRegionId, r
   }
 }
 
+function getPlainsStoryDefinition() {
+  return regionDefinitions.plains?.clearStory || null;
+}
+
 function showPlainsStory() {
+  const story = getPlainsStoryDefinition();
+  if (!story?.lines?.length) {
+    throw new Error("平原通關劇情資料不存在。");
+  }
+
   setNavigationContext("story");
   state.ended = true;
   state.awaitingBlessing = false;
@@ -3082,20 +3060,21 @@ function showPlainsStory() {
   closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   els.storyPanel.classList.add("is-visible");
-  els.resultLabel.textContent = "命運覺醒";
-  els.encounterLabel.textContent = "星穹之外";
+  els.resultLabel.textContent = story.resultLabel || "命運覺醒";
+  els.encounterLabel.textContent = story.encounterLabel || "星穹之外";
   renderStoryText(false);
-  setCombatActionState();
   render();
 }
 
 function renderStoryText(revealed) {
+  const story = getPlainsStoryDefinition();
+  const lines = story?.lines || [];
   if (state.storyTimer) {
     window.clearTimeout(state.storyTimer);
     state.storyTimer = null;
   }
   els.storyText.innerHTML = "";
-  PLAINS_STORY_LINES.forEach((line, index) => {
+  lines.forEach((line, index) => {
     const paragraph = document.createElement("p");
     paragraph.innerHTML = line;
     paragraph.style.animationDelay = revealed ? "0ms" : `${index * STORY_LINE_DELAY_MS}ms`;
@@ -3110,7 +3089,7 @@ function renderStoryText(revealed) {
     state.storyTimer = window.setTimeout(() => {
       els.revealStoryButton.hidden = true;
       els.finishStoryButton.hidden = false;
-    }, (PLAINS_STORY_LINES.length - 1) * STORY_LINE_DELAY_MS + STORY_FINISH_EXTRA_DELAY_MS);
+    }, Math.max(0, lines.length - 1) * STORY_LINE_DELAY_MS + STORY_FINISH_EXTRA_DELAY_MS);
   }
 }
 
@@ -3119,7 +3098,9 @@ function revealStoryText() {
 }
 
 function completePlainsStory() {
-  unlockPhoenixBlessing();
+  if (!state.debugBuildRun) {
+    unlockPhoenixBlessing();
+  }
   els.storyPanel.classList.remove("is-visible");
   returnToCamp();
 }
@@ -3237,6 +3218,14 @@ function saveGameSafe() {
   });
 }
 
+function bindBackdropClose(panel, closePanel) {
+  panel.addEventListener("click", (event) => {
+    if (event.target === panel) {
+      closePanel();
+    }
+  });
+}
+
 function bindEvents() {
   els.openRegionButton.addEventListener("click", () => showScreenInContext("campScreen", "camp"));
   els.openCharacterButton.addEventListener("click", () => showCharacterList("menu"));
@@ -3283,9 +3272,9 @@ function bindEvents() {
   els.eventContinueButton.addEventListener("click", handleEventContinueButton);
   els.restButton.addEventListener("click", restAtSafeRoute);
   els.retreatButton.addEventListener("click", retreatRun);
-  els.openAbilityFromAttack.addEventListener("click", openAbilityInfoPanel);
-  els.openAbilityFromDefense.addEventListener("click", openAbilityInfoPanel);
-  els.openAbilityFromCrit.addEventListener("click", openAbilityInfoPanel);
+  [els.openAbilityFromAttack, els.openAbilityFromDefense, els.openAbilityFromCrit].forEach((button) => {
+    button.addEventListener("click", openAbilityInfoPanel);
+  });
   els.closeAbilityInfoButton.addEventListener("click", closeAbilityInfoPanel);
   els.viewBlessingsButton.addEventListener("click", openBlessingInfoPanel);
   els.closeBlessingInfoButton.addEventListener("click", closeBlessingInfoPanel);
@@ -3301,36 +3290,14 @@ function bindEvents() {
   els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
   els.closeSkillInfoButton.addEventListener("click", closeSkillPanel);
   els.closeMaterialInfoButton.addEventListener("click", closeMaterialInfoPanel);
-  els.skillInfoPanel.addEventListener("click", (event) => {
-    if (event.target === els.skillInfoPanel) {
-      closeSkillPanel();
-    }
-  });
-  els.materialInfoPanel.addEventListener("click", (event) => {
-    if (event.target === els.materialInfoPanel) {
-      closeMaterialInfoPanel();
-    }
-  });
-  els.abilityInfoPanel.addEventListener("click", (event) => {
-    if (event.target === els.abilityInfoPanel) {
-      closeAbilityInfoPanel();
-    }
-  });
-  els.blessingInfoPanel.addEventListener("click", (event) => {
-    if (event.target === els.blessingInfoPanel) {
-      closeBlessingInfoPanel();
-    }
-  });
-  els.exportSaveCodePanel.addEventListener("click", (event) => {
-    if (event.target === els.exportSaveCodePanel) {
-      closeExportSaveCodeDialog();
-    }
-  });
-  els.importSaveCodePanel.addEventListener("click", (event) => {
-    if (event.target === els.importSaveCodePanel) {
-      closeImportSaveCodeDialog();
-    }
-  });
+  [
+    [els.skillInfoPanel, closeSkillPanel],
+    [els.materialInfoPanel, closeMaterialInfoPanel],
+    [els.abilityInfoPanel, closeAbilityInfoPanel],
+    [els.blessingInfoPanel, closeBlessingInfoPanel],
+    [els.exportSaveCodePanel, closeExportSaveCodeDialog],
+    [els.importSaveCodePanel, closeImportSaveCodeDialog]
+  ].forEach(([panel, closePanel]) => bindBackdropClose(panel, closePanel));
   document.addEventListener("click", () => {
     void musicManager.handleUserInteraction();
   });

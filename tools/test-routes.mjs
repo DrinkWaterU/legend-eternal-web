@@ -25,6 +25,9 @@ assert.deepEqual(route.encounterPlan.map((entry) => entry.type), [
   "normal", "normal", "normal", "elite", "normal", "normal", "elite", "normal", "boss"
 ]);
 assert.deepEqual(route.visual.backgroundStages.map((stage) => [stage.fromEncounter, stage.toEncounter]), [[1, 4], [5, 9]]);
+assert.equal(route.ending.title, "營地深處");
+assert.equal(route.ending.pages.length, 4, "Route 應直接持有四頁 Ending content");
+assert.equal(route.ending.pages.at(-1).lines.at(-1).role, "ending");
 assert.equal(route.events.scheduleChance, 1);
 assert.deepEqual(route.events.triggerBeforeEncounters, [5]);
 assert.ok(getEventDefinition("goblin-looted-supplies"), "Route 中段事件應註冊到通用事件 registry");

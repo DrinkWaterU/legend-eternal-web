@@ -130,6 +130,11 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .debug-scenario-options,
+  .debug-build-profiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .blessing-info-filter {
     flex: 0 0 auto;
   }

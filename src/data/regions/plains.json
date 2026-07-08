@@ -750,5 +750,17 @@
         }
       ]
     }
-  ]
+  ],
+  "clearStory": {
+    "id": "plains-phoenix-awakening",
+    "resultLabel": "命運覺醒",
+    "encounterLabel": "星穹之外",
+    "lines": [
+      "魔化野豬王倒下後，牠身上的紋路化作無溫的<span class=\"story-mark-star\">星光</span>。",
+      "平原的風停了，你在<span class=\"story-mark-star\">星穹之外</span>看見<span class=\"story-mark-star\">某個存在</span>睜開了眼。",
+      "你的思緒被那道<span class=\"story-mark-star\">目光</span>壓碎，<span class=\"story-mark-death\">死亡</span>隨之降臨。",
+      "<span class=\"story-mark-phoenix\">灰燼般的微光</span>在黑暗中燃起。",
+      "<span class=\"story-mark-phoenix\">鳳凰的加護</span>回應了死亡，將你帶回<span class=\"story-mark-phoenix\">營地</span>。"
+    ]
+  }
 }
