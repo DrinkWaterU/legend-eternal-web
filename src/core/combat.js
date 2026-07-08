@@ -133,7 +133,9 @@ export function resolveHeroAction({ hero, enemy, log }) {
     return;
   }
 
-  let damage = Math.max(1, getHeroAttack(hero) - enemy.defense);
+  const poisonedDefenseIgnore = enemy.poison > 0 ? Math.max(0, Number(hero.poisonedTargetDefenseIgnore) || 0) : 0;
+  const effectiveDefense = Math.max(0, (Number(enemy.defense) || 0) - poisonedDefenseIgnore);
+  let damage = Math.max(1, getHeroAttack(hero) - effectiveDefense);
   if (hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
     damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
     log.template("skill", "heavyStrike", { actor: hero.name });

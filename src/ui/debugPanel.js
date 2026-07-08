@@ -35,6 +35,10 @@ export function initDebugPanel({ enabled, actions }) {
         <button type="button" data-action="forest-boss-stag">翠影鹿王</button>
         <button type="button" data-action="forest-campfire">森林事件</button>
         <button type="button" data-action="multi-enemy">多敵人測試</button>
+        <button type="button" data-action="goblin-route">哥布林 Route</button>
+        <button type="button" data-action="goblin-mid-event">營地補給事件</button>
+        <button type="button" data-action="goblin-after-mid">營地第 5 場</button>
+        <button type="button" data-action="goblin-boss">血骨薩滿</button>
         <button type="button" data-action="story">劇情殺</button>
         <button type="button" data-action="camp">回營地</button>
         <button type="button" data-action="delete-save">刪存檔</button>
@@ -116,6 +120,10 @@ function runDebugAction(action, context) {
     "forest-boss-stag": () => actions.startForestBoss("verdant-stag-king"),
     "forest-campfire": () => actions.startForestCampfire(),
     "multi-enemy": () => actions.startMultiEnemyGoblin(),
+    "goblin-route": () => actions.startGoblinCampRoute(),
+    "goblin-mid-event": () => actions.startGoblinCampMidEvent(),
+    "goblin-after-mid": () => actions.startGoblinCampAfterMidEvent(),
+    "goblin-boss": () => actions.startGoblinCampBoss(),
     story: () => actions.triggerPlainsStory(),
     camp: () => actions.returnToCamp(),
     "delete-save": () => confirmDanger("要刪除目前存檔嗎？這個動作無法復原。") && actions.deleteSave()

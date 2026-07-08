@@ -96,12 +96,19 @@ function renderStatisticsRegionDetail(els, saveData, regionDefinitions, regionId
   const region = regionDefinitions[regionId];
   const regionStats = saveData.statistics.regions[regionId];
   els.statisticsRegionName.textContent = region.name;
-  renderStatList(els.statisticsRegionDetailList, [
+  const items = [
     ["冒險次數", regionStats.runs],
     ["通關次數", regionStats.clears],
     ["撤退次數", regionStats.retreats],
     ["最高抵達遭遇", `${regionStats.bestEncounter} / ${region.encounterCount}`],
     ["首領", region.bossName],
     ["難度", region.difficulty]
-  ]);
+  ];
+  if (regionId === "forest" && regionStats.routeClears) {
+    items.splice(2, 0,
+      ["普通森林通關", regionStats.routeClears.main || 0],
+      ["哥布林營地通關", regionStats.routeClears.goblinCamp || 0]
+    );
+  }
+  renderStatList(els.statisticsRegionDetailList, items);
 }

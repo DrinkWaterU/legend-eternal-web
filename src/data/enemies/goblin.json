@@ -1,0 +1,186 @@
+{
+  "id": "goblin",
+  "enemies": [
+    {
+      "id": "goblin-warrior",
+      "name": "哥布林戰士",
+      "kind": "普通",
+      "family": "goblin",
+      "maxHp": 160,
+      "attack": 25,
+      "defense": 5,
+      "critChance": 0.12,
+      "expReward": 60,
+      "rewards": {
+        "materials": [
+          {
+            "id": "goblin_scrap",
+            "chance": 0.4,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "oily_leather_cord",
+            "chance": 0.2,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "哥布林戰士壓低身體，握著粗製武器朝你逼近。"
+    },
+    {
+      "id": "goblin-blade",
+      "name": "哥布林刀手",
+      "kind": "普通",
+      "family": "goblin",
+      "maxHp": 145,
+      "attack": 28,
+      "defense": 3,
+      "critChance": 0.2,
+      "expReward": 66,
+      "rewards": {
+        "materials": [
+          {
+            "id": "goblin_scrap",
+            "chance": 0.45,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "oily_leather_cord",
+            "chance": 0.15,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "哥布林刀手拖著缺口短刃逼近，眼神一直盯著你露出的破綻。"
+    },
+    {
+      "id": "goblin-slinger",
+      "name": "哥布林投石手",
+      "kind": "普通",
+      "family": "goblin",
+      "maxHp": 115,
+      "attack": 31,
+      "defense": 2,
+      "critChance": 0.08,
+      "expReward": 62,
+      "rewards": {
+        "materials": [
+          {
+            "id": "oily_leather_cord",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "goblin_scrap",
+            "chance": 0.15,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "哥布林投石手躲在破木障後方，石索已經開始高速旋轉。"
+    },
+    {
+      "id": "goblin-poison-dart",
+      "name": "哥布林毒鏢手",
+      "kind": "普通",
+      "family": "goblin",
+      "maxHp": 135,
+      "attack": 22,
+      "defense": 3,
+      "critChance": 0.06,
+      "poisonPower": 4,
+      "expReward": 64,
+      "rewards": {
+        "materials": [
+          {
+            "id": "crude_venom",
+            "chance": 0.3,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "oily_leather_cord",
+            "chance": 0.2,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "哥布林毒鏢手舔了舔鏢尖，暗綠液體沿著粗糙金屬緩慢滴落。"
+    },
+    {
+      "id": "goblin-shield-guard",
+      "name": "哥布林盾衛",
+      "kind": "普通",
+      "family": "goblin",
+      "maxHp": 200,
+      "attack": 18,
+      "defense": 10,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "materials": [
+          {
+            "id": "goblin_scrap",
+            "chance": 0.55,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "oily_leather_cord",
+            "chance": 0.2,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "哥布林盾衛把拼接鐵板頂在身前，幾乎堵住了整條狹窄通路。"
+    },
+    {
+      "id": "goblin-bloodbone-shaman",
+      "name": "血骨薩滿",
+      "kind": "首領",
+      "family": "goblin",
+      "maxHp": 360,
+      "attack": 26,
+      "defense": 6,
+      "critChance": 0.07,
+      "expReward": 220,
+      "bloodSacrifice": {
+        "family": "goblin",
+        "attackGain": 3,
+        "critChanceGain": 0.03,
+        "healMaxHpRatio": 0.1
+      },
+      "rewards": {
+        "materials": [
+          {
+            "id": "bloodbone_charm",
+            "chance": 1,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "crude_venom",
+            "chance": 0.55,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "goblin_scrap",
+            "chance": 0.7,
+            "min": 1,
+            "max": 2
+          }
+        ]
+      },
+      "intro": "血骨薩滿立在暗紅祭火前，骨片與獸牙隨著低啞咒聲輕輕碰撞。"
+    }
+  ]
+}

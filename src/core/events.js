@@ -95,6 +95,17 @@ export function validateEventTarget(target, supportedTypes = ["returnAdventure"]
   if (!supportedTypes.includes(type)) {
     throw new Error(`尚未支援的事件 target type：${type || "(empty)"}`);
   }
+  if (type === "enterRoute" && !String(target?.routeId || "").trim()) {
+    throw new Error("enterRoute target 缺少 routeId。");
+  }
+  if (type === "chooseBlessing") {
+    if (!String(target?.poolId || "").trim()) {
+      throw new Error("chooseBlessing target 缺少 poolId。");
+    }
+    if (!(Number(target?.count) > 0)) {
+      throw new Error("chooseBlessing target count 必須 > 0。");
+    }
+  }
   return target;
 }
 
@@ -109,7 +120,14 @@ export function applyEventEffects({ effects = [], hero, grantBlessing, grantMate
 
   for (const effect of Array.isArray(effects) ? effects : []) {
     if (effect?.type === "recoverHp") {
-      const amount = Math.max(0, Math.floor(Number(effect.amount) || 0));
+      const hasAmount = effect.amount !== undefined;
+      const hasMaxHpRatio = effect.maxHpRatio !== undefined;
+      if (hasAmount === hasMaxHpRatio) {
+        throw new Error("recoverHp 必須且只能指定 amount 或 maxHpRatio。");
+      }
+      const amount = hasMaxHpRatio
+        ? Math.max(0, Math.round(hero.maxHp * Math.max(0, Number(effect.maxHpRatio) || 0)))
+        : Math.max(0, Math.floor(Number(effect.amount) || 0));
       const before = hero.hp;
       hero.hp = Math.min(hero.maxHp, hero.hp + amount);
       applied.push({ type: effect.type, amount: hero.hp - before });

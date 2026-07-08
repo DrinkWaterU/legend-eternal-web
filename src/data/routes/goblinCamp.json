@@ -1,0 +1,326 @@
+{
+  "id": "goblin-camp",
+  "regionId": "forest",
+  "clearSourceId": "goblinCamp",
+  "name": "哥布林營地",
+  "audio": {
+    "bgmId": "goblin-camp"
+  },
+  "visual": {
+    "background": {
+      "desktop": "assets/images/routes/goblin-camp/goblin-camp-outer.jpg",
+      "mobile": "assets/images/routes/goblin-camp/goblin-camp-outer-mobile.jpg",
+      "tone": "goblin-camp-outer"
+    },
+    "backgroundStages": [
+      {
+        "id": "outer",
+        "fromEncounter": 1,
+        "toEncounter": 4,
+        "desktop": "assets/images/routes/goblin-camp/goblin-camp-outer.jpg",
+        "mobile": "assets/images/routes/goblin-camp/goblin-camp-outer-mobile.jpg",
+        "tone": "goblin-camp-outer"
+      },
+      {
+        "id": "deep",
+        "fromEncounter": 5,
+        "toEncounter": 9,
+        "desktop": "assets/images/routes/goblin-camp/goblin-camp-deep.jpg",
+        "mobile": "assets/images/routes/goblin-camp/goblin-camp-deep-mobile.jpg",
+        "tone": "goblin-camp-deep"
+      }
+    ]
+  },
+  "blessingPoolId": "goblin",
+  "encounterPlan": [
+    {
+      "type": "normal",
+      "groupId": "goblin-outer-patrol"
+    },
+    {
+      "type": "normal",
+      "groupId": "goblin-blade-ambush"
+    },
+    {
+      "type": "normal",
+      "groupId": "goblin-poison-cover"
+    },
+    {
+      "type": "elite",
+      "groupId": "goblin-shield-checkpoint"
+    },
+    {
+      "type": "normal",
+      "groupId": "goblin-camp-skirmish"
+    },
+    {
+      "type": "normal",
+      "groupId": "goblin-poison-escort"
+    },
+    {
+      "type": "elite",
+      "groupId": "goblin-blood-blade-swarm"
+    },
+    {
+      "type": "normal",
+      "groupId": "goblin-core-guard"
+    },
+    {
+      "type": "boss",
+      "groupId": "goblin-bloodbone-retinue"
+    }
+  ],
+  "events": {
+    "scheduleChance": 1,
+    "triggerBeforeEncounters": [
+      5
+    ],
+    "pool": [
+      "goblin-looted-supplies"
+    ]
+  },
+  "eventDefinitions": [
+    {
+      "id": "goblin-looted-supplies",
+      "weight": 100,
+      "eyebrow": "哥布林營地事件",
+      "title": "掠奪來的補給",
+      "transitionText": [
+        "你越過盾牌哨卡，繼續深入營地……",
+        "破帆布之間，堆著一批凌亂物資。"
+      ],
+      "narrative": [
+        "越過哨卡後，你在幾頂破帆布之間發現一批胡亂堆放的物資。",
+        "乾糧、藥草、斷裂的武器與染血布條混在一起，其中不少東西明顯不屬於哥布林。",
+        "你沒有太多時間。營地深處的動靜正逐漸靠近。"
+      ],
+      "prompt": "你打算怎麼利用這批補給？",
+      "choices": [
+        {
+          "id": "eat-rations",
+          "meta": "修復狀態",
+          "title": "翻找能吃的東西",
+          "description": "挑出尚未腐敗的乾糧與飲料，先讓身體重新有力氣。",
+          "action": "恢復最大生命 35%",
+          "result": {
+            "narrative": [
+              "你挑出尚未腐敗的乾糧與幾瓶氣味可疑的飲料。",
+              "味道令人後悔，但至少身體重新有了力氣。"
+            ],
+            "effects": [
+              {
+                "type": "recoverHp",
+                "maxHpRatio": 0.35
+              }
+            ],
+            "resultIds": [
+              "goblin-supplies-rested"
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "continueLabel": "繼續深入營地",
+            "followUpChoices": []
+          }
+        },
+        {
+          "id": "search-loot",
+          "meta": "投資 Build",
+          "title": "搜刮戰利品",
+          "description": "放棄難以下嚥的補給，翻找武器與雜物中值得學會的手段。",
+          "action": "額外進行 Goblin Blessing 三選一",
+          "result": {
+            "narrative": [
+              "你放棄那些難以下嚥的東西，轉而翻找被哥布林隨手丟棄的武器與雜物。",
+              "粗糙、卑劣，但其中確實藏著一些值得學會的手段。"
+            ],
+            "effects": [],
+            "resultIds": [
+              "goblin-supplies-looted"
+            ],
+            "defaultTarget": {
+              "type": "chooseBlessing",
+              "poolId": "goblin",
+              "count": 3
+            },
+            "continueLabel": "挑選戰利品",
+            "followUpChoices": []
+          }
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "goblin-outer-patrol",
+      "name": "外圍巡邏",
+      "members": [
+        {
+          "enemyId": "goblin-warrior",
+          "statScale": 0.72,
+          "rewardScale": 0.65
+        },
+        {
+          "enemyId": "goblin-slinger",
+          "statScale": 0.62,
+          "rewardScale": 0.55
+        }
+      ]
+    },
+    {
+      "id": "goblin-blade-ambush",
+      "name": "碎刃伏擊",
+      "members": [
+        {
+          "enemyId": "goblin-warrior",
+          "statScale": 0.72,
+          "rewardScale": 0.65
+        },
+        {
+          "enemyId": "goblin-blade",
+          "statScale": 0.68,
+          "rewardScale": 0.6
+        }
+      ]
+    },
+    {
+      "id": "goblin-poison-cover",
+      "name": "毒鏢掩護",
+      "members": [
+        {
+          "enemyId": "goblin-warrior",
+          "statScale": 0.7,
+          "rewardScale": 0.62
+        },
+        {
+          "enemyId": "goblin-poison-dart",
+          "statScale": 0.66,
+          "rewardScale": 0.6
+        }
+      ]
+    },
+    {
+      "id": "goblin-shield-checkpoint",
+      "name": "盾牌哨卡",
+      "members": [
+        {
+          "enemyId": "goblin-shield-guard",
+          "statScale": 0.72,
+          "rewardScale": 0.54
+        },
+        {
+          "enemyId": "goblin-blade",
+          "statScale": 0.54,
+          "rewardScale": 0.45
+        },
+        {
+          "enemyId": "goblin-slinger",
+          "statScale": 0.44,
+          "rewardScale": 0.35
+        }
+      ]
+    },
+    {
+      "id": "goblin-camp-skirmish",
+      "name": "營地散兵",
+      "members": [
+        {
+          "enemyId": "goblin-warrior",
+          "statScale": 0.68,
+          "rewardScale": 0.6
+        },
+        {
+          "enemyId": "goblin-blade",
+          "statScale": 0.62,
+          "rewardScale": 0.55
+        }
+      ]
+    },
+    {
+      "id": "goblin-poison-escort",
+      "name": "毒鏢護送",
+      "members": [
+        {
+          "enemyId": "goblin-shield-guard",
+          "statScale": 0.72,
+          "rewardScale": 0.6
+        },
+        {
+          "enemyId": "goblin-poison-dart",
+          "statScale": 0.62,
+          "rewardScale": 0.55
+        }
+      ]
+    },
+    {
+      "id": "goblin-blood-blade-swarm",
+      "name": "血刃圍攻",
+      "members": [
+        {
+          "enemyId": "goblin-warrior",
+          "statScale": 0.58,
+          "rewardScale": 0.45
+        },
+        {
+          "enemyId": "goblin-blade",
+          "statScale": 0.52,
+          "rewardScale": 0.4
+        },
+        {
+          "enemyId": "goblin-blade",
+          "statScale": 0.52,
+          "rewardScale": 0.4
+        }
+      ]
+    },
+    {
+      "id": "goblin-core-guard",
+      "name": "營地核心守衛",
+      "members": [
+        {
+          "enemyId": "goblin-shield-guard",
+          "statScale": 0.66,
+          "rewardScale": 0.5
+        },
+        {
+          "enemyId": "goblin-poison-dart",
+          "statScale": 0.56,
+          "rewardScale": 0.45
+        },
+        {
+          "enemyId": "goblin-slinger",
+          "statScale": 0.52,
+          "rewardScale": 0.4
+        }
+      ]
+    },
+    {
+      "id": "goblin-bloodbone-retinue",
+      "name": "首領親衛",
+      "members": [
+        {
+          "enemyId": "goblin-bloodbone-shaman",
+          "statScale": 0.95,
+          "rewardScale": 1.0
+        },
+        {
+          "enemyId": "goblin-shield-guard",
+          "statScale": 0.45,
+          "rewardScale": 0.25
+        },
+        {
+          "enemyId": "goblin-poison-dart",
+          "statScale": 0.4,
+          "rewardScale": 0.25
+        }
+      ]
+    }
+  ],
+  "counterEnemyIds": [
+    "goblin-warrior",
+    "goblin-blade",
+    "goblin-slinger",
+    "goblin-poison-dart",
+    "goblin-shield-guard"
+  ]
+}

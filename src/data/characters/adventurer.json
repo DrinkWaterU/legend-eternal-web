@@ -18,7 +18,11 @@
     "familyDamageBonus": {},
     "encounterBiases": [],
     "damageReduction": 0,
-    "blessings": []
+    "blessings": [],
+    "killAttackGain": 0,
+    "lowHpKillHeal": 0,
+    "poisonedTargetDefenseIgnore": 0,
+    "killHealRatio": 0
   },
   "stats": {
     "maxHp": 100,

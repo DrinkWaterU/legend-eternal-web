@@ -49,7 +49,7 @@ export function renderEventChoicesView({ els, event, onChoice }) {
   })));
 }
 
-export function renderEventResultView({ els, event, narrative, rewardLines, followUpChoices, onFollowUp }) {
+export function renderEventResultView({ els, event, narrative, rewardLines, followUpChoices, onFollowUp, hasDefaultTarget = true, defaultActionLabel = "繼續冒險" }) {
   showEventLayout(els);
   els.eventEyebrow.textContent = event.eyebrow || "冒險事件";
   els.eventTitle.textContent = event.title || "未知事件";
@@ -66,14 +66,25 @@ export function renderEventResultView({ els, event, narrative, rewardLines, foll
       action: choice.action || "選擇",
       onClick: () => onFollowUp(choice)
     })));
-    els.eventContinueButton.hidden = true;
-    return true;
   }
 
+  els.eventContinueButton.hidden = !hasDefaultTarget;
+  els.eventContinueButton.disabled = false;
+  els.eventContinueButton.textContent = defaultActionLabel;
+  return followUpChoices.length > 0;
+}
+
+export function renderRouteEndingView({ els, eyebrow = "冒險結尾", title, narrative, actionLabel = "繼續" }) {
+  showEventLayout(els);
+  els.eventEyebrow.textContent = eyebrow;
+  els.eventTitle.textContent = title || "旅途結尾";
+  renderEventNarrative(els, narrative);
+  els.eventPrompt.hidden = true;
+  els.eventChoices.replaceChildren();
+  renderEventRewardLines(els, []);
   els.eventContinueButton.hidden = false;
   els.eventContinueButton.disabled = false;
-  els.eventContinueButton.textContent = "繼續冒險";
-  return false;
+  els.eventContinueButton.textContent = actionLabel;
 }
 
 export function setEventChoiceButtonsDisabled(els, disabled) {
