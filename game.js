@@ -53,6 +53,7 @@ import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
 import { els } from "./src/ui/dom.js";
 import { renderCharacterSkills } from "./src/ui/characterSkillsView.js";
+import { renderCharacterCards } from "./src/ui/characterSelectView.js";
 import { initDebugPanel } from "./src/ui/debugPanel.js";
 import { renderBlessingInfoView } from "./src/ui/blessingInfoView.js";
 import { renderCombatView, renderCurrentAbilityView } from "./src/ui/combatView.js";
@@ -62,6 +63,12 @@ import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/u
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
 import { createDebugRuntimeActions } from "./src/debug/runtimeActions.js";
+import {
+  getCharacterCombatStatusEntries,
+  initializeCharacterBattleState,
+  modifyCharacterIncomingDirectDamage,
+  resolveCharacterPlayerAction
+} from "./src/characters/skills/index.js";
 import { clone, randomItem, roll, weightedRandomItem } from "./src/utils.js";
 
 const RUN_STARTING_FLEES = 2;
@@ -141,6 +148,7 @@ const uiState = {
   navigationContext: "menu",
   regionView: "list",
   characterView: "list",
+  characterDetailId: DEFAULT_CHARACTER_ID,
   statisticsView: "overview",
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID,
@@ -389,11 +397,20 @@ function showScreen(screenId) {
 
 function syncSelectionFromSave() {
   const regionId = regionDefinitions[saveData.settings.selectedRegionId] ? saveData.settings.selectedRegionId : DEFAULT_REGION_ID;
-  const characterId = characterDefinitions[saveData.settings.selectedCharacterId] ? saveData.settings.selectedCharacterId : DEFAULT_CHARACTER_ID;
+  const requestedCharacterId = saveData.settings.selectedCharacterId;
+  const characterId = isCharacterUnlocked(requestedCharacterId) ? requestedCharacterId : DEFAULT_CHARACTER_ID;
+  saveData.settings.selectedCharacterId = characterId;
   state.selectedRegionId = regionId;
   state.selectedHeroId = characterId;
   state.selectedRegion = regionDefinitions[regionId].name;
   state.selectedHero = characterDefinitions[characterId].name;
+}
+
+function isCharacterUnlocked(characterId) {
+  return Boolean(
+    characterDefinitions[characterId]
+    && saveData.progression.characters[characterId]?.unlocked === true
+  );
 }
 
 function syncMusicSettingsFromSave() {
@@ -516,11 +533,33 @@ function showCharacterList(contextId = uiState.navigationContext) {
 }
 
 function showCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
+  if (!isCharacterUnlocked(characterId)) {
+    showLockedCharacterHint();
+    return;
+  }
+  uiState.characterDetailId = characterId;
+  uiState.characterView = "detail";
+  showScreen("characterScreen");
+}
+
+function showLockedCharacterHint() {
+  els.characterLockedPanel.classList.add("is-visible");
+}
+
+function closeLockedCharacterHint() {
+  els.characterLockedPanel.classList.remove("is-visible");
+}
+
+function selectCharacterFromDetail() {
+  const characterId = uiState.characterDetailId;
+  if (!isCharacterUnlocked(characterId)) {
+    showLockedCharacterHint();
+    return;
+  }
   saveData.settings.selectedCharacterId = characterId;
   saveGameSafe();
   syncSelectionFromSave();
-  uiState.characterView = "detail";
-  showScreen("characterScreen");
+  renderCharacterScreen();
 }
 
 function renderCharacterScreen() {
@@ -528,19 +567,27 @@ function renderCharacterScreen() {
   els.characterDetailView.classList.toggle("is-active", uiState.characterView === "detail");
   setReturnButton(els.characterListView.querySelector(".back-button"), getNavigationReturnTarget());
 
-  renderChoiceList(els.characterChoiceList, Object.entries(characterDefinitions).map(([characterId, character]) => ({
-    title: character.name,
-    meta: characterId === saveData.settings.selectedCharacterId ? "目前選擇" : "可使用",
-    description: character.description,
-    action: "查看角色",
-    onClick: () => showCharacterDetail(characterId)
-  })));
+  renderCharacterCards({
+    element: els.characterChoiceList,
+    characterDefinitions,
+    characterProgression: saveData.progression.characters,
+    selectedCharacterId: saveData.settings.selectedCharacterId,
+    onCharacterClick: showCharacterDetail,
+    onLockedCharacterClick: showLockedCharacterHint
+  });
 
   if (uiState.characterView === "detail") {
-    const character = characterDefinitions[state.selectedHeroId];
-    const preview = buildHeroFromProgression(state.selectedHeroId);
-    const progress = getCharacterProgress(state.selectedHeroId);
+    const characterId = isCharacterUnlocked(uiState.characterDetailId)
+      ? uiState.characterDetailId
+      : saveData.settings.selectedCharacterId;
+    uiState.characterDetailId = characterId;
+    const character = characterDefinitions[characterId];
+    const preview = buildHeroFromProgression(characterId);
+    const progress = getCharacterProgress(characterId);
+    const selected = characterId === saveData.settings.selectedCharacterId;
     els.characterDetailName.textContent = character.name;
+    els.characterDetailRole.textContent = character.role || "";
+    els.characterDetailRole.hidden = !character.role;
     els.characterDetailDescription.textContent = character.description;
     renderStatList(els.characterDetailStats, [
       ["等級", `Lv. ${progress.level}`],
@@ -557,7 +604,8 @@ function renderCharacterScreen() {
       progress,
       onSkillClick: showSkillInfo
     });
-    els.selectCharacterButton.textContent = `使用${character.name}`;
+    els.selectCharacterButton.textContent = selected ? "目前使用中" : `使用${character.name}`;
+    els.selectCharacterButton.disabled = selected;
   }
 }
 
@@ -589,6 +637,7 @@ function createRunStats() {
     endLevel: 1,
     levelUps: [],
     learnedSkills: [],
+    unlockedCharacters: [],
     progressReset: false,
     lostLevel: 1,
     lostExp: 0,
@@ -1179,6 +1228,7 @@ function resetHeroBattleState() {
   state.hero.victoryHealBonusRatio = 0;
   state.hero.shield = state.hero.shieldStart;
   state.hero.skillState = createSkillState();
+  initializeCharacterBattleState(state.hero);
 }
 
 function healThreatEnemies(enemies, ratio) {
@@ -1272,7 +1322,9 @@ function enterAdventureRoute(routeId) {
 function startRun() {
   syncSelectionFromSave();
   initializeRunRuntime({ hero: buildHeroFromProgression(state.selectedHeroId) });
-  state.eventSchedule = scheduleRegionEvent(currentAdventureSource());
+  state.eventSchedule = scheduleRegionEvent(currentAdventureSource(), Math.random, {
+    scheduleChance: getAdventureEventScheduleChance()
+  });
 
   showScreen("gameScreen");
   closeTransientUiPanels();
@@ -1280,6 +1332,13 @@ function startRun() {
 
   recordRunStarted();
   startEncounter();
+}
+
+function getAdventureEventScheduleChance() {
+  if (state.selectedRegionId === "forest" && !saveData.storyFlags.archerRescued) {
+    return 0.5;
+  }
+  return undefined;
 }
 
 function restart() {
@@ -1392,7 +1451,15 @@ function playTurn() {
     if (!target) {
       return;
     }
-    resolveHeroAction({ hero: state.hero, enemy: target, log });
+    const characterAction = resolveCharacterPlayerAction({
+      hero: state.hero,
+      enemies: state.enemies,
+      targetEnemyId: state.targetEnemyId,
+      log
+    });
+    if (!characterAction.handled) {
+      resolveHeroAction({ hero: state.hero, enemy: target, log });
+    }
     settleDefeatedEnemies();
     if (getLivingEnemies(state.enemies).length === 0) {
       winEncounter();
@@ -1405,7 +1472,13 @@ function playTurn() {
     if (enemy.hp <= 0 || state.ended) {
       continue;
     }
-    const enemyAction = resolveEnemyAction({ hero: state.hero, enemy, turn: state.turn, log });
+    const enemyAction = resolveEnemyAction({
+      hero: state.hero,
+      enemy,
+      turn: state.turn,
+      log,
+      modifyDirectDamage: modifyCharacterIncomingDirectDamage
+    });
     applyEmergencyBandage();
     if (state.hero.hp <= 0) {
       state.deathCause = enemyAction;
@@ -1778,7 +1851,15 @@ function completeGoblinCampRoute() {
     throw new Error("哥布林營地 Route completion 條件尚未成立。");
   }
   if (!state.debugBuildRun) {
+    const archerProgress = saveData.progression.characters.archer;
+    const unlockedArcher = Boolean(archerProgress && !archerProgress.unlocked);
     saveData.storyFlags.archerRescued = true;
+    if (archerProgress) {
+      archerProgress.unlocked = true;
+    }
+    if (unlockedArcher) {
+      state.runStats.unlockedCharacters.push(characterDefinitions.archer.name);
+    }
     unlockAdventureClearAchievements({ regionId: "forest", routeId: route.id });
     recordRunFinished("clear");
   }
@@ -1958,6 +2039,9 @@ function renderEndSummary(outcome, region) {
   if (state.runStats?.learnedSkills.length > 0) {
     items.push(["新技能", state.runStats.learnedSkills.join("、")]);
   }
+  if (state.runStats?.unlockedCharacters.length > 0) {
+    items.push(["新角色", `${state.runStats.unlockedCharacters.join("、")}已可使用`]);
+  }
   if (state.runStats?.progressReset) {
     items.push(["成長損失", `死亡使等級與經驗失去，已回到 Lv. 1。`]);
   }
@@ -2044,7 +2128,8 @@ function resolveFleeFailure() {
     hero: state.hero,
     enemy: attacker,
     turn: Math.max(1, state.turn),
-    log
+    log,
+    modifyDirectDamage: modifyCharacterIncomingDirectDamage
   });
   applyEmergencyBandage();
   if (state.hero.hp <= 0) {
@@ -2263,6 +2348,7 @@ function closeTransientUiPanels() {
   els.blessingPanel.classList.remove("is-visible");
   closeEndPanel();
   closeSkillPanel();
+  closeLockedCharacterHint();
   closeMaterialInfoPanel();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
@@ -2380,6 +2466,7 @@ function render() {
     enemies: state.enemies,
     targetEnemyId: state.targetEnemyId,
     phase: state.phase,
+    characterStatusEntries: getCharacterCombatStatusEntries(hero),
     onTargetSelect: selectEnemyTarget
   });
   if (els.abilityInfoPanel.classList.contains("is-visible")) {
@@ -2502,12 +2589,8 @@ function bindEvents() {
   });
   els.backToStatisticsCharacterListButton.addEventListener("click", () => showStatisticsView("characters"));
   els.backToStatisticsRegionListButton.addEventListener("click", () => showStatisticsView("regions"));
-  els.selectCharacterButton.addEventListener("click", () => {
-    saveData.settings.selectedCharacterId = state.selectedHeroId;
-    saveGameSafe();
-    syncSelectionFromSave();
-    showScreen(getNavigationReturnTarget());
-  });
+  els.selectCharacterButton.addEventListener("click", selectCharacterFromDetail);
+  els.closeCharacterLockedButton.addEventListener("click", closeLockedCharacterHint);
   document.querySelectorAll(".back-button").forEach((button) => {
     button.addEventListener("click", () => showScreen(button.dataset.target));
   });

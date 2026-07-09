@@ -1,6 +1,6 @@
 import { getEventDefinition } from "../data/events/index.js";
 
-export function scheduleRegionEvent(region, randomFn = Math.random) {
+export function scheduleRegionEvent(region, randomFn = Math.random, options = {}) {
   const config = region?.events;
   const pool = Array.isArray(config?.pool) ? config.pool.filter(Boolean) : [];
   const triggerBeforeEncounters = Array.isArray(config?.triggerBeforeEncounters)
@@ -8,7 +8,7 @@ export function scheduleRegionEvent(region, randomFn = Math.random) {
       .map((value) => Math.floor(Number(value)))
       .filter((value) => value > 0)
     : [];
-  const scheduleChance = clampChance(config?.scheduleChance);
+  const scheduleChance = clampChance(options.scheduleChance ?? config?.scheduleChance);
 
   if (pool.length === 0 || triggerBeforeEncounters.length === 0 || randomFn() >= scheduleChance) {
     return null;

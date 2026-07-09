@@ -209,6 +209,11 @@ assert.deepEqual(
   ["plains", "forest-main", "goblin"]
 );
 assert.ok(debugActions.getScenarioCatalog().length > 0);
+assert.deepEqual(
+  debugActions.getCharacterOptions().map((character) => character.id),
+  ["adventurer", "archer"],
+  "Debug Scenario 應可覆寫測試所有正式角色 definition，不受解鎖狀態限制"
+);
 assert.equal(typeof debugActions.startScenario, "function");
 
 console.log("Runtime controller composition tests passed.");

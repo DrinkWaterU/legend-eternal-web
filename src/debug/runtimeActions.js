@@ -73,6 +73,13 @@ export function createDebugRuntimeActions(host) {
     return getSaveData().progression.characters[characterId];
   }
 
+  function getDebugCharacterOptions() {
+    return Object.entries(characterDefinitions).map(([id, character]) => ({
+      id,
+      name: character.name
+    }));
+  }
+
   function setDebugCharacterLevel(level) {
     const character = getCharacterDefinition();
     const progress = getCharacterProgress();
@@ -208,7 +215,10 @@ export function createDebugRuntimeActions(host) {
     };
     const buildSlots = getDebugScenarioBuildSlots(scenario.id, scenarioOptions);
     const selections = validateDebugScenarioSelections(buildSlots, options.selections);
-    const debugHero = buildDebugMaxLevelHero(state.selectedHeroId);
+    const debugCharacterId = characterDefinitions[options.characterId]
+      ? options.characterId
+      : state.selectedHeroId;
+    const debugHero = buildDebugMaxLevelHero(debugCharacterId);
 
     if (scenario.kind === "regionBoss") {
       prepareDebugRunForRegion(scenario.regionId, getBossEncounterIndex(scenario.regionId), {
@@ -437,7 +447,8 @@ export function createDebugRuntimeActions(host) {
   function prepareDebugRunForRegion(regionId, encounterIndex, options = {}) {
     const saveData = getSaveData();
     if (options.persistSelection === false) {
-      setRuntimeSelection(regionId, saveData.settings.selectedCharacterId);
+      const runtimeCharacterId = options.characterId || options.hero?.characterId || saveData.settings.selectedCharacterId;
+      setRuntimeSelection(regionId, runtimeCharacterId);
     } else {
       saveData.settings.selectedRegionId = regionId;
       saveGameSafe();
@@ -507,6 +518,7 @@ export function createDebugRuntimeActions(host) {
     giveMaterials: giveDebugMaterialsByGroup,
     clearInventory: clearDebugInventory,
     getScenarioCatalog: getDebugScenarioCatalog,
+    getCharacterOptions: getDebugCharacterOptions,
     getRouteEntryOptions: getDebugRouteEntryOptions,
     getMidChoices: getDebugMidChoices,
     getBuildProfiles: getDebugBuildProfiles,

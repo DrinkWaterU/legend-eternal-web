@@ -54,10 +54,16 @@ export function initDebugPanel({ enabled, actions }) {
           <strong id="debugScenarioTitle">冒險場景測試</strong>
           <small>Sandbox，不寫正式進度</small>
         </div>
-        <label>
-          場景
-          <select class="debug-scenario-select"></select>
-        </label>
+        <div class="debug-input-pair">
+          <label>
+            場景
+            <select class="debug-scenario-select"></select>
+          </label>
+          <label>
+            測試角色
+            <select class="debug-character-select"></select>
+          </label>
+        </div>
         <small class="debug-scenario-note"></small>
 
         <div class="debug-scenario-options">
@@ -103,6 +109,7 @@ export function initDebugPanel({ enabled, actions }) {
   bindDebugPanelEvents(context);
   populateMaterialGroups(context);
   populateScenarioCatalog(context);
+  populateCharacterOptions(context);
   syncDebugScenario(context, { applyDefaultProfile: true });
 }
 
@@ -118,6 +125,7 @@ function createDebugContext(panel, actions) {
     materialGroupSelect: panel.querySelector(".debug-material-group"),
     materialGiveButton: panel.querySelector(".debug-material-give"),
     scenarioSelect: panel.querySelector(".debug-scenario-select"),
+    characterSelect: panel.querySelector(".debug-character-select"),
     scenarioNote: panel.querySelector(".debug-scenario-note"),
     routeEntryRow: panel.querySelector(".debug-route-entry-row"),
     routeEntrySelect: panel.querySelector(".debug-route-entry"),
@@ -229,6 +237,20 @@ function populateScenarioCatalog(context) {
     option.textContent = choice.label;
     context.midChoiceSelect.append(option);
   });
+}
+
+function populateCharacterOptions(context) {
+  const characters = typeof context.actions.getCharacterOptions === "function"
+    ? context.actions.getCharacterOptions()
+    : [];
+  context.characterSelect.replaceChildren();
+  characters.forEach((character) => {
+    const option = document.createElement("option");
+    option.value = character.id;
+    option.textContent = character.name;
+    context.characterSelect.append(option);
+  });
+  context.characterSelect.disabled = characters.length === 0;
 }
 
 function runDebugAction(action, context) {
@@ -419,6 +441,7 @@ function startSelectedScenario(context) {
 
   runSafe(context, () => context.actions.startScenario({
     scenarioId: scenario.id,
+    characterId: context.characterSelect.value || undefined,
     ...getScenarioOptions(context),
     hpPercent: Number(context.hpInput.value),
     selections: context.buildSlots

@@ -34,6 +34,7 @@ export function normalizeCharacterProgress(progress, character) {
 export function buildHeroFromProgression(character, progress) {
   const normalizedProgress = normalizeCharacterProgress(progress, character);
   const hero = clone(character.template);
+  hero.characterId = character.id || null;
   hero.level = normalizedProgress.level;
   hero.exp = normalizedProgress.exp;
   hero.expToNext = getExpToNextLevel(normalizedProgress.level, character);

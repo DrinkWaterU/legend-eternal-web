@@ -1,6 +1,14 @@
-import { DEFAULT_CHARACTER_ID } from "../../config.js";
-import { adventurerDefinition } from "./adventurer.js";
+import adventurerData from "./adventurer.json" with { type: "json" };
+import archerData from "./archer.json" with { type: "json" };
 
-export const characterDefinitions = {
-  [DEFAULT_CHARACTER_ID]: adventurerDefinition
-};
+function createCharacterDefinition(characterId, characterData) {
+  return Object.freeze({
+    id: characterId,
+    ...characterData
+  });
+}
+
+export const characterDefinitions = Object.freeze({
+  adventurer: createCharacterDefinition("adventurer", adventurerData),
+  archer: createCharacterDefinition("archer", archerData)
+});

@@ -1,15 +1,15 @@
 {
-  "name": "冒險者",
-  "role": "均衡・適應",
-  "summary": "能力均衡，擅長依照旅途中的選擇調整戰鬥方式。",
-  "description": "傳說大陸最常見的職業。冒險者使用的武器各式各樣，會依照手上的裝備與旅途中的選擇調整戰鬥方式，能力平均且適合探索未知地區。",
+  "name": "弓箭手",
+  "role": "精準・追擊",
+  "summary": "以精準爆擊帶動連續箭矢，快速建立射擊節奏。",
+  "description": "曾獨自在森林中追查哥布林的行蹤。她習慣先觀察敵人的動作，再用最少的箭矢解決眼前的威脅。",
   "template": {
-    "name": "冒險者",
+    "name": "弓箭手",
     "maxHp": 100,
     "hp": 100,
-    "attack": 10,
-    "defense": 2,
-    "critChance": 0.05,
+    "attack": 11,
+    "defense": 1,
+    "critChance": 0.08,
     "critDamageMultiplier": 1.7,
     "shieldStart": 0,
     "poisonPower": 0,
@@ -28,9 +28,9 @@
   },
   "stats": {
     "maxHp": 100,
-    "attack": 10,
-    "defense": 2,
-    "critChance": "5%"
+    "attack": 11,
+    "defense": 1,
+    "critChance": "8%"
   },
   "levelCurve": {
     "base": 18,
@@ -42,7 +42,7 @@
   "levelGrowth": [
     {
       "level": 2,
-      "name": "體魄磨練",
+      "name": "耐力鍛鍊",
       "effects": [
         {
           "type": "add",
@@ -53,7 +53,7 @@
     },
     {
       "level": 3,
-      "name": "重擊訓練",
+      "name": "弓力訓練",
       "effects": [
         {
           "type": "add",
@@ -64,7 +64,7 @@
     },
     {
       "level": 4,
-      "name": "守勢調整",
+      "name": "護具調整",
       "effects": [
         {
           "type": "add",
@@ -75,18 +75,18 @@
     },
     {
       "level": 5,
-      "name": "耐久行軍",
+      "name": "長途耐力",
       "effects": [
         {
           "type": "add",
           "stat": "maxHp",
-          "amount": 10
+          "amount": 8
         }
       ]
     },
     {
       "level": 6,
-      "name": "穩固步伐",
+      "name": "呼吸節奏",
       "effects": [
         {
           "type": "add",
@@ -97,7 +97,7 @@
     },
     {
       "level": 7,
-      "name": "破綻觀察",
+      "name": "視線校準",
       "effects": [
         {
           "type": "add",
@@ -108,23 +108,23 @@
     },
     {
       "level": 8,
-      "name": "防具熟悉",
+      "name": "林路步法",
       "effects": [
-        {
-          "type": "add",
-          "stat": "defense",
-          "amount": 1
-        },
         {
           "type": "add",
           "stat": "maxHp",
           "amount": 6
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
         }
       ]
     },
     {
       "level": 9,
-      "name": "攻勢熟練",
+      "name": "拉弓熟練",
       "effects": [
         {
           "type": "add",
@@ -135,23 +135,18 @@
     },
     {
       "level": 10,
-      "name": "冒險者步調",
+      "name": "持續行軍",
       "effects": [
         {
           "type": "add",
           "stat": "maxHp",
           "amount": 8
-        },
-        {
-          "type": "add",
-          "stat": "defense",
-          "amount": 1
         }
       ]
     },
     {
       "level": 11,
-      "name": "長途適應",
+      "name": "野外耐受",
       "effects": [
         {
           "type": "add",
@@ -162,7 +157,7 @@
     },
     {
       "level": 13,
-      "name": "攻守磨合",
+      "name": "箭勢磨練",
       "effects": [
         {
           "type": "add",
@@ -173,7 +168,7 @@
     },
     {
       "level": 14,
-      "name": "護具整備",
+      "name": "輕甲整備",
       "effects": [
         {
           "type": "add",
@@ -184,12 +179,12 @@
     },
     {
       "level": 15,
-      "name": "死地磨練",
+      "name": "戰場耐力",
       "effects": [
         {
           "type": "add",
           "stat": "maxHp",
-          "amount": 10
+          "amount": 8
         }
       ]
     },
@@ -206,18 +201,18 @@
     },
     {
       "level": 17,
-      "name": "護具調整",
+      "name": "弱點觀察",
       "effects": [
         {
           "type": "add",
-          "stat": "defense",
-          "amount": 1
+          "stat": "critChance",
+          "amount": 0.03
         }
       ]
     },
     {
       "level": 18,
-      "name": "攻勢銜接",
+      "name": "強弓訓練",
       "effects": [
         {
           "type": "add",
@@ -228,7 +223,7 @@
     },
     {
       "level": 19,
-      "name": "長途耐受",
+      "name": "長程耐受",
       "effects": [
         {
           "type": "add",
@@ -244,7 +239,7 @@
         {
           "type": "add",
           "stat": "maxHp",
-          "amount": 10
+          "amount": 8
         },
         {
           "type": "add",
@@ -255,7 +250,7 @@
     },
     {
       "level": 21,
-      "name": "冷靜應對",
+      "name": "冷靜瞄準",
       "effects": [
         {
           "type": "add",
@@ -266,7 +261,7 @@
     },
     {
       "level": 22,
-      "name": "林路適應",
+      "name": "森林耐力",
       "effects": [
         {
           "type": "add",
@@ -277,18 +272,18 @@
     },
     {
       "level": 23,
-      "name": "武器熟練",
+      "name": "重弓熟練",
       "effects": [
         {
           "type": "add",
           "stat": "attack",
-          "amount": 1
+          "amount": 2
         }
       ]
     },
     {
       "level": 24,
-      "name": "狀態判讀",
+      "name": "護具熟悉",
       "effects": [
         {
           "type": "add",
@@ -299,127 +294,107 @@
     },
     {
       "level": 25,
-      "name": "萬用整備",
+      "name": "長程行軍",
       "effects": [
         {
           "type": "add",
           "stat": "maxHp",
-          "amount": 12
+          "amount": 10
         }
       ]
     }
   ],
   "skills": [
     {
-      "id": "heavy-strike",
+      "id": "poison-arrow",
       "level": 3,
       "type": "minor",
-      "name": "重擊",
-      "description": "攻擊時有 20% 機率造成 140% 傷害。"
+      "name": "淬毒箭",
+      "description": "正式射擊命中且目標仍存活時，有 25% 機率使目標中毒，中毒傷害為 3。"
     },
     {
-      "id": "emergency-bandage",
+      "id": "keep-distance",
       "level": 5,
       "type": "milestone",
-      "name": "應急包紮",
-      "description": "每場戰鬥一次，生命低於 40% 時恢復最大生命 18%。"
+      "name": "保持距離",
+      "description": "每場戰鬥第一次受到敵人直接攻擊時，降低本次受到的傷害 50%。"
     },
     {
-      "id": "steady-stance",
+      "id": "precision-shot",
       "level": 6,
       "type": "minor",
-      "name": "穩定架勢",
-      "description": "受到敵人直接攻擊時有 25% 機率降低本次傷害 30%。"
+      "name": "精準射擊",
+      "description": "每第 3 次玩家攻擊，該次攻擊暴擊率 +40%。"
     },
     {
-      "id": "skilled-follow-up",
+      "id": "archer-follow-up",
       "level": 9,
       "type": "minor",
-      "name": "熟練追擊",
-      "description": "普通攻擊造成傷害後，有 25% 機率追加攻擊力 50% 的傷害。"
+      "name": "追擊",
+      "description": "原始攻擊造成爆擊後，有 35% 機率對同一目標追加一次 70% 傷害攻擊。"
     },
     {
-      "id": "adventurer-pace",
+      "id": "arrow-rain",
       "level": 10,
       "type": "milestone",
-      "name": "冒險者步調",
-      "description": "每場勝利後恢復最大生命 10%。"
+      "name": "箭雨",
+      "description": "每累積 4 次玩家攻擊，自動對所有存活敵人造成正常攻擊 50% 的傷害。"
     },
     {
-      "id": "exploit-weakness",
+      "id": "toxic-opening",
       "level": 12,
       "type": "minor",
-      "name": "破綻判斷",
-      "description": "暴擊率 +5%，暴擊傷害倍率由 170% 提升為 185%。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "critChance",
-          "amount": 0.05
-        },
-        {
-          "type": "add",
-          "stat": "critDamageMultiplier",
-          "amount": 0.15
-        }
-      ]
+      "name": "毒素破綻",
+      "description": "攻擊在本次射擊開始前已處於中毒狀態的敵人時，暴擊率 +20%。"
     },
     {
-      "id": "last-stand",
+      "id": "deadly-rhythm",
       "level": 15,
       "type": "rare",
-      "name": "死地求生",
-      "description": "每場戰鬥第一次受到致命傷害時保留 1 點生命，恢復最大生命 15%，並清除 1 個負面效果。"
+      "name": "致命節奏",
+      "description": "第一次追擊造成爆擊且原目標仍存活時，再進行一次追擊；不得繼續連鎖。"
     },
     {
-      "id": "exploit-weakness-plus",
+      "id": "venomous-arrowhead",
       "level": 18,
       "type": "minor",
-      "targetSkillId": "exploit-weakness",
-      "name": "破綻判斷強化",
-      "description": "強化破綻判斷：暴擊率額外 +3%，暴擊傷害倍率再提升 10%。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "critChance",
-          "amount": 0.03
-        },
-        {
-          "type": "add",
-          "stat": "critDamageMultiplier",
-          "amount": 0.1
-        }
-      ]
+      "targetSkillId": "poison-arrow",
+      "name": "劇毒箭頭",
+      "description": "強化淬毒箭：上毒率提高至 50%，中毒傷害提高至 6。"
     },
     {
-      "id": "expedition-pace",
+      "id": "distance-control",
       "level": 20,
       "type": "milestone",
-      "name": "遠征步調",
-      "description": "強化冒險者步調：每場勝利後恢復最大生命 15%。",
-      "targetSkillId": "adventurer-pace"
+      "targetSkillId": "keep-distance",
+      "name": "距離掌控",
+      "description": "開戰獲得 3 次保持距離；受到敵人直接攻擊時消耗 1 次，使本次傷害降至 1 點。箭雨恢復 1 次，最多保留 3 次。"
     },
     {
-      "id": "steady-stance-plus",
+      "id": "archer-follow-up-plus",
       "level": 21,
       "type": "minor",
-      "targetSkillId": "steady-stance",
-      "name": "穩定架勢強化",
-      "description": "強化穩定架勢：受到敵人直接攻擊時有 30% 機率降低本次傷害 35%。"
+      "targetSkillId": "archer-follow-up",
+      "name": "熟練追擊",
+      "description": "強化追擊：一般追擊機率由 35% 提高至 55%。"
     },
     {
-      "id": "status-familiarity",
+      "id": "dense-arrow-rain",
       "level": 24,
       "type": "minor",
-      "name": "狀態熟悉",
-      "description": "當你施加負面狀態時，獲得 1 層判讀，每層攻擊 +1，最多 3 層，持續到本場戰鬥結束；若本輪沒有可施加負面狀態的祝福，攻擊 +1。"
+      "targetSkillId": "arrow-rain",
+      "name": "密集箭雨",
+      "description": "強化箭雨：傷害由正常攻擊 50% 提高至 85%，觸發門檻仍為 4 次玩家攻擊。"
     },
     {
-      "id": "versatile-satchel",
+      "id": "hundred-step-shot",
       "level": 25,
       "type": "milestone",
-      "name": "萬用行囊",
-      "description": "每場戰鬥開始時，較容易獲得符合近期祝福流派的小加成。流派判定不只看持有數量；若沒有明確傾向，攻擊 +1。"
+      "name": "百步穿楊",
+      "description": "原始精準射擊造成爆擊時，本次一般追擊機率提高至 80%。"
     }
-  ]
+  ],
+  "unlock": {
+    "storyFlag": "archerRescued"
+  }
 }

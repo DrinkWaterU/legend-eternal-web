@@ -178,8 +178,8 @@
               </div>
               <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
             </div>
-            <p class="body-text">選擇要查看的角色。進入角色頁面後可以確認能力與目前選擇。</p>
-            <div id="characterChoiceList" class="choice-list"></div>
+            <p class="body-text">選擇要踏上旅程的角色。查看角色詳情後，再決定目前使用的角色。</p>
+            <div id="characterChoiceList" class="character-grid"></div>
           </div>
 
           <div id="characterDetailView" class="subview">
@@ -190,6 +190,7 @@
               </div>
               <button id="backToCharacterListButton" class="secondary-button" type="button">返回角色列表</button>
             </div>
+            <p id="characterDetailRole" class="character-detail-role"></p>
             <p id="characterDetailDescription" class="body-text"></p>
             <dl id="characterDetailStats" class="stat-list"></dl>
             <section class="skill-section" aria-label="角色技能">
@@ -463,6 +464,16 @@
             <button id="confirmDeleteSaveButton" class="danger-button" type="button">確認刪除</button>
             <button id="cancelDeleteSaveButton" class="secondary-button" type="button">取消</button>
           </div>
+        </div>
+      </section>
+
+
+      <section id="characterLockedPanel" class="end-panel character-locked-panel" aria-label="未知角色" aria-modal="true">
+        <div class="end-panel-content">
+          <p class="eyebrow">未知角色</p>
+          <h2>尚未相遇</h2>
+          <p class="body-text">旅途中，或許還有其他人正在等待。</p>
+          <button id="closeCharacterLockedButton" class="primary-button" type="button">關閉</button>
         </div>
       </section>
 
