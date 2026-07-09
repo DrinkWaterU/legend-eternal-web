@@ -13,6 +13,20 @@
       "tone": "morning-plains"
     }
   },
+  "preparations": [
+    {
+      "id": "simple-bandage",
+      "name": "簡易繃帶",
+      "cost": 4,
+      "description": "受傷較重時，戰鬥結束後會自動恢復少量生命。每次冒險最多發動一次。",
+      "effect": {
+        "type": "postEncounterLowHpHeal",
+        "hpThresholdRatio": 0.6,
+        "healMaxHpRatio": 0.06,
+        "charges": 1
+      }
+    }
+  ],
   "encounterPlan": [
     "normal",
     "normal",

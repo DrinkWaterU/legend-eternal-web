@@ -2,6 +2,7 @@ import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/con
 import { createEventRuntime } from "./src/adventure/eventRuntime.js";
 import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
+import { sellMaterial, spendGold } from "./src/core/commerce.js";
 import {
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
@@ -38,16 +39,26 @@ import {
   normalizeCharacterProgress as normalizeCharacterProgressCore
 } from "./src/core/progression.js";
 import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, formatRewards, mergeRewards, normalizeInventory, rollEnemyRewards } from "./src/core/rewards.js";
+import {
+  assertRegionPreparations,
+  createRunPreparation,
+  getPreparationSummary,
+  getRegionPreparation,
+  resolvePostEncounterPreparation,
+  resolvePreparationPoisonDamage
+} from "./src/core/preparations.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
 import { achievementDefinitions } from "./src/data/achievements.js";
 import { getAllIndependentBlessings, getBlessingPool } from "./src/data/blessings/index.js";
 import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
+import { assertFacilityDefinitions, facilityDefinitions, getFacilityDefinition } from "./src/data/facilities.js";
 import { materialDefinitions } from "./src/data/materials.js";
 import { musicDefinitions } from "./src/data/music.js";
 import { getEnemyDefinition } from "./src/data/enemies/index.js";
 import { getEventDefinition } from "./src/data/events/index.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
+import { assertSafeAreaDefinitions, DEFAULT_SAFE_AREA_ID, getSafeAreaDefinition, safeAreaDefinitions } from "./src/data/safeAreas.js";
 import { getRouteDefinition, getRouteGroup } from "./src/data/routes/index.js";
 import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
@@ -60,6 +71,10 @@ import { renderCombatView, renderCurrentAbilityView } from "./src/ui/combatView.
 import { hideEventTransition, renderRouteEndingView, showCombatLayout } from "./src/ui/eventView.js";
 import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatList } from "./src/ui/renderHelpers.js";
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
+import { renderFacilityListView } from "./src/ui/facilityView.js";
+import { getSellableMaterials } from "./src/ui/materialList.js";
+import { closeMerchantSalePanel, renderMerchantSalePanel, renderMerchantView } from "./src/ui/merchantView.js";
+import { renderPreparationChoices } from "./src/ui/preparationView.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
 import { createDebugRuntimeActions } from "./src/debug/runtimeActions.js";
@@ -123,6 +138,7 @@ const state = {
   deathCause: null,
   lastRunSummary: null,
   runStats: null,
+  runPreparation: null,
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
@@ -154,13 +170,37 @@ const uiState = {
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID,
   storageSortMode: "rarity",
-  storageSortDirection: "desc"
+  storageSortDirection: "desc",
+  safeAreaId: DEFAULT_SAFE_AREA_ID,
+  facilityView: "list",
+  merchantSortMode: "sellPrice",
+  merchantSortDirection: "desc",
+  merchantSaleMaterialId: null,
+  merchantSaleQuantity: 1,
+  merchantNotice: "",
+  merchantNoticeType: "status",
+  selectedPreparationId: null,
+  runStartNotice: "",
+  runStartLocked: false
 };
 
 let saveData = loadSave();
 let pendingSaveCodeImport = null;
 const musicManager = createMusicManager({ trackDefinitions: musicDefinitions });
 let eventRuntime = null;
+
+const FACILITY_ACTION_HANDLERS = Object.freeze({
+  merchant: showMerchantFacility
+});
+
+assertFacilityDefinitions(facilityDefinitions);
+assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
+Object.values(regionDefinitions).forEach(assertRegionPreparations);
+Object.values(facilityDefinitions).forEach((facility) => {
+  if (typeof FACILITY_ACTION_HANDLERS[facility.actionId] !== "function") {
+    throw new Error(`Facility ${facility.id} 使用未知 actionId：${facility.actionId}`);
+  }
+});
 
 function isDebugModeEnabled() {
   return new URLSearchParams(window.location.search).get("debug") === "1";
@@ -374,6 +414,13 @@ function showScreen(screenId) {
     els.encounterLabel.textContent = "冒險營地";
     renderStorageScreen();
   }
+  if (screenId === "facilityScreen") {
+    els.resultLabel.textContent = uiState.facilityView === "merchant"
+      ? "旅行商人"
+      : getCurrentSafeArea()?.placesTitle || "安全區去處";
+    els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
+    renderFacilityScreen();
+  }
   if (screenId === "regionScreen") {
     els.resultLabel.textContent = "選擇地區";
     els.encounterLabel.textContent = state.selectedRegion;
@@ -452,11 +499,18 @@ function showRegionList(contextId = uiState.navigationContext) {
   showScreen("regionScreen");
 }
 
+function resetPreparationUiState() {
+  uiState.selectedPreparationId = null;
+  uiState.runStartNotice = "";
+  uiState.runStartLocked = false;
+}
+
 function showRegionDetail(regionId = DEFAULT_REGION_ID) {
   saveData.settings.selectedRegionId = regionId;
   saveGameSafe();
   syncSelectionFromSave();
   uiState.regionView = "detail";
+  resetPreparationUiState();
   showScreen("regionScreen");
 }
 
@@ -473,22 +527,32 @@ function renderCampScreen() {
   const progress = normalizeCharacterProgress(state.selectedHeroId);
   const expToNext = getExpToNextLevel(progress.level, character);
   const lastResult = state.lastRunSummary
-    ? `${state.lastRunSummary.result}｜${state.lastRunSummary.sourceName} 第 ${state.lastRunSummary.reachedEncounter} / ${state.lastRunSummary.encounterTotal} 場`
+    ? `${state.lastRunSummary.sourceName} ${state.lastRunSummary.reachedEncounter} / ${state.lastRunSummary.encounterTotal} 場${state.lastRunSummary.result}`
     : "尚無紀錄";
   const inventorySummary = formatInventorySummary(saveData.inventory, materialDefinitions);
+  const campSafeArea = getSafeAreaDefinition(DEFAULT_SAFE_AREA_ID);
+  const facilities = getAvailableFacilities(campSafeArea);
   const campStats = [
-    ["目前角色", character.name],
-    ["角色等級", `Lv. ${progress.level}`],
-    ["經驗", `${progress.exp} / ${expToNext}`],
+    ["目前角色", `${character.name} Lv.${progress.level}`],
     ["目前地區", region.name],
-    ["地區難度", region.difficulty],
-    ["最近冒險", lastResult]
+    ["經驗", `${progress.exp} / ${expToNext}`],
+    hasPhoenixBlessing()
+      ? ["目前金幣", inventorySummary.gold]
+      : ["最近冒險", lastResult]
   ];
-  if (hasPhoenixBlessing()) {
-    campStats.splice(3, 0, ["目前金幣", inventorySummary.gold]);
-  }
+
   renderStatList(els.campStatusList, campStats);
+  els.campStartHint.textContent = hasPhoenixBlessing()
+    ? `前往${region.name}，確認本輪準備並繼續旅程`
+    : `前往${region.name}開始旅程`;
+  els.campRegionHint.textContent = `目前：${region.name}`;
+  els.campCharacterHint.textContent = `${character.name} Lv.${progress.level}`;
+  els.campStorageHint.textContent = `${inventorySummary.materialCount} 個素材`;
+  els.campPlacesHint.textContent = "看看營地周圍";
+  els.campRecordHint.textContent = `最近：${lastResult}`;
   els.campStorageButton.hidden = !hasPhoenixBlessing();
+  els.campPlacesButton.hidden = facilities.length === 0;
+
   if (els.campWarning) {
     els.campWarning.textContent = hasPhoenixBlessing()
       ? "鳳凰的加護已覺醒。死亡會結束本輪冒險，但角色等級與經驗會保留。"
@@ -512,6 +576,13 @@ function renderRegionScreen() {
 
   if (uiState.regionView === "detail") {
     const region = currentRegion();
+    const preparations = Array.isArray(region.preparations) ? region.preparations : [];
+    const inventory = normalizeInventory(saveData.inventory);
+    const selectedPreparation = getRegionPreparation(region, uiState.selectedPreparationId);
+    if (uiState.selectedPreparationId && (!selectedPreparation || inventory.gold < selectedPreparation.cost)) {
+      uiState.selectedPreparationId = null;
+    }
+
     els.regionDetailName.textContent = region.name;
     els.regionDetailDescription.textContent = region.note
       ? `${region.description}\n${region.note}`
@@ -523,7 +594,26 @@ function renderRegionScreen() {
       ["推薦等級", region.recommendedLevel || "Lv.1+"],
       ["角色", state.selectedHero]
     ]);
-    els.startButton.textContent = `開始${region.name}冒險`;
+
+    els.regionPreparationSection.hidden = !hasPhoenixBlessing();
+    els.regionStartNotice.textContent = uiState.runStartNotice;
+    els.regionStartNotice.hidden = !uiState.runStartNotice;
+    if (hasPhoenixBlessing()) {
+      els.regionPreparationGold.textContent = String(inventory.gold);
+      renderPreparationChoices({
+        element: els.regionPreparationChoices,
+        preparations,
+        selectedPreparationId: uiState.selectedPreparationId,
+        gold: inventory.gold,
+        onSelect: selectPreparation
+      });
+    }
+
+    const activePreparation = getRegionPreparation(region, uiState.selectedPreparationId);
+    els.startButton.textContent = activePreparation
+      ? `花費 ${activePreparation.cost} 金幣並開始${region.name}冒險`
+      : `開始${region.name}冒險`;
+    els.startButton.disabled = uiState.runStartLocked;
   }
 }
 
@@ -631,6 +721,166 @@ function renderStorageScreen() {
   });
 }
 
+function getCurrentSafeArea() {
+  return getSafeAreaDefinition(uiState.safeAreaId) || getSafeAreaDefinition(DEFAULT_SAFE_AREA_ID);
+}
+
+function getAvailableFacilities(safeArea = getCurrentSafeArea()) {
+  const facilityIds = Array.isArray(safeArea?.facilityIds) ? safeArea.facilityIds : [];
+  return facilityIds
+    .map((facilityId) => getFacilityDefinition(facilityId))
+    .filter(Boolean)
+    .filter((facility) => facility.id !== "traveling-merchant" || hasPhoenixBlessing());
+}
+
+function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.navigationContext) {
+  const safeArea = getSafeAreaDefinition(safeAreaId);
+  if (!safeArea) {
+    throw new Error(`找不到安全區 definition：${safeAreaId || "(empty)"}`);
+  }
+  setNavigationContext(contextId);
+  uiState.safeAreaId = safeArea.id;
+  uiState.facilityView = "list";
+  uiState.merchantNotice = "";
+  uiState.merchantNoticeType = "status";
+  showScreen("facilityScreen");
+}
+
+function showMerchantFacility() {
+  uiState.facilityView = "merchant";
+  uiState.merchantNotice = "";
+  uiState.merchantNoticeType = "status";
+  showScreen("facilityScreen");
+}
+
+function openFacility(facility) {
+  const handler = FACILITY_ACTION_HANDLERS[facility?.actionId];
+  if (typeof handler !== "function") {
+    throw new Error(`無法處理 Facility action：${facility?.actionId || "(empty)"}`);
+  }
+  handler();
+}
+
+function renderFacilityScreen() {
+  const safeArea = getCurrentSafeArea();
+  const facilities = getAvailableFacilities(safeArea);
+  els.facilityListView.classList.toggle("is-active", uiState.facilityView === "list");
+  els.merchantView.classList.toggle("is-active", uiState.facilityView === "merchant");
+
+  if (uiState.facilityView === "list") {
+    renderFacilityListView({
+      els,
+      safeArea,
+      facilities,
+      onFacilityClick: openFacility
+    });
+    return;
+  }
+
+  renderMerchantScreen();
+}
+
+function renderMerchantScreen() {
+  const inventory = normalizeInventory(saveData.inventory);
+  const safeArea = getCurrentSafeArea();
+  els.merchantAreaLabel.textContent = safeArea?.placesTitle || "安全區去處";
+  els.merchantBackButton.textContent = `返回${safeArea?.placesTitle || "安全區去處"}`;
+  renderMerchantView({
+    els,
+    inventory,
+    materialDefinitions,
+    sortMode: uiState.merchantSortMode,
+    sortDirection: uiState.merchantSortDirection,
+    notice: uiState.merchantNotice,
+    noticeType: uiState.merchantNoticeType,
+    onSortChange: (sortMode) => {
+      uiState.merchantSortMode = sortMode;
+      renderMerchantScreen();
+    },
+    onDirectionChange: (sortDirection) => {
+      uiState.merchantSortDirection = sortDirection;
+      renderMerchantScreen();
+    },
+    onMaterialClick: openMerchantSalePanel
+  });
+}
+
+function getMerchantSaleItem() {
+  return getSellableMaterials(saveData.inventory, materialDefinitions)
+    .find((item) => item.id === uiState.merchantSaleMaterialId) || null;
+}
+
+function openMerchantSalePanel(item) {
+  uiState.merchantSaleMaterialId = item.id;
+  uiState.merchantSaleQuantity = 1;
+  renderMerchantSaleDialog();
+}
+
+function renderMerchantSaleDialog() {
+  const item = getMerchantSaleItem();
+  if (!item) {
+    closeMerchantSaleDialog();
+    return;
+  }
+  uiState.merchantSaleQuantity = Math.min(item.quantity, Math.max(1, uiState.merchantSaleQuantity));
+  renderMerchantSalePanel({
+    els,
+    item,
+    quantity: uiState.merchantSaleQuantity,
+    onDecrease: () => changeMerchantSaleQuantity(-1),
+    onIncrease: () => changeMerchantSaleQuantity(1),
+    onMax: () => setMerchantSaleQuantity(item.quantity),
+    onConfirm: confirmMerchantSale
+  });
+}
+
+function changeMerchantSaleQuantity(change) {
+  setMerchantSaleQuantity(uiState.merchantSaleQuantity + change);
+}
+
+function setMerchantSaleQuantity(quantity) {
+  const item = getMerchantSaleItem();
+  if (!item) {
+    closeMerchantSaleDialog();
+    return;
+  }
+  uiState.merchantSaleQuantity = Math.min(item.quantity, Math.max(1, Math.floor(quantity || 1)));
+  renderMerchantSaleDialog();
+}
+
+function confirmMerchantSale() {
+  try {
+    const result = sellMaterial({
+      inventory: saveData.inventory,
+      materialDefinitions,
+      materialId: uiState.merchantSaleMaterialId,
+      quantity: uiState.merchantSaleQuantity
+    });
+    saveGameSafe();
+    uiState.merchantNotice = `已出售${result.name} x${result.quantity}，取得 ${result.totalGold} 金幣。`;
+    uiState.merchantNoticeType = "status";
+    closeMerchantSaleDialog();
+    renderMerchantScreen();
+  } catch (error) {
+    uiState.merchantNotice = error instanceof Error ? error.message : "交易失敗。";
+    uiState.merchantNoticeType = "error";
+    closeMerchantSaleDialog();
+    renderMerchantScreen();
+  }
+}
+
+function closeMerchantSaleDialog() {
+  uiState.merchantSaleMaterialId = null;
+  uiState.merchantSaleQuantity = 1;
+  closeMerchantSalePanel(els);
+}
+
+function selectPreparation(preparationId) {
+  uiState.selectedPreparationId = preparationId;
+  uiState.runStartNotice = "";
+  renderRegionScreen();
+}
+
 function createRunStats() {
   return {
     expGained: 0,
@@ -656,7 +906,7 @@ function createRunStats() {
   };
 }
 
-function initializeRunRuntime({ hero, encounterIndex = 0, debugBuildRun = false, bossId = null } = {}) {
+function initializeRunRuntime({ hero, preparation = null, encounterIndex = 0, debugBuildRun = false, bossId = null } = {}) {
   if (!hero) {
     throw new Error("Run runtime 初始化需要 Hero。");
   }
@@ -677,6 +927,7 @@ function initializeRunRuntime({ hero, encounterIndex = 0, debugBuildRun = false,
   state.defeatedBoss = false;
   state.deathCause = null;
   state.runStats = createRunStats();
+  state.runPreparation = preparation;
   state.runResultRecorded = false;
   state.canRest = false;
   state.hasRested = false;
@@ -800,6 +1051,31 @@ function recordRunStarted() {
   characterProgress.runs += 1;
 
   saveGameSafe();
+}
+
+function captureRunStartPermanentState() {
+  const regionId = state.selectedRegionId;
+  const characterId = state.selectedHeroId;
+  return {
+    regionId,
+    characterId,
+    gold: saveData.inventory.gold,
+    totalRuns: saveData.statistics.totalRuns,
+    regionRuns: saveData.statistics.regions[regionId].runs,
+    characterRuns: saveData.statistics.characters[characterId].runs,
+    characterProgressRuns: saveData.progression.characters[characterId].runs
+  };
+}
+
+function restoreRunStartPermanentState(snapshot) {
+  if (!snapshot) {
+    return;
+  }
+  saveData.inventory.gold = snapshot.gold;
+  saveData.statistics.totalRuns = snapshot.totalRuns;
+  saveData.statistics.regions[snapshot.regionId].runs = snapshot.regionRuns;
+  saveData.statistics.characters[snapshot.characterId].runs = snapshot.characterRuns;
+  saveData.progression.characters[snapshot.characterId].runs = snapshot.characterProgressRuns;
 }
 
 function recordEnemyDefeated(isBoss) {
@@ -1047,6 +1323,8 @@ function resetAdventureRuntimeAfterSaveImport() {
   state.hero = null;
   state.selectedBoss = null;
   state.runStats = null;
+  state.runPreparation = null;
+  resetPreparationUiState();
   state.lastRunSummary = null;
   state.awaitingBlessing = false;
   state.ended = true;
@@ -1320,19 +1598,89 @@ function enterAdventureRoute(routeId) {
   startEncounter();
 }
 
-function startRun() {
-  syncSelectionFromSave();
-  initializeRunRuntime({ hero: buildHeroFromProgression(state.selectedHeroId) });
-  state.eventSchedule = scheduleRegionEvent(currentAdventureSource(), Math.random, {
-    scheduleChance: getAdventureEventScheduleChance()
-  });
+function startPlayerRun() {
+  if (uiState.runStartLocked) {
+    return;
+  }
 
-  showScreen("gameScreen");
-  closeTransientUiPanels();
-  els.nextButton.disabled = false;
+  uiState.runStartLocked = true;
+  uiState.runStartNotice = "";
+  renderRegionScreen();
+  let runStarted = false;
+  let permanentMutationStarted = false;
+  let permanentSnapshot = null;
+  const navigationContextBeforeStart = uiState.navigationContext;
 
-  recordRunStarted();
-  startEncounter();
+  try {
+    syncSelectionFromSave();
+    const region = currentRegion();
+    const definition = getRegionPreparation(region, uiState.selectedPreparationId);
+    if (uiState.selectedPreparationId && !definition) {
+      throw new Error("目前選擇的整備不屬於這個地區。");
+    }
+    if (definition && saveData.inventory.gold < definition.cost) {
+      throw new Error("金幣不足，無法使用目前整備。");
+    }
+
+    permanentSnapshot = captureRunStartPermanentState();
+    const preparation = createRunPreparation(region, uiState.selectedPreparationId);
+    const hero = buildHeroFromProgression(state.selectedHeroId);
+    initializeRunRuntime({ hero, preparation });
+    state.eventSchedule = scheduleRegionEvent(currentAdventureSource(), Math.random, {
+      scheduleChance: getAdventureEventScheduleChance()
+    });
+
+    closeTransientUiPanels();
+    els.nextButton.disabled = false;
+    startEncounter();
+
+    permanentMutationStarted = true;
+    if (preparation) {
+      spendGold(saveData.inventory, preparation.cost);
+    }
+    recordRunStarted();
+    showScreen("gameScreen");
+    runStarted = true;
+  } catch (error) {
+    if (permanentMutationStarted) {
+      restoreRunStartPermanentState(permanentSnapshot);
+      saveGameSafe();
+    }
+    resetFailedPlayerRunStart();
+    setNavigationContext(navigationContextBeforeStart);
+    uiState.runStartLocked = false;
+    uiState.runStartNotice = error instanceof Error ? error.message : "無法開始這次冒險。";
+    showScreen("regionScreen");
+  } finally {
+    if (!runStarted) {
+      uiState.runStartLocked = false;
+    }
+  }
+}
+
+function resetFailedPlayerRunStart() {
+  state.debugBuildRun = false;
+  state.hero = null;
+  state.selectedBoss = null;
+  state.runStats = null;
+  state.runPreparation = null;
+  state.eventSchedule = null;
+  state.awaitingBlessing = false;
+  state.ended = true;
+  state.phase = "camp";
+  state.battleSource = "main";
+  state.battleEncounterType = null;
+  state.blessingContext = "normal";
+  state.blessingPoolOverrideId = null;
+  state.runResultRecorded = false;
+  state.adventureProgressLocked = false;
+  state.eventInputLocked = false;
+  state.log = [];
+  clearEnemyGroup();
+  clearPendingThreat();
+  eventRuntime.resetEventRunState();
+  resetRouteRuntime();
+  setCombatActionState();
 }
 
 function getAdventureEventScheduleChance() {
@@ -1344,6 +1692,8 @@ function getAdventureEventScheduleChance() {
 
 function restart() {
   state.debugBuildRun = false;
+  state.runPreparation = null;
+  resetPreparationUiState();
   syncSelectionFromSave();
   showScreen("menuScreen");
   closeTransientUiPanels();
@@ -1365,6 +1715,8 @@ function restart() {
 
 function returnToCamp() {
   state.debugBuildRun = false;
+  state.runPreparation = null;
+  resetPreparationUiState();
   syncSelectionFromSave();
   showScreen("campScreen");
   closeTransientUiPanels();
@@ -1490,7 +1842,11 @@ function playTurn() {
     }
   }
 
-  const endOfTurn = applyHeroEndOfTurnNegativeEffects({ hero: state.hero, log });
+  const endOfTurn = applyHeroEndOfTurnNegativeEffects({
+    hero: state.hero,
+    log,
+    modifyPoisonDamage: ({ damage }) => modifyPoisonDamageFromPreparation(damage)
+  });
   getLivingEnemies(state.enemies).forEach((enemy) => {
     applyEnemyEndOfTurnNegativeEffects({ enemy, log });
   });
@@ -1519,6 +1875,29 @@ function playTurn() {
   render();
 }
 
+function modifyPoisonDamageFromPreparation(damage) {
+  const result = resolvePreparationPoisonDamage({
+    preparation: state.runPreparation,
+    damage
+  });
+  if (result.triggered) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    addFixedLog("status", `整備｜${preparationName}減輕毒性侵蝕，少受到 ${result.preventedDamage} 點傷害。`);
+  }
+  return result.damage;
+}
+
+function resolvePostEncounterRunPreparation() {
+  const result = resolvePostEncounterPreparation({
+    preparation: state.runPreparation,
+    hero: state.hero
+  });
+  if (result.triggered) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    addFixedLog("heal", `整備｜${preparationName}處理了傷口，恢復 ${result.healing} 點生命。`);
+  }
+}
+
 function winEncounter() {
   settleBattleVictory();
 
@@ -1536,9 +1915,14 @@ function winEncounter() {
   if (currentRoute()) {
     state.routeEncounterIndex += 1;
   }
+
+  const adventureComplete = getAdventureEncounterIndex() >= getAdventureEncounterCount();
+  if (!adventureComplete) {
+    resolvePostEncounterRunPreparation();
+  }
   render();
 
-  if (getAdventureEncounterIndex() >= getAdventureEncounterCount()) {
+  if (adventureComplete) {
     addLog("system", "clear", { region: getAdventureSourceName() });
     if (currentRoute()?.id === "goblin-camp") {
       completeGoblinCampRoute();
@@ -2034,6 +2418,20 @@ function renderEndSummary(outcome, region) {
     items.push(["本輪素材", rewards.materials]);
   }
 
+  if (hasPhoenixBlessing()) {
+    const preparationSummary = getPreparationSummary(state.runPreparation);
+    items.push(["冒險整備", preparationSummary?.name || "無"]);
+    if (preparationSummary) {
+      items.push(["整備發動", `${preparationSummary.triggerCount} 次`]);
+      if (preparationSummary.healing > 0) {
+        items.push(["整備治療", preparationSummary.healing]);
+      }
+      if (preparationSummary.damagePrevented > 0) {
+        items.push(["整備減傷", preparationSummary.damagePrevented]);
+      }
+    }
+  }
+
   if (state.runStats?.levelUps.length > 0) {
     items.push(["升級", state.runStats.levelUps.map((level) => `Lv. ${level}`).join("、")]);
   }
@@ -2366,6 +2764,7 @@ function closeTransientUiPanels() {
   closeSkillPanel();
   closeLockedCharacterHint();
   closeMaterialInfoPanel();
+  closeMerchantSaleDialog();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
   closeAbilityInfoPanel();
@@ -2482,6 +2881,7 @@ function render() {
     enemies: state.enemies,
     targetEnemyId: state.targetEnemyId,
     phase: state.phase,
+    preparation: state.runPreparation,
     characterStatusEntries: getCharacterCombatStatusEntries(hero),
     onTargetSelect: selectEnemyTarget
   });
@@ -2591,13 +2991,19 @@ function bindEvents() {
   els.musicToggleButton.addEventListener("click", toggleMusicEnabled);
   els.musicVolumeInput.addEventListener("input", previewMusicVolume);
   els.musicVolumeInput.addEventListener("change", commitMusicVolume);
-  els.campStartButton.addEventListener("click", startRun);
+  els.campStartButton.addEventListener("click", () => {
+    setNavigationContext("camp");
+    showRegionDetail(state.selectedRegionId);
+  });
   els.campRegionButton.addEventListener("click", () => showRegionList("camp"));
   els.campCharacterButton.addEventListener("click", () => showCharacterList("camp"));
   els.campRecordButton.addEventListener("click", () => showStatisticsScreen("camp"));
   els.campStorageButton.addEventListener("click", () => showScreenInContext("storageScreen", "camp"));
+  els.campPlacesButton.addEventListener("click", () => showFacilityList(DEFAULT_SAFE_AREA_ID, "camp"));
   els.campBackButton.addEventListener("click", restart);
   els.storageBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
+  els.facilityBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
+  els.merchantBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
   els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
   els.statisticsTabs.forEach((button) => {
@@ -2613,7 +3019,7 @@ function bindEvents() {
   document.querySelectorAll(".home-button").forEach((button) => {
     button.addEventListener("click", restart);
   });
-  els.startButton.addEventListener("click", startRun);
+  els.startButton.addEventListener("click", startPlayerRun);
   els.restartButton.addEventListener("click", restart);
   els.retryButton.addEventListener("click", returnToCamp);
   els.viewLogButton.addEventListener("click", closeEndPanel);
@@ -2643,8 +3049,10 @@ function bindEvents() {
   els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
   els.closeSkillInfoButton.addEventListener("click", closeSkillPanel);
   els.closeMaterialInfoButton.addEventListener("click", closeMaterialInfoPanel);
+  els.closeMerchantSaleButton.addEventListener("click", closeMerchantSaleDialog);
   [
     [els.skillInfoPanel, closeSkillPanel],
+    [els.merchantSalePanel, closeMerchantSaleDialog],
     [els.materialInfoPanel, closeMaterialInfoPanel],
     [els.abilityInfoPanel, closeAbilityInfoPanel],
     [els.blessingInfoPanel, closeBlessingInfoPanel],

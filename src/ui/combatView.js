@@ -4,12 +4,13 @@ import { renderStatList } from "./renderHelpers.js";
 
 const rosterTargetState = new WeakMap();
 
-export function renderCombatView({ els, hero, enemies, targetEnemyId, phase, characterStatusEntries = [], onTargetSelect }) {
+export function renderCombatView({ els, hero, enemies, targetEnemyId, phase, preparation = null, characterStatusEntries = [], onTargetSelect }) {
   if (!hero) {
     return;
   }
 
   renderHeroStatus(els, hero, characterStatusEntries);
+  renderPreparationStatus(els, preparation);
   renderEnemyRoster({
     roster: els.enemyRoster,
     countLabel: els.enemyCountLabel,
@@ -59,6 +60,24 @@ function renderHeroStatus(els, hero, characterStatusEntries) {
   });
   els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}`;
   renderHeroStatuses(els.heroStatusList, hero, characterStatusEntries);
+}
+
+function renderPreparationStatus(els, preparation) {
+  const status = els.combatPreparationStatus;
+  if (!preparation) {
+    status.hidden = true;
+    els.combatPreparationName.textContent = "未整備";
+    els.combatPreparationCharges.textContent = "";
+    return;
+  }
+
+  const remainingCharges = Math.max(0, Number(preparation.remainingCharges) || 0);
+  status.hidden = false;
+  status.classList.toggle("is-depleted", remainingCharges <= 0);
+  els.combatPreparationName.textContent = preparation.name || "冒險整備";
+  els.combatPreparationCharges.textContent = remainingCharges > 0
+    ? `剩餘 ${remainingCharges} 次`
+    : "已耗盡";
 }
 
 function renderHeroStatuses(element, hero, characterStatusEntries = []) {

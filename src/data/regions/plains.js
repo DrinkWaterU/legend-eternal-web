@@ -16,6 +16,7 @@ export const plainsRegion = {
   encounterCount: plainsData.encounterPlan.length,
   bossName: plainsData.boss.name,
   difficulty: plainsData.difficulty,
+  preparations: plainsData.preparations || [],
   encounterPlan: plainsData.encounterPlan,
   enemies: plainsData.enemies,
   elites: plainsData.elites,

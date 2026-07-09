@@ -327,6 +327,117 @@ dd {
   font-weight: 800;
 }
 
-.primary-button,
-.secondary-button,
-.danger-button,
+.camp-primary-action {
+  width: 100%;
+  min-height: 92px;
+  margin-top: 2px;
+}
+
+.camp-primary-action::before {
+  background: var(--amber);
+}
+
+.camp-feature-section {
+  margin-top: 18px;
+}
+
+.camp-feature-title {
+  margin: 0 0 10px;
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.camp-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.camp-feature-button {
+  position: relative;
+  min-height: 78px;
+  overflow: hidden;
+  padding: 14px 14px 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%),
+    var(--panel-strong);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.camp-feature-button::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--amber);
+  content: "";
+}
+
+.camp-feature-button[data-feature="region"]::before {
+  background: var(--river);
+}
+
+.camp-feature-button[data-feature="character"]::before {
+  background: var(--violet);
+}
+
+.camp-feature-button[data-feature="storage"]::before {
+  background: var(--amber);
+}
+
+.camp-feature-button[data-feature="places"]::before {
+  background: var(--gold);
+}
+
+.camp-feature-button[data-feature="records"]::before {
+  background: var(--wine);
+}
+
+.camp-feature-button:hover,
+.camp-feature-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(214, 166, 83, 0.7);
+  background:
+    linear-gradient(135deg, rgba(224, 179, 93, 0.13), transparent 46%),
+    #252b2d;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
+  outline: none;
+}
+
+.camp-feature-button span,
+.camp-feature-button small {
+  display: block;
+}
+
+.camp-feature-button span {
+  margin-bottom: 7px;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.camp-feature-button small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.camp-feature-wide {
+  grid-column: 1 / -1;
+}
+
+.camp-menu-return {
+  width: 100%;
+  margin-top: 14px;
+}

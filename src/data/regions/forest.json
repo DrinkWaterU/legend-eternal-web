@@ -49,6 +49,19 @@
       }
     ]
   },
+  "preparations": [
+    {
+      "id": "insect-repellent-powder",
+      "name": "驅蟲藥粉",
+      "cost": 8,
+      "description": "減輕數次受到的毒性傷害。最多生效 4 次。",
+      "effect": {
+        "type": "poisonDamageReduction",
+        "reductionRatio": 0.25,
+        "charges": 4
+      }
+    }
+  ],
   "encounterPlan": [
     "normal",
     "normal",

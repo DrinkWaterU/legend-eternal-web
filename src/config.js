@@ -1,4 +1,4 @@
-export const GAME_VERSION = "v0.2.3.4-alpha";
+export const GAME_VERSION = "v0.2.4.0-alpha";
 export const SAVE_KEY = "legendEternalSave";
 export const SAVE_SCHEMA_VERSION = 6;
 

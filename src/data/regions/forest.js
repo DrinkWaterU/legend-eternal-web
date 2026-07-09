@@ -19,6 +19,7 @@ export const forestRegion = {
   recommendedLevel: forestData.recommendedLevel,
   scaling: forestData.scaling,
   events: forestData.events || null,
+  preparations: forestData.preparations || [],
   encounterPlan: forestData.encounterPlan,
   enemies: forestData.enemies,
   elites: forestData.elites,
