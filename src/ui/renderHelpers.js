@@ -70,9 +70,18 @@ export function renderChoiceList(element, choices) {
   });
 }
 
-export function renderBlessingChoices(element, blessings, onChoose) {
+const BLESSING_REVEAL_INTERVAL_MS = 180;
+const BLESSING_REVEAL_DURATION_MS = 220;
+
+export function renderBlessingChoices(element, blessings, onChoose, options = {}) {
+  const {
+    reveal = false,
+    onRevealComplete = null,
+    revealIntervalMs = BLESSING_REVEAL_INTERVAL_MS,
+    revealDurationMs = BLESSING_REVEAL_DURATION_MS
+  } = options;
   element.innerHTML = "";
-  blessings.forEach((blessing) => {
+  const buttons = blessings.map((blessing) => {
     const rarityId = blessing.rarity || DEFAULT_BLESSING_RARITY;
     const rarity = getBlessingRarity(rarityId);
     const button = document.createElement("button");
@@ -89,8 +98,33 @@ export function renderBlessingChoices(element, blessings, onChoose) {
       <b>${blessing.effectText}</b>
     `;
     button.addEventListener("click", () => onChoose(blessing));
+    if (reveal) {
+      button.disabled = true;
+      button.classList.add("is-revealing");
+    }
     element.append(button);
+    return button;
   });
+
+  if (!reveal || buttons.length === 0) {
+    onRevealComplete?.();
+    return;
+  }
+
+  buttons.forEach((button, index) => {
+    setTimeout(() => {
+      button.classList.add("is-revealed");
+    }, index * revealIntervalMs);
+  });
+
+  const revealCompleteDelay = ((buttons.length - 1) * revealIntervalMs) + revealDurationMs;
+  setTimeout(() => {
+    buttons.forEach((button) => {
+      button.disabled = false;
+      button.classList.remove("is-revealing");
+    });
+    onRevealComplete?.();
+  }, revealCompleteDelay);
 }
 
 export function renderCurrentStats(element, hero) {

@@ -129,6 +129,7 @@ const state = {
   pendingThreat: null,
   blessingContext: "normal",
   blessingPoolOverrideId: null,
+  blessingInputLocked: false,
   battleSource: "main",
   battleEncounterType: null,
   eventSchedule: null,
@@ -2064,11 +2065,22 @@ function showBlessings(context = "normal", options = {}) {
   const { poolId = null, count = 3 } = options;
   state.blessingContext = context;
   state.blessingPoolOverrideId = poolId;
+  state.blessingInputLocked = true;
   state.awaitingBlessing = true;
   els.nextButton.disabled = true;
   els.blessingPanel.classList.add("is-visible");
   els.resultLabel.textContent = "選擇祝福";
-  renderBlessingChoices(els.blessingChoices, getBlessingChoices(count, poolId), chooseBlessing);
+  renderBlessingChoices(
+    els.blessingChoices,
+    getBlessingChoices(count, poolId),
+    chooseBlessing,
+    {
+      reveal: true,
+      onRevealComplete: () => {
+        state.blessingInputLocked = false;
+      }
+    }
+  );
 }
 
 function tryFlee() {
@@ -2272,6 +2284,10 @@ function grantBlessing(blessing) {
 }
 
 function chooseBlessing(blessing) {
+  if (state.blessingInputLocked) {
+    return;
+  }
+  state.blessingInputLocked = true;
   grantBlessing(blessing);
   if (state.blessingContext === "counterEscape" && hasPendingThreat("counterEscape")) {
     state.blessingContext = "normal";
