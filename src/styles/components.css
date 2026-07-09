@@ -3,9 +3,25 @@
   border-radius: 8px;
   cursor: pointer;
   transition:
-    transform 150ms ease,
+    opacity 220ms ease,
+    transform 220ms ease,
     box-shadow 150ms ease,
     background 150ms ease;
+}
+
+.blessing-card.is-revealing {
+  opacity: 0;
+  transform: translateY(10px);
+  cursor: default;
+}
+
+.blessing-card.is-revealing.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.blessing-card:disabled {
+  cursor: default;
 }
 
 .primary-button {
@@ -98,7 +114,7 @@
 .primary-button:hover,
 .secondary-button:hover,
 .danger-button:hover,
-.blessing-card:hover {
+.blessing-card:not(:disabled):hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
 }
@@ -549,3 +565,186 @@
   width: min(100%, 260px);
 }
 
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+  text-align: left;
+}
+
+.character-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 13px;
+  min-height: 250px;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%),
+    var(--panel-strong);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+
+.character-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--amber);
+  content: "";
+}
+
+.character-card:hover,
+.character-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(214, 166, 83, 0.72);
+  outline: none;
+  background:
+    linear-gradient(135deg, rgba(224, 179, 93, 0.13), transparent 46%),
+    #252b2d;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.24);
+}
+
+.character-card.is-selected {
+  border-color: rgba(241, 211, 134, 0.65);
+  box-shadow: 0 0 0 1px rgba(241, 211, 134, 0.16), 0 16px 32px rgba(0, 0, 0, 0.24);
+}
+
+.character-card.is-locked {
+  filter: saturate(0.5);
+}
+
+.character-card.is-locked::before {
+  background: rgba(184, 176, 160, 0.45);
+}
+
+.character-card-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.character-emblem {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  overflow: hidden;
+  border: 1px solid rgba(241, 211, 134, 0.38);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.08), transparent 34%), rgba(13, 17, 18, 0.82);
+  color: var(--gold);
+  font-size: 1.25rem;
+  font-weight: 900;
+  box-shadow: var(--inner-light);
+}
+
+.character-emblem img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.character-card.is-locked .character-emblem {
+  border-color: rgba(184, 176, 160, 0.25);
+  color: var(--muted);
+}
+
+.character-card-title {
+  min-width: 0;
+}
+
+.character-card-title strong,
+.character-card-title small {
+  display: block;
+}
+
+.character-card-title strong {
+  color: #fff4d8;
+  font-size: 1.22rem;
+  font-weight: 900;
+}
+
+.character-card-title small {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.character-card-status,
+.character-role-label,
+.character-detail-role {
+  width: fit-content;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.character-card-status {
+  padding: 5px 8px;
+  border: 1px solid rgba(241, 211, 134, 0.28);
+  color: var(--gold);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.character-card-status.is-available {
+  border-color: rgba(111, 176, 193, 0.35);
+  color: var(--sky);
+}
+
+.character-card-status.is-locked {
+  border-color: rgba(184, 176, 160, 0.22);
+  color: var(--muted);
+}
+
+.character-role-label,
+.character-detail-role {
+  padding: 5px 9px;
+  border: 1px solid rgba(111, 176, 193, 0.38);
+  color: var(--sky);
+  font-size: 0.78rem;
+}
+
+.character-detail-role {
+  margin: 0 0 14px;
+}
+
+.character-card.is-locked .character-role-label {
+  border-color: rgba(184, 176, 160, 0.18);
+  color: var(--muted);
+}
+
+.character-card-summary {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.72;
+}
+
+.character-card-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(173, 148, 102, 0.18);
+  color: var(--gold);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.character-card.is-locked .character-card-action {
+  color: var(--muted);
+}
+
+.character-locked-panel .end-panel-content {
+  max-width: 460px;
+  text-align: center;
+}

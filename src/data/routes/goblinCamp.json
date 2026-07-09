@@ -125,10 +125,10 @@
         },
         {
           "id": "search-loot",
-          "meta": "投資 Build",
+          "meta": "強化流派",
           "title": "搜刮戰利品",
           "description": "放棄難以下嚥的補給，翻找武器與雜物中值得學會的手段。",
-          "action": "額外進行 Goblin Blessing 三選一",
+          "action": "額外進行哥布林祝福三選一",
           "result": {
             "narrative": [
               "你放棄那些難以下嚥的東西，轉而翻找被哥布林隨手丟棄的武器與雜物。",

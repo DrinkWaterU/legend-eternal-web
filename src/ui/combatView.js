@@ -4,12 +4,12 @@ import { renderStatList } from "./renderHelpers.js";
 
 const rosterTargetState = new WeakMap();
 
-export function renderCombatView({ els, hero, enemies, targetEnemyId, phase, onTargetSelect }) {
+export function renderCombatView({ els, hero, enemies, targetEnemyId, phase, characterStatusEntries = [], onTargetSelect }) {
   if (!hero) {
     return;
   }
 
-  renderHeroStatus(els, hero);
+  renderHeroStatus(els, hero, characterStatusEntries);
   renderEnemyRoster({
     roster: els.enemyRoster,
     countLabel: els.enemyCountLabel,
@@ -44,7 +44,7 @@ export function getHeroRuntimeCritChance(hero) {
   return (Number(hero?.critChance) || 0) + (Number(hero?.battleCritBonus) || 0);
 }
 
-function renderHeroStatus(els, hero) {
+function renderHeroStatus(els, hero, characterStatusEntries) {
   els.heroName.textContent = hero.name;
   els.heroLevel.textContent = `角色 Lv. ${hero.level || 1}`;
   renderLayeredMeter({
@@ -58,10 +58,10 @@ function renderHeroStatus(els, hero) {
     shield: hero.shield || 0
   });
   els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}`;
-  renderHeroStatuses(els.heroStatusList, hero);
+  renderHeroStatuses(els.heroStatusList, hero, characterStatusEntries);
 }
 
-function renderHeroStatuses(element, hero) {
+function renderHeroStatuses(element, hero, characterStatusEntries = []) {
   const statuses = [];
   const pendingLoss = getHeroPendingHpLoss(hero);
   if (hero.shield > 0) {
@@ -73,6 +73,7 @@ function renderHeroStatuses(element, hero) {
   if (hero.entangle) {
     statuses.push({ label: "纏繞", className: "is-negative" });
   }
+  statuses.push(...characterStatusEntries);
   renderStatusChips(element, statuses, "狀態正常");
 }
 

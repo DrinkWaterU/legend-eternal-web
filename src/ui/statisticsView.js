@@ -51,7 +51,9 @@ function renderStatisticsOverview(els, stats) {
 }
 
 function renderStatisticsCharacterList(els, saveData, characterDefinitions, onCharacterDetail) {
-  renderChoiceList(els.statisticsCharacterList, Object.entries(characterDefinitions).map(([characterId, character]) => {
+  const unlockedCharacters = Object.entries(characterDefinitions)
+    .filter(([characterId]) => saveData.progression.characters[characterId]?.unlocked === true);
+  renderChoiceList(els.statisticsCharacterList, unlockedCharacters.map(([characterId, character]) => {
     const characterStats = saveData.statistics.characters[characterId];
     const characterProgress = saveData.progression.characters[characterId];
     return {
@@ -65,9 +67,12 @@ function renderStatisticsCharacterList(els, saveData, characterDefinitions, onCh
 }
 
 function renderStatisticsCharacterDetail(els, saveData, characterDefinitions, characterId) {
-  const character = characterDefinitions[characterId];
-  const characterStats = saveData.statistics.characters[characterId];
-  const characterProgress = saveData.progression.characters[characterId];
+  const resolvedCharacterId = characterDefinitions[characterId] && saveData.progression.characters[characterId]?.unlocked === true
+    ? characterId
+    : Object.keys(characterDefinitions).find((candidateId) => saveData.progression.characters[candidateId]?.unlocked === true);
+  const character = characterDefinitions[resolvedCharacterId];
+  const characterStats = saveData.statistics.characters[resolvedCharacterId];
+  const characterProgress = saveData.progression.characters[resolvedCharacterId];
   els.statisticsCharacterName.textContent = character.name;
   renderStatList(els.statisticsCharacterDetailList, [
     ["等級", characterProgress.level],

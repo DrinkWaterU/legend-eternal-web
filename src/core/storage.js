@@ -92,9 +92,12 @@ export function migrateSave(rawSave, options = {}) {
 
   migrateStatistics(save, rawSave);
   migrateProgression(save, rawSave, { rawSchemaVersion });
+  migrateCharacterUnlocks(save);
 
   save.settings.selectedRegionId = regionDefinitions[rawSave.settings?.selectedRegionId] ? rawSave.settings.selectedRegionId : DEFAULT_REGION_ID;
-  save.settings.selectedCharacterId = characterDefinitions[rawSave.settings?.selectedCharacterId] ? rawSave.settings.selectedCharacterId : DEFAULT_CHARACTER_ID;
+  save.settings.selectedCharacterId = isUnlockedCharacter(save, rawSave.settings?.selectedCharacterId)
+    ? rawSave.settings.selectedCharacterId
+    : DEFAULT_CHARACTER_ID;
   save.settings.musicEnabled = typeof rawSave.settings?.musicEnabled === "boolean"
     ? rawSave.settings.musicEnabled
     : save.settings.musicEnabled;
@@ -291,6 +294,23 @@ function migrateProgression(save, rawSave, options = {}) {
     characterProgress.exp = toSafeNumber(rawCharacterProgress.exp);
     characterProgress.learnedSkills = Array.isArray(rawCharacterProgress.learnedSkills) ? rawCharacterProgress.learnedSkills : [];
   });
+}
+
+function migrateCharacterUnlocks(save) {
+  Object.entries(characterDefinitions).forEach(([characterId, character]) => {
+    const storyFlag = character.unlock?.storyFlag;
+    const characterProgress = save.progression.characters[characterId];
+    if (storyFlag && save.storyFlags[storyFlag] && characterProgress) {
+      characterProgress.unlocked = true;
+    }
+  });
+}
+
+function isUnlockedCharacter(save, characterId) {
+  return Boolean(
+    characterDefinitions[characterId]
+    && save.progression.characters[characterId]?.unlocked === true
+  );
 }
 
 function mergePlainObject(target, source) {
