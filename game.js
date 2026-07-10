@@ -41,11 +41,17 @@ import {
 import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, formatRewards, mergeRewards, normalizeInventory, rollEnemyRewards } from "./src/core/rewards.js";
 import {
   assertRegionPreparations,
+  beginPreparationBattle,
+  consumePreparationEntangleRetry,
   createRunPreparation,
+  getPreparationCombatStatus,
   getPreparationSummary,
   getRegionPreparation,
+  recordPreparationEntangleRetryResult,
   resolvePostEncounterPreparation,
-  resolvePreparationPoisonDamage
+  resolvePreparationIncomingDirectDamage,
+  resolvePreparationPoisonDamage,
+  runPreparationOpeningAction
 } from "./src/core/preparations.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
@@ -74,7 +80,7 @@ import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/u
 import { renderFacilityListView } from "./src/ui/facilityView.js";
 import { getSellableMaterials } from "./src/ui/materialList.js";
 import { closeMerchantSalePanel, renderMerchantSalePanel, renderMerchantView } from "./src/ui/merchantView.js";
-import { renderPreparationChoices } from "./src/ui/preparationView.js";
+import { renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
 import { createDebugRuntimeActions } from "./src/debug/runtimeActions.js";
@@ -180,6 +186,8 @@ const uiState = {
   merchantNotice: "",
   merchantNoticeType: "status",
   selectedPreparationId: null,
+  preparationDetailId: null,
+  preparationDetailExpanded: false,
   runStartNotice: "",
   runStartLocked: false
 };
@@ -501,6 +509,8 @@ function showRegionList(contextId = uiState.navigationContext) {
 
 function resetPreparationUiState() {
   uiState.selectedPreparationId = null;
+  uiState.preparationDetailId = null;
+  uiState.preparationDetailExpanded = false;
   uiState.runStartNotice = "";
   uiState.runStartLocked = false;
 }
@@ -577,10 +587,27 @@ function renderRegionScreen() {
   if (uiState.regionView === "detail") {
     const region = currentRegion();
     const preparations = Array.isArray(region.preparations) ? region.preparations : [];
+    const traits = Array.isArray(region.traits)
+      ? region.traits.filter((trait) => typeof trait === "string" && trait.trim())
+      : [];
     const inventory = normalizeInventory(saveData.inventory);
-    const selectedPreparation = getRegionPreparation(region, uiState.selectedPreparationId);
-    if (uiState.selectedPreparationId && (!selectedPreparation || inventory.gold < selectedPreparation.cost)) {
+    const character = characterDefinitions[state.selectedHeroId];
+    const progress = normalizeCharacterProgress(state.selectedHeroId);
+    const phoenixUnlocked = hasPhoenixBlessing();
+
+    if (!phoenixUnlocked) {
       uiState.selectedPreparationId = null;
+      uiState.preparationDetailId = null;
+      uiState.preparationDetailExpanded = false;
+    } else {
+      const selectedPreparation = getRegionPreparation(region, uiState.selectedPreparationId);
+      if (uiState.selectedPreparationId && (!selectedPreparation || inventory.gold < selectedPreparation.cost)) {
+        uiState.selectedPreparationId = null;
+      }
+      if (uiState.preparationDetailId && !getRegionPreparation(region, uiState.preparationDetailId)) {
+        uiState.preparationDetailId = null;
+        uiState.preparationDetailExpanded = false;
+      }
     }
 
     els.regionDetailName.textContent = region.name;
@@ -588,28 +615,65 @@ function renderRegionScreen() {
       ? `${region.description}\n${region.note}`
       : region.description;
     renderStatList(els.regionDetailStats, [
-      ["遭遇數", region.encounterCount],
-      ["首領", region.bossName],
+      ["遭遇", `${region.encounterCount} 場`],
       ["難度", region.difficulty],
       ["推薦等級", region.recommendedLevel || "Lv.1+"],
-      ["角色", state.selectedHero]
+      ["首領", region.bossName]
     ]);
 
-    els.regionPreparationSection.hidden = !hasPhoenixBlessing();
+    els.regionTraitList.replaceChildren();
+    traits.forEach((trait) => {
+      const item = document.createElement("span");
+      item.className = "region-trait";
+      item.textContent = trait;
+      els.regionTraitList.append(item);
+    });
+    els.regionTraits.hidden = traits.length === 0;
+
+    els.regionDepartureCharacter.textContent = `${character.name} Lv.${progress.level}`;
+    els.regionDepartureGoldItem.hidden = !phoenixUnlocked;
+    if (phoenixUnlocked) {
+      els.regionDepartureGold.textContent = String(inventory.gold);
+    }
+
+    els.regionPreparationSection.hidden = !phoenixUnlocked;
     els.regionStartNotice.textContent = uiState.runStartNotice;
     els.regionStartNotice.hidden = !uiState.runStartNotice;
-    if (hasPhoenixBlessing()) {
-      els.regionPreparationGold.textContent = String(inventory.gold);
+    if (phoenixUnlocked) {
       renderPreparationChoices({
         element: els.regionPreparationChoices,
         preparations,
         selectedPreparationId: uiState.selectedPreparationId,
+        detailPreparationId: uiState.preparationDetailId,
+        detailExpanded: uiState.preparationDetailExpanded,
         gold: inventory.gold,
         onSelect: selectPreparation
       });
+      const detailPreparation = getRegionPreparation(region, uiState.preparationDetailId);
+      const detailAffordable = !detailPreparation || inventory.gold >= detailPreparation.cost;
+      renderPreparationDetail({
+        element: els.regionPreparationDetail,
+        preparation: detailPreparation,
+        expanded: uiState.preparationDetailExpanded,
+        priceLabel: detailPreparation
+          ? detailAffordable
+            ? `${detailPreparation.cost} 金幣`
+            : `金幣不足｜需 ${detailPreparation.cost} 金幣`
+          : "免費"
+      });
+    } else {
+      els.regionPreparationChoices.replaceChildren();
+      renderPreparationDetail({
+        element: els.regionPreparationDetail,
+        preparation: null,
+        expanded: false,
+        priceLabel: "免費"
+      });
     }
 
-    const activePreparation = getRegionPreparation(region, uiState.selectedPreparationId);
+    const activePreparation = phoenixUnlocked
+      ? getRegionPreparation(region, uiState.selectedPreparationId)
+      : null;
     els.startButton.textContent = activePreparation
       ? `花費 ${activePreparation.cost} 金幣並開始${region.name}冒險`
       : `開始${region.name}冒險`;
@@ -876,7 +940,22 @@ function closeMerchantSaleDialog() {
 }
 
 function selectPreparation(preparationId) {
-  uiState.selectedPreparationId = preparationId;
+  const region = currentRegion();
+  const preparation = getRegionPreparation(region, preparationId);
+  if (preparationId && !preparation) {
+    return;
+  }
+
+  const inventory = normalizeInventory(saveData.inventory);
+  const affordable = !preparation || inventory.gold >= preparation.cost;
+  const sameDetail = uiState.preparationDetailId === preparationId;
+  if (affordable) {
+    uiState.selectedPreparationId = preparationId;
+  }
+  uiState.preparationDetailId = preparationId;
+  uiState.preparationDetailExpanded = sameDetail
+    ? !uiState.preparationDetailExpanded
+    : true;
   uiState.runStartNotice = "";
   renderRegionScreen();
 }
@@ -1510,6 +1589,10 @@ function resetHeroBattleState() {
   initializeCharacterBattleState(state.hero);
 }
 
+function beginRunPreparationBattle() {
+  beginPreparationBattle(state.runPreparation);
+}
+
 function healThreatEnemies(enemies, ratio) {
   return enemies.map((enemy) => {
     if (ratio <= 0 || enemy.hp <= 0) {
@@ -1546,6 +1629,7 @@ function resumePendingThreat(options = {}) {
   state.ambushAdvantage = false;
   state.log = [];
   resetHeroBattleState();
+  beginRunPreparationBattle();
   clearPendingThreat();
   applyBattleStartSkills();
 
@@ -1614,8 +1698,11 @@ function startPlayerRun() {
   try {
     syncSelectionFromSave();
     const region = currentRegion();
-    const definition = getRegionPreparation(region, uiState.selectedPreparationId);
-    if (uiState.selectedPreparationId && !definition) {
+    const requestedPreparationId = hasPhoenixBlessing()
+      ? uiState.selectedPreparationId
+      : null;
+    const definition = getRegionPreparation(region, requestedPreparationId);
+    if (requestedPreparationId && !definition) {
       throw new Error("目前選擇的整備不屬於這個地區。");
     }
     if (definition && saveData.inventory.gold < definition.cost) {
@@ -1623,7 +1710,7 @@ function startPlayerRun() {
     }
 
     permanentSnapshot = captureRunStartPermanentState();
-    const preparation = createRunPreparation(region, uiState.selectedPreparationId);
+    const preparation = createRunPreparation(region, requestedPreparationId);
     const hero = buildHeroFromProgression(state.selectedHeroId);
     initializeRunRuntime({ hero, preparation });
     state.eventSchedule = scheduleRegionEvent(currentAdventureSource(), Math.random, {
@@ -1774,6 +1861,7 @@ function startEncounter() {
   }
 
   resetHeroBattleState();
+  beginRunPreparationBattle();
   applyBattleStartSkills();
 
   els.blessingPanel.classList.remove("is-visible");
@@ -1798,21 +1886,21 @@ function playTurn() {
   const log = createCombatLogger();
   state.phase = "combat";
   state.turn += 1;
-  const heroEntangled = resolveHeroEntangle({ hero: state.hero, log });
+  const heroEntangled = resolveHeroEntangle({
+    hero: state.hero,
+    log,
+    retryOnFailure: () => consumeEntangleRetryFromPreparation(log),
+    onRetryResult: ({ success }) => recordPreparationEntangleRetryResult({
+      preparation: state.runPreparation,
+      success
+    })
+  });
   if (!heroEntangled) {
     const target = currentTargetEnemy();
     if (!target) {
       return;
     }
-    const characterAction = resolveCharacterPlayerAction({
-      hero: state.hero,
-      enemies: state.enemies,
-      targetEnemyId: state.targetEnemyId,
-      log
-    });
-    if (!characterAction.handled) {
-      resolveHeroAction({ hero: state.hero, enemy: target, log });
-    }
+    runHeroPlayerAction({ target, log });
     settleDefeatedEnemies();
     if (getLivingEnemies(state.enemies).length === 0) {
       winEncounter();
@@ -1830,7 +1918,7 @@ function playTurn() {
       enemy,
       turn: state.turn,
       log,
-      modifyDirectDamage: modifyCharacterIncomingDirectDamage
+      modifyDirectDamage: modifyIncomingDirectDamage
     });
     applyEmergencyBandage();
     if (state.hero.hp <= 0) {
@@ -1875,6 +1963,53 @@ function playTurn() {
   render();
 }
 
+function runHeroPlayerAction({ target, log }) {
+  return runPreparationOpeningAction({
+    preparation: state.runPreparation,
+    hero: state.hero,
+    encounterType: state.battleEncounterType,
+    onTrigger: ({ attackBonus }) => {
+      const preparationName = state.runPreparation?.name || "冒險整備";
+      log.fixed("status", `整備｜${preparationName}讓這次出手更有威力，攻擊提高 ${attackBonus} 點。`);
+    },
+    action: () => {
+      const characterAction = resolveCharacterPlayerAction({
+        hero: state.hero,
+        enemies: state.enemies,
+        targetEnemyId: state.targetEnemyId,
+        log
+      });
+      if (!characterAction.handled) {
+        resolveHeroAction({ hero: state.hero, enemy: target, log });
+      }
+      return characterAction;
+    }
+  });
+}
+
+function modifyIncomingDirectDamage(context) {
+  const characterModifiedDamage = modifyCharacterIncomingDirectDamage(context);
+  const result = resolvePreparationIncomingDirectDamage({
+    preparation: state.runPreparation,
+    enemy: context.enemy,
+    damage: characterModifiedDamage
+  });
+  if (result.triggered) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    context.log.fixed("status", `整備｜${preparationName}減輕了這次攻勢，少受到 ${result.preventedDamage} 點傷害。`);
+  }
+  return result.damage;
+}
+
+function consumeEntangleRetryFromPreparation(log) {
+  const consumed = consumePreparationEntangleRetry(state.runPreparation);
+  if (consumed) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    log.fixed("status", `整備｜${preparationName}割開纏絲，再次嘗試掙脫。`);
+  }
+  return consumed;
+}
+
 function modifyPoisonDamageFromPreparation(damage) {
   const result = resolvePreparationPoisonDamage({
     preparation: state.runPreparation,
@@ -1887,14 +2022,15 @@ function modifyPoisonDamageFromPreparation(damage) {
   return result.damage;
 }
 
-function resolvePostEncounterRunPreparation() {
+function resolvePostEncounterRunPreparation({ isFinalEncounter = false } = {}) {
   const result = resolvePostEncounterPreparation({
     preparation: state.runPreparation,
-    hero: state.hero
+    hero: state.hero,
+    isFinalEncounter
   });
   if (result.triggered) {
     const preparationName = state.runPreparation?.name || "冒險整備";
-    addFixedLog("heal", `整備｜${preparationName}處理了傷口，恢復 ${result.healing} 點生命。`);
+    addFixedLog("heal", `整備｜${preparationName}發揮作用，恢復 ${result.healing} 點生命。`);
   }
 }
 
@@ -1917,9 +2053,7 @@ function winEncounter() {
   }
 
   const adventureComplete = getAdventureEncounterIndex() >= getAdventureEncounterCount();
-  if (!adventureComplete) {
-    resolvePostEncounterRunPreparation();
-  }
+  resolvePostEncounterRunPreparation({ isFinalEncounter: adventureComplete });
   render();
 
   if (adventureComplete) {
@@ -2429,6 +2563,9 @@ function renderEndSummary(outcome, region) {
       if (preparationSummary.damagePrevented > 0) {
         items.push(["整備減傷", preparationSummary.damagePrevented]);
       }
+      if (preparationSummary.retrySuccessCount > 0) {
+        items.push(["額外掙脫成功", `${preparationSummary.retrySuccessCount} 次`]);
+      }
     }
   }
 
@@ -2539,7 +2676,7 @@ function resolveFleeFailure() {
     enemy: attacker,
     turn: Math.max(1, state.turn),
     log,
-    modifyDirectDamage: modifyCharacterIncomingDirectDamage
+    modifyDirectDamage: modifyIncomingDirectDamage
   });
   applyEmergencyBandage();
   if (state.hero.hp <= 0) {
@@ -2582,6 +2719,7 @@ function resolveCounterEscape() {
   counterEnemy.poison = 0;
   setEnemyGroup([counterEnemy]);
   resetHeroBattleState();
+  beginRunPreparationBattle();
   applyBattleStartSkills();
   const enemy = currentTargetEnemy();
   const reducedHp = Math.max(1, Math.round(enemy.maxHp * 0.85));
@@ -2881,7 +3019,11 @@ function render() {
     enemies: state.enemies,
     targetEnemyId: state.targetEnemyId,
     phase: state.phase,
-    preparation: state.runPreparation,
+    preparationStatus: getPreparationCombatStatus({
+      preparation: state.runPreparation,
+      encounterType: state.battleEncounterType,
+      enemies: state.enemies
+    }),
     characterStatusEntries: getCharacterCombatStatusEntries(hero),
     onTargetSelect: selectEnemyTarget
   });
@@ -3075,6 +3217,7 @@ eventRuntime = createEventRuntime({
   applySceneContext,
   setEnemyGroup,
   resetHeroBattleState,
+  beginRunPreparationBattle,
   applyBattleStartSkills,
   addFixedLog,
   logCurrentEnemyGroupEncounter,
@@ -3108,6 +3251,7 @@ const debugActions = createDebugRuntimeActions({
   currentRegion,
   setEnemyGroup,
   resetHeroBattleState,
+  beginRunPreparationBattle,
   applyBattleStartSkills,
   addFixedLog,
   logCurrentEnemyGroupEncounter,

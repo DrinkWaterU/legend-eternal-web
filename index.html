@@ -208,29 +208,43 @@
             <div id="regionChoiceList" class="choice-list"></div>
           </div>
 
-          <div id="regionDetailView" class="subview">
-            <div class="section-heading">
+          <div id="regionDetailView" class="subview region-detail-view">
+            <div class="section-heading region-detail-heading">
               <div>
                 <p class="eyebrow">地區詳情</p>
                 <h2 id="regionDetailName">平原</h2>
               </div>
               <button id="backToRegionListButton" class="secondary-button" type="button">返回地區列表</button>
             </div>
-            <p id="regionDetailDescription" class="body-text"></p>
-            <dl id="regionDetailStats" class="stat-list"></dl>
-            <section id="regionPreparationSection" class="preparation-section" aria-label="冒險整備" hidden>
+            <p id="regionDetailDescription" class="body-text region-detail-description"></p>
+            <dl id="regionDetailStats" class="stat-list region-overview"></dl>
+            <div id="regionTraits" class="region-traits" aria-label="區域特色" hidden>
+              <span class="region-traits-label">區域特色</span>
+              <div id="regionTraitList" class="region-trait-list"></div>
+            </div>
+            <section id="regionDepartureMeta" class="region-departure-meta" aria-label="出發狀態">
+              <div class="region-departure-item">
+                <span>出發角色</span>
+                <strong id="regionDepartureCharacter">冒險者 Lv.1</strong>
+              </div>
+              <div id="regionDepartureGoldItem" class="region-departure-item" hidden>
+                <span>目前金幣</span>
+                <strong id="regionDepartureGold">0</strong>
+              </div>
+            </section>
+            <section id="regionPreparationSection" class="preparation-section" aria-label="出發前整備" hidden>
               <div class="preparation-heading">
                 <div>
-                  <p class="eyebrow">本輪準備</p>
-                  <h3>冒險整備</h3>
+                  <p class="eyebrow">出發準備</p>
+                  <h3>出發前整備</h3>
                 </div>
-                <p>目前金幣 <strong id="regionPreparationGold">0</strong></p>
               </div>
-              <p class="preparation-description">每次冒險只能選擇一項整備。整備只在本輪旅途中生效。</p>
+              <p class="preparation-description">選擇一項整備，只在本次冒險中生效。</p>
               <div id="regionPreparationChoices" class="preparation-list"></div>
+              <div id="regionPreparationDetail" class="preparation-detail" aria-live="polite" aria-hidden="true"></div>
             </section>
             <p id="regionStartNotice" class="save-notice" data-type="error" aria-live="polite" hidden></p>
-            <button id="startButton" class="primary-button" type="button">開始平原冒險</button>
+            <button id="startButton" class="primary-button region-start-button" type="button">開始平原冒險</button>
           </div>
         </div>
       </section>

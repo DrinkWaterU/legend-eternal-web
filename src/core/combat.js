@@ -105,7 +105,7 @@ function hasBiasedFamily(enemy, bias) {
   return families.includes(enemy.family);
 }
 
-export function resolveHeroEntangle({ hero, log }) {
+export function resolveHeroEntangle({ hero, log, retryOnFailure = null, onRetryResult = null }) {
   if (!hero.entangle) {
     return false;
   }
@@ -116,6 +116,20 @@ export function resolveHeroEntangle({ hero, log }) {
     hero.entangle = null;
     log.template("status", "entangleBreak", { target: hero.name });
     return false;
+  }
+
+  const shouldRetry = typeof retryOnFailure === "function"
+    && retryOnFailure({ hero, chance, attempts }) === true;
+  if (shouldRetry) {
+    const success = roll(chance);
+    if (typeof onRetryResult === "function") {
+      onRetryResult({ hero, chance, attempts, success });
+    }
+    if (success) {
+      hero.entangle = null;
+      log.template("status", "entangleBreak", { target: hero.name });
+      return false;
+    }
   }
 
   hero.entangle.attempts = attempts + 1;

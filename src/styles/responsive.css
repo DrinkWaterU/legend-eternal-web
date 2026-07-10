@@ -246,8 +246,28 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .region-detail-heading {
+    flex-direction: column;
+  }
+
+  .region-detail-heading > div {
+    width: 100%;
+  }
+
+  .region-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .region-departure-item {
+    flex: 1 1 100%;
+  }
+
   .preparation-heading {
     align-items: start;
+  }
+
+  .preparation-list {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -272,5 +292,15 @@
 
   .preparation-option > b {
     grid-column: 2;
+  }
+
+  .preparation-detail-card {
+    grid-template-columns: 1fr;
+  }
+
+  .preparation-detail-card b,
+  .preparation-detail-card p {
+    grid-column: 1;
+    grid-row: auto;
   }
 }

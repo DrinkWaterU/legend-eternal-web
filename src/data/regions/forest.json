@@ -3,6 +3,11 @@
   "name": "森林",
   "description": "平原之外的長程冒險地區。清晨霧氣、古木根系與濕潤苔石遮住前路，森林本身不邪惡，卻會試探每一位踏入深處的冒險者。",
   "difficulty": "進階",
+  "traits": [
+    "毒性威脅",
+    "纏繞",
+    "長途冒險"
+  ],
   "recommendedLevel": "Lv.15+",
   "note": "長程冒險地區，建議準備充足後挑戰。",
   "audio": {
@@ -53,12 +58,39 @@
     {
       "id": "insect-repellent-powder",
       "name": "驅蟲藥粉",
+      "summary": "毒性對策",
       "cost": 8,
-      "description": "減輕數次受到的毒性傷害。最多生效 4 次。",
+      "description": "受到毒性傷害時，傷害降低 25%。最多生效 6 次。",
       "effect": {
         "type": "poisonDamageReduction",
         "reductionRatio": 0.25,
-        "charges": 4
+        "charges": 6
+      }
+    },
+    {
+      "id": "forest-bandage",
+      "name": "林地繃帶",
+      "summary": "長途續航",
+      "cost": 8,
+      "description": "隨著冒險深入，會自動進行兩次包紮，各恢復少量生命。",
+      "effect": {
+        "type": "victoryMilestoneHeal",
+        "victoryMilestones": [
+          5,
+          10
+        ],
+        "healMaxHpRatio": 0.03
+      }
+    },
+    {
+      "id": "web-cutting-knife",
+      "name": "割網短刀",
+      "summary": "纏繞對策",
+      "cost": 9,
+      "description": "前 2 次掙脫纏繞失敗時，會立刻再嘗試一次。",
+      "effect": {
+        "type": "entangleRetry",
+        "charges": 2
       }
     }
   ],

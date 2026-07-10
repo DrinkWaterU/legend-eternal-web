@@ -48,6 +48,7 @@ export function createDebugRuntimeActions(host) {
     currentRegion,
     setEnemyGroup,
     resetHeroBattleState,
+    beginRunPreparationBattle,
     applyBattleStartSkills,
     addFixedLog,
     logCurrentEnemyGroupEncounter,
@@ -331,6 +332,7 @@ export function createDebugRuntimeActions(host) {
       { enemy: second, statScale: 0.75, rewardScale: 0.5 }
     ]);
     resetHeroBattleState();
+    beginRunPreparationBattle();
     applyBattleStartSkills();
     addFixedLog("system", "調試：多敵人基礎 Sandbox；第二名哥布林套用 statScale 0.75 / rewardScale 0.5。");
     logCurrentEnemyGroupEncounter();

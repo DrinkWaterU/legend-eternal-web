@@ -16,6 +16,7 @@ export const forestRegion = {
   encounterCount: forestData.encounterPlan.length,
   bossName: forestData.bosses.map((boss) => boss.name).join(" / "),
   difficulty: forestData.difficulty,
+  traits: forestData.traits || [],
   recommendedLevel: forestData.recommendedLevel,
   scaling: forestData.scaling,
   events: forestData.events || null,

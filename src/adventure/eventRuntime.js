@@ -44,6 +44,7 @@ export function createEventRuntime(host) {
     applySceneContext,
     setEnemyGroup,
     resetHeroBattleState,
+    beginRunPreparationBattle,
     applyBattleStartSkills,
     addFixedLog,
     logCurrentEnemyGroupEncounter,
@@ -173,6 +174,7 @@ export function createEventRuntime(host) {
     enemy.poison = 0;
     setEnemyGroup([enemy]);
     resetHeroBattleState();
+    beginRunPreparationBattle();
     applyBattleStartSkills();
 
     (battleStep.introText || []).forEach((text) => addFixedLog("system", text));
