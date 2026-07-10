@@ -1,0 +1,111 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const [
+  game,
+  html,
+  dom,
+  commerce,
+  merchantView,
+  componentsCss,
+  responsiveCss,
+  version,
+  config,
+  readme,
+  styleIndex,
+  editorSource
+] = await Promise.all([
+  readFile(new URL("../game.js", import.meta.url), "utf8"),
+  readFile(new URL("../index.html", import.meta.url), "utf8"),
+  readFile(new URL("../src/ui/dom.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/core/commerce.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/ui/merchantView.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/styles/components.css", import.meta.url), "utf8"),
+  readFile(new URL("../src/styles/responsive.css", import.meta.url), "utf8"),
+  readFile(new URL("../VERSION", import.meta.url), "utf8"),
+  readFile(new URL("../src/config.js", import.meta.url), "utf8"),
+  readFile(new URL("../README.md", import.meta.url), "utf8"),
+  readFile(new URL("../styles.css", import.meta.url), "utf8"),
+  readFile(new URL("./content-editor.js", import.meta.url), "utf8")
+]);
+
+assert.equal(version.trim(), "v0.2.4.1-alpha");
+assert.match(config, /GAME_VERSION = "v0\.2\.4\.1-alpha"/);
+assert.match(readme, /v0\.2\.4\.1-alpha/);
+assert.match(html, /styles\.css\?v=0\.2\.4\.1-alpha/);
+assert.match(html, /game\.js\?v=0\.2\.4\.1-alpha/);
+assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.1-alpha"/);
+const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
+assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.1-alpha"]);
+
+for (const id of [
+  "merchantBatchToggleButton",
+  "merchantBatchBar",
+  "merchantBatchSummary",
+  "merchantBatchTotal",
+  "confirmMerchantBatchButton",
+  "cancelMerchantBatchButton",
+  "merchantSaleDecreaseFiveButton",
+  "merchantSaleIncreaseFiveButton",
+  "merchantSaleQuantity",
+  "merchantBatchSaleList"
+]) {
+  assert.match(html, new RegExp(`id="${id}"`), `Merchant HTML 缺少 ${id}`);
+  assert.match(dom, new RegExp(`#${id}`), `dom.js 缺少 ${id}`);
+}
+
+assert.match(html, /id="merchantSaleQuantity"[^>]*type="number"[^>]*inputmode="numeric"/);
+assert.match(html, /id="merchantSaleDecreaseFiveButton"[^>]*>−5</);
+assert.match(html, /id="merchantSaleIncreaseFiveButton"[^>]*>＋5</);
+
+for (const field of [
+  "merchantBatchMode",
+  "merchantBatchMaterialIds",
+  "merchantSaleDialogMode",
+  "merchantSaleQuantityInput"
+]) {
+  assert.match(game, new RegExp(`${field}:`), `Merchant uiState 缺少 ${field}`);
+}
+
+const batchConfirmSource = game.match(/function confirmMerchantBatchSale\(\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert.match(batchConfirmSource, /sellMaterials\(/);
+assert.match(batchConfirmSource, /saveGameSafe\(\)/);
+assert.match(batchConfirmSource, /merchantBatchMaterialIds = new Set\(\)/);
+assert.match(batchConfirmSource, /result\.totalQuantity/);
+assert.match(batchConfirmSource, /result\.totalGold/);
+
+const resetMerchantSource = game.match(/function resetMerchantUiState\(\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert.match(resetMerchantSource, /merchantBatchMode = false/);
+assert.match(resetMerchantSource, /merchantBatchMaterialIds = new Set\(\)/);
+assert.match(resetMerchantSource, /merchantSaleDialogMode = null/);
+assert.match(game, /function normalizeMerchantBatchSelection\(\)[\s\S]*getSellableMaterials/);
+assert.match(game, /function changeMerchantSaleQuantity\(change\)[\s\S]*merchantSaleQuantity \+ change/);
+
+assert.match(commerce, /export function sellMaterials/);
+assert.match(commerce, /createMaterialSalePlan/);
+assert.match(commerce, /const plan = createMaterialSalePlan/);
+assert.match(commerce, /const nextMaterials = \{ \.\.\.inventory\.materials \}/);
+assert.match(commerce, /export function sellMaterial[\s\S]*sellMaterials\(/);
+const sellMaterialsSource = commerce.match(/export function sellMaterials\([\s\S]*?\n\}/)?.[0] || "";
+assert.doesNotMatch(sellMaterialsSource, /sellMaterial\(/, "批次交易不得逐筆 mutation");
+
+assert.match(merchantView, /createMerchantBatchPreview/);
+assert.match(merchantView, /aria-pressed/);
+assert.match(merchantView, /renderMerchantBatchSalePanel/);
+assert.match(merchantView, /getValidMerchantSaleQuantity/);
+assert.doesNotMatch(merchantView, /setTimeout|setInterval|requestAnimationFrame/, "數量控制不需要長按 timer");
+
+assert.match(componentsCss, /\.merchant-toolbar\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto auto/);
+assert.match(componentsCss, /\.merchant-quantity-control > div\s*\{[\s\S]*repeat\(2, minmax\(48px, 1fr\)\)/);
+assert.match(componentsCss, /\.merchant-slot\.is-selected/);
+assert.match(componentsCss, /\.merchant-batch-sale-list\[hidden\]/);
+assert.match(responsiveCss, /\.merchant-batch-bar\s*\{[\s\S]*grid-template-columns: 1fr/);
+
+const htmlIds = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]));
+const domIds = [...dom.matchAll(/document\.querySelector\("#([^"]+)"\)/g)].map((match) => match[1]);
+const missingIds = domIds.filter((id) => !htmlIds.has(id));
+assert.deepEqual(missingIds, [], `dom.js 不可引用不存在的 HTML id：${missingIds.join(", ")}`);
+
+assert.match(config, /SAVE_SCHEMA_VERSION = 6/);
+
+console.log("v0.2.4.1 merchant quantity and atomic batch sale integration tests passed.");

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { sellMaterial, spendGold } from "../src/core/commerce.js";
+import { sellMaterial, sellMaterials, spendGold } from "../src/core/commerce.js";
 
 const definitions = {
   gel: { id: "gel", name: "凝膠", sellPrice: 2 },
@@ -32,6 +32,60 @@ function createInventory() {
   assert.equal(result.totalGold, 8);
   assert.equal(inventory.gold, 13);
   assert.equal("gel" in inventory.materials, false, "素材售罄後應移除永久 inventory entry");
+}
+
+{
+  const inventory = {
+    gold: 5,
+    materials: {
+      gel: { name: "凝膠", quantity: 4 },
+      shard: { name: "碎片", quantity: 3 }
+    }
+  };
+  const result = sellMaterials({
+    inventory,
+    materialDefinitions: {
+      ...definitions,
+      shard: { id: "shard", name: "碎片", sellPrice: 3 }
+    },
+    sales: [
+      { materialId: "gel", quantity: 2 },
+      { materialId: "shard", quantity: 3 }
+    ]
+  });
+  assert.deepEqual(result.items.map((item) => item.materialId), ["gel", "shard"]);
+  assert.equal(result.totalQuantity, 5);
+  assert.equal(result.totalGold, 13);
+  assert.equal(result.gold, 18);
+  assert.equal(inventory.gold, 18);
+  assert.equal(inventory.materials.gel.quantity, 2, "批次交易應支援部分出售");
+  assert.equal("shard" in inventory.materials, false, "批次交易售罄後應移除 entry");
+}
+
+{
+  const invalidCases = [
+    [],
+    [{ materialId: "gel", quantity: 1 }, { materialId: "gel", quantity: 1 }],
+    [{ materialId: "gel", quantity: 1 }, { materialId: "missing", quantity: 1 }],
+    [{ materialId: "gel", quantity: 1 }, { materialId: "relic", quantity: 1 }],
+    [{ materialId: "gel", quantity: 1 }, { materialId: "gel-2", quantity: 5 }]
+  ];
+  const batchDefinitions = {
+    ...definitions,
+    "gel-2": { id: "gel-2", name: "另一份凝膠", sellPrice: 2 }
+  };
+  invalidCases.forEach((sales) => {
+    const inventory = {
+      ...createInventory(),
+      materials: {
+        ...createInventory().materials,
+        "gel-2": { quantity: 1 }
+      }
+    };
+    const before = structuredClone(inventory);
+    assert.throws(() => sellMaterials({ inventory, materialDefinitions: batchDefinitions, sales }));
+    assert.deepEqual(inventory, before, "任一批次項目無效時不得產生部分 mutation");
+  });
 }
 
 for (const quantity of [0, -1, 5, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
@@ -68,6 +122,44 @@ for (const quantity of [0, -1, 5, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
   const unsafeDefinitions = { gel: { id: "gel", name: "凝膠", sellPrice: Number.MAX_SAFE_INTEGER } };
   assert.throws(() => sellMaterial({ inventory, materialDefinitions: unsafeDefinitions, materialId: "gel", quantity: 4 }), /安全處理範圍/);
   assert.deepEqual(inventory, before, "交易總額溢位不得產生部分 mutation");
+}
+
+{
+  const inventory = {
+    gold: 0,
+    materials: {
+      a: { quantity: 1 },
+      b: { quantity: 1 }
+    }
+  };
+  const before = structuredClone(inventory);
+  const unsafeDefinitions = {
+    a: { id: "a", name: "A", sellPrice: Number.MAX_SAFE_INTEGER },
+    b: { id: "b", name: "B", sellPrice: Number.MAX_SAFE_INTEGER }
+  };
+  assert.throws(() => sellMaterials({
+    inventory,
+    materialDefinitions: unsafeDefinitions,
+    sales: [
+      { materialId: "a", quantity: 1 },
+      { materialId: "b", quantity: 1 }
+    ]
+  }), /安全處理範圍/);
+  assert.deepEqual(inventory, before, "批次總額溢位不得產生部分 mutation");
+}
+
+{
+  const inventory = {
+    gold: Number.MAX_SAFE_INTEGER,
+    materials: { gel: { quantity: 1 } }
+  };
+  const before = structuredClone(inventory);
+  assert.throws(() => sellMaterials({
+    inventory,
+    materialDefinitions: definitions,
+    sales: [{ materialId: "gel", quantity: 1 }]
+  }), /安全處理範圍/);
+  assert.deepEqual(inventory, before, "交易後金幣溢位不得產生 mutation");
 }
 
 console.log("Commerce isolation tests passed.");

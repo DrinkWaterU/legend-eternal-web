@@ -27,7 +27,7 @@ const legacySave = {
 };
 
 const migrated = migrateSave(structuredClone(legacySave));
-assert.equal(migrated.gameVersion, "v0.2.4.0-alpha");
+assert.equal(migrated.gameVersion, "v0.2.4.1-alpha");
 assert.equal(migrated.inventory.gold, 37);
 assert.equal(migrated.inventory.materials.slime_gel.quantity, 12);
 assert.equal(migrated.inventory.materials.poison_sac.quantity, 3);

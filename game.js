@@ -2,7 +2,7 @@ import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/con
 import { createEventRuntime } from "./src/adventure/eventRuntime.js";
 import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
-import { sellMaterial, spendGold } from "./src/core/commerce.js";
+import { sellMaterial, sellMaterials, spendGold } from "./src/core/commerce.js";
 import {
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
@@ -79,7 +79,14 @@ import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatLis
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderFacilityListView } from "./src/ui/facilityView.js";
 import { getSellableMaterials } from "./src/ui/materialList.js";
-import { closeMerchantSalePanel, renderMerchantSalePanel, renderMerchantView } from "./src/ui/merchantView.js";
+import {
+  closeMerchantSalePanel,
+  createMerchantBatchPreview,
+  getValidMerchantSaleQuantity,
+  renderMerchantBatchSalePanel,
+  renderMerchantSalePanel,
+  renderMerchantView
+} from "./src/ui/merchantView.js";
 import { renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
@@ -181,8 +188,12 @@ const uiState = {
   facilityView: "list",
   merchantSortMode: "sellPrice",
   merchantSortDirection: "desc",
+  merchantBatchMode: false,
+  merchantBatchMaterialIds: new Set(),
+  merchantSaleDialogMode: null,
   merchantSaleMaterialId: null,
   merchantSaleQuantity: 1,
+  merchantSaleQuantityInput: "1",
   merchantNotice: "",
   merchantNoticeType: "status",
   selectedPreparationId: null,
@@ -797,6 +808,16 @@ function getAvailableFacilities(safeArea = getCurrentSafeArea()) {
     .filter((facility) => facility.id !== "traveling-merchant" || hasPhoenixBlessing());
 }
 
+function resetMerchantUiState() {
+  uiState.merchantBatchMode = false;
+  uiState.merchantBatchMaterialIds = new Set();
+  uiState.merchantSaleDialogMode = null;
+  uiState.merchantSaleMaterialId = null;
+  uiState.merchantSaleQuantity = 1;
+  uiState.merchantSaleQuantityInput = "1";
+  closeMerchantSalePanel(els);
+}
+
 function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.navigationContext) {
   const safeArea = getSafeAreaDefinition(safeAreaId);
   if (!safeArea) {
@@ -805,6 +826,7 @@ function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.n
   setNavigationContext(contextId);
   uiState.safeAreaId = safeArea.id;
   uiState.facilityView = "list";
+  resetMerchantUiState();
   uiState.merchantNotice = "";
   uiState.merchantNoticeType = "status";
   showScreen("facilityScreen");
@@ -812,6 +834,7 @@ function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.n
 
 function showMerchantFacility() {
   uiState.facilityView = "merchant";
+  resetMerchantUiState();
   uiState.merchantNotice = "";
   uiState.merchantNoticeType = "status";
   showScreen("facilityScreen");
@@ -847,6 +870,7 @@ function renderFacilityScreen() {
 function renderMerchantScreen() {
   const inventory = normalizeInventory(saveData.inventory);
   const safeArea = getCurrentSafeArea();
+  const batchPreview = normalizeMerchantBatchSelection();
   els.merchantAreaLabel.textContent = safeArea?.placesTitle || "安全區去處";
   els.merchantBackButton.textContent = `返回${safeArea?.placesTitle || "安全區去處"}`;
   renderMerchantView({
@@ -855,6 +879,9 @@ function renderMerchantScreen() {
     materialDefinitions,
     sortMode: uiState.merchantSortMode,
     sortDirection: uiState.merchantSortDirection,
+    batchMode: uiState.merchantBatchMode,
+    selectedMaterialIds: uiState.merchantBatchMaterialIds,
+    batchPreview,
     notice: uiState.merchantNotice,
     noticeType: uiState.merchantNoticeType,
     onSortChange: (sortMode) => {
@@ -865,8 +892,59 @@ function renderMerchantScreen() {
       uiState.merchantSortDirection = sortDirection;
       renderMerchantScreen();
     },
-    onMaterialClick: openMerchantSalePanel
+    onMaterialClick: openMerchantSalePanel,
+    onBatchModeToggle: toggleMerchantBatchMode,
+    onBatchSelectionToggle: toggleMerchantBatchMaterial,
+    onBatchConfirm: openMerchantBatchSaleDialog,
+    onBatchCancel: cancelMerchantBatchMode
   });
+}
+
+function normalizeMerchantBatchSelection() {
+  if (!uiState.merchantBatchMode) {
+    uiState.merchantBatchMaterialIds = new Set();
+    return createMerchantBatchPreview();
+  }
+  const items = getSellableMaterials(saveData.inventory, materialDefinitions);
+  const preview = createMerchantBatchPreview(items, uiState.merchantBatchMaterialIds);
+  uiState.merchantBatchMaterialIds = new Set(preview.items.map((item) => item.materialId));
+  return preview;
+}
+
+function toggleMerchantBatchMode() {
+  if (uiState.merchantBatchMode) {
+    cancelMerchantBatchMode();
+    return;
+  }
+  closeMerchantSaleDialog();
+  uiState.merchantBatchMode = true;
+  uiState.merchantBatchMaterialIds = new Set();
+  uiState.merchantNotice = "";
+  uiState.merchantNoticeType = "status";
+  renderMerchantScreen();
+}
+
+function cancelMerchantBatchMode() {
+  closeMerchantSaleDialog();
+  uiState.merchantBatchMode = false;
+  uiState.merchantBatchMaterialIds = new Set();
+  renderMerchantScreen();
+}
+
+function toggleMerchantBatchMaterial(materialId) {
+  if (!uiState.merchantBatchMode) return;
+  const sellable = getSellableMaterials(saveData.inventory, materialDefinitions)
+    .some((item) => item.id === materialId);
+  if (!sellable) return;
+
+  const selectedIds = new Set(uiState.merchantBatchMaterialIds);
+  if (selectedIds.has(materialId)) {
+    selectedIds.delete(materialId);
+  } else {
+    selectedIds.add(materialId);
+  }
+  uiState.merchantBatchMaterialIds = selectedIds;
+  renderMerchantScreen();
 }
 
 function getMerchantSaleItem() {
@@ -875,12 +953,30 @@ function getMerchantSaleItem() {
 }
 
 function openMerchantSalePanel(item) {
+  if (uiState.merchantBatchMode) return;
+  uiState.merchantSaleDialogMode = "single";
   uiState.merchantSaleMaterialId = item.id;
   uiState.merchantSaleQuantity = 1;
+  uiState.merchantSaleQuantityInput = "1";
   renderMerchantSaleDialog();
 }
 
 function renderMerchantSaleDialog() {
+  if (uiState.merchantSaleDialogMode === "batch") {
+    const preview = normalizeMerchantBatchSelection();
+    if (preview.items.length === 0) {
+      closeMerchantSaleDialog();
+      renderMerchantScreen();
+      return;
+    }
+    renderMerchantBatchSalePanel({
+      els,
+      preview,
+      onConfirm: confirmMerchantBatchSale
+    });
+    return;
+  }
+
   const item = getMerchantSaleItem();
   if (!item) {
     closeMerchantSaleDialog();
@@ -891,9 +987,19 @@ function renderMerchantSaleDialog() {
     els,
     item,
     quantity: uiState.merchantSaleQuantity,
+    quantityInput: uiState.merchantSaleQuantityInput,
+    onDecreaseFive: () => changeMerchantSaleQuantity(-5),
     onDecrease: () => changeMerchantSaleQuantity(-1),
     onIncrease: () => changeMerchantSaleQuantity(1),
+    onIncreaseFive: () => changeMerchantSaleQuantity(5),
     onMax: () => setMerchantSaleQuantity(item.quantity),
+    onQuantityInput: (value, validQuantity) => {
+      uiState.merchantSaleQuantityInput = value;
+      if (validQuantity !== null) {
+        uiState.merchantSaleQuantity = validQuantity;
+      }
+    },
+    onQuantityCommit: setMerchantSaleQuantity,
     onConfirm: confirmMerchantSale
   });
 }
@@ -908,17 +1014,29 @@ function setMerchantSaleQuantity(quantity) {
     closeMerchantSaleDialog();
     return;
   }
-  uiState.merchantSaleQuantity = Math.min(item.quantity, Math.max(1, Math.floor(quantity || 1)));
+  const parsedQuantity = Number(quantity);
+  const fallbackQuantity = getValidMerchantSaleQuantity(uiState.merchantSaleQuantity, item.quantity) || 1;
+  const normalizedQuantity = Number.isSafeInteger(parsedQuantity)
+    ? Math.min(item.quantity, Math.max(1, parsedQuantity))
+    : fallbackQuantity;
+  uiState.merchantSaleQuantity = normalizedQuantity;
+  uiState.merchantSaleQuantityInput = String(normalizedQuantity);
   renderMerchantSaleDialog();
 }
 
 function confirmMerchantSale() {
+  const item = getMerchantSaleItem();
+  const quantity = getValidMerchantSaleQuantity(uiState.merchantSaleQuantityInput, item?.quantity || 0);
+  if (!item || quantity === null) {
+    setMerchantSaleQuantity(uiState.merchantSaleQuantityInput);
+    return;
+  }
   try {
     const result = sellMaterial({
       inventory: saveData.inventory,
       materialDefinitions,
       materialId: uiState.merchantSaleMaterialId,
-      quantity: uiState.merchantSaleQuantity
+      quantity
     });
     saveGameSafe();
     uiState.merchantNotice = `已出售${result.name} x${result.quantity}，取得 ${result.totalGold} 金幣。`;
@@ -933,9 +1051,53 @@ function confirmMerchantSale() {
   }
 }
 
+function openMerchantBatchSaleDialog() {
+  if (!uiState.merchantBatchMode) return;
+  const preview = normalizeMerchantBatchSelection();
+  if (preview.items.length === 0) return;
+  uiState.merchantSaleDialogMode = "batch";
+  renderMerchantSaleDialog();
+}
+
+function confirmMerchantBatchSale() {
+  if (!uiState.merchantBatchMode || uiState.merchantSaleDialogMode !== "batch") return;
+  const preview = normalizeMerchantBatchSelection();
+  if (preview.items.length === 0) {
+    closeMerchantSaleDialog();
+    renderMerchantScreen();
+    return;
+  }
+
+  try {
+    const result = sellMaterials({
+      inventory: saveData.inventory,
+      materialDefinitions,
+      sales: preview.items.map((item) => ({
+        materialId: item.materialId,
+        quantity: item.quantity
+      }))
+    });
+    saveGameSafe();
+    uiState.merchantNotice = `已出售 ${result.items.length} 種素材，共 ${result.totalQuantity} 件，取得 ${result.totalGold} 金幣。`;
+    uiState.merchantNoticeType = "status";
+    closeMerchantSaleDialog();
+    uiState.merchantBatchMode = false;
+    uiState.merchantBatchMaterialIds = new Set();
+    renderMerchantScreen();
+  } catch (error) {
+    uiState.merchantNotice = error instanceof Error ? error.message : "批次交易失敗。";
+    uiState.merchantNoticeType = "error";
+    closeMerchantSaleDialog();
+    normalizeMerchantBatchSelection();
+    renderMerchantScreen();
+  }
+}
+
 function closeMerchantSaleDialog() {
+  uiState.merchantSaleDialogMode = null;
   uiState.merchantSaleMaterialId = null;
   uiState.merchantSaleQuantity = 1;
+  uiState.merchantSaleQuantityInput = "1";
   closeMerchantSalePanel(els);
 }
 

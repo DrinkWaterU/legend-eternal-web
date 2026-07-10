@@ -94,6 +94,20 @@
     grid-template-columns: 1fr;
   }
 
+  .merchant-batch-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-batch-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .merchant-batch-actions .primary-button,
+  .merchant-batch-actions .secondary-button {
+    width: 100%;
+  }
+
   .inventory-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -272,6 +286,20 @@
 }
 
 @media (max-width: 380px) {
+  .merchant-quantity-control > div {
+    grid-template-columns: repeat(2, minmax(44px, 1fr)) minmax(62px, 1.2fr) repeat(2, minmax(44px, 1fr));
+    gap: 5px;
+  }
+
+  .merchant-quantity-control .secondary-button {
+    padding-right: 0.45rem;
+    padding-left: 0.45rem;
+  }
+
+  .merchant-batch-actions {
+    grid-template-columns: 1fr;
+  }
+
   .camp-feature-button {
     min-height: 74px;
     padding: 12px 12px 12px 16px;

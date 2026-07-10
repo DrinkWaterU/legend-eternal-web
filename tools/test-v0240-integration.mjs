@@ -43,16 +43,16 @@ const [eventRuntimeSource, debugRuntimeSource] = await Promise.all([
   readFile(new URL("../src/debug/runtimeActions.js", import.meta.url), "utf8")
 ]);
 
-assert.equal(version.trim(), "v0.2.4.0-alpha");
-assert.match(config, /GAME_VERSION = "v0\.2\.4\.0-alpha"/);
-assert.match(readme, /v0\.2\.4\.0-alpha/);
+assert.equal(version.trim(), "v0.2.4.1-alpha");
+assert.match(config, /GAME_VERSION = "v0\.2\.4\.1-alpha"/);
+assert.match(readme, /v0\.2\.4\.1-alpha/);
 assert.match(readme, /python tools\/dev-server\.py/);
-assert.match(html, /styles\.css\?v=0\.2\.4\.0-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.4\.0-alpha/);
+assert.match(html, /styles\.css\?v=0\.2\.4\.1-alpha/);
+assert.match(html, /game\.js\?v=0\.2\.4\.1-alpha/);
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
 assert.equal(styleCacheVersions.length, 6, "styles.css 應維持 6 個內部樣式 import");
-assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.0-alpha"], "所有內部 CSS cache version 必須同步");
-assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.0-alpha"/);
+assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.1-alpha"], "所有內部 CSS cache version 必須同步");
+assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.1-alpha"/);
 
 assert.doesNotMatch(game, /campStartButton\.addEventListener\("click", startRun\)/);
 assert.match(game, /campStartButton\.addEventListener\("click", \(\) => \{[\s\S]*showRegionDetail\(state\.selectedRegionId\)/);
