@@ -211,8 +211,8 @@ assert.deepEqual(missingIds, [], `dom.js 不可引用不存在的 HTML id：${mi
 
 assert.doesNotMatch(editorSource.match(/if \(\["id"[\s\S]*?\.includes\(key\)\)/)?.[0] || "", /preparations/);
 assert.match(editorSource, /Object\.assign\(gameRegion, clone\(meta\.extraFields \|\| \{\}\)\)/);
-assert.match(plainsAdapter, /traits: plainsData\.traits \|\| \[\]/);
-assert.match(forestAdapter, /traits: forestData\.traits \|\| \[\]/);
+assert.match(plainsAdapter, /createRegionDefinition\(plainsData\)/);
+assert.match(forestAdapter, /createRegionDefinition\(forestData\)/);
 
 const instrumentedEditorSource = editorSource.replace(/\}\)\(\);\s*$/, `
   globalThis.__contentEditorTestHooks = { state, normalizeGameRegionData, buildGameRegionJson };
