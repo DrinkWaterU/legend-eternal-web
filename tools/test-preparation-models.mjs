@@ -41,16 +41,22 @@ const logger = {
 };
 
 const plainsCases = [
-  { id: null, label: "無整備" },
-  { id: "simple-bandage", label: "簡易繃帶" },
-  { id: "beast-repellent-herb", label: "驅獸香草" },
-  { id: "weapon-maintenance", label: "武器保養" }
+  { id: null, label: "無整備", enhanced: false },
+  { id: "simple-bandage", label: "簡易繃帶", enhanced: false },
+  { id: "beast-repellent-herb", label: "驅獸香草", enhanced: false },
+  { id: "weapon-maintenance", label: "武器保養", enhanced: false },
+  { id: "simple-bandage", label: "簡易繃帶・強化", enhanced: true },
+  { id: "beast-repellent-herb", label: "驅獸香草・強化", enhanced: true },
+  { id: "weapon-maintenance", label: "武器保養・強化", enhanced: true }
 ];
 const forestCases = [
-  { id: null, label: "無整備" },
-  { id: "insect-repellent-powder", label: "驅蟲藥粉" },
-  { id: "forest-bandage", label: "林地繃帶" },
-  { id: "web-cutting-knife", label: "割網短刀" }
+  { id: null, label: "無整備", enhanced: false },
+  { id: "insect-repellent-powder", label: "驅蟲藥粉", enhanced: false },
+  { id: "forest-bandage", label: "林地繃帶", enhanced: false },
+  { id: "web-cutting-knife", label: "割網短刀", enhanced: false },
+  { id: "insect-repellent-powder", label: "驅蟲藥粉・強化", enhanced: true },
+  { id: "forest-bandage", label: "林地繃帶・強化", enhanced: true },
+  { id: "web-cutting-knife", label: "割網短刀・強化", enhanced: true }
 ];
 
 const plainsResults = SCOPE === "forest" ? [] : plainsCases.map((entry) => ({
@@ -61,6 +67,7 @@ const plainsResults = SCOPE === "forest" ? [] : plainsCases.map((entry) => ({
     characterId: "adventurer",
     level: 10,
     preparationId: entry.id,
+    preparationEnhanced: entry.enhanced,
     chooseBlessing: chooseReasonableAdventurerBlessing
   }))
 }));
@@ -72,6 +79,7 @@ const forestResults = SCOPE === "plains" ? [] : forestCases.map((entry) => ({
     characterId: "archer",
     level: 25,
     preparationId: entry.id,
+    preparationEnhanced: entry.enhanced,
     chooseBlessing: chooseReasonableArcherBlessing
   }))
 }));
@@ -86,9 +94,18 @@ if (forestResults.length > 0) {
 if (ROUNDS >= 5000 && plainsResults.length > 0) {
   const plainsBaseline = getWinRatio(plainsResults[0].result);
   assert.ok(plainsBaseline >= 0.45 && plainsBaseline <= 0.58, "Lv.10 冒險者平原 baseline 應維持可開始通關區間");
+  const plainsRanges = new Map([
+    ["簡易繃帶", [0.01, 0.05]],
+    ["驅獸香草", [0.02, 0.07]],
+    ["武器保養", [0.02, 0.07]],
+    ["簡易繃帶・強化", [0.02, 0.07]],
+    ["驅獸香草・強化", [0.03, 0.08]],
+    ["武器保養・強化", [0.03, 0.09]]
+  ]);
   for (const entry of plainsResults.slice(1)) {
     const delta = getWinRatio(entry.result) - plainsBaseline;
-    assert.ok(delta >= 0.01 && delta <= 0.07, `${entry.label} 應提供小幅但可辨識的平原增幅`);
+    const [min, max] = plainsRanges.get(entry.label);
+    assert.ok(delta >= min && delta <= max, `${entry.label} 平原增幅超出候選驗證區間`);
   }
 }
 
@@ -102,7 +119,10 @@ if (ROUNDS >= 5000 && forestResults.length > 0) {
   const forestRanges = new Map([
     ["驅蟲藥粉", [0.002, 0.03]],
     ["林地繃帶", [0.01, 0.05]],
-    ["割網短刀", [0.015, 0.06]]
+    ["割網短刀", [0.015, 0.06]],
+    ["驅蟲藥粉・強化", [0.008, 0.045]],
+    ["林地繃帶・強化", [0.02, 0.065]],
+    ["割網短刀・強化", [0.025, 0.075]]
   ]);
   for (const entry of forestResults.slice(1)) {
     const delta = getWinRatio(entry.result) - forestBaseline;
@@ -111,9 +131,9 @@ if (ROUNDS >= 5000 && forestResults.length > 0) {
   }
 }
 
-console.log("Six-preparation formal runtime balance comparison passed.");
+console.log("Normal and enhanced preparation formal runtime balance comparison passed.");
 
-function simulateRegionRuns({ rounds, region, characterId, level, preparationId, chooseBlessing }) {
+function simulateRegionRuns({ rounds, region, characterId, level, preparationId, preparationEnhanced = false, chooseBlessing }) {
   let wins = 0;
   let reachedTotal = 0;
   let triggerTotal = 0;
@@ -128,7 +148,9 @@ function simulateRegionRuns({ rounds, region, characterId, level, preparationId,
       exp: 0,
       learnedSkills: []
     });
-    const preparation = preparationId ? createRunPreparation(region, preparationId) : null;
+    const preparation = preparationId
+      ? createRunPreparation(region, preparationId, { enhanced: preparationEnhanced })
+      : null;
     const bosses = region.bosses || [region.boss];
     const selectedBoss = weightedPick(bosses, (boss) => Number(boss.weight) || 100);
     let reached = 0;

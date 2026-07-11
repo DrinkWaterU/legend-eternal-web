@@ -43,16 +43,16 @@ const [eventRuntimeSource, debugRuntimeSource] = await Promise.all([
   readFile(new URL("../src/debug/runtimeActions.js", import.meta.url), "utf8")
 ]);
 
-assert.equal(version.trim(), "v0.2.4.1-alpha");
-assert.match(config, /GAME_VERSION = "v0\.2\.4\.1-alpha"/);
-assert.match(readme, /v0\.2\.4\.1-alpha/);
+assert.equal(version.trim(), "v0.2.4.2-alpha");
+assert.match(config, /GAME_VERSION = "v0\.2\.4\.2-alpha"/);
+assert.match(readme, /v0\.2\.4\.2-alpha/);
 assert.match(readme, /python tools\/dev-server\.py/);
-assert.match(html, /styles\.css\?v=0\.2\.4\.1-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.4\.1-alpha/);
+assert.match(html, /styles\.css\?v=0\.2\.4\.2-alpha/);
+assert.match(html, /game\.js\?v=0\.2\.4\.2-alpha/);
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
 assert.equal(styleCacheVersions.length, 6, "styles.css 應維持 6 個內部樣式 import");
-assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.1-alpha"], "所有內部 CSS cache version 必須同步");
-assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.1-alpha"/);
+assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.2-alpha"], "所有內部 CSS cache version 必須同步");
+assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.2-alpha"/);
 
 assert.doesNotMatch(game, /campStartButton\.addEventListener\("click", startRun\)/);
 assert.match(game, /campStartButton\.addEventListener\("click", \(\) => \{[\s\S]*showRegionDetail\(state\.selectedRegionId\)/);
@@ -60,10 +60,10 @@ assert.match(game, /startButton\.addEventListener\("click", startPlayerRun\)/);
 assert.match(game, /requestedPreparationId = hasPhoenixBlessing\(\)\s*\? uiState\.selectedPreparationId\s*:\s*null/);
 const startPlayerRunSource = game.match(/function startPlayerRun\(\) \{[\s\S]*?\n\}/)?.[0] || "";
 assert.match(startPlayerRunSource, /getRegionPreparation\(region, requestedPreparationId\)/);
-assert.match(startPlayerRunSource, /createRunPreparation\(region, requestedPreparationId\)/);
+assert.match(startPlayerRunSource, /createRunPreparation\(region, requestedPreparationId,[\s\S]*enhanced: requestedEnhanced/);
 assert.doesNotMatch(startPlayerRunSource, /preparationDetailId|preparationDetailExpanded/, "Run Start 不得讀 detail preview state");
 assert.match(game, /if \(hasPendingThreat\("counterEscape"\)\)[\s\S]*state\.battleSource === "event"[\s\S]*state\.encounterIndex \+= 1[\s\S]*resolvePostEncounterRunPreparation\(\{ isFinalEncounter: adventureComplete \}\)/);
-assert.match(game, /initializeRunRuntime\(\{ hero, preparation \}\)[\s\S]*startEncounter\(\)[\s\S]*spendGold\(saveData\.inventory, preparation\.cost\)[\s\S]*showScreen\("gameScreen"\)/);
+assert.match(game, /initializeRunRuntime\(\{ hero, preparation \}\)[\s\S]*startEncounter\(\)[\s\S]*spendInventoryCost\(\{[\s\S]*goldCost: preparation\.cost[\s\S]*showScreen\("gameScreen"\)/);
 assert.match(game, /function recordRunStarted\(\)[\s\S]*saveGameSafe\(\)/);
 assert.match(game, /permanentMutationStarted = true[\s\S]*recordRunStarted\(\)[\s\S]*showScreen\("gameScreen"\)/);
 assert.match(game, /restoreRunStartPermanentState\(permanentSnapshot\)/);
@@ -73,7 +73,7 @@ assert.match(game, /runStarted = true/);
 assert.match(game, /preparationDetailId: null/);
 assert.match(game, /preparationDetailExpanded: false/);
 const resetPreparationUiSource = game.match(/function resetPreparationUiState\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-for (const field of ["selectedPreparationId", "preparationDetailId", "preparationDetailExpanded", "runStartNotice", "runStartLocked"]) {
+for (const field of ["selectedPreparationId", "enhancedPreparationId", "preparationEnhancementRevealId", "preparationDetailId", "preparationDetailExpanded", "runStartNotice", "runStartLocked"]) {
   assert.match(resetPreparationUiSource, new RegExp(`uiState\\.${field}`), `resetPreparationUiState 缺少 ${field}`);
 }
 const regionRenderer = game.match(/function renderRegionScreen\(\) \{[\s\S]*?\n\}\n\nfunction showCharacterList/)?.[0] || "";
@@ -87,7 +87,7 @@ assert.match(regionRenderer, /regionPreparationSection\.hidden = !phoenixUnlocke
 assert.match(regionRenderer, /if \(!phoenixUnlocked\) \{[\s\S]*selectedPreparationId = null[\s\S]*preparationDetailId = null[\s\S]*preparationDetailExpanded = false/);
 const selectPreparationSource = game.match(/function selectPreparation\(preparationId\) \{[\s\S]*?\n\}/)?.[0] || "";
 assert.match(selectPreparationSource, /const affordable = !preparation \|\| inventory\.gold >= preparation\.cost/);
-assert.match(selectPreparationSource, /if \(affordable\) \{\s*uiState\.selectedPreparationId = preparationId/);
+assert.match(selectPreparationSource, /if \(affordable\) \{[\s\S]*uiState\.selectedPreparationId = preparationId/);
 assert.match(selectPreparationSource, /uiState\.preparationDetailId = preparationId/);
 assert.match(selectPreparationSource, /sameDetail\s*\? !uiState\.preparationDetailExpanded\s*:\s*true/);
 assert.match(game, /state\.runPreparation = null;[\s\S]*function returnToCamp\(\)/);
@@ -157,7 +157,8 @@ assert.doesNotMatch(componentsCss, /(?:^|\n)\.stat-list\s*\{/m, "Region Detail �
 assert.match(preparationView, /summary/);
 assert.match(preparationView, /renderPreparationDetail/);
 assert.match(preparationView, /aria-controls", "regionPreparationDetail"/);
-assert.doesNotMatch(preparationView, /button\.disabled\s*=/, "金幣不足整備仍必須可點擊查看效果");
+const appendPreparationOptionSource = preparationView.match(/function appendPreparationOption\([\s\S]*?\n\}/)?.[0] || "";
+assert.doesNotMatch(appendPreparationOptionSource, /button\.disabled\s*=/, "金幣不足整備卡仍必須可點擊查看效果");
 assert.doesNotMatch(preparationView, /setTimeout|requestAnimationFrame/, "整備展開動畫不需要 timer 或 RAF chain");
 assert.match(combatCss, /\.combat-preparation-status\s*\{/);
 assert.match(combatView, /renderPreparationStatus\(els, preparationStatus\)/);

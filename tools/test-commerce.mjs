@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { sellMaterial, sellMaterials, spendGold } from "../src/core/commerce.js";
+import { sellMaterial, sellMaterials, spendGold, spendInventoryCost } from "../src/core/commerce.js";
 
 const definitions = {
   gel: { id: "gel", name: "凝膠", sellPrice: 2 },
@@ -114,6 +114,56 @@ for (const quantity of [0, -1, 5, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
   assert.equal(inventory.gold, 0);
   assert.throws(() => spendGold(inventory, 0.5));
   assert.equal(inventory.gold, 0);
+}
+
+
+{
+  const inventory = createInventory();
+  const result = spendInventoryCost({
+    inventory,
+    materialDefinitions: definitions,
+    goldCost: 3,
+    materialCosts: [{ materialId: "gel", quantity: 2 }]
+  });
+  assert.equal(result.goldCost, 3);
+  assert.equal(result.gold, 2);
+  assert.deepEqual(result.materialCosts, [{
+    materialId: "gel",
+    name: "凝膠",
+    quantity: 2,
+    remainingQuantity: 2
+  }]);
+  assert.equal(inventory.gold, 2);
+  assert.equal(inventory.materials.gel.quantity, 2);
+}
+
+{
+  const inventory = createInventory();
+  const result = spendInventoryCost({
+    inventory,
+    materialDefinitions: definitions,
+    goldCost: 0,
+    materialCosts: [{ materialId: "relic", quantity: 1 }]
+  });
+  assert.equal(result.gold, 5);
+  assert.equal("relic" in inventory.materials, false, "數量歸零的素材應刪除");
+}
+
+for (const request of [
+  { goldCost: 6, materialCosts: [{ materialId: "gel", quantity: 1 }] },
+  { goldCost: 1, materialCosts: [{ materialId: "gel", quantity: 5 }] },
+  { goldCost: 1, materialCosts: [{ materialId: "missing", quantity: 1 }] },
+  { goldCost: 1, materialCosts: [{ materialId: "gel", quantity: 1 }, { materialId: "gel", quantity: 1 }] },
+  { goldCost: 1, materialCosts: [{ materialId: "gel", quantity: 0 }] }
+]) {
+  const inventory = createInventory();
+  const before = structuredClone(inventory);
+  assert.throws(() => spendInventoryCost({
+    inventory,
+    materialDefinitions: definitions,
+    ...request
+  }));
+  assert.deepEqual(inventory, before, "複合付款任一驗證失敗時不得部分扣除金幣或素材");
 }
 
 {

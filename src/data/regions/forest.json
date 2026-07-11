@@ -65,6 +65,29 @@
         "type": "poisonDamageReduction",
         "reductionRatio": 0.25,
         "charges": 6
+      },
+      "enhancement": {
+        "title": "濃縮驅蟲配方",
+        "materialCosts": [
+          {
+            "materialId": "mushroom_cap",
+            "quantity": 1
+          },
+          {
+            "materialId": "venom_sac",
+            "quantity": 1
+          }
+        ],
+        "description": "受到毒性傷害時，傷害降低 30%。最多生效 8 次。",
+        "changedFragments": [
+          "30%",
+          "8 次"
+        ],
+        "effect": {
+          "type": "poisonDamageReduction",
+          "reductionRatio": 0.3,
+          "charges": 8
+        }
       }
     },
     {
@@ -80,6 +103,31 @@
           10
         ],
         "healMaxHpRatio": 0.03
+      },
+      "enhancement": {
+        "title": "長途包紮改良",
+        "materialCosts": [
+          {
+            "materialId": "spider_silk",
+            "quantity": 1
+          },
+          {
+            "materialId": "amber_honey",
+            "quantity": 1
+          }
+        ],
+        "description": "隨著冒險深入，會自動進行兩次包紮，各恢復 5% 最大生命。",
+        "changedFragments": [
+          "5%"
+        ],
+        "effect": {
+          "type": "victoryMilestoneHeal",
+          "victoryMilestones": [
+            5,
+            10
+          ],
+          "healMaxHpRatio": 0.05
+        }
       }
     },
     {
@@ -91,6 +139,27 @@
       "effect": {
         "type": "entangleRetry",
         "charges": 2
+      },
+      "enhancement": {
+        "title": "重新打磨短刀",
+        "materialCosts": [
+          {
+            "materialId": "goblin_scrap",
+            "quantity": 1
+          },
+          {
+            "materialId": "oily_leather_cord",
+            "quantity": 1
+          }
+        ],
+        "description": "前 3 次掙脫纏繞失敗時，會立刻再嘗試一次。",
+        "changedFragments": [
+          "3 次"
+        ],
+        "effect": {
+          "type": "entangleRetry",
+          "charges": 3
+        }
       }
     }
   ],

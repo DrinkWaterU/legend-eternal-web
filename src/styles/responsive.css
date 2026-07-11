@@ -331,4 +331,18 @@
     grid-column: 1;
     grid-row: auto;
   }
+
+  .preparation-enhancement-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .preparation-enhancement-materials {
+    grid-template-columns: 1fr;
+  }
+
+  .preparation-enhancement-button {
+    justify-self: stretch;
+    width: 100%;
+  }
 }

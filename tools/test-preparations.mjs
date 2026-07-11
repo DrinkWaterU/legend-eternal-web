@@ -37,6 +37,59 @@ assert.deepEqual(forestRegion.preparations.map((entry) => entry.id), [
   "web-cutting-knife"
 ]);
 
+// v0.2.4.2：六項整備都必須提供一階素材強化，並建立獨立的強化 runtime。
+for (const region of [plainsRegion, forestRegion]) {
+  region.preparations.forEach((definition) => {
+    assert.ok(definition.enhancement, `${definition.id} 應提供 enhancement`);
+    assert.ok(definition.enhancement.title.trim());
+    assert.ok(definition.enhancement.description.trim());
+    assert.ok(definition.enhancement.changedFragments.length > 0);
+    assert.ok(definition.enhancement.materialCosts.length > 0);
+
+    const normal = createRunPreparation(region, definition.id);
+    const enhanced = createRunPreparation(region, definition.id, { enhanced: true });
+    assert.equal(normal.isEnhanced, false);
+    assert.equal(enhanced.isEnhanced, true);
+    assert.equal(enhanced.baseName, definition.name);
+    assert.equal(enhanced.name, `${definition.name}・強化`);
+    assert.equal(enhanced.description, definition.enhancement.description);
+    assert.deepEqual(enhanced.effect, definition.enhancement.effect);
+    assert.notEqual(enhanced.effect, definition.enhancement.effect, "強化 effect 必須 clone 後進入 runtime");
+  });
+}
+
+{
+  const enhanced = createRunPreparation(forestRegion, "forest-bandage", { enhanced: true });
+  assert.equal(enhanced.remainingCharges, 2);
+  const hero = { hp: 50, maxHp: 100 };
+  for (let index = 0; index < 5; index += 1) {
+    resolvePostEncounterPreparation({ preparation: enhanced, hero });
+  }
+  assert.equal(hero.hp, 55, "強化林地繃帶應使用 5% 完整 effect");
+  assert.deepEqual(getPreparationSummary(enhanced), {
+    id: "forest-bandage",
+    name: "林地繃帶（已強化）",
+    triggerCount: 1,
+    healing: 5
+  });
+}
+
+{
+  const powder = createRunPreparation(forestRegion, "insect-repellent-powder", { enhanced: true });
+  assert.equal(powder.remainingCharges, 8, "強化驅蟲藥粉應建立 8 次正式 charges");
+  for (let index = 0; index < 8; index += 1) {
+    assert.equal(resolvePreparationPoisonDamage({ preparation: powder, damage: 10 }).triggered, true);
+  }
+  assert.equal(resolvePreparationPoisonDamage({ preparation: powder, damage: 10 }).triggered, false);
+
+  const knife = createRunPreparation(forestRegion, "web-cutting-knife", { enhanced: true });
+  assert.equal(knife.remainingCharges, 3, "強化割網短刀應建立 3 次正式重試");
+  assert.equal(consumePreparationEntangleRetry(knife), true);
+  assert.equal(consumePreparationEntangleRetry(knife), true);
+  assert.equal(consumePreparationEntangleRetry(knife), true);
+  assert.equal(consumePreparationEntangleRetry(knife), false, "第 4 次不得再提供重試");
+}
+
 // 簡易繃帶：80% 門檻、角色勝利效果優先、最終戰不觸發。
 {
   const preparation = createRunPreparation(plainsRegion, "simple-bandage");
@@ -431,6 +484,76 @@ assert.throws(() => assertRegionPreparations({
   id: "broken",
   preparations: [{ id: "x", name: "X", summary: "測試", description: "測試", cost: 1, effect: { type: "openingActionAttackBonus", encounterTypes: [], attackBonus: 2 } }]
 }), /開局攻擊參數無效/);
+
+
+assert.throws(() => assertRegionPreparations({
+  id: "broken",
+  preparations: [{
+    id: "x",
+    name: "X",
+    summary: "測試",
+    description: "測試",
+    cost: 1,
+    effect: { type: "entangleRetry", charges: 1 },
+    enhancement: {
+      title: "強化",
+      description: "最多生效 3 次。",
+      changedFragments: ["3 次", "3 次"],
+      materialCosts: [{ materialId: "gel", quantity: 1 }],
+      effect: { type: "entangleRetry", charges: 3 }
+    }
+  }]
+}), /changedFragments 無效/);
+assert.throws(() => assertRegionPreparations({
+  id: "broken",
+  preparations: [{
+    id: "x",
+    name: "X",
+    summary: "測試",
+    description: "測試",
+    cost: 1,
+    effect: { type: "entangleRetry", charges: 1 },
+    enhancement: {
+      title: "強化",
+      description: "最多生效 3 次。",
+      changedFragments: ["4 次"],
+      materialCosts: [{ materialId: "gel", quantity: 1 }],
+      effect: { type: "entangleRetry", charges: 3 }
+    }
+  }]
+}), /精確出現一次/);
+assert.throws(() => assertRegionPreparations({
+  id: "broken",
+  preparations: [{
+    id: "x",
+    name: "X",
+    summary: "測試",
+    description: "測試",
+    cost: 1,
+    effect: { type: "entangleRetry", charges: 1 },
+    enhancement: {
+      title: "強化",
+      description: "最多生效 3 次。",
+      changedFragments: ["3 次"],
+      materialCosts: [
+        { materialId: "gel", quantity: 1 },
+        { materialId: "gel", quantity: 1 }
+      ],
+      effect: { type: "entangleRetry", charges: 3 }
+    }
+  }]
+}), /強化素材重複/);
+assert.throws(() => createRunPreparation({
+  id: "plain",
+  preparations: [{
+    id: "x",
+    name: "X",
+    summary: "測試",
+    description: "測試",
+    cost: 1,
+    effect: { type: "entangleRetry", charges: 1 }
+  }]
+}, "x", { enhanced: true }), /沒有素材強化/);
 
 const combatSource = await readFile(new URL("../src/core/combat.js", import.meta.url), "utf8");
 const preparationSource = await readFile(new URL("../src/core/preparations.js", import.meta.url), "utf8");

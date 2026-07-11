@@ -2,7 +2,7 @@ import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/con
 import { createEventRuntime } from "./src/adventure/eventRuntime.js";
 import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
-import { sellMaterial, sellMaterials, spendGold } from "./src/core/commerce.js";
+import { sellMaterial, sellMaterials, spendInventoryCost } from "./src/core/commerce.js";
 import {
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
@@ -87,7 +87,7 @@ import {
   renderMerchantSalePanel,
   renderMerchantView
 } from "./src/ui/merchantView.js";
-import { renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
+import { getEnhancementMaterialState, renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
 import { createDebugRuntimeActions } from "./src/debug/runtimeActions.js";
@@ -197,6 +197,8 @@ const uiState = {
   merchantNotice: "",
   merchantNoticeType: "status",
   selectedPreparationId: null,
+  enhancedPreparationId: null,
+  preparationEnhancementRevealId: null,
   preparationDetailId: null,
   preparationDetailExpanded: false,
   runStartNotice: "",
@@ -520,6 +522,8 @@ function showRegionList(contextId = uiState.navigationContext) {
 
 function resetPreparationUiState() {
   uiState.selectedPreparationId = null;
+  uiState.enhancedPreparationId = null;
+  uiState.preparationEnhancementRevealId = null;
   uiState.preparationDetailId = null;
   uiState.preparationDetailExpanded = false;
   uiState.runStartNotice = "";
@@ -608,12 +612,24 @@ function renderRegionScreen() {
 
     if (!phoenixUnlocked) {
       uiState.selectedPreparationId = null;
+      uiState.enhancedPreparationId = null;
+      uiState.preparationEnhancementRevealId = null;
       uiState.preparationDetailId = null;
       uiState.preparationDetailExpanded = false;
     } else {
       const selectedPreparation = getRegionPreparation(region, uiState.selectedPreparationId);
       if (uiState.selectedPreparationId && (!selectedPreparation || inventory.gold < selectedPreparation.cost)) {
         uiState.selectedPreparationId = null;
+        uiState.enhancedPreparationId = null;
+        uiState.preparationEnhancementRevealId = null;
+      }
+      const enhancedPreparation = getRegionPreparation(region, uiState.enhancedPreparationId);
+      if (
+        uiState.enhancedPreparationId
+        && (uiState.enhancedPreparationId !== uiState.selectedPreparationId || !enhancedPreparation?.enhancement)
+      ) {
+        uiState.enhancedPreparationId = null;
+        uiState.preparationEnhancementRevealId = null;
       }
       if (uiState.preparationDetailId && !getRegionPreparation(region, uiState.preparationDetailId)) {
         uiState.preparationDetailId = null;
@@ -657,11 +673,16 @@ function renderRegionScreen() {
         selectedPreparationId: uiState.selectedPreparationId,
         detailPreparationId: uiState.preparationDetailId,
         detailExpanded: uiState.preparationDetailExpanded,
+        enhancedPreparationId: uiState.enhancedPreparationId,
         gold: inventory.gold,
+        inventoryMaterials: inventory.materials,
+        materialDefinitions,
         onSelect: selectPreparation
       });
       const detailPreparation = getRegionPreparation(region, uiState.preparationDetailId);
       const detailAffordable = !detailPreparation || inventory.gold >= detailPreparation.cost;
+      const detailEnhanced = detailPreparation?.id === uiState.enhancedPreparationId;
+      const animateEnhancement = detailPreparation?.id === uiState.preparationEnhancementRevealId;
       renderPreparationDetail({
         element: els.regionPreparationDetail,
         preparation: detailPreparation,
@@ -670,23 +691,41 @@ function renderRegionScreen() {
           ? detailAffordable
             ? `${detailPreparation.cost} 金幣`
             : `金幣不足｜需 ${detailPreparation.cost} 金幣`
-          : "免費"
+          : "免費",
+        selected: detailPreparation?.id === uiState.selectedPreparationId,
+        enhanced: detailEnhanced,
+        animateEnhancement,
+        inventoryMaterials: inventory.materials,
+        materialDefinitions,
+        onToggleEnhancement: togglePreparationEnhancement
       });
+      if (animateEnhancement) {
+        uiState.preparationEnhancementRevealId = null;
+      }
     } else {
       els.regionPreparationChoices.replaceChildren();
       renderPreparationDetail({
         element: els.regionPreparationDetail,
         preparation: null,
         expanded: false,
-        priceLabel: "免費"
+        priceLabel: "免費",
+        selected: false,
+        enhanced: false
       });
     }
 
     const activePreparation = phoenixUnlocked
       ? getRegionPreparation(region, uiState.selectedPreparationId)
       : null;
+    const activePreparationEnhanced = activePreparation?.id === uiState.enhancedPreparationId;
+    renderPreparationRunCostPreview({
+      preparation: activePreparation,
+      enhanced: activePreparationEnhanced
+    });
     els.startButton.textContent = activePreparation
-      ? `花費 ${activePreparation.cost} 金幣並開始${region.name}冒險`
+      ? activePreparationEnhanced
+        ? `花費 ${activePreparation.cost} 金幣＋素材並開始${region.name}冒險`
+        : `花費 ${activePreparation.cost} 金幣並開始${region.name}冒險`
       : `開始${region.name}冒險`;
     els.startButton.disabled = uiState.runStartLocked;
   }
@@ -1112,7 +1151,12 @@ function selectPreparation(preparationId) {
   const affordable = !preparation || inventory.gold >= preparation.cost;
   const sameDetail = uiState.preparationDetailId === preparationId;
   if (affordable) {
+    const selectionChanged = uiState.selectedPreparationId !== preparationId;
     uiState.selectedPreparationId = preparationId;
+    if (selectionChanged) {
+      uiState.enhancedPreparationId = null;
+      uiState.preparationEnhancementRevealId = null;
+    }
   }
   uiState.preparationDetailId = preparationId;
   uiState.preparationDetailExpanded = sameDetail
@@ -1120,6 +1164,70 @@ function selectPreparation(preparationId) {
     : true;
   uiState.runStartNotice = "";
   renderRegionScreen();
+}
+
+function togglePreparationEnhancement(preparationId) {
+  const region = currentRegion();
+  const preparation = getRegionPreparation(region, preparationId);
+  if (!preparation || preparation.id !== uiState.selectedPreparationId) {
+    uiState.runStartNotice = "請先選擇這項整備。";
+    renderRegionScreen();
+    return;
+  }
+  if (!preparation.enhancement) {
+    uiState.runStartNotice = "目前整備沒有素材強化。";
+    renderRegionScreen();
+    return;
+  }
+  if (uiState.enhancedPreparationId === preparation.id) {
+    uiState.enhancedPreparationId = null;
+    uiState.preparationEnhancementRevealId = null;
+    uiState.runStartNotice = "";
+    renderRegionScreen();
+    return;
+  }
+
+  const inventory = normalizeInventory(saveData.inventory);
+  if (inventory.gold < preparation.cost) {
+    uiState.runStartNotice = "金幣不足，無法使用目前整備。";
+    renderRegionScreen();
+    return;
+  }
+  const materialState = getEnhancementMaterialState({
+    preparation,
+    inventoryMaterials: inventory.materials,
+    materialDefinitions
+  });
+  if (!materialState.available) {
+    uiState.runStartNotice = "強化素材不足。";
+    renderRegionScreen();
+    return;
+  }
+
+  uiState.enhancedPreparationId = preparation.id;
+  uiState.preparationEnhancementRevealId = preparation.id;
+  uiState.runStartNotice = "";
+  renderRegionScreen();
+}
+
+function renderPreparationRunCostPreview({ preparation, enhanced }) {
+  const existing = els.regionDetailView.querySelector(".preparation-run-cost-preview");
+  existing?.remove();
+  if (!preparation || !enhanced || !preparation.enhancement) {
+    return;
+  }
+
+  const preview = document.createElement("div");
+  const gold = document.createElement("span");
+  preview.className = "preparation-run-cost-preview";
+  gold.textContent = `金幣 ${preparation.cost}`;
+  preview.append(gold);
+  preparation.enhancement.materialCosts.forEach((cost) => {
+    const item = document.createElement("span");
+    item.textContent = `${materialDefinitions[cost.materialId]?.name || cost.materialId} ×${cost.quantity}`;
+    preview.append(item);
+  });
+  els.startButton.before(preview);
 }
 
 function createRunStats() {
@@ -1301,6 +1409,7 @@ function captureRunStartPermanentState() {
     regionId,
     characterId,
     gold: saveData.inventory.gold,
+    materials: clone(saveData.inventory.materials),
     totalRuns: saveData.statistics.totalRuns,
     regionRuns: saveData.statistics.regions[regionId].runs,
     characterRuns: saveData.statistics.characters[characterId].runs,
@@ -1313,6 +1422,7 @@ function restoreRunStartPermanentState(snapshot) {
     return;
   }
   saveData.inventory.gold = snapshot.gold;
+  saveData.inventory.materials = clone(snapshot.materials);
   saveData.statistics.totalRuns = snapshot.totalRuns;
   saveData.statistics.regions[snapshot.regionId].runs = snapshot.regionRuns;
   saveData.statistics.characters[snapshot.characterId].runs = snapshot.characterRuns;
@@ -1870,9 +1980,18 @@ function startPlayerRun() {
     if (definition && saveData.inventory.gold < definition.cost) {
       throw new Error("金幣不足，無法使用目前整備。");
     }
+    const requestedEnhanced = Boolean(
+      definition
+      && uiState.enhancedPreparationId === definition.id
+    );
+    if (requestedEnhanced && !definition.enhancement) {
+      throw new Error("目前整備沒有素材強化。");
+    }
 
     permanentSnapshot = captureRunStartPermanentState();
-    const preparation = createRunPreparation(region, requestedPreparationId);
+    const preparation = createRunPreparation(region, requestedPreparationId, {
+      enhanced: requestedEnhanced
+    });
     const hero = buildHeroFromProgression(state.selectedHeroId);
     initializeRunRuntime({ hero, preparation });
     state.eventSchedule = scheduleRegionEvent(currentAdventureSource(), Math.random, {
@@ -1885,7 +2004,12 @@ function startPlayerRun() {
 
     permanentMutationStarted = true;
     if (preparation) {
-      spendGold(saveData.inventory, preparation.cost);
+      spendInventoryCost({
+        inventory: saveData.inventory,
+        materialDefinitions,
+        goldCost: preparation.cost,
+        materialCosts: requestedEnhanced ? definition.enhancement.materialCosts : []
+      });
     }
     recordRunStarted();
     showScreen("gameScreen");

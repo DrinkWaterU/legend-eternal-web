@@ -29,14 +29,14 @@ const [
   readFile(new URL("./content-editor.js", import.meta.url), "utf8")
 ]);
 
-assert.equal(version.trim(), "v0.2.4.1-alpha");
-assert.match(config, /GAME_VERSION = "v0\.2\.4\.1-alpha"/);
-assert.match(readme, /v0\.2\.4\.1-alpha/);
-assert.match(html, /styles\.css\?v=0\.2\.4\.1-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.4\.1-alpha/);
-assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.1-alpha"/);
+assert.equal(version.trim(), "v0.2.4.2-alpha");
+assert.match(config, /GAME_VERSION = "v0\.2\.4\.2-alpha"/);
+assert.match(readme, /v0\.2\.4\.2-alpha/);
+assert.match(html, /styles\.css\?v=0\.2\.4\.2-alpha/);
+assert.match(html, /game\.js\?v=0\.2\.4\.2-alpha/);
+assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.2-alpha"/);
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
-assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.1-alpha"]);
+assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.2-alpha"]);
 
 for (const id of [
   "merchantBatchToggleButton",

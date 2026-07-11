@@ -47,11 +47,14 @@ export function assertRegionPreparations(region) {
       throw new Error(`整備 ${preparation.id} 使用未知 effect.type：${effect?.type || "(empty)"}`);
     }
     validateEffect(effect, preparation.id);
+    if (preparation.enhancement !== undefined) {
+      validateEnhancement(preparation.enhancement, preparation.id);
+    }
   });
   return true;
 }
 
-export function createRunPreparation(region, preparationId) {
+export function createRunPreparation(region, preparationId, options = {}) {
   if (!preparationId) {
     return null;
   }
@@ -61,14 +64,24 @@ export function createRunPreparation(region, preparationId) {
     throw new Error(`整備 ${preparationId} 不屬於地區 ${region?.id || "(unknown)"}。`);
   }
 
+  const enhanced = options?.enhanced === true;
+  if (enhanced && !definition.enhancement) {
+    throw new Error(`整備 ${preparationId} 沒有素材強化。`);
+  }
+  const baseName = definition.name;
+  const effectDefinition = enhanced ? definition.enhancement.effect : definition.effect;
+  const description = enhanced ? definition.enhancement.description : definition.description;
+
   const preparation = {
     id: definition.id,
-    name: definition.name,
-    description: definition.description || "",
+    baseName,
+    name: enhanced ? `${baseName}・強化` : baseName,
+    description: description || "",
     regionId: region.id,
     cost: definition.cost,
-    effect: clone(definition.effect),
-    triggerCount: 0
+    effect: clone(effectDefinition),
+    triggerCount: 0,
+    isEnhanced: enhanced
   };
 
   initializeEffectRuntime(preparation);
@@ -263,7 +276,9 @@ export function getPreparationSummary(preparation) {
   }
   const summary = {
     id: preparation.id,
-    name: preparation.name,
+    name: preparation.isEnhanced
+      ? `${preparation.baseName || preparation.name}（已強化）`
+      : (preparation.baseName || preparation.name),
     triggerCount: preparation.triggerCount || 0
   };
   if (Number.isFinite(preparation.healing)) {
@@ -353,6 +368,62 @@ function healByMaxHpRatio(hero, ratio) {
   const before = hero.hp;
   hero.hp = Math.min(hero.maxHp, hero.hp + requestedHealing);
   return hero.hp - before;
+}
+
+function validateEnhancement(enhancement, preparationId) {
+  if (!enhancement || typeof enhancement !== "object" || Array.isArray(enhancement)) {
+    throw new Error(`整備 ${preparationId} 的 enhancement 無效。`);
+  }
+  if (typeof enhancement.title !== "string" || !enhancement.title.trim()) {
+    throw new Error(`整備 ${preparationId} 的 enhancement.title 無效。`);
+  }
+  if (typeof enhancement.description !== "string" || !enhancement.description.trim()) {
+    throw new Error(`整備 ${preparationId} 的 enhancement.description 無效。`);
+  }
+  validateMaterialCosts(enhancement.materialCosts, preparationId);
+  validateChangedFragments(enhancement.changedFragments, enhancement.description, preparationId);
+  const effect = enhancement.effect;
+  if (!effect || !SUPPORTED_EFFECT_TYPES.has(effect.type)) {
+    throw new Error(`整備 ${preparationId} 使用未知 enhancement.effect.type：${effect?.type || "(empty)"}`);
+  }
+  validateEffect(effect, `${preparationId} 強化`);
+}
+
+function validateMaterialCosts(materialCosts, preparationId) {
+  if (!Array.isArray(materialCosts) || materialCosts.length === 0) {
+    throw new Error(`整備 ${preparationId} 的 enhancement.materialCosts 無效。`);
+  }
+  const materialIds = new Set();
+  materialCosts.forEach((cost) => {
+    if (typeof cost?.materialId !== "string" || !cost.materialId.trim()) {
+      throw new Error(`整備 ${preparationId} 的強化素材 ID 無效。`);
+    }
+    if (materialIds.has(cost.materialId)) {
+      throw new Error(`整備 ${preparationId} 的強化素材重複：${cost.materialId}`);
+    }
+    materialIds.add(cost.materialId);
+    if (!Number.isSafeInteger(cost.quantity) || cost.quantity <= 0) {
+      throw new Error(`整備 ${preparationId} 的強化素材數量無效。`);
+    }
+  });
+}
+
+function validateChangedFragments(changedFragments, description, preparationId) {
+  if (!isNonEmptyStringArray(changedFragments)) {
+    throw new Error(`整備 ${preparationId} 的 enhancement.changedFragments 無效。`);
+  }
+  let previousEnd = -1;
+  changedFragments.forEach((fragment) => {
+    const firstIndex = description.indexOf(fragment);
+    const lastIndex = description.lastIndexOf(fragment);
+    if (firstIndex < 0 || firstIndex !== lastIndex) {
+      throw new Error(`整備 ${preparationId} 的差異片段必須在強化文案中精確出現一次：${fragment}`);
+    }
+    if (firstIndex < previousEnd) {
+      throw new Error(`整備 ${preparationId} 的差異片段順序或範圍無效：${fragment}`);
+    }
+    previousEnd = firstIndex + fragment.length;
+  });
 }
 
 function validateEffect(effect, preparationId) {

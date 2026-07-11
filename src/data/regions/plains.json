@@ -29,6 +29,29 @@
         "hpThresholdRatio": 0.8,
         "healMaxHpRatio": 0.06,
         "charges": 1
+      },
+      "enhancement": {
+        "title": "加厚傷口包紮",
+        "materialCosts": [
+          {
+            "materialId": "slime_gel",
+            "quantity": 2
+          },
+          {
+            "materialId": "soft_hide",
+            "quantity": 1
+          }
+        ],
+        "description": "生命低於 80% 時，戰鬥結束後自動恢復 10% 最大生命。每次冒險最多發動一次。",
+        "changedFragments": [
+          "10%"
+        ],
+        "effect": {
+          "type": "postEncounterLowHpHeal",
+          "hpThresholdRatio": 0.8,
+          "healMaxHpRatio": 0.1,
+          "charges": 1
+        }
       }
     },
     {
@@ -41,6 +64,28 @@
         "type": "firstFamilyDirectDamageReduction",
         "targetFamily": "beast",
         "reductionRatio": 0.15
+      },
+      "enhancement": {
+        "title": "刺激性調和",
+        "materialCosts": [
+          {
+            "materialId": "toxic_slime_drop",
+            "quantity": 1
+          },
+          {
+            "materialId": "slime_gel",
+            "quantity": 1
+          }
+        ],
+        "description": "面對野獸時，每場第一次受到的攻擊傷害降低 22%。",
+        "changedFragments": [
+          "22%"
+        ],
+        "effect": {
+          "type": "firstFamilyDirectDamageReduction",
+          "targetFamily": "beast",
+          "reductionRatio": 0.22
+        }
       }
     },
     {
@@ -56,6 +101,31 @@
           "boss"
         ],
         "attackBonus": 2
+      },
+      "enhancement": {
+        "title": "刃口與握柄補整",
+        "materialCosts": [
+          {
+            "materialId": "hard_tusk",
+            "quantity": 1
+          },
+          {
+            "materialId": "sharp_fang",
+            "quantity": 2
+          }
+        ],
+        "description": "遇上菁英或首領時，開戰後第一次出手會獲得 3 點攻擊加成。",
+        "changedFragments": [
+          "3 點攻擊加成"
+        ],
+        "effect": {
+          "type": "openingActionAttackBonus",
+          "encounterTypes": [
+            "elite",
+            "boss"
+          ],
+          "attackBonus": 3
+        }
       }
     }
   ],
