@@ -7,6 +7,7 @@ const [
   dom,
   commerce,
   merchantView,
+  merchantController,
   componentsCss,
   responsiveCss,
   version,
@@ -20,6 +21,7 @@ const [
   readFile(new URL("../src/ui/dom.js", import.meta.url), "utf8"),
   readFile(new URL("../src/core/commerce.js", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/merchantView.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/ui/merchantController.js", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/components.css", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/responsive.css", import.meta.url), "utf8"),
   readFile(new URL("../VERSION", import.meta.url), "utf8"),
@@ -58,28 +60,40 @@ assert.match(html, /id="merchantSaleQuantity"[^>]*type="number"[^>]*inputmode="n
 assert.match(html, /id="merchantSaleDecreaseFiveButton"[^>]*>−5</);
 assert.match(html, /id="merchantSaleIncreaseFiveButton"[^>]*>＋5</);
 
+assert.match(game, /import \{ createMerchantController \} from "\.\/src\/ui\/merchantController\.js"/);
+assert.match(game, /const merchantController = createMerchantController\(\{/);
+assert.match(game, /getInventory: \(\) => saveData\.inventory/);
+assert.match(game, /getSafeArea: getCurrentSafeArea/);
+assert.match(game, /saveInventory: saveGameSafe/);
+assert.match(game, /merchantController\.reset\(\)/);
+assert.match(game, /merchantController\.render\(\)/);
+assert.match(game, /merchantController\.closeSaleDialog/);
 for (const field of [
+  "merchantSortMode",
   "merchantBatchMode",
   "merchantBatchMaterialIds",
   "merchantSaleDialogMode",
-  "merchantSaleQuantityInput"
+  "merchantSaleQuantityInput",
+  "merchantNotice"
 ]) {
-  assert.match(game, new RegExp(`${field}:`), `Merchant uiState 缺少 ${field}`);
+  assert.doesNotMatch(game, new RegExp(`${field}:`), `Merchant 專屬 State 不應留在 game.js：${field}`);
 }
+assert.doesNotMatch(game, /function renderMerchantScreen\(/);
+assert.doesNotMatch(game, /function confirmMerchantBatchSale\(/);
 
-const batchConfirmSource = game.match(/function confirmMerchantBatchSale\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(batchConfirmSource, /sellMaterials\(/);
-assert.match(batchConfirmSource, /saveGameSafe\(\)/);
-assert.match(batchConfirmSource, /merchantBatchMaterialIds = new Set\(\)/);
-assert.match(batchConfirmSource, /result\.totalQuantity/);
-assert.match(batchConfirmSource, /result\.totalGold/);
-
-const resetMerchantSource = game.match(/function resetMerchantUiState\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(resetMerchantSource, /merchantBatchMode = false/);
-assert.match(resetMerchantSource, /merchantBatchMaterialIds = new Set\(\)/);
-assert.match(resetMerchantSource, /merchantSaleDialogMode = null/);
-assert.match(game, /function normalizeMerchantBatchSelection\(\)[\s\S]*getSellableMaterials/);
-assert.match(game, /function changeMerchantSaleQuantity\(change\)[\s\S]*merchantSaleQuantity \+ change/);
+assert.match(merchantController, /export function createMerchantController/);
+assert.match(merchantController, /function createMerchantState\(\)/);
+assert.match(merchantController, /function normalizeBatchSelection\(\)/);
+assert.match(merchantController, /function changeSaleQuantity\(change\)[\s\S]*state\.saleQuantity \+ change/);
+const controllerBatchConfirmStart = merchantController.indexOf("function confirmBatchSale()");
+const controllerBatchConfirmEnd = merchantController.indexOf("function resetSaleDialogState()", controllerBatchConfirmStart);
+const controllerBatchConfirmSource = merchantController.slice(controllerBatchConfirmStart, controllerBatchConfirmEnd);
+assert.match(controllerBatchConfirmSource, /sellMaterials\(/);
+assert.match(controllerBatchConfirmSource, /saveInventory\(\)/);
+assert.match(controllerBatchConfirmSource, /state\.batchMaterialIds = new Set\(\)/);
+assert.match(controllerBatchConfirmSource, /result\.totalQuantity/);
+assert.match(controllerBatchConfirmSource, /result\.totalGold/);
+assert.match(merchantController, /Object\.freeze\(\{[\s\S]*reset,[\s\S]*render,[\s\S]*closeSaleDialog/);
 
 assert.match(commerce, /export function sellMaterials/);
 assert.match(commerce, /createMaterialSalePlan/);
