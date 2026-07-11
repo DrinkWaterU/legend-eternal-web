@@ -38,10 +38,11 @@ const [
   readFile(new URL("../styles.css", import.meta.url), "utf8")
 ]);
 
-const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource] = await Promise.all([
+const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource, battleLifecycleSource] = await Promise.all([
   readFile(new URL("../src/adventure/eventRuntime.js", import.meta.url), "utf8"),
   readFile(new URL("../src/debug/runtimeActions.js", import.meta.url), "utf8"),
-  readFile(new URL("../src/adventure/runLifecycle.js", import.meta.url), "utf8")
+  readFile(new URL("../src/adventure/runLifecycle.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/adventure/battleLifecycle.js", import.meta.url), "utf8")
 ]);
 
 assert.equal(version.trim(), "v0.2.4.2-alpha");
@@ -128,12 +129,30 @@ assert.match(game, /facilityBackButton\.addEventListener\("click", \(\) => showS
 assert.match(game, /merchantBackButton\.addEventListener\("click", \(\) => showFacilityList\(uiState\.safeAreaId, uiState\.navigationContext\)\)/);
 const routeEntry = game.match(/function enterAdventureRoute\([\s\S]*?\n}\n/)?.[0] || "";
 assert.doesNotMatch(routeEntry, /runPreparation\s*=\s*null/, "Route 切換不可清除整備 runtime");
-assert.match(game, /function startEncounter\(\)[\s\S]*?resetHeroBattleState\(\);\s*beginRunPreparationBattle\(\);\s*applyBattleStartSkills\(\);/);
-assert.match(game, /function resumePendingThreat\([\s\S]*?resetHeroBattleState\(\);\s*beginRunPreparationBattle\(\);[\s\S]*?applyBattleStartSkills\(\);/);
-assert.match(game, /function resolveCounterEscape\(\)[\s\S]*?resetHeroBattleState\(\);\s*beginRunPreparationBattle\(\);\s*applyBattleStartSkills\(\);/);
+assert.match(game, /import \{ resetBattleEntryState \} from "\.\/src\/adventure\/battleLifecycle\.js"/);
+assert.match(battleLifecycleSource, /export function resetBattleEntryState\(state, options = \{\}\)/);
+assert.match(battleLifecycleSource, /state\.log = \[\]/);
+const battleRuntimeCoordinator = game.match(/function beginBattleRuntime\(options = \{\}\) \{[\s\S]*?\n\}/)?.[0] || "";
+const battleRuntimeOrder = [
+  "resetBattleEntryState(state, { source, encounterType, ambushAdvantage })",
+  "setEnemyGroup(enemies, { restore: restoreEnemies })",
+  "resetHeroBattleState()",
+  "beginRunPreparationBattle()",
+  "applyBattleStartSkills()"
+].map((requiredCall) => {
+  const index = battleRuntimeCoordinator.indexOf(requiredCall);
+  assert.ok(index >= 0, `Battle Runtime coordinator 缺少：${requiredCall}`);
+  return index;
+});
+assert.deepEqual(battleRuntimeOrder, [...battleRuntimeOrder].sort((a, b) => a - b), "Battle Runtime 初始化順序不可漂移");
+assert.match(game, /function startEncounter\(\)[\s\S]*?beginBattleRuntime\(\{[\s\S]*?source: "main"[\s\S]*?encounterType/);
+assert.match(game, /function resumePendingThreat\([\s\S]*?beginBattleRuntime\(\{[\s\S]*?restoreEnemies: true[\s\S]*?source: threat\.battleSource/);
+assert.match(game, /function resolveCounterEscape\(\)[\s\S]*?beginBattleRuntime\(\{[\s\S]*?source: "counterEscape"[\s\S]*?encounterType: "counter"[\s\S]*?ambushAdvantage: true/);
 const eventBattleSource = eventRuntimeSource.match(/function startEventBattle\([\s\S]*?\r?\n  }\r?\n/)?.[0] || "";
-assert.match(eventBattleSource, /beginRunPreparationBattle\(\)/, "Event Battle 必須重設 preparation battle-local state");
-assert.match(debugRuntimeSource, /resetHeroBattleState\(\);\s*beginRunPreparationBattle\(\);\s*applyBattleStartSkills\(\);/);
+assert.match(eventBattleSource, /beginBattleRuntime\(\{[\s\S]*?source: "event"[\s\S]*?encounterType: "event"/, "Event Battle 必須走共同 Battle Runtime");
+assert.doesNotMatch(eventRuntimeSource, /resetHeroBattleState|beginRunPreparationBattle|applyBattleStartSkills/, "Event Runtime 不應自行維護共通戰鬥初始化");
+assert.match(debugRuntimeSource, /beginBattleRuntime\(\{[\s\S]*?encounterType: "normal"/);
+assert.doesNotMatch(debugRuntimeSource, /resetHeroBattleState|beginRunPreparationBattle|applyBattleStartSkills/, "Debug Runtime 不應自行維護共通戰鬥初始化");
 const campRenderer = game.match(/function renderCampScreen\(\) \{[\s\S]*?\r?\n\}/)?.[0] || "";
 for (const label of ["目前角色", "目前地區", "經驗", "目前金幣"]) {
   assert.match(campRenderer, new RegExp(label), `Camp 核心摘要缺少：${label}`);

@@ -46,10 +46,7 @@ export function createDebugRuntimeActions(host) {
     render,
     initializeRunRuntime,
     currentRegion,
-    setEnemyGroup,
-    resetHeroBattleState,
-    beginRunPreparationBattle,
-    applyBattleStartSkills,
+    beginBattleRuntime,
     addFixedLog,
     logCurrentEnemyGroupEncounter,
     addLog,
@@ -318,22 +315,18 @@ export function createDebugRuntimeActions(host) {
       persistSelection: false
     });
     setDebugScenarioHp(hpPercent);
-    state.turn = 0;
-    state.phase = "danger";
-    state.battleSource = "main";
-    state.battleEncounterType = "normal";
-    state.log = [];
     const first = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
     const second = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
     first.poison = 0;
     second.poison = 0;
-    setEnemyGroup([
-      { enemy: first },
-      { enemy: second, statScale: 0.75, rewardScale: 0.5 }
-    ]);
-    resetHeroBattleState();
-    beginRunPreparationBattle();
-    applyBattleStartSkills();
+    beginBattleRuntime({
+      enemies: [
+        { enemy: first },
+        { enemy: second, statScale: 0.75, rewardScale: 0.5 }
+      ],
+      source: "main",
+      encounterType: "normal"
+    });
     addFixedLog("system", "調試：多敵人基礎 Sandbox；第二名哥布林套用 statScale 0.75 / rewardScale 0.5。");
     logCurrentEnemyGroupEncounter();
     if (state.hero.shield > 0) {

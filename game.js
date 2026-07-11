@@ -1,4 +1,5 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/config.js";
+import { resetBattleEntryState } from "./src/adventure/battleLifecycle.js";
 import { createEventRuntime } from "./src/adventure/eventRuntime.js";
 import { resetAdventureRunState } from "./src/adventure/runLifecycle.js";
 import { createMusicManager } from "./src/audio/musicManager.js";
@@ -1844,6 +1845,22 @@ function beginRunPreparationBattle() {
   beginPreparationBattle(state.runPreparation);
 }
 
+function beginBattleRuntime(options = {}) {
+  const {
+    enemies = [],
+    restoreEnemies = false,
+    source = "main",
+    encounterType = null,
+    ambushAdvantage = false
+  } = options;
+
+  resetBattleEntryState(state, { source, encounterType, ambushAdvantage });
+  setEnemyGroup(enemies, { restore: restoreEnemies });
+  resetHeroBattleState();
+  beginRunPreparationBattle();
+  applyBattleStartSkills();
+}
+
 function healThreatEnemies(enemies, ratio) {
   return enemies.map((enemy) => {
     if (ratio <= 0 || enemy.hp <= 0) {
@@ -1866,23 +1883,16 @@ function resumePendingThreat(options = {}) {
   const restoredEnemies = restoreRuntimeEnemyGroup(threat.enemies);
   const healedEnemies = healThreatEnemies(restoredEnemies, healRatio);
 
-  setEnemyGroup(restoredEnemies, { restore: true });
   state.activeRouteId = threat.activeRouteId || null;
   state.routeEncounterIndex = Math.max(0, Number(threat.routeEncounterIndex) || 0);
-  state.battleSource = threat.battleSource || "main";
-  state.battleEncounterType = threat.battleEncounterType || getAdventureEncounterType();
   state.encounterIndex = threat.encounterIndex;
-  state.turn = 0;
-  state.awaitingBlessing = false;
-  state.phase = "danger";
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.log = [];
-  resetHeroBattleState();
-  beginRunPreparationBattle();
   clearPendingThreat();
-  applyBattleStartSkills();
+  beginBattleRuntime({
+    enemies: restoredEnemies,
+    restoreEnemies: true,
+    source: threat.battleSource || "main",
+    encounterType: threat.battleEncounterType || getAdventureEncounterType()
+  });
 
   if (introText) {
     addFixedLog("system", introText);
@@ -2051,18 +2061,11 @@ function startEncounter() {
   const encounterType = getAdventureEncounterType();
   state.adventureProgressLocked = false;
   state.eventInputLocked = false;
-  state.battleSource = "main";
-  state.battleEncounterType = encounterType;
   showCombatLayout(els);
   applySceneContext("gameScreen");
-  state.turn = 0;
-  state.awaitingBlessing = false;
-  state.phase = "danger";
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.log = [];
 
+  let battleEnemies;
+  let restoreEnemies = false;
   if (route) {
     const group = getRouteGroup(route, encounterEntry?.groupId);
     if (!group) {
@@ -2078,16 +2081,20 @@ function startEncounter() {
         rewardScale: member.rewardScale
       };
     });
-    setEnemyGroup(createRuntimeEnemyGroup(entries), { restore: true });
+    battleEnemies = createRuntimeEnemyGroup(entries);
+    restoreEnemies = true;
   } else {
     const enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
     enemy.poison = 0;
-    setEnemyGroup([enemy]);
+    battleEnemies = [enemy];
   }
 
-  resetHeroBattleState();
-  beginRunPreparationBattle();
-  applyBattleStartSkills();
+  beginBattleRuntime({
+    enemies: battleEnemies,
+    restoreEnemies,
+    source: "main",
+    encounterType
+  });
 
   els.blessingPanel.classList.remove("is-visible");
   setCombatActionState();
@@ -2931,21 +2938,14 @@ function resolveCounterEscape() {
   savePendingThreat("counterEscape");
   addLog("system", "counterEscape");
   consumeBattleLimitedEffects();
-  state.phase = "danger";
-  state.turn = 0;
-  state.awaitingBlessing = false;
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = true;
-  state.battleSource = "counterEscape";
-  state.battleEncounterType = "counter";
-  state.log = [];
   const counterEnemy = buildCounterEnemy(currentRegion(), state.encounterIndex);
   counterEnemy.poison = 0;
-  setEnemyGroup([counterEnemy]);
-  resetHeroBattleState();
-  beginRunPreparationBattle();
-  applyBattleStartSkills();
+  beginBattleRuntime({
+    enemies: [counterEnemy],
+    source: "counterEscape",
+    encounterType: "counter",
+    ambushAdvantage: true
+  });
   const enemy = currentTargetEnemy();
   const reducedHp = Math.max(1, Math.round(enemy.maxHp * 0.85));
   const reducedAmount = enemy.maxHp - reducedHp;
@@ -3440,10 +3440,7 @@ eventRuntime = createEventRuntime({
   clearEnemyGroup,
   setCombatActionState,
   applySceneContext,
-  setEnemyGroup,
-  resetHeroBattleState,
-  beginRunPreparationBattle,
-  applyBattleStartSkills,
+  beginBattleRuntime,
   addFixedLog,
   logCurrentEnemyGroupEncounter,
   applyEnemyAmbushes,
@@ -3474,10 +3471,7 @@ const debugActions = createDebugRuntimeActions({
   render,
   initializeRunRuntime,
   currentRegion,
-  setEnemyGroup,
-  resetHeroBattleState,
-  beginRunPreparationBattle,
-  applyBattleStartSkills,
+  beginBattleRuntime,
   addFixedLog,
   logCurrentEnemyGroupEncounter,
   addLog,
