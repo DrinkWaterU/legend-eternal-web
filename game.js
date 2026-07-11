@@ -1,5 +1,6 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/config.js";
 import { createEventRuntime } from "./src/adventure/eventRuntime.js";
+import { resetAdventureRunState } from "./src/adventure/runLifecycle.js";
 import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
 import { sellMaterial, sellMaterials, spendInventoryCost } from "./src/core/commerce.js";
@@ -1255,39 +1256,31 @@ function createRunStats() {
   };
 }
 
+function resetAdventureRunRuntime(options = {}) {
+  resetAdventureRunState(state, options);
+  clearEnemyGroup();
+  clearPendingThreat();
+  eventRuntime.resetEventRunState();
+  resetRouteRuntime();
+}
+
 function initializeRunRuntime({ hero, preparation = null, encounterIndex = 0, debugBuildRun = false, bossId = null } = {}) {
   if (!hero) {
     throw new Error("Run runtime 初始化需要 Hero。");
   }
 
-  resetRouteRuntime();
+  resetAdventureRunRuntime();
   state.debugBuildRun = Boolean(debugBuildRun);
   state.run += 1;
   state.encounterIndex = encounterIndex;
-  state.turn = 0;
   state.hero = hero;
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
-  clearEnemyGroup();
   state.selectedBoss = selectRunBoss(currentRegion(), bossId);
   state.phase = "danger";
-  state.awaitingBlessing = false;
   state.ended = false;
   state.defeatedEnemies = encounterIndex;
-  state.defeatedBoss = false;
-  state.deathCause = null;
   state.runStats = createRunStats();
   state.runPreparation = preparation;
-  state.runResultRecorded = false;
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.battleSource = "main";
-  state.battleEncounterType = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.blessingPoolOverrideId = null;
-  eventRuntime.resetEventRunState();
-  state.log = [];
   state.runStats.startLevel = state.hero.level;
   state.runStats.endLevel = state.hero.level;
   recordSelectedBossInRunStats();
@@ -1670,24 +1663,8 @@ function confirmImportSaveCode() {
 }
 
 function resetAdventureRuntimeAfterSaveImport() {
-  state.debugBuildRun = false;
-  state.hero = null;
-  state.selectedBoss = null;
-  state.runStats = null;
-  state.runPreparation = null;
+  resetAdventureRunRuntime({ clearLastRunSummary: true });
   resetPreparationUiState();
-  state.lastRunSummary = null;
-  state.awaitingBlessing = false;
-  state.ended = true;
-  state.phase = "camp";
-  state.battleSource = "main";
-  state.battleEncounterType = null;
-  state.blessingContext = "normal";
-  state.runResultRecorded = false;
-  clearEnemyGroup();
-  clearPendingThreat();
-  eventRuntime.resetEventRunState();
-  resetRouteRuntime();
 }
 
 function setSaveCodeNotice(element, message, type = "status") {
@@ -1732,6 +1709,8 @@ function deleteSave() {
     // The in-memory reset still keeps the page usable if storage is blocked.
   }
   saveData = createDefaultSave();
+  resetAdventureRunRuntime({ clearLastRunSummary: true });
+  resetPreparationUiState();
   saveGameSafe();
   syncSelectionFromSave();
   syncMusicSettingsFromSave();
@@ -2032,27 +2011,7 @@ function startPlayerRun() {
 }
 
 function resetFailedPlayerRunStart() {
-  state.debugBuildRun = false;
-  state.hero = null;
-  state.selectedBoss = null;
-  state.runStats = null;
-  state.runPreparation = null;
-  state.eventSchedule = null;
-  state.awaitingBlessing = false;
-  state.ended = true;
-  state.phase = "camp";
-  state.battleSource = "main";
-  state.battleEncounterType = null;
-  state.blessingContext = "normal";
-  state.blessingPoolOverrideId = null;
-  state.runResultRecorded = false;
-  state.adventureProgressLocked = false;
-  state.eventInputLocked = false;
-  state.log = [];
-  clearEnemyGroup();
-  clearPendingThreat();
-  eventRuntime.resetEventRunState();
-  resetRouteRuntime();
+  resetAdventureRunRuntime();
   setCombatActionState();
 }
 
@@ -2064,44 +2023,24 @@ function getAdventureEventScheduleChance() {
 }
 
 function restart() {
-  state.debugBuildRun = false;
-  state.runPreparation = null;
+  resetAdventureRunRuntime();
   resetPreparationUiState();
   syncSelectionFromSave();
-  showScreen("menuScreen");
   closeTransientUiPanels();
+  showScreen("menuScreen");
   els.nextButton.disabled = true;
   setCombatActionState();
-  state.awaitingBlessing = false;
-  state.ended = true;
-  state.phase = "camp";
-  state.selectedBoss = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.battleEncounterType = null;
-  eventRuntime.resetEventRunState();
-  resetRouteRuntime();
   els.resultLabel.textContent = "冒險準備中";
   els.encounterLabel.textContent = "尚未開始";
   els.battleLogTitle.textContent = "戰鬥紀錄";
 }
 
 function returnToCamp() {
-  state.debugBuildRun = false;
-  state.runPreparation = null;
+  resetAdventureRunRuntime();
   resetPreparationUiState();
   syncSelectionFromSave();
-  showScreen("campScreen");
   closeTransientUiPanels();
-  state.awaitingBlessing = false;
-  state.ended = true;
-  state.phase = "camp";
-  state.selectedBoss = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.battleEncounterType = null;
-  eventRuntime.resetEventRunState();
-  resetRouteRuntime();
+  showScreen("campScreen");
   setCombatActionState();
 }
 

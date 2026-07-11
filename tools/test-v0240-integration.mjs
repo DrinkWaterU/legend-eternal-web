@@ -38,9 +38,10 @@ const [
   readFile(new URL("../styles.css", import.meta.url), "utf8")
 ]);
 
-const [eventRuntimeSource, debugRuntimeSource] = await Promise.all([
+const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource] = await Promise.all([
   readFile(new URL("../src/adventure/eventRuntime.js", import.meta.url), "utf8"),
-  readFile(new URL("../src/debug/runtimeActions.js", import.meta.url), "utf8")
+  readFile(new URL("../src/debug/runtimeActions.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/adventure/runLifecycle.js", import.meta.url), "utf8")
 ]);
 
 assert.equal(version.trim(), "v0.2.4.2-alpha");
@@ -90,7 +91,26 @@ assert.match(selectPreparationSource, /const affordable = !preparation \|\| inve
 assert.match(selectPreparationSource, /if \(affordable\) \{[\s\S]*uiState\.selectedPreparationId = preparationId/);
 assert.match(selectPreparationSource, /uiState\.preparationDetailId = preparationId/);
 assert.match(selectPreparationSource, /sameDetail\s*\? !uiState\.preparationDetailExpanded\s*:\s*true/);
-assert.match(game, /state\.runPreparation = null;[\s\S]*function returnToCamp\(\)/);
+assert.match(game, /import \{ resetAdventureRunState \} from "\.\/src\/adventure\/runLifecycle\.js"/);
+assert.match(runLifecycleSource, /export function resetAdventureRunState\(state, options = \{\}\)/);
+assert.match(runLifecycleSource, /clearLastRunSummary = false/);
+assert.match(runLifecycleSource, /state\.log = \[\]/);
+const runRuntimeCoordinator = game.match(/function resetAdventureRunRuntime\(options = \{\}\) \{[\s\S]*?\n\}/)?.[0] || "";
+for (const requiredCall of [
+  "resetAdventureRunState(state, options)",
+  "clearEnemyGroup()",
+  "clearPendingThreat()",
+  "eventRuntime.resetEventRunState()",
+  "resetRouteRuntime()"
+]) {
+  assert.ok(runRuntimeCoordinator.includes(requiredCall), `Run Runtime coordinator 缺少：${requiredCall}`);
+}
+assert.match(game, /function initializeRunRuntime\([\s\S]*?resetAdventureRunRuntime\(\)/);
+assert.match(game, /function resetFailedPlayerRunStart\(\) \{\s*resetAdventureRunRuntime\(\)/);
+assert.match(game, /function resetAdventureRuntimeAfterSaveImport\(\) \{\s*resetAdventureRunRuntime\(\{ clearLastRunSummary: true \}\)/);
+assert.match(game, /function deleteSave\(\)[\s\S]*?resetAdventureRunRuntime\(\{ clearLastRunSummary: true \}\)[\s\S]*?resetPreparationUiState\(\)/);
+assert.match(game, /function restart\(\) \{\s*resetAdventureRunRuntime\(\)[\s\S]*?showScreen\("menuScreen"\)/);
+assert.match(game, /function returnToCamp\(\) \{\s*resetAdventureRunRuntime\(\)[\s\S]*?showScreen\("campScreen"\)/);
 assert.match(game, /modifyPoisonDamage: \(\{ damage \}\) => modifyPoisonDamageFromPreparation\(damage\)/);
 assert.match(game, /modifyDirectDamage: modifyIncomingDirectDamage/);
 assert.match(game, /runPreparationOpeningAction\(\{[\s\S]*encounterType: state\.battleEncounterType[\s\S]*finally|runPreparationOpeningAction\(\{/);
