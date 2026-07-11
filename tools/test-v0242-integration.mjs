@@ -10,6 +10,7 @@ const [
   preparations,
   commerce,
   preparationView,
+  preparationStateSource,
   componentsCss,
   responsiveCss,
   html,
@@ -23,6 +24,7 @@ const [
   readFile(new URL("../src/core/preparations.js", import.meta.url), "utf8"),
   readFile(new URL("../src/core/commerce.js", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/preparationView.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/ui/preparationState.js", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/components.css", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/responsive.css", import.meta.url), "utf8"),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
@@ -123,8 +125,9 @@ for (const field of ["enhancedPreparationId", "preparationEnhancementRevealId"])
   assert.match(game, new RegExp(`${field}: null`), `uiState 缺少 ${field}`);
 }
 const resetSource = game.match(/function resetPreparationUiState\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(resetSource, /enhancedPreparationId = null/);
-assert.match(resetSource, /preparationEnhancementRevealId = null/);
+assert.match(resetSource, /clearPreparationSelectionState\(uiState\)/);
+assert.match(preparationStateSource, /uiState\.enhancedPreparationId = null/);
+assert.match(preparationStateSource, /uiState\.preparationEnhancementRevealId = null/);
 const selectSource = game.match(/function selectPreparation\(preparationId\) \{[\s\S]*?\n\}/)?.[0] || "";
 assert.match(selectSource, /if \(affordable\)/);
 assert.match(selectSource, /selectionChanged/);
@@ -133,8 +136,9 @@ const toggleSource = game.match(/function togglePreparationEnhancement\(preparat
 assert.match(toggleSource, /preparation\.id !== uiState\.selectedPreparationId/);
 assert.match(toggleSource, /getEnhancementMaterialState/);
 assert.match(toggleSource, /preparationEnhancementRevealId = preparation\.id/);
-assert.match(game, /animateEnhancement = detailPreparation\?\.id === uiState\.preparationEnhancementRevealId/);
-assert.match(game, /if \(animateEnhancement\) \{\s*uiState\.preparationEnhancementRevealId = null/);
+assert.match(game, /animateEnhancement = consumePreparationEnhancementReveal\(uiState, detailPreparation\?\.id\)/);
+assert.match(preparationStateSource, /uiState\.preparationEnhancementRevealId !== preparationId/);
+assert.match(preparationStateSource, /uiState\.preparationEnhancementRevealId = null/);
 assert.match(game, /花費 \$\{activePreparation\.cost\} 金幣＋素材並開始/);
 
 const snapshotSource = game.match(/function captureRunStartPermanentState\(\) \{[\s\S]*?\n\}/)?.[0] || "";

@@ -12,6 +12,7 @@ const [
   combatCss,
   combatView,
   preparationView,
+  preparationStateSource,
   plainsAdapter,
   forestAdapter,
   editorSource,
@@ -29,6 +30,7 @@ const [
   readFile(new URL("../src/styles/combat.css", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/combatView.js", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/preparationView.js", import.meta.url), "utf8"),
+  readFile(new URL("../src/ui/preparationState.js", import.meta.url), "utf8"),
   readFile(new URL("../src/data/regions/plains.js", import.meta.url), "utf8"),
   readFile(new URL("../src/data/regions/forest.js", import.meta.url), "utf8"),
   readFile(new URL("./content-editor.js", import.meta.url), "utf8"),
@@ -75,8 +77,17 @@ assert.match(game, /runStarted = true/);
 assert.match(game, /preparationDetailId: null/);
 assert.match(game, /preparationDetailExpanded: false/);
 const resetPreparationUiSource = game.match(/function resetPreparationUiState\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-for (const field of ["selectedPreparationId", "enhancedPreparationId", "preparationEnhancementRevealId", "preparationDetailId", "preparationDetailExpanded", "runStartNotice", "runStartLocked"]) {
+assert.match(resetPreparationUiSource, /clearPreparationSelectionState\(uiState\)/);
+for (const field of ["runStartNotice", "runStartLocked"]) {
   assert.match(resetPreparationUiSource, new RegExp(`uiState\\.${field}`), `resetPreparationUiState 缺少 ${field}`);
+}
+assert.match(game, /import \{ clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState \} from "\.\/src\/ui\/preparationState\.js"/);
+for (const exportedFunction of [
+  "clearPreparationSelectionState",
+  "normalizePreparationUiState",
+  "consumePreparationEnhancementReveal"
+]) {
+  assert.match(preparationStateSource, new RegExp(`export function ${exportedFunction}\\(`));
 }
 const regionRenderer = game.match(/function renderRegionScreen\(\) \{[\s\S]*?\n\}\n\nfunction showCharacterList/)?.[0] || "";
 for (const label of ["遭遇", "難度", "推薦等級", "首領"]) {
@@ -86,7 +97,8 @@ assert.doesNotMatch(regionRenderer, /\["角色"/, "Region overview 不應再把�
 assert.match(regionRenderer, /regionDepartureCharacter\.textContent = `\$\{character\.name\} Lv\.\$\{progress\.level\}`/);
 assert.match(regionRenderer, /regionDepartureGoldItem\.hidden = !phoenixUnlocked/);
 assert.match(regionRenderer, /regionPreparationSection\.hidden = !phoenixUnlocked/);
-assert.match(regionRenderer, /if \(!phoenixUnlocked\) \{[\s\S]*selectedPreparationId = null[\s\S]*preparationDetailId = null[\s\S]*preparationDetailExpanded = false/);
+assert.match(regionRenderer, /normalizePreparationUiState\(\{[\s\S]*uiState,[\s\S]*region,[\s\S]*gold: inventory\.gold,[\s\S]*enabled: phoenixUnlocked[\s\S]*\}\)/);
+assert.doesNotMatch(regionRenderer, /uiState\.(?:selectedPreparationId|enhancedPreparationId|preparationDetailId)\s*=/, "Region renderer 不應直接正規化整備 UI State");
 const selectPreparationSource = game.match(/function selectPreparation\(preparationId\) \{[\s\S]*?\n\}/)?.[0] || "";
 assert.match(selectPreparationSource, /const affordable = !preparation \|\| inventory\.gold >= preparation\.cost/);
 assert.match(selectPreparationSource, /if \(affordable\) \{[\s\S]*uiState\.selectedPreparationId = preparationId/);
@@ -129,6 +141,14 @@ assert.match(game, /facilityBackButton\.addEventListener\("click", \(\) => showS
 assert.match(game, /merchantBackButton\.addEventListener\("click", \(\) => showFacilityList\(uiState\.safeAreaId, uiState\.navigationContext\)\)/);
 const routeEntry = game.match(/function enterAdventureRoute\([\s\S]*?\n}\n/)?.[0] || "";
 assert.doesNotMatch(routeEntry, /runPreparation\s*=\s*null/, "Route 切換不可清除整備 runtime");
+const goblinRouteCompletion = game.match(/function completeGoblinCampRoute\(\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert.match(goblinRouteCompletion, /saveData\.storyFlags\.archerRescued \|\| archerProgress\?\.unlocked/, "重複通關判定必須同時相容故事旗標與角色解鎖狀態");
+assert.match(goblinRouteCompletion, /endingKey = archerAlreadyRescued \? "repeatEnding" : "ending"/, "哥布林營地應依首次／重複通關選擇結尾");
+assert.match(goblinRouteCompletion, /showRouteEnding\(route, \{ endingKey \}\)/);
+const routeEndingCoordinator = game.match(/function showRouteEnding\([\s\S]*?\n\}/)?.[0] || "";
+assert.match(routeEndingCoordinator, /route\?\.\[requestedEndingKey\]\?\.pages\?\.length \? requestedEndingKey : "ending"/, "Route Ending 應安全回退到首次 ending");
+assert.match(routeEndingCoordinator, /routeEndingContext = \{ routeId: route\.id, endingKey, pageIndex: 0 \}/);
+assert.match(game, /const endingKey = state\.routeEndingContext\?\.endingKey \|\| "ending";[\s\S]*return route\?\.\[endingKey\] \|\| route\?\.ending \|\| null;/);
 assert.match(game, /import \{ resetBattleEntryState \} from "\.\/src\/adventure\/battleLifecycle\.js"/);
 assert.match(battleLifecycleSource, /export function resetBattleEntryState\(state, options = \{\}\)/);
 assert.match(battleLifecycleSource, /state\.log = \[\]/);

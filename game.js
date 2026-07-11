@@ -90,6 +90,7 @@ import {
   renderMerchantView
 } from "./src/ui/merchantView.js";
 import { getEnhancementMaterialState, renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
+import { clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState } from "./src/ui/preparationState.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
 import { createDebugRuntimeActions } from "./src/debug/runtimeActions.js";
@@ -523,11 +524,7 @@ function showRegionList(contextId = uiState.navigationContext) {
 }
 
 function resetPreparationUiState() {
-  uiState.selectedPreparationId = null;
-  uiState.enhancedPreparationId = null;
-  uiState.preparationEnhancementRevealId = null;
-  uiState.preparationDetailId = null;
-  uiState.preparationDetailExpanded = false;
+  clearPreparationSelectionState(uiState);
   uiState.runStartNotice = "";
   uiState.runStartLocked = false;
 }
@@ -612,32 +609,12 @@ function renderRegionScreen() {
     const progress = normalizeCharacterProgress(state.selectedHeroId);
     const phoenixUnlocked = hasPhoenixBlessing();
 
-    if (!phoenixUnlocked) {
-      uiState.selectedPreparationId = null;
-      uiState.enhancedPreparationId = null;
-      uiState.preparationEnhancementRevealId = null;
-      uiState.preparationDetailId = null;
-      uiState.preparationDetailExpanded = false;
-    } else {
-      const selectedPreparation = getRegionPreparation(region, uiState.selectedPreparationId);
-      if (uiState.selectedPreparationId && (!selectedPreparation || inventory.gold < selectedPreparation.cost)) {
-        uiState.selectedPreparationId = null;
-        uiState.enhancedPreparationId = null;
-        uiState.preparationEnhancementRevealId = null;
-      }
-      const enhancedPreparation = getRegionPreparation(region, uiState.enhancedPreparationId);
-      if (
-        uiState.enhancedPreparationId
-        && (uiState.enhancedPreparationId !== uiState.selectedPreparationId || !enhancedPreparation?.enhancement)
-      ) {
-        uiState.enhancedPreparationId = null;
-        uiState.preparationEnhancementRevealId = null;
-      }
-      if (uiState.preparationDetailId && !getRegionPreparation(region, uiState.preparationDetailId)) {
-        uiState.preparationDetailId = null;
-        uiState.preparationDetailExpanded = false;
-      }
-    }
+    normalizePreparationUiState({
+      uiState,
+      region,
+      gold: inventory.gold,
+      enabled: phoenixUnlocked
+    });
 
     els.regionDetailName.textContent = region.name;
     els.regionDetailDescription.textContent = region.note
@@ -684,7 +661,7 @@ function renderRegionScreen() {
       const detailPreparation = getRegionPreparation(region, uiState.preparationDetailId);
       const detailAffordable = !detailPreparation || inventory.gold >= detailPreparation.cost;
       const detailEnhanced = detailPreparation?.id === uiState.enhancedPreparationId;
-      const animateEnhancement = detailPreparation?.id === uiState.preparationEnhancementRevealId;
+      const animateEnhancement = consumePreparationEnhancementReveal(uiState, detailPreparation?.id);
       renderPreparationDetail({
         element: els.regionPreparationDetail,
         preparation: detailPreparation,
@@ -701,9 +678,6 @@ function renderRegionScreen() {
         materialDefinitions,
         onToggleEnhancement: togglePreparationEnhancement
       });
-      if (animateEnhancement) {
-        uiState.preparationEnhancementRevealId = null;
-      }
     } else {
       els.regionPreparationChoices.replaceChildren();
       renderPreparationDetail({
@@ -2601,9 +2575,15 @@ function completeGoblinCampRoute() {
   })) {
     throw new Error("哥布林營地 Route completion 條件尚未成立。");
   }
+
+  let endingKey = "ending";
   if (!state.debugBuildRun) {
     const archerProgress = saveData.progression.characters.archer;
+    const archerAlreadyRescued = Boolean(
+      saveData.storyFlags.archerRescued || archerProgress?.unlocked
+    );
     const unlockedArcher = Boolean(archerProgress && !archerProgress.unlocked);
+    endingKey = archerAlreadyRescued ? "repeatEnding" : "ending";
     saveData.storyFlags.archerRescued = true;
     if (archerProgress) {
       archerProgress.unlocked = true;
@@ -2614,11 +2594,13 @@ function completeGoblinCampRoute() {
     unlockAdventureClearAchievements({ regionId: "forest", routeId: route.id });
     recordRunFinished("clear");
   }
-  showRouteEnding(route);
+  showRouteEnding(route, { endingKey });
 }
 
-function showRouteEnding(route = currentRoute()) {
-  const ending = route?.ending;
+function showRouteEnding(route = currentRoute(), options = {}) {
+  const requestedEndingKey = options.endingKey || "ending";
+  const endingKey = route?.[requestedEndingKey]?.pages?.length ? requestedEndingKey : "ending";
+  const ending = route?.[endingKey];
   if (!ending?.pages?.length) {
     finishRun("clear");
     return;
@@ -2627,7 +2609,7 @@ function showRouteEnding(route = currentRoute()) {
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "routeEnding";
-  state.routeEndingContext = { routeId: route.id, pageIndex: 0 };
+  state.routeEndingContext = { routeId: route.id, endingKey, pageIndex: 0 };
   state.blessingContext = "normal";
   state.blessingPoolOverrideId = null;
   clearPendingThreat();
@@ -2642,7 +2624,9 @@ function showRouteEnding(route = currentRoute()) {
 
 function getActiveRouteEnding() {
   const routeId = state.routeEndingContext?.routeId || state.activeRouteId;
-  return getRouteDefinition(routeId)?.ending || null;
+  const endingKey = state.routeEndingContext?.endingKey || "ending";
+  const route = getRouteDefinition(routeId);
+  return route?.[endingKey] || route?.ending || null;
 }
 
 function renderRouteEndingPage() {
