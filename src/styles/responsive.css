@@ -1,6 +1,5 @@
 @media (min-width: 821px) {
-  .menu-layout,
-  .intro-panel {
+  .menu-layout {
     max-width: 700px;
   }
 

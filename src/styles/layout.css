@@ -9,7 +9,6 @@
 .menu-layout,
 .camp-layout,
 .selection-panel,
-.intro-panel,
 .status-panel,
 .log-panel,
 .blessing-dialog,
@@ -90,20 +89,11 @@
   color: var(--gold);
 }
 
-.camp-actions {
-  gap: 10px;
-}
-
 .primary-menu-button {
   border-color: rgba(241, 211, 134, 0.62);
   background:
     linear-gradient(135deg, rgba(241, 211, 134, 0.2), transparent 44%),
     rgba(55, 39, 22, 0.96);
-}
-
-.disabled-menu-button {
-  cursor: not-allowed;
-  opacity: 0.62;
 }
 
 .menu-copy {
@@ -223,17 +213,12 @@
   font-size: 0.9rem;
 }
 
-.selection-panel,
-.intro-panel {
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 30px;
-  text-align: center;
-}
-
 .selection-panel {
   max-width: 760px;
+  margin: 0 auto;
+  padding: 30px;
   border-color: rgba(111, 176, 193, 0.25);
+  text-align: center;
 }
 
 .section-heading {
