@@ -1,8 +1,10 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION, SAVE_KEY, SAVE_SCHEMA_VERSION } from "../config.js";
 import { normalizeInventory } from "./rewards.js";
+import { createDefaultSafeAreaProgression, getCurrentSafeAreaId, migrateSafeAreaProgression, syncSafeAreaUnlocks } from "./safeAreaProgression.js";
 import { achievementDefinitions } from "../data/achievements.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
+import { DEFAULT_SAFE_AREA_ID } from "../data/safeAreas.js";
 import { toSafeInteger } from "../utils.js";
 
 export function createDefaultSave() {
@@ -18,7 +20,8 @@ export function createDefaultSave() {
     },
     progression: {
       regions: createDefaultRegionProgression(),
-      characters: createDefaultCharacterProgression()
+      characters: createDefaultCharacterProgression(),
+      safeAreas: createDefaultSafeAreaProgression()
     },
     inventory: {
       gold: 0,
@@ -46,6 +49,7 @@ export function createDefaultSave() {
     settings: {
       selectedRegionId: DEFAULT_REGION_ID,
       selectedCharacterId: DEFAULT_CHARACTER_ID,
+      currentSafeAreaId: DEFAULT_SAFE_AREA_ID,
       musicEnabled: true,
       musicVolume: 0.35
     }
@@ -93,11 +97,22 @@ export function migrateSave(rawSave, options = {}) {
   migrateStatistics(save, rawSave, { rawSchemaVersion });
   migrateProgression(save, rawSave, { rawSchemaVersion });
   migrateCharacterUnlocks(save);
+  save.progression.safeAreas = migrateSafeAreaProgression(rawSave);
+  syncSafeAreaUnlocks(save);
 
   save.settings.selectedRegionId = regionDefinitions[rawSave.settings?.selectedRegionId] ? rawSave.settings.selectedRegionId : DEFAULT_REGION_ID;
   save.settings.selectedCharacterId = isUnlockedCharacter(save, rawSave.settings?.selectedCharacterId)
     ? rawSave.settings.selectedCharacterId
     : DEFAULT_CHARACTER_ID;
+  save.settings.currentSafeAreaId = getCurrentSafeAreaId({
+    ...save,
+    settings: {
+      ...save.settings,
+      currentSafeAreaId: rawSave.settings?.currentSafeAreaId
+        || rawSave.currentSafeAreaId
+        || rawSave.world?.currentSafeAreaId
+    }
+  });
   save.settings.musicEnabled = typeof rawSave.settings?.musicEnabled === "boolean"
     ? rawSave.settings.musicEnabled
     : save.settings.musicEnabled;

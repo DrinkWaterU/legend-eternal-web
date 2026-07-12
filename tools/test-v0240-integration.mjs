@@ -108,7 +108,7 @@ assert.match(game, /function resetFailedPlayerRunStart\(\) \{\s*resetAdventureRu
 assert.match(game, /function resetAdventureRuntimeAfterSaveImport\(\) \{\s*resetAdventureRunRuntime\(\{ clearLastRunSummary: true \}\)/);
 assert.match(game, /function deleteSave\(\)[\s\S]*?resetAdventureRunRuntime\(\{ clearLastRunSummary: true \}\)[\s\S]*?resetPreparationUiState\(\)/);
 assert.match(game, /function restart\(\) \{\s*resetAdventureRunRuntime\(\)[\s\S]*?showScreen\("menuScreen"\)/);
-assert.match(game, /function returnToCamp\(\) \{\s*resetAdventureRunRuntime\(\)[\s\S]*?showScreen\("campScreen"\)/);
+assert.match(game, /function returnToCamp\(\) \{[\s\S]*?activateSafeArea\(DEFAULT_SAFE_AREA_ID\);[\s\S]*?resetAdventureRunRuntime\(\)[\s\S]*?showScreen\("campScreen"\)/);
 assert.match(game, /modifyPoisonDamage: \(\{ damage \}\) => modifyPoisonDamageFromPreparation\(damage\)/);
 assert.match(game, /modifyDirectDamage: modifyIncomingDirectDamage/);
 assert.match(game, /runPreparationOpeningAction\(\{[\s\S]*encounterType: state\.battleEncounterType[\s\S]*finally|runPreparationOpeningAction\(\{/);

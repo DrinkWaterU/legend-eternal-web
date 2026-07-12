@@ -27,7 +27,7 @@ const [
   readFile(new URL("../src/config.js", import.meta.url), "utf8")
 ]);
 
-assert.match(config, /SAVE_SCHEMA_VERSION = 6/);
+assert.match(config, /SAVE_SCHEMA_VERSION = 7/);
 
 const expectedEnhancements = {
   "simple-bandage": {

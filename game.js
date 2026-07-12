@@ -56,6 +56,7 @@ import {
   runPreparationOpeningAction
 } from "./src/core/preparations.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
+import { getCurrentSafeAreaId, isSafeAreaUnlocked, setCurrentSafeArea, syncSafeAreaUnlocks } from "./src/core/safeAreaProgression.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
 import { achievementDefinitions } from "./src/data/achievements.js";
 import { getAllIndependentBlessings, getBlessingPool } from "./src/data/blessings/index.js";
@@ -191,6 +192,7 @@ const uiState = {
 };
 
 let saveData = loadSave();
+syncSafeAreaUiFromSave();
 let pendingSaveCodeImport = null;
 const musicManager = createMusicManager({ trackDefinitions: musicDefinitions });
 let eventRuntime = null;
@@ -801,6 +803,19 @@ function renderStorageScreen() {
   });
 }
 
+function syncSafeAreaUiFromSave() {
+  uiState.safeAreaId = getCurrentSafeAreaId(saveData);
+}
+
+function activateSafeArea(safeAreaId) {
+  const previousSafeAreaId = getCurrentSafeAreaId(saveData);
+  setCurrentSafeArea(saveData, safeAreaId);
+  uiState.safeAreaId = safeAreaId;
+  if (previousSafeAreaId !== safeAreaId) {
+    saveGameSafe();
+  }
+}
+
 function getCurrentSafeArea() {
   return getSafeAreaDefinition(uiState.safeAreaId) || getSafeAreaDefinition(DEFAULT_SAFE_AREA_ID);
 }
@@ -818,8 +833,11 @@ function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.n
   if (!safeArea) {
     throw new Error(`找不到安全區 definition：${safeAreaId || "(empty)"}`);
   }
+  if (!isSafeAreaUnlocked(saveData, safeArea.id)) {
+    throw new Error(`安全區尚未解鎖：${safeArea.id}`);
+  }
+  activateSafeArea(safeArea.id);
   setNavigationContext(contextId);
-  uiState.safeAreaId = safeArea.id;
   uiState.facilityView = "list";
   merchantController.reset();
   showScreen("facilityScreen");
@@ -1193,6 +1211,7 @@ function recordRunFinished(outcome) {
     stats.totalDefeats += 1;
   }
 
+  syncSafeAreaUnlocks(saveData);
   state.runResultRecorded = true;
   saveGameSafe();
 }
@@ -1368,6 +1387,7 @@ function confirmImportSaveCode() {
   }
 
   saveData = migrateSave(pendingSaveCodeImport, { persist: true });
+  syncSafeAreaUiFromSave();
   pendingSaveCodeImport = null;
   resetAdventureRuntimeAfterSaveImport();
   syncSelectionFromSave();
@@ -1426,6 +1446,7 @@ function deleteSave() {
     // The in-memory reset still keeps the page usable if storage is blocked.
   }
   saveData = createDefaultSave();
+  syncSafeAreaUiFromSave();
   resetAdventureRunRuntime({ clearLastRunSummary: true });
   resetPreparationUiState();
   saveGameSafe();
@@ -1762,6 +1783,7 @@ function restart() {
 }
 
 function returnToCamp() {
+  activateSafeArea(DEFAULT_SAFE_AREA_ID);
   resetAdventureRunRuntime();
   resetPreparationUiState();
   syncSelectionFromSave();
@@ -3187,6 +3209,7 @@ const debugActions = createDebugRuntimeActions({
   getSaveData: () => saveData,
   replaceSaveData: (nextSaveData) => {
     saveData = nextSaveData;
+    syncSafeAreaUiFromSave();
   },
   isDebugModeEnabled,
   getCharacterDefinition,

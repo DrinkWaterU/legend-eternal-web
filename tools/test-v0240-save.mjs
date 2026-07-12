@@ -34,6 +34,9 @@ assert.equal(migrated.inventory.materials.poison_sac.quantity, 3);
 assert.equal(migrated.settings.selectedRegionId, "forest");
 assert.equal("selectedPreparationId" in migrated.settings, false);
 assert.equal("safeAreaId" in migrated.settings, false);
+assert.equal(migrated.settings.currentSafeAreaId, "camp");
+assert.equal(migrated.progression.safeAreas.camp.unlocked, true);
+assert.equal(migrated.progression.safeAreas["anping-town"].unlocked, false);
 assert.equal("runPreparation" in migrated, false);
 
 sellMaterial({
