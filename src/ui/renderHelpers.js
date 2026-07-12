@@ -127,21 +127,6 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
   }, revealCompleteDelay);
 }
 
-export function renderCurrentStats(element, hero) {
-  renderStatList(element, [
-    ["角色等級", `Lv. ${hero.level || 1}`],
-    ["經驗", `${hero.exp || 0} / ${hero.expToNext || "-"}`],
-    ["攻擊", hero.attack + (hero.battleAttackBonus || 0)],
-    ["防禦", hero.defense],
-    ["暴擊", `${Math.round((hero.critChance + (hero.battleCritBonus || 0)) * 100)}%`],
-    ["逃跑", `${hero.fleesRemaining ?? 0} 次`],
-    ["護盾", hero.shield || 0],
-    ["中毒", hero.poison || 0],
-    ["技能", Array.isArray(hero.skills) ? hero.skills.length : 0],
-    ["祝福", hero.blessings.length]
-  ]);
-}
-
 export function renderBattleLog(element, log) {
   element.innerHTML = "";
   log.slice(-80).reverse().forEach((entry) => {
@@ -153,7 +138,3 @@ export function renderBattleLog(element, log) {
   element.scrollTop = 0;
 }
 
-export function setMeter(element, value, max) {
-  const ratio = Math.max(0, Math.min(1, value / max));
-  element.style.width = `${Math.round(ratio * 100)}%`;
-}

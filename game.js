@@ -76,7 +76,7 @@ import { renderCharacterCards } from "./src/ui/characterSelectView.js";
 import { initDebugPanel } from "./src/ui/debugPanel.js";
 import { renderBlessingInfoView } from "./src/ui/blessingInfoView.js";
 import { renderCombatView, renderCurrentAbilityView } from "./src/ui/combatView.js";
-import { hideEventTransition, renderRouteEndingView, showCombatLayout } from "./src/ui/eventView.js";
+import { renderRouteEndingView, showCombatLayout } from "./src/ui/eventView.js";
 import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatList } from "./src/ui/renderHelpers.js";
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderFacilityListView } from "./src/ui/facilityView.js";

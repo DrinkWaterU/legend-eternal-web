@@ -395,14 +395,6 @@ export function applyEnemyEndOfTurnRecoveryEffects({ enemy, turn, log }) {
   }
 }
 
-export function applyEndOfTurnEffects({ hero, enemy, turn, log, modifyPoisonDamage = null }) {
-  const { heroDeathCause } = applyHeroEndOfTurnNegativeEffects({ hero, log, modifyPoisonDamage });
-  applyEnemyEndOfTurnNegativeEffects({ enemy, log });
-  applyHeroEndOfTurnRecoveryEffects({ hero, turn, log });
-  applyEnemyEndOfTurnRecoveryEffects({ enemy, turn, log });
-  return { heroDeathCause };
-}
-
 function calculateHeroPoisonDamage(hero) {
   const poison = Math.max(0, Number(hero.poison) || 0);
   const damageReduction = Number(hero.damageReduction) || 0;
