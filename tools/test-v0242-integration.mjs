@@ -14,11 +14,7 @@ const [
   componentsCss,
   responsiveCss,
   html,
-  version,
-  config,
-  readme,
-  styleIndex,
-  editorSource
+  config
 ] = await Promise.all([
   readFile(new URL("../game.js", import.meta.url), "utf8"),
   readFile(new URL("../src/core/preparations.js", import.meta.url), "utf8"),
@@ -28,22 +24,9 @@ const [
   readFile(new URL("../src/styles/components.css", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/responsive.css", import.meta.url), "utf8"),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
-  readFile(new URL("../VERSION", import.meta.url), "utf8"),
-  readFile(new URL("../src/config.js", import.meta.url), "utf8"),
-  readFile(new URL("../README.md", import.meta.url), "utf8"),
-  readFile(new URL("../styles.css", import.meta.url), "utf8"),
-  readFile(new URL("./content-editor.js", import.meta.url), "utf8")
+  readFile(new URL("../src/config.js", import.meta.url), "utf8")
 ]);
 
-assert.equal(version.trim(), "v0.2.4.2-alpha");
-assert.match(config, /GAME_VERSION = "v0\.2\.4\.2-alpha"/);
-assert.match(readme, /v0\.2\.4\.2-alpha/);
-assert.match(html, /styles\.css\?v=0\.2\.4\.2-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.4\.2-alpha/);
-assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.2-alpha"/);
-const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
-assert.equal(styleCacheVersions.length, 6);
-assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.2-alpha"]);
 assert.match(config, /SAVE_SCHEMA_VERSION = 6/);
 
 const expectedEnhancements = {

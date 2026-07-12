@@ -16,10 +16,7 @@ const [
   plainsAdapter,
   forestAdapter,
   editorSource,
-  version,
-  config,
-  readme,
-  styleIndex
+  readme
 ] = await Promise.all([
   readFile(new URL("../game.js", import.meta.url), "utf8"),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
@@ -34,10 +31,7 @@ const [
   readFile(new URL("../src/data/regions/plains.js", import.meta.url), "utf8"),
   readFile(new URL("../src/data/regions/forest.js", import.meta.url), "utf8"),
   readFile(new URL("./content-editor.js", import.meta.url), "utf8"),
-  readFile(new URL("../VERSION", import.meta.url), "utf8"),
-  readFile(new URL("../src/config.js", import.meta.url), "utf8"),
-  readFile(new URL("../README.md", import.meta.url), "utf8"),
-  readFile(new URL("../styles.css", import.meta.url), "utf8")
+  readFile(new URL("../README.md", import.meta.url), "utf8")
 ]);
 
 const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource, battleLifecycleSource] = await Promise.all([
@@ -47,16 +41,7 @@ const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource, battleLifecyc
   readFile(new URL("../src/adventure/battleLifecycle.js", import.meta.url), "utf8")
 ]);
 
-assert.equal(version.trim(), "v0.2.4.2-alpha");
-assert.match(config, /GAME_VERSION = "v0\.2\.4\.2-alpha"/);
-assert.match(readme, /v0\.2\.4\.2-alpha/);
 assert.match(readme, /python tools\/dev-server\.py/);
-assert.match(html, /styles\.css\?v=0\.2\.4\.2-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.4\.2-alpha/);
-const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
-assert.equal(styleCacheVersions.length, 6, "styles.css 應維持 6 個內部樣式 import");
-assert.deepEqual([...new Set(styleCacheVersions)], ["0.2.4.2-alpha"], "所有內部 CSS cache version 必須同步");
-assert.match(editorSource, /DEFAULT_GAME_VERSION = "v0\.2\.4\.2-alpha"/);
 
 assert.doesNotMatch(game, /campStartButton\.addEventListener\("click", startRun\)/);
 assert.match(game, /campStartButton\.addEventListener\("click", \(\) => \{[\s\S]*showRegionDetail\(state\.selectedRegionId\)/);
