@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { sellMaterial, sellMaterials, spendGold, spendInventoryCost } from "../src/core/commerce.js";
+import { normalizeInventory } from "../src/core/rewards.js";
 
 const definitions = {
   gel: { id: "gel", name: "凝膠", sellPrice: 2 },
@@ -210,6 +211,28 @@ for (const request of [
     sales: [{ materialId: "gel", quantity: 1 }]
   }), /安全處理範圍/);
   assert.deepEqual(inventory, before, "交易後金幣溢位不得產生 mutation");
+}
+
+
+{
+  const inventory = normalizeInventory({
+    gold: 6.5,
+    materials: {
+      gel: { name: "凝膠", quantity: 3 },
+      decimal: { name: "小數素材", quantity: 1.5 },
+      negative: { name: "負數素材", quantity: -1 },
+      unsafe: { name: "過大素材", quantity: Number.MAX_SAFE_INTEGER + 1 }
+    }
+  });
+  assert.equal(inventory.gold, 0, "Inventory 金幣必須正規化為非負 safe integer");
+  assert.deepEqual(Object.keys(inventory.materials), ["gel"]);
+  assert.equal(inventory.materials.gel.quantity, 3);
+  assert.doesNotThrow(() => sellMaterial({
+    inventory,
+    materialDefinitions: definitions,
+    materialId: "gel",
+    quantity: 1
+  }), "正規化後的 inventory 應可直接交給 Commerce");
 }
 
 console.log("Commerce isolation tests passed.");

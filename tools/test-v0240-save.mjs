@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 import { sellMaterial, spendGold } from "../src/core/commerce.js";
-import { SAVE_SCHEMA_VERSION } from "../src/config.js";
+import { GAME_VERSION, SAVE_SCHEMA_VERSION } from "../src/config.js";
 import { migrateSave } from "../src/core/storage.js";
 import { materialDefinitions } from "../src/data/materials.js";
 
@@ -27,7 +27,7 @@ const legacySave = {
 };
 
 const migrated = migrateSave(structuredClone(legacySave));
-assert.equal(migrated.gameVersion, "v0.2.4.2-alpha");
+assert.equal(migrated.gameVersion, GAME_VERSION);
 assert.equal(migrated.inventory.gold, 37);
 assert.equal(migrated.inventory.materials.slime_gel.quantity, 12);
 assert.equal(migrated.inventory.materials.poison_sac.quantity, 3);
@@ -54,5 +54,91 @@ assert.equal(afterSaleReload.inventory.gold, 31);
 const afterPreparationPaymentReload = migrateSave(structuredClone(afterSaleReload));
 assert.equal(afterPreparationPaymentReload.inventory.gold, 31);
 assert.equal(afterPreparationPaymentReload.inventory.materials.poison_sac.quantity, 3);
+
+
+const malformedSave = {
+  schemaVersion: SAVE_SCHEMA_VERSION,
+  gameVersion: "external-test",
+  inventory: {
+    gold: 12.5,
+    materials: {
+      slime_gel: { id: "slime_gel", name: "史萊姆凝膠", quantity: 4 },
+      poison_sac: { id: "poison_sac", name: "毒囊", quantity: 2.5 },
+      unsafe: { id: "unsafe", name: "異常素材", quantity: Number.MAX_SAFE_INTEGER + 1 }
+    }
+  },
+  statistics: {
+    totalRuns: 3.5,
+    totalDefeats: -1,
+    totalClears: Number.POSITIVE_INFINITY,
+    highestRunLevel: 7.25,
+    regions: {
+      forest: {
+        runs: 9.5,
+        clears: 2,
+        retreats: 1.5,
+        bestEncounter: Number.MAX_SAFE_INTEGER + 1,
+        routeClears: {
+          main: 1.5,
+          goblinCamp: 2
+        }
+      }
+    },
+    characters: {
+      adventurer: {
+        runs: 5.5,
+        clears: 2,
+        retreats: -1,
+        highestRunLevel: Number.NaN
+      }
+    }
+  },
+  progression: {
+    regions: {
+      forest: { unlocked: true }
+    },
+    characters: {
+      adventurer: {
+        unlocked: true,
+        level: 8.5,
+        exp: Number.MAX_SAFE_INTEGER + 1,
+        learnedSkills: []
+      }
+    }
+  },
+  settings: {
+    selectedRegionId: "forest",
+    selectedCharacterId: "adventurer"
+  }
+};
+
+const normalizedMalformedSave = migrateSave(structuredClone(malformedSave));
+assert.equal(normalizedMalformedSave.inventory.gold, 0, "小數金幣應回退為安全整數");
+assert.equal(normalizedMalformedSave.inventory.materials.slime_gel.quantity, 4);
+assert.equal("poison_sac" in normalizedMalformedSave.inventory.materials, false, "小數素材數量不應進入 inventory");
+assert.equal("unsafe" in normalizedMalformedSave.inventory.materials, false, "unsafe integer 素材數量不應進入 inventory");
+assert.equal(normalizedMalformedSave.statistics.totalRuns, 0);
+assert.equal(normalizedMalformedSave.statistics.totalDefeats, 0);
+assert.equal(normalizedMalformedSave.statistics.totalClears, 0);
+assert.equal(normalizedMalformedSave.statistics.highestRunLevel, 1);
+assert.equal(normalizedMalformedSave.statistics.regions.forest.runs, 0);
+assert.equal(normalizedMalformedSave.statistics.regions.forest.clears, 2);
+assert.equal(normalizedMalformedSave.statistics.regions.forest.retreats, 0);
+assert.equal(normalizedMalformedSave.statistics.regions.forest.bestEncounter, 0);
+assert.equal(normalizedMalformedSave.statistics.regions.forest.routeClears.main, 0);
+assert.equal(normalizedMalformedSave.statistics.regions.forest.routeClears.goblinCamp, 2);
+assert.equal(normalizedMalformedSave.progression.characters.adventurer.level, 1);
+assert.equal(normalizedMalformedSave.progression.characters.adventurer.exp, 0);
+
+sellMaterial({
+  inventory: normalizedMalformedSave.inventory,
+  materialDefinitions,
+  materialId: "slime_gel",
+  quantity: 1
+});
+assert.equal(normalizedMalformedSave.inventory.gold, 1, "正規化後應能正常出售素材");
+assert.equal(normalizedMalformedSave.inventory.materials.slime_gel.quantity, 3);
+spendGold(normalizedMalformedSave.inventory, 1);
+assert.equal(normalizedMalformedSave.inventory.gold, 0, "正規化後應能正常支付金幣");
 
 console.log("v0.2.4.0 save compatibility and economy persistence tests passed.");

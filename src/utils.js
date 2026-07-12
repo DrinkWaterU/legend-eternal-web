@@ -33,5 +33,5 @@ export function toSafeNumber(value, fallback = 0) {
 }
 
 export function toSafeInteger(value, fallback = 0) {
-  return Number.isInteger(value) && value >= 0 ? value : fallback;
+  return Number.isSafeInteger(value) && value >= 0 ? value : fallback;
 }
