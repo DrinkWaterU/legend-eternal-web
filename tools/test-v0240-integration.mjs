@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
+const normalizeNewlines = (source) => source.replace(/\r\n?/g, "\n");
+
 const [
   game,
   html,
@@ -17,7 +19,7 @@ const [
   forestAdapter,
   editorSource,
   readme
-] = await Promise.all([
+] = (await Promise.all([
   readFile(new URL("../game.js", import.meta.url), "utf8"),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/dom.js", import.meta.url), "utf8"),
@@ -32,14 +34,14 @@ const [
   readFile(new URL("../src/data/regions/forest.js", import.meta.url), "utf8"),
   readFile(new URL("./content-editor.js", import.meta.url), "utf8"),
   readFile(new URL("../README.md", import.meta.url), "utf8")
-]);
+])).map(normalizeNewlines);
 
-const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource, battleLifecycleSource] = await Promise.all([
+const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource, battleLifecycleSource] = (await Promise.all([
   readFile(new URL("../src/adventure/eventRuntime.js", import.meta.url), "utf8"),
   readFile(new URL("../src/debug/runtimeActions.js", import.meta.url), "utf8"),
   readFile(new URL("../src/adventure/runLifecycle.js", import.meta.url), "utf8"),
   readFile(new URL("../src/adventure/battleLifecycle.js", import.meta.url), "utf8")
-]);
+])).map(normalizeNewlines);
 
 assert.match(readme, /python tools\/dev-server\.py/);
 

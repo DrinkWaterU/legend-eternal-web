@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
+const normalizeNewlines = (source) => source.replace(/\r\n?/g, "\n");
+
 const root = new URL("../", import.meta.url);
-const [debugPanel, runtimeActions, game] = await Promise.all([
+const [debugPanel, runtimeActions, game] = (await Promise.all([
   readFile(new URL("src/ui/debugPanel.js", root), "utf8"),
   readFile(new URL("src/debug/runtimeActions.js", root), "utf8"),
   readFile(new URL("game.js", root), "utf8")
-]);
+])).map(normalizeNewlines);
 
 for (const action of [
   "prepare-safe-area",
