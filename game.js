@@ -6,6 +6,12 @@ import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
 import { spendInventoryCost } from "./src/core/commerce.js";
 import {
+  equipWeapon,
+  getOwnedCompatibleWeapons,
+  resolveEquippedWeapon,
+  unequipWeapon
+} from "./src/core/equipment.js";
+import {
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
   applyHeroEndOfTurnNegativeEffects,
@@ -71,6 +77,11 @@ import { getAllIndependentBlessings, getBlessingPool } from "./src/data/blessing
 import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
 import { assertFacilityDefinitions, facilityDefinitions, getFacilityDefinition } from "./src/data/facilities.js";
 import { materialDefinitions } from "./src/data/materials.js";
+import {
+  assertWeaponDefinitions,
+  weaponCategoryDefinitions,
+  weaponDefinitions
+} from "./src/data/weapons.js";
 import { ambientAudioDefinitions } from "./src/data/ambientAudio.js";
 import { ANPING_ARRIVAL_TIMING, anpingArrivalPages } from "./src/data/anpingArrival.js";
 import { musicDefinitions } from "./src/data/music.js";
@@ -91,6 +102,7 @@ import { templates } from "./src/data/templates.js";
 import { els } from "./src/ui/dom.js";
 import { renderCharacterSkills } from "./src/ui/characterSkillsView.js";
 import { renderCharacterCards } from "./src/ui/characterSelectView.js";
+import { renderCharacterEquipmentView } from "./src/ui/characterEquipmentView.js";
 import { initDebugPanel } from "./src/ui/debugPanel.js";
 import { renderBlessingInfoView } from "./src/ui/blessingInfoView.js";
 import { renderCombatView, renderCurrentAbilityView } from "./src/ui/combatView.js";
@@ -99,6 +111,7 @@ import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatLis
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderFacilityListView } from "./src/ui/facilityView.js";
 import { createMerchantController } from "./src/ui/merchantController.js";
+import { createBlacksmithController } from "./src/ui/blacksmithController.js";
 import { getEnhancementMaterialState, renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
 import { clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState } from "./src/ui/preparationState.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
@@ -198,6 +211,9 @@ const uiState = {
   regionView: "list",
   characterView: "list",
   characterDetailId: DEFAULT_CHARACTER_ID,
+  equipmentPreviewWeaponId: null,
+  equipmentNotice: "",
+  equipmentNoticeType: "status",
   statisticsView: "overview",
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID,
@@ -225,7 +241,8 @@ const ambientManager = createMusicManager({
 let eventRuntime = null;
 
 const FACILITY_ACTION_HANDLERS = Object.freeze({
-  merchant: showMerchantFacility
+  merchant: showMerchantFacility,
+  blacksmith: showBlacksmithFacility
 });
 
 const merchantController = createMerchantController({
@@ -236,7 +253,18 @@ const merchantController = createMerchantController({
   saveInventory: saveGameSafe
 });
 
+const blacksmithController = createBlacksmithController({
+  els,
+  weaponDefinitions,
+  weaponCategoryDefinitions,
+  materialDefinitions,
+  getInventory: () => saveData.inventory,
+  getSafeArea: getCurrentSafeArea,
+  saveInventory: saveGameSafe
+});
+
 assertFacilityDefinitions(facilityDefinitions);
+assertWeaponDefinitions(weaponDefinitions, { materialDefinitions });
 assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
 Object.values(regionDefinitions).forEach(assertRegionPreparations);
 Object.values(facilityDefinitions).forEach((facility) => {
@@ -506,7 +534,9 @@ function showScreen(screenId) {
   if (screenId === "facilityScreen") {
     els.resultLabel.textContent = uiState.facilityView === "merchant"
       ? "旅行商人"
-      : getCurrentSafeArea()?.placesTitle || "安全區去處";
+      : uiState.facilityView === "blacksmith"
+        ? "鐵匠鋪"
+        : getCurrentSafeArea()?.placesTitle || "安全區去處";
     els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
     renderFacilityScreen();
   }
@@ -801,6 +831,32 @@ function showCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
   }
   uiState.characterDetailId = characterId;
   uiState.characterView = "detail";
+  uiState.equipmentNotice = "";
+  showScreen("characterScreen");
+}
+
+function showCharacterEquipment(characterId = uiState.characterDetailId) {
+  if (!isCharacterUnlocked(characterId)) {
+    showLockedCharacterHint();
+    return;
+  }
+  uiState.characterDetailId = characterId;
+  uiState.characterView = "equipment";
+  uiState.equipmentNotice = "";
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const equippedWeapon = resolveEquippedWeapon({
+    character,
+    progress,
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+  const ownedWeapons = getOwnedCompatibleWeapons({
+    character,
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+  uiState.equipmentPreviewWeaponId = equippedWeapon?.id || ownedWeapons[0]?.id || null;
   showScreen("characterScreen");
 }
 
@@ -824,9 +880,76 @@ function selectCharacterFromDetail() {
   renderCharacterScreen();
 }
 
+function selectEquipmentPreview(weaponId) {
+  if (!weaponDefinitions[weaponId]) {
+    return;
+  }
+  uiState.equipmentPreviewWeaponId = weaponId;
+  uiState.equipmentNotice = "";
+  renderCharacterScreen();
+}
+
+function equipCharacterWeapon(weaponId) {
+  const characterId = uiState.characterDetailId;
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const previousWeaponId = progress.equipment?.weaponId || null;
+  try {
+    const weapon = equipWeapon({
+      character,
+      progress,
+      inventory: saveData.inventory,
+      weaponDefinitions,
+      weaponId
+    });
+    if (!saveGameSafe()) {
+      progress.equipment = { weaponId: previousWeaponId };
+      throw new Error("瀏覽器無法保存裝備變更，已恢復原本武器。");
+    }
+    uiState.equipmentPreviewWeaponId = weapon.id;
+    uiState.equipmentNotice = `已為${character.name}裝備${weapon.name}。下一輪冒險開始時生效。`;
+    uiState.equipmentNoticeType = "status";
+  } catch (error) {
+    uiState.equipmentNotice = error instanceof Error ? error.message : "裝備武器失敗。";
+    uiState.equipmentNoticeType = "error";
+  }
+  renderCharacterScreen();
+}
+
+function unequipCharacterWeapon() {
+  const characterId = uiState.characterDetailId;
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const previousWeaponId = unequipWeapon(progress);
+  const previousWeapon = weaponDefinitions[previousWeaponId];
+  if (!saveGameSafe()) {
+    progress.equipment = { weaponId: previousWeaponId };
+    uiState.equipmentNotice = "瀏覽器無法保存卸下結果，已恢復原本武器。";
+    uiState.equipmentNoticeType = "error";
+    renderCharacterScreen();
+    return;
+  }
+  uiState.equipmentNotice = previousWeapon
+    ? `已卸下${previousWeapon.name}。下一輪冒險開始時生效。`
+    : "目前沒有已裝備的武器。";
+  uiState.equipmentNoticeType = "status";
+  renderCharacterScreen();
+}
+
+function buildHeroPreviewForWeapon(characterId, weaponId) {
+  const character = characterDefinitions[characterId];
+  const progress = clone(normalizeCharacterProgress(characterId));
+  progress.equipment = { weaponId: weaponId || null };
+  return buildHeroFromProgressionCore(character, progress, {
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+}
+
 function renderCharacterScreen() {
   els.characterListView.classList.toggle("is-active", uiState.characterView === "list");
   els.characterDetailView.classList.toggle("is-active", uiState.characterView === "detail");
+  els.characterEquipmentView.classList.toggle("is-active", uiState.characterView === "equipment");
   setReturnButton(els.characterListView.querySelector(".back-button"), getNavigationReturnTarget());
 
   renderCharacterCards({
@@ -838,14 +961,25 @@ function renderCharacterScreen() {
     onLockedCharacterClick: showLockedCharacterHint
   });
 
+  if (uiState.characterView === "list") {
+    return;
+  }
+
+  const characterId = isCharacterUnlocked(uiState.characterDetailId)
+    ? uiState.characterDetailId
+    : saveData.settings.selectedCharacterId;
+  uiState.characterDetailId = characterId;
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const preview = buildHeroFromProgression(characterId);
+  const equippedWeapon = resolveEquippedWeapon({
+    character,
+    progress,
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+
   if (uiState.characterView === "detail") {
-    const characterId = isCharacterUnlocked(uiState.characterDetailId)
-      ? uiState.characterDetailId
-      : saveData.settings.selectedCharacterId;
-    uiState.characterDetailId = characterId;
-    const character = characterDefinitions[characterId];
-    const preview = buildHeroFromProgression(characterId);
-    const progress = getCharacterProgress(characterId);
     const selected = characterId === saveData.settings.selectedCharacterId;
     els.characterDetailName.textContent = character.name;
     els.characterDetailRole.textContent = character.role || "";
@@ -859,6 +993,7 @@ function renderCharacterScreen() {
       ["防禦", preview.defense],
       ["暴擊", `${Math.round(preview.critChance * 100)}%`]
     ]);
+    els.characterDetailWeaponName.textContent = equippedWeapon?.name || "未裝備武器";
     renderCharacterSkills({
       learnedListElement: els.characterSkillList,
       nextSkillElement: els.characterNextSkillPanel,
@@ -868,7 +1003,39 @@ function renderCharacterScreen() {
     });
     els.selectCharacterButton.textContent = selected ? "目前使用中" : `使用${character.name}`;
     els.selectCharacterButton.disabled = selected;
+    return;
   }
+
+  const ownedWeapons = getOwnedCompatibleWeapons({
+    character,
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+  const selectedWeapon = ownedWeapons.find((weapon) => weapon.id === uiState.equipmentPreviewWeaponId)
+    || equippedWeapon
+    || ownedWeapons[0]
+    || null;
+  uiState.equipmentPreviewWeaponId = selectedWeapon?.id || null;
+  const equipmentPreview = selectedWeapon
+    ? buildHeroPreviewForWeapon(characterId, selectedWeapon.id)
+    : preview;
+
+  renderCharacterEquipmentView({
+    els,
+    character,
+    progress,
+    equippedWeapon,
+    selectedWeapon,
+    ownedWeapons,
+    weaponCategoryDefinitions,
+    currentHero: preview,
+    previewHero: equipmentPreview,
+    notice: uiState.equipmentNotice,
+    noticeType: uiState.equipmentNoticeType,
+    onWeaponSelect: selectEquipmentPreview,
+    onEquip: equipCharacterWeapon,
+    onUnequip: unequipCharacterWeapon
+  });
 }
 
 function renderStorageScreen() {
@@ -1039,12 +1206,19 @@ function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.n
   setNavigationContext(contextId);
   uiState.facilityView = "list";
   merchantController.reset();
+  blacksmithController.reset();
   showScreen("facilityScreen");
 }
 
 function showMerchantFacility() {
   uiState.facilityView = "merchant";
   merchantController.reset();
+  showScreen("facilityScreen");
+}
+
+function showBlacksmithFacility() {
+  uiState.facilityView = "blacksmith";
+  blacksmithController.reset();
   showScreen("facilityScreen");
 }
 
@@ -1061,6 +1235,7 @@ function renderFacilityScreen() {
   const facilities = getAvailableFacilities(safeArea);
   els.facilityListView.classList.toggle("is-active", uiState.facilityView === "list");
   els.merchantView.classList.toggle("is-active", uiState.facilityView === "merchant");
+  els.blacksmithView.classList.toggle("is-active", uiState.facilityView === "blacksmith");
 
   if (uiState.facilityView === "list") {
     renderFacilityListView({
@@ -1072,7 +1247,11 @@ function renderFacilityScreen() {
     return;
   }
 
-  merchantController.render();
+  if (uiState.facilityView === "merchant") {
+    merchantController.render();
+    return;
+  }
+  blacksmithController.render();
 }
 
 function selectPreparation(preparationId) {
@@ -1240,7 +1419,10 @@ function normalizeCharacterProgress(characterId = state.selectedHeroId) {
 function buildHeroFromProgression(characterId = state.selectedHeroId) {
   const character = getCharacterDefinition(characterId);
   const progress = normalizeCharacterProgress(characterId);
-  return buildHeroFromProgressionCore(character, progress);
+  return buildHeroFromProgressionCore(character, progress, {
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
 }
 
 function gainCharacterExp(amount) {
@@ -3315,6 +3497,7 @@ function closeTransientUiPanels() {
   closeLockedCharacterHint();
   closeMaterialInfoPanel();
   merchantController.closeSaleDialog();
+  blacksmithController.closeCraftDialog();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
   closeAbilityInfoPanel();
@@ -3576,8 +3759,11 @@ function bindEvents() {
   els.storageBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
   els.facilityBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
   els.merchantBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
+  els.blacksmithBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
   els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
+  els.backToCharacterDetailButton.addEventListener("click", () => showCharacterDetail(uiState.characterDetailId));
+  els.openCharacterEquipmentButton.addEventListener("click", () => showCharacterEquipment(uiState.characterDetailId));
   els.statisticsTabs.forEach((button) => {
     button.addEventListener("click", () => showStatisticsView(button.dataset.statisticsView));
   });
@@ -3624,9 +3810,11 @@ function bindEvents() {
   els.closeSkillInfoButton.addEventListener("click", closeSkillPanel);
   els.closeMaterialInfoButton.addEventListener("click", closeMaterialInfoPanel);
   els.closeMerchantSaleButton.addEventListener("click", merchantController.closeSaleDialog);
+  els.closeBlacksmithCraftButton.addEventListener("click", blacksmithController.closeCraftDialog);
   [
     [els.skillInfoPanel, closeSkillPanel],
     [els.merchantSalePanel, merchantController.closeSaleDialog],
+    [els.blacksmithCraftPanel, blacksmithController.closeCraftDialog],
     [els.materialInfoPanel, closeMaterialInfoPanel],
     [els.abilityInfoPanel, closeAbilityInfoPanel],
     [els.blessingInfoPanel, closeBlessingInfoPanel],

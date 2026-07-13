@@ -1,10 +1,12 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION, SAVE_KEY, SAVE_SCHEMA_VERSION } from "../config.js";
+import { normalizeCharacterEquipment, normalizeWeaponInventory } from "./equipment.js";
 import { normalizeInventory } from "./rewards.js";
 import { createDefaultSafeAreaProgression, getCurrentSafeAreaId, migrateSafeAreaProgression, syncSafeAreaUnlocks } from "./safeAreaProgression.js";
 import { achievementDefinitions } from "../data/achievements.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { DEFAULT_SAFE_AREA_ID } from "../data/safeAreas.js";
+import { weaponDefinitions } from "../data/weapons.js";
 import { toSafeInteger } from "../utils.js";
 
 export function createDefaultSave() {
@@ -25,7 +27,8 @@ export function createDefaultSave() {
     },
     inventory: {
       gold: 0,
-      materials: {}
+      materials: {},
+      weapons: {}
     },
     storyFlags: createDefaultStoryFlags(),
     achievements: createDefaultAchievements(),
@@ -90,6 +93,7 @@ export function migrateSave(rawSave, options = {}) {
   save.profile.exportedAt = rawSave.profile?.exportedAt || save.profile.exportedAt;
   mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
   save.inventory.gold = toSafeInteger(rawSave.inventory?.gold);
+  save.inventory.weapons = normalizeWeaponInventory(rawSave.inventory?.weapons, weaponDefinitions);
   normalizeInventory(save.inventory);
   migrateStoryFlags(save, rawSave);
   migrateAchievements(save, rawSave);
@@ -97,6 +101,7 @@ export function migrateSave(rawSave, options = {}) {
   migrateStatistics(save, rawSave, { rawSchemaVersion });
   migrateProgression(save, rawSave, { rawSchemaVersion });
   migrateCharacterUnlocks(save);
+  migrateCharacterEquipment(save);
   save.progression.safeAreas = migrateSafeAreaProgression(rawSave, undefined, { defaultVisitedAt: save.profile.createdAt });
   syncSafeAreaUnlocks(save);
 
@@ -178,6 +183,9 @@ function createDefaultCharacterProgression() {
       level: 1,
       exp: 0,
       learnedSkills: [],
+      equipment: {
+        weaponId: null
+      },
       runs: 0,
       clears: 0
     }
@@ -310,6 +318,9 @@ function migrateProgression(save, rawSave, options = {}) {
     characterProgress.unlocked = rawCharacterProgress.unlocked ?? characterProgress.unlocked;
     characterProgress.runs = save.statistics.characters[characterId].runs;
     characterProgress.clears = save.statistics.characters[characterId].clears;
+    characterProgress.equipment.weaponId = typeof rawCharacterProgress.equipment?.weaponId === "string"
+      ? rawCharacterProgress.equipment.weaponId
+      : null;
     if (shouldResetLegacyCharacterGrowth) {
       characterProgress.level = 1;
       characterProgress.exp = 0;
@@ -329,6 +340,17 @@ function migrateCharacterUnlocks(save) {
     if (storyFlag && save.storyFlags[storyFlag] && characterProgress) {
       characterProgress.unlocked = true;
     }
+  });
+}
+
+function migrateCharacterEquipment(save) {
+  Object.entries(characterDefinitions).forEach(([characterId, character]) => {
+    normalizeCharacterEquipment({
+      character,
+      progress: save.progression.characters[characterId],
+      inventory: save.inventory,
+      weaponDefinitions
+    });
   });
 }
 

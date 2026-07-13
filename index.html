@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.5.0-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.5.1-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.5.0-alpha</p>
+            <p class="version-label">v0.2.5.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -227,6 +227,35 @@
             <p id="merchantEmpty" class="empty-state">目前沒有可出售的素材。</p>
             <div id="merchantGrid" class="merchant-grid" aria-label="可出售素材"></div>
           </div>
+
+          <div id="blacksmithView" class="subview">
+            <div class="section-heading">
+              <div>
+                <p id="blacksmithAreaLabel" class="eyebrow">鎮內去處</p>
+                <h2>鐵匠鋪</h2>
+              </div>
+              <button id="blacksmithBackButton" class="secondary-button" type="button">返回鎮內去處</button>
+            </div>
+            <p class="body-text">把旅途中取得的素材交給鐵匠，鍛造成能長期使用的武器。每種武器只需製作一次。</p>
+            <dl class="stat-list blacksmith-summary">
+              <div>
+                <dt>目前金幣</dt>
+                <dd id="blacksmithGold">0</dd>
+              </div>
+            </dl>
+            <p id="blacksmithNotice" class="save-notice" aria-live="polite"></p>
+            <div class="blacksmith-layout">
+              <section class="blacksmith-catalog" aria-label="武器配方">
+                <h3>武器配方</h3>
+                <p id="blacksmithEmpty" class="empty-state">目前沒有可製作的武器。</p>
+                <div id="blacksmithWeaponList" class="blacksmith-weapon-list"></div>
+              </section>
+              <section class="blacksmith-detail-panel" aria-label="武器詳情">
+                <div id="blacksmithDetail" class="blacksmith-detail"></div>
+                <button id="blacksmithCraftButton" class="primary-button" type="button">選擇武器</button>
+              </section>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -324,7 +353,44 @@
                 <div id="characterNextSkillPanel" class="next-skill-list"></div>
               </div>
             </section>
+            <section class="character-equipment-summary" aria-label="目前裝備">
+              <div>
+                <span>目前武器</span>
+                <strong id="characterDetailWeaponName">未裝備武器</strong>
+              </div>
+              <button id="openCharacterEquipmentButton" class="secondary-button" type="button">管理裝備</button>
+            </section>
             <button id="selectCharacterButton" class="primary-button" type="button">使用冒險者</button>
+          </div>
+
+          <div id="characterEquipmentView" class="subview">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">角色裝備</p>
+                <h2 id="equipmentCharacterName">冒險者</h2>
+              </div>
+              <button id="backToCharacterDetailButton" class="secondary-button" type="button">返回角色詳情</button>
+            </div>
+            <p id="equipmentCharacterRole" class="character-detail-role"></p>
+            <p id="equipmentNotice" class="save-notice" aria-live="polite"></p>
+            <div class="equipment-layout">
+              <section class="equipment-character-panel" aria-label="目前武器欄位">
+                <div id="equipmentCurrentSlot" class="equipment-current-slot is-empty"></div>
+                <div class="equipment-actions">
+                  <button id="equipWeaponButton" class="primary-button" type="button">選擇武器</button>
+                  <button id="unequipWeaponButton" class="secondary-button" type="button" hidden>卸下武器</button>
+                </div>
+              </section>
+              <section id="equipmentPreview" class="equipment-preview-panel" aria-label="武器效果預覽"></section>
+            </div>
+            <section class="equipment-inventory" aria-label="可裝備武器">
+              <div class="skill-section-heading">
+                <h3>已持有武器</h3>
+                <p>只顯示這名角色可使用的武器。</p>
+              </div>
+              <p id="equipmentEmpty" class="empty-state">目前沒有可裝備的武器，可以前往安平鎮鐵匠鋪製作。</p>
+              <div id="equipmentWeaponGrid" class="equipment-weapon-grid"></div>
+            </section>
           </div>
         </div>
       </section>
@@ -721,6 +787,21 @@
         </div>
       </section>
 
+      <section id="blacksmithCraftPanel" class="end-panel blacksmith-craft-panel" aria-label="確認製作武器" aria-modal="true">
+        <div class="end-dialog blacksmith-craft-dialog">
+          <div>
+            <p class="eyebrow">鐵匠鋪</p>
+            <h2 id="blacksmithCraftTitle">武器名稱</h2>
+            <p id="blacksmithCraftMeta" class="body-text"></p>
+            <div id="blacksmithCraftCostList" class="blacksmith-craft-cost-list" aria-label="製作消耗"></div>
+          </div>
+          <div class="end-actions">
+            <button id="confirmBlacksmithCraftButton" class="primary-button" type="button">確認製作</button>
+            <button id="closeBlacksmithCraftButton" class="secondary-button" type="button">取消</button>
+          </div>
+        </div>
+      </section>
+
       <section id="materialInfoPanel" class="end-panel material-info-panel" aria-label="素材資訊" aria-modal="true">
         <div class="end-dialog material-info-dialog">
           <p id="materialInfoStatus" class="modal-status">普通</p>
@@ -733,6 +814,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.5.0-alpha"></script>
+    <script type="module" src="game.js?v=0.2.5.1-alpha"></script>
   </body>
 </html>

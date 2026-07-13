@@ -4,6 +4,12 @@ export const facilityDefinitions = Object.freeze({
     name: "旅行商人",
     description: "一名往返各地的商人暫時停留於此，願意收購冒險中帶回的素材。",
     actionId: "merchant"
+  }),
+  blacksmith: Object.freeze({
+    id: "blacksmith",
+    name: "鐵匠鋪",
+    description: "鎮上的鐵匠願意把冒險中取得的素材重新鍛造成可長期使用的武器。",
+    actionId: "blacksmith"
   })
 });
 

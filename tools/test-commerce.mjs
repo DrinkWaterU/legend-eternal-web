@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 
-import { sellMaterial, sellMaterials, spendGold, spendInventoryCost } from "../src/core/commerce.js";
+import {
+  craftWeapon,
+  getInventoryCostStatus,
+  sellMaterial,
+  sellMaterials,
+  spendGold,
+  spendInventoryCost
+} from "../src/core/commerce.js";
 import { normalizeInventory } from "../src/core/rewards.js";
 
 const definitions = {
@@ -235,4 +242,79 @@ for (const request of [
   }), "正規化後的 inventory 應可直接交給 Commerce");
 }
 
-console.log("Commerce isolation tests passed.");
+
+{
+  const inventory = {
+    gold: 10,
+    materials: {
+      gel: { name: "凝膠", quantity: 4 }
+    },
+    weapons: {}
+  };
+  const status = getInventoryCostStatus({
+    inventory,
+    materialDefinitions: definitions,
+    goldCost: 6,
+    materialCosts: [{ materialId: "gel", quantity: 3 }]
+  });
+  assert.equal(status.affordable, true);
+  assert.equal(status.goldEnough, true);
+  assert.deepEqual(status.materialCosts[0], {
+    materialId: "gel",
+    name: "凝膠",
+    quantity: 3,
+    heldQuantity: 4,
+    enough: true
+  });
+}
+
+{
+  const inventory = {
+    gold: 10,
+    materials: {
+      gel: { name: "凝膠", quantity: 4 }
+    },
+    weapons: {}
+  };
+  const weapon = {
+    id: "test-blade",
+    name: "測試劍",
+    recipe: {
+      goldCost: 6,
+      materialCosts: [{ materialId: "gel", quantity: 3 }]
+    }
+  };
+  const result = craftWeapon({ inventory, weapon, materialDefinitions: definitions });
+  assert.equal(result.weaponId, "test-blade");
+  assert.equal(inventory.gold, 4);
+  assert.equal(inventory.materials.gel.quantity, 1);
+  assert.equal(inventory.weapons["test-blade"], true);
+  const afterFirstCraft = structuredClone(inventory);
+  assert.throws(() => craftWeapon({ inventory, weapon, materialDefinitions: definitions }), /已擁有/);
+  assert.deepEqual(inventory, afterFirstCraft, "重複製作不得扣除資源");
+}
+
+for (const request of [
+  {
+    inventory: { gold: 5, materials: { gel: { quantity: 4 } }, weapons: {} },
+    weapon: { id: "blade", name: "劍", recipe: { goldCost: 6, materialCosts: [{ materialId: "gel", quantity: 1 }] } }
+  },
+  {
+    inventory: { gold: 10, materials: { gel: { quantity: 1 } }, weapons: {} },
+    weapon: { id: "blade", name: "劍", recipe: { goldCost: 6, materialCosts: [{ materialId: "gel", quantity: 2 }] } }
+  },
+  {
+    inventory: { gold: 10, materials: { gel: { quantity: 4 } }, weapons: {} },
+    weapon: { id: "blade", name: "劍", recipe: { goldCost: 6, materialCosts: [{ materialId: "missing", quantity: 1 }] } }
+  }
+]) {
+  const before = structuredClone(request.inventory);
+  assert.throws(() => craftWeapon({
+    inventory: request.inventory,
+    weapon: request.weapon,
+    materialDefinitions: definitions
+  }));
+  assert.deepEqual(request.inventory, before, "製作驗證失敗不得部分扣款或取得武器");
+}
+
+console.log("Commerce isolation and weapon crafting tests passed.");

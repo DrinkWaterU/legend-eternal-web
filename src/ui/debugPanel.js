@@ -35,6 +35,9 @@ export function initDebugPanel({ enabled, actions }) {
           <button type="button" data-action="unlock-phoenix">解鎖加護</button>
           <button type="button" data-action="remove-phoenix">移除加護</button>
           <button type="button" data-action="clear-inventory">清空資源</button>
+          <button type="button" data-action="give-blacksmith-resources">給予鍛造資源</button>
+          <button type="button" data-action="give-all-weapons">取得全部武器</button>
+          <button type="button" data-action="clear-all-weapons">清空全部武器</button>
         </div>
         <div class="debug-material-row">
           <label>
@@ -329,6 +332,10 @@ function runDebugAction(action, context) {
     "unlock-phoenix": () => context.actions.unlockPhoenix(),
     "remove-phoenix": () => confirmDanger("要移除鳳凰加護並重置平原劇情旗標嗎？") && context.actions.removePhoenix(),
     "clear-inventory": () => confirmDanger("要清空金幣與素材嗎？") && context.actions.clearInventory(),
+    "give-blacksmith-resources": () => context.actions.giveBlacksmithResources(),
+    "give-all-weapons": () => context.actions.giveAllWeapons(),
+    "clear-all-weapons": () => confirmDanger("要清空全部武器並卸下所有角色目前裝備嗎？")
+      && context.actions.clearAllWeapons(),
     "prepare-safe-area": () => runSafeAreaAction(context, () => context.actions.prepareSafeArea(context.safeAreaSelect.value)),
     "visit-safe-area": () => runSafeAreaAction(context, () => context.actions.visitSafeArea(context.safeAreaSelect.value)),
     "travel-safe-area": () => runSafeAreaAction(context, () => context.actions.travelSafeArea(context.safeAreaSelect.value)),

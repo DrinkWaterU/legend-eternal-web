@@ -25,6 +25,7 @@ import { getAllIndependentBlessings } from "../data/blessings/index.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { getEventEnemyDefinition } from "../data/events/index.js";
 import { materialDefinitions } from "../data/materials.js";
+import { weaponDefinitions } from "../data/weapons.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import {
   ANPING_TOWN_SAFE_AREA_ID,
@@ -212,6 +213,51 @@ export function createDebugRuntimeActions(host) {
     saveGameSafe();
     refreshAfterDebugChange();
     return "已清空金幣與素材。";
+  }
+
+  function giveDebugBlacksmithResources() {
+    const saveData = getSaveData();
+    const rewards = createEmptyRewards();
+    rewards.gold = 1000;
+    Object.values(weaponDefinitions).forEach((weapon) => {
+      (weapon.recipe?.materialCosts || []).forEach((cost) => {
+        const material = materialDefinitions[cost.materialId];
+        if (!material) {
+          return;
+        }
+        const current = rewards.materials[cost.materialId]?.quantity || 0;
+        rewards.materials[cost.materialId] = {
+          id: cost.materialId,
+          name: material.name,
+          quantity: current + cost.quantity
+        };
+      });
+    });
+    applyRewardsToInventory(saveData.inventory, rewards);
+    saveGameSafe();
+    refreshAfterDebugChange();
+    return "已給予 1000 金幣與製作四把武器所需素材。";
+  }
+
+  function giveAllDebugWeapons() {
+    const saveData = getSaveData();
+    saveData.inventory.weapons = Object.fromEntries(
+      Object.keys(weaponDefinitions).map((weaponId) => [weaponId, true])
+    );
+    saveGameSafe();
+    refreshAfterDebugChange();
+    return `已取得全部 ${Object.keys(weaponDefinitions).length} 把武器。`;
+  }
+
+  function clearAllDebugWeapons() {
+    const saveData = getSaveData();
+    saveData.inventory.weapons = {};
+    Object.values(saveData.progression.characters || {}).forEach((progress) => {
+      progress.equipment = { weaponId: null };
+    });
+    saveGameSafe();
+    refreshAfterDebugChange();
+    return "已清空全部武器並卸下角色裝備。";
   }
 
   function startDebugScenario(options = {}) {
@@ -627,6 +673,9 @@ export function createDebugRuntimeActions(host) {
     getMaterialGroups: getDebugMaterialGroups,
     giveMaterials: giveDebugMaterialsByGroup,
     clearInventory: clearDebugInventory,
+    giveBlacksmithResources: giveDebugBlacksmithResources,
+    giveAllWeapons: giveAllDebugWeapons,
+    clearAllWeapons: clearAllDebugWeapons,
     getScenarioCatalog: getDebugScenarioCatalog,
     getCharacterOptions: getDebugCharacterOptions,
     getRouteEntryOptions: getDebugRouteEntryOptions,

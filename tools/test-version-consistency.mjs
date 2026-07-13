@@ -23,7 +23,7 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 assert.match(officialVersion, /^v\d+\.\d+\.\d+(?:\.\d+)?-[a-z0-9.-]+$/i, "VERSION 格式無效");
 assert.equal(GAME_VERSION, officialVersion, "src/config.js 的 GAME_VERSION 必須與 VERSION 一致");
-assert.equal(SAVE_SCHEMA_VERSION, 7, "v0.2.5.0 應使用 Safe Area progression schema");
+assert.equal(SAVE_SCHEMA_VERSION, 8, "v0.2.5.1 應使用永久武器與角色裝備 schema");
 assert.match(readme, new RegExp("目前版本：`" + escapeRegExp(officialVersion) + "`"), "README 目前版本未同步");
 assert.match(html, new RegExp(`<p class="version-label">${escapeRegExp(officialVersion)}</p>`), "主選單版本標籤未同步");
 

@@ -429,3 +429,59 @@
     gap: 10px;
   }
 }
+
+@media (max-width: 820px) {
+  .blacksmith-layout,
+  .equipment-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .blacksmith-layout,
+  .equipment-layout,
+  .equipment-inventory {
+    width: 100%;
+  }
+
+  .blacksmith-weapon-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .blacksmith-card-status {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .character-equipment-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .character-equipment-summary .secondary-button {
+    width: 100%;
+  }
+
+  .equipment-comparison-list {
+    grid-template-columns: 1fr;
+  }
+
+  .equipment-weapon-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .equipment-weapon-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blacksmith-detail-heading,
+  .equipment-preview-heading,
+  .equipment-current-slot {
+    align-items: flex-start;
+  }
+
+  .blacksmith-card-icon {
+    width: 56px;
+    height: 56px;
+  }
+}
