@@ -7,9 +7,13 @@ export function createMusicManager(options = {}) {
   const audio = options.audioElement || options.audioFactory?.() || createDefaultAudioElement();
   const fadeDurationMs = normalizeDuration(options.fadeDurationMs, DEFAULT_FADE_DURATION_MS);
   const fadeStepMs = Math.max(1, normalizeDuration(options.fadeStepMs, DEFAULT_FADE_STEP_MS));
+  const preloadAudioFactory = typeof options.preloadAudioFactory === "function"
+    ? options.preloadAudioFactory
+    : createDefaultAudioElement;
   const warn = typeof options.warn === "function"
     ? options.warn
     : (message, error) => console.warn(message, error || "");
+  const trackLabel = String(options.trackLabel || "BGM").trim() || "BGM";
 
   let currentTrackId = null;
   let requestedTrackId = null;
@@ -20,6 +24,8 @@ export function createMusicManager(options = {}) {
   let transitionInProgress = false;
   const warnedMissingTrackIds = new Set();
   const warnedPlaybackTrackIds = new Set();
+  const preloadedTrackIds = new Set();
+  const preloadAudioElements = [];
 
   audio.loop = true;
   audio.preload = "auto";
@@ -30,11 +36,46 @@ export function createMusicManager(options = {}) {
     if (normalizedTrackId && !getTrackDefinition(normalizedTrackId)) {
       if (!warnedMissingTrackIds.has(normalizedTrackId)) {
         warnedMissingTrackIds.add(normalizedTrackId);
-        warn(`找不到 BGM track definition：${normalizedTrackId}`);
+        warn(`找不到${trackLabel} track definition：${normalizedTrackId}`);
       }
       return setRequestedTrack(null);
     }
     return setRequestedTrack(normalizedTrackId);
+  }
+
+  function preloadTrack(trackId) {
+    const normalizedTrackId = normalizeTrackId(trackId);
+    if (!normalizedTrackId || preloadedTrackIds.has(normalizedTrackId)) {
+      return Boolean(normalizedTrackId);
+    }
+
+    const track = getTrackDefinition(normalizedTrackId);
+    if (!track) {
+      if (!warnedMissingTrackIds.has(normalizedTrackId)) {
+        warnedMissingTrackIds.add(normalizedTrackId);
+        warn(`找不到${trackLabel} track definition：${normalizedTrackId}`);
+      }
+      return false;
+    }
+
+    try {
+      const preloadAudio = preloadAudioFactory();
+      if (!preloadAudio) {
+        return false;
+      }
+      preloadAudio.preload = "auto";
+      preloadAudio.src = track.src;
+      preloadAudio.load?.();
+      preloadAudioElements.push(preloadAudio);
+      preloadedTrackIds.add(normalizedTrackId);
+      return true;
+    } catch (error) {
+      if (!warnedPlaybackTrackIds.has(`preload:${normalizedTrackId}`)) {
+        warnedPlaybackTrackIds.add(`preload:${normalizedTrackId}`);
+        warn(`${trackLabel}無法預載：${normalizedTrackId}`, error);
+      }
+      return false;
+    }
   }
 
   function setEnabled(enabled) {
@@ -203,7 +244,7 @@ export function createMusicManager(options = {}) {
     } catch (error) {
       if (isLatestTransition(token) && !warnedPlaybackTrackIds.has(currentTrackId)) {
         warnedPlaybackTrackIds.add(currentTrackId);
-        warn(`BGM 無法播放：${currentTrackId}`, error);
+        warn(`${trackLabel}無法播放：${currentTrackId}`, error);
       }
       return false;
     }
@@ -271,6 +312,7 @@ export function createMusicManager(options = {}) {
 
   return {
     requestTrack,
+    preloadTrack,
     setEnabled,
     setVolume,
     handleUserInteraction,

@@ -872,7 +872,8 @@
 .debug-section-heading small,
 .debug-build-heading small,
 .debug-build-note,
-.debug-scenario-note {
+.debug-scenario-note,
+.debug-safe-area-note {
   color: var(--muted);
 }
 
@@ -974,7 +975,8 @@
   min-width: 112px;
 }
 
-.debug-scenario-note {
+.debug-scenario-note,
+.debug-safe-area-note {
   display: block;
   min-height: 1.4em;
   line-height: 1.5;
@@ -1276,4 +1278,280 @@
 
 .event-transition-text.is-changing {
   opacity: 0;
+}
+
+
+.anping-arrival-dialog {
+  width: min(700px, 100%);
+  max-height: min(820px, calc(100vh - 36px));
+  overflow: auto;
+  border-color: rgba(241, 211, 134, 0.38);
+  background: #0b0f12;
+}
+
+.anping-arrival-visual {
+  position: relative;
+  min-height: clamp(250px, 42vw, 360px);
+  overflow: hidden;
+  border-bottom: 1px solid rgba(241, 211, 134, 0.24);
+  background: #152229;
+  isolation: isolate;
+}
+
+.anping-arrival-picture,
+.anping-arrival-picture img,
+.anping-arrival-mist,
+.anping-arrival-wind,
+.anping-arrival-gulls {
+  position: absolute;
+  inset: 0;
+}
+
+.anping-arrival-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+.anping-arrival-background-picture {
+  z-index: 1;
+  opacity: 1;
+  transform: scale(1.035);
+  filter: brightness(0.76) saturate(0.82);
+  transition: opacity 1.4s ease, transform 1.6s ease, filter 1.4s ease;
+}
+
+.anping-arrival-scene-picture {
+  z-index: 2;
+  opacity: 0;
+  transform: scale(0.99);
+  filter: brightness(0.7) saturate(0.82) blur(2px);
+  transition: opacity 1.5s ease, transform 1.6s ease, filter 1.5s ease;
+}
+
+.anping-arrival-mist {
+  z-index: 3;
+  background:
+    radial-gradient(ellipse at 50% 58%, rgba(226, 239, 241, 0.3), transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(222, 237, 240, 0.12) 56%, rgba(255, 255, 255, 0.02));
+  opacity: 0.76;
+  transition: opacity 1.5s ease;
+  pointer-events: none;
+}
+
+.anping-arrival-wind,
+.anping-arrival-gulls {
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.anping-arrival-wind i,
+.anping-arrival-gulls i {
+  position: absolute;
+  display: block;
+}
+
+.anping-arrival-wind i {
+  width: 96px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+  animation: anpingWind 5.4s linear infinite;
+}
+
+.anping-arrival-wind i:nth-child(1) { top: 24%; left: -18%; animation-delay: -1s; }
+.anping-arrival-wind i:nth-child(2) { top: 42%; left: -28%; width: 132px; animation-delay: -3.2s; }
+.anping-arrival-wind i:nth-child(3) { top: 61%; left: -22%; width: 76px; animation-delay: -4.4s; }
+
+.anping-arrival-gulls i {
+  width: 18px;
+  height: 8px;
+  border-top: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50% 50% 0 0;
+  animation: anpingGull 4.8s ease-in-out infinite;
+}
+
+.anping-arrival-gulls i:nth-child(1) { top: 18%; left: 66%; }
+.anping-arrival-gulls i:nth-child(2) { top: 23%; left: 72%; transform: scale(0.78); animation-delay: -1.4s; }
+.anping-arrival-gulls i:nth-child(3) { top: 14%; left: 60%; transform: scale(0.65); animation-delay: -2.8s; }
+
+.anping-arrival-location {
+  position: absolute;
+  z-index: 5;
+  top: 14%;
+  left: 50%;
+  width: min(82%, 480px);
+  padding: 12px 18px;
+  border-top: 1px solid rgba(241, 211, 134, 0.58);
+  border-bottom: 1px solid rgba(241, 211, 134, 0.58);
+  background: linear-gradient(90deg, transparent, rgba(8, 14, 18, 0.68), transparent);
+  color: var(--ink);
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, -6px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.anping-arrival-location.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.anping-arrival-location small,
+.anping-arrival-location strong {
+  display: block;
+}
+
+.anping-arrival-location small {
+  color: rgba(247, 241, 229, 0.82);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+}
+
+.anping-arrival-location strong {
+  margin-top: 4px;
+  color: #fff0bd;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  letter-spacing: 0.08em;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.72);
+}
+
+.anping-arrival-content {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(111, 176, 193, 0.12), transparent 36%),
+    radial-gradient(circle at 50% 100%, rgba(224, 179, 93, 0.1), transparent 34%),
+    linear-gradient(180deg, #091014 0%, #080c0f 100%);
+  text-align: left;
+}
+
+.anping-arrival-heading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.anping-arrival-heading h2 {
+  margin-bottom: 0;
+}
+
+.anping-arrival-counter {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.anping-arrival-text {
+  min-height: 10.5rem;
+}
+
+.anping-arrival-progress {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.anping-arrival-progress i {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.anping-arrival-progress i.is-active {
+  background: linear-gradient(90deg, var(--river), var(--gold));
+}
+
+.anping-arrival-unlock {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  border: 1px solid rgba(241, 211, 134, 0.36);
+  border-radius: 8px;
+  background: rgba(241, 211, 134, 0.08);
+  color: var(--gold);
+  font-weight: 900;
+  text-align: center;
+}
+
+.anping-arrival-dialog[data-stage="sea"] .anping-arrival-background-picture {
+  transform: scale(1.015);
+  filter: brightness(0.98) saturate(0.98);
+}
+
+.anping-arrival-dialog[data-stage="sea"] .anping-arrival-mist {
+  opacity: 0.54;
+}
+
+.anping-arrival-dialog[data-stage="town"] .anping-arrival-background-picture,
+.anping-arrival-dialog[data-stage="history"] .anping-arrival-background-picture {
+  opacity: 0;
+  transform: scale(1.01);
+  filter: brightness(0.92) saturate(0.94);
+}
+
+.anping-arrival-dialog[data-stage="town"] .anping-arrival-scene-picture,
+.anping-arrival-dialog[data-stage="history"] .anping-arrival-scene-picture {
+  opacity: 1;
+  transform: scale(1);
+  filter: brightness(1) saturate(1) blur(0);
+}
+
+.anping-arrival-dialog[data-stage="town"] .anping-arrival-mist {
+  opacity: 0.34;
+}
+
+.anping-arrival-dialog[data-stage="history"] .anping-arrival-scene-picture {
+  transform: scale(1.015);
+}
+
+.anping-arrival-dialog[data-stage="history"] .anping-arrival-mist {
+  opacity: 0.28;
+}
+
+.anping-arrival-dialog[data-stage="town"] .anping-arrival-wind,
+.anping-arrival-dialog[data-stage="town"] .anping-arrival-gulls,
+.anping-arrival-dialog[data-stage="history"] .anping-arrival-wind,
+.anping-arrival-dialog[data-stage="history"] .anping-arrival-gulls {
+  opacity: 1;
+}
+
+@keyframes anpingWind {
+  from { transform: translateX(0); opacity: 0; }
+  14% { opacity: 1; }
+  84% { opacity: 0.75; }
+  to { transform: translateX(760px); opacity: 0; }
+}
+
+@keyframes anpingGull {
+  0%, 100% { margin-top: 0; opacity: 0.58; }
+  50% { margin-top: -5px; opacity: 0.92; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anping-arrival-background-picture,
+  .anping-arrival-scene-picture,
+  .anping-arrival-mist,
+  .anping-arrival-location {
+    transition-duration: 0.01ms;
+  }
+
+  .anping-arrival-wind i,
+  .anping-arrival-gulls i {
+    animation: none;
+  }
+
+  .anping-arrival-dialog[data-stage="history"] .anping-arrival-scene-picture {
+    transform: scale(1);
+  }
 }

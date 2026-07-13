@@ -21,7 +21,7 @@ export function createDefaultSave() {
     progression: {
       regions: createDefaultRegionProgression(),
       characters: createDefaultCharacterProgression(),
-      safeAreas: createDefaultSafeAreaProgression()
+      safeAreas: createDefaultSafeAreaProgression(undefined, { defaultVisitedAt: now })
     },
     inventory: {
       gold: 0,
@@ -97,7 +97,7 @@ export function migrateSave(rawSave, options = {}) {
   migrateStatistics(save, rawSave, { rawSchemaVersion });
   migrateProgression(save, rawSave, { rawSchemaVersion });
   migrateCharacterUnlocks(save);
-  save.progression.safeAreas = migrateSafeAreaProgression(rawSave);
+  save.progression.safeAreas = migrateSafeAreaProgression(rawSave, undefined, { defaultVisitedAt: save.profile.createdAt });
   syncSafeAreaUnlocks(save);
 
   save.settings.selectedRegionId = regionDefinitions[rawSave.settings?.selectedRegionId] ? rawSave.settings.selectedRegionId : DEFAULT_REGION_ID;
@@ -128,13 +128,23 @@ export function migrateSave(rawSave, options = {}) {
 
 export function saveGame(save, options = {}) {
   const { onError } = options;
+  const previousSchemaVersion = save.schemaVersion;
+  const previousGameVersion = save.gameVersion;
+  const previousUpdatedAt = save.profile?.updatedAt;
   try {
     save.schemaVersion = SAVE_SCHEMA_VERSION;
     save.gameVersion = GAME_VERSION;
     save.profile.updatedAt = new Date().toISOString();
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+    return true;
   } catch {
+    save.schemaVersion = previousSchemaVersion;
+    save.gameVersion = previousGameVersion;
+    if (save.profile && typeof save.profile === "object") {
+      save.profile.updatedAt = previousUpdatedAt;
+    }
     onError?.();
+    return false;
   }
 }
 

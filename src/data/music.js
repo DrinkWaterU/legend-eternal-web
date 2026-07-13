@@ -23,5 +23,10 @@ export const musicDefinitions = Object.freeze({
     id: "goblin-camp",
     src: "assets/audio/bgm/goblin-camp.mp3",
     gain: 1
+  }),
+  "anping-town": Object.freeze({
+    id: "anping-town",
+    src: "assets/audio/bgm/anping-town.mp3",
+    gain: 1
   })
 });

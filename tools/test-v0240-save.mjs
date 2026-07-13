@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import { sellMaterial, spendGold } from "../src/core/commerce.js";
 import { GAME_VERSION, SAVE_SCHEMA_VERSION } from "../src/config.js";
-import { migrateSave } from "../src/core/storage.js";
+import { createDefaultSave, migrateSave, saveGame } from "../src/core/storage.js";
 import { materialDefinitions } from "../src/data/materials.js";
 
 const legacySave = {
@@ -143,5 +143,34 @@ assert.equal(normalizedMalformedSave.inventory.gold, 1, "正規化後應能正�
 assert.equal(normalizedMalformedSave.inventory.materials.slime_gel.quantity, 3);
 spendGold(normalizedMalformedSave.inventory, 1);
 assert.equal(normalizedMalformedSave.inventory.gold, 0, "正規化後應能正常支付金幣");
+
+
+const originalLocalStorage = globalThis.localStorage;
+globalThis.localStorage = {
+  setItem() {},
+  getItem() { return null; },
+  removeItem() {}
+};
+assert.equal(saveGame(createDefaultSave()), true, "保存成功時應回傳 true");
+globalThis.localStorage = {
+  setItem() { throw new Error("blocked"); },
+  getItem() { return null; },
+  removeItem() {}
+};
+let saveErrorCalled = false;
+const failedSave = createDefaultSave();
+failedSave.schemaVersion = 6;
+failedSave.gameVersion = "v0.2.4.3-alpha";
+failedSave.profile.updatedAt = "2026-01-01T00:00:00.000Z";
+assert.equal(saveGame(failedSave, { onError: () => { saveErrorCalled = true; } }), false, "保存失敗時應回傳 false");
+assert.equal(saveErrorCalled, true);
+assert.equal(failedSave.schemaVersion, 6, "保存失敗時不應留下新 Schema metadata");
+assert.equal(failedSave.gameVersion, "v0.2.4.3-alpha", "保存失敗時不應留下新版本 metadata");
+assert.equal(failedSave.profile.updatedAt, "2026-01-01T00:00:00.000Z", "保存失敗時應恢復 updatedAt");
+if (originalLocalStorage === undefined) {
+  delete globalThis.localStorage;
+} else {
+  globalThis.localStorage = originalLocalStorage;
+}
 
 console.log("v0.2.4.0 save compatibility and economy persistence tests passed.");

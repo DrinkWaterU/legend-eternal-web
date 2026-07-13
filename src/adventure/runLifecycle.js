@@ -19,6 +19,8 @@ const RUN_STATE_DEFAULTS = Object.freeze({
   battleSource: "main",
   battleEncounterType: null,
   debugBuildRun: false,
+  runOriginSafeAreaId: null,
+  pendingAnpingArrival: false,
   runResultRecorded: false
 });
 

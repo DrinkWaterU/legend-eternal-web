@@ -63,9 +63,9 @@
       <section id="campScreen" class="screen camp-screen">
         <div class="camp-layout">
           <div class="camp-copy">
-            <p class="eyebrow">冒險營地</p>
-            <h2>火光暫時守住了平原的夜。</h2>
-            <p class="body-text">
+            <p id="campEyebrow" class="eyebrow">冒險營地</p>
+            <h2 id="campTitle">火光暫時守住了平原的夜。</h2>
+            <p id="campDescription" class="body-text">
               在出發前確認角色、地區與最近一次冒險紀錄。撤退、失敗或通關後也會回到這裡。
             </p>
           </div>
@@ -79,7 +79,7 @@
           </button>
 
           <section class="camp-feature-section" aria-label="營地功能">
-            <p class="camp-feature-title">營地功能</p>
+            <p id="campFeatureTitle" class="camp-feature-title">營地功能</p>
             <nav id="campFeatureGrid" class="camp-feature-grid">
               <button id="campRegionButton" class="camp-feature-button" data-feature="region" type="button">
                 <span>選擇地區</span>
@@ -104,7 +104,32 @@
             </nav>
           </section>
 
+          <button id="campTravelButton" class="camp-feature-button camp-feature-wide camp-travel-button" data-feature="travel" type="button" hidden>
+            <span>移動據點</span>
+            <small id="campTravelHint">前往其他已解鎖的據點</small>
+            <span id="campTravelBadge" class="camp-travel-badge" hidden>新地點</span>
+          </button>
           <button id="campBackButton" class="secondary-button camp-menu-return" type="button">返回主選單</button>
+        </div>
+      </section>
+
+      <section id="safeAreaTravelScreen" class="screen">
+        <div class="selection-panel safe-area-travel-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">據點移動</p>
+              <h2>選擇據點</h2>
+            </div>
+            <button id="safeAreaTravelBackButton" class="secondary-button" type="button">返回安全區</button>
+          </div>
+          <p class="body-text">選擇一個已解鎖的據點。移動不消耗金幣、素材或冒險時間。</p>
+          <div class="safe-area-travel-current" aria-live="polite">
+            <small>目前位置</small>
+            <strong id="safeAreaTravelCurrentName">冒險營地</strong>
+          </div>
+          <div id="safeAreaTravelList" class="safe-area-travel-grid" aria-label="可前往據點"></div>
+          <p id="safeAreaTravelEmpty" class="empty-state" hidden>目前沒有其他可前往的據點。</p>
+          <p id="safeAreaTravelUnknownHint" class="safe-area-travel-unknown" hidden>旅途中仍有尚未發現的據點。</p>
         </div>
       </section>
 
@@ -112,7 +137,7 @@
         <div class="selection-panel storage-panel">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">冒險營地</p>
+              <p id="storageSafeAreaEyebrow" class="eyebrow">冒險營地</p>
               <h2>倉庫</h2>
             </div>
             <button id="storageBackButton" class="secondary-button" type="button">回營地</button>
@@ -549,6 +574,48 @@
             </div>
           </div>
         </section>
+
+
+      </section>
+
+      <section id="anpingArrivalPanel" class="story-panel anping-arrival-panel" aria-label="安平鎮首次抵達" aria-modal="true" role="dialog">
+        <div id="anpingArrivalDialog" class="story-dialog anping-arrival-dialog" data-stage="forest">
+          <div class="anping-arrival-visual" aria-hidden="true">
+            <picture class="anping-arrival-picture anping-arrival-background-picture">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-background-desktop.jpg">
+              <img src="assets/images/anping-town/arrival/anping-arrival-background-mobile.jpg" alt="">
+            </picture>
+            <picture class="anping-arrival-picture anping-arrival-scene-picture">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-scene-desktop.jpg">
+              <img src="assets/images/anping-town/arrival/anping-arrival-scene-mobile.jpg" alt="">
+            </picture>
+            <div class="anping-arrival-mist"></div>
+            <div class="anping-arrival-wind"><i></i><i></i><i></i></div>
+            <div class="anping-arrival-gulls"><i></i><i></i><i></i></div>
+            <div id="anpingArrivalLocation" class="anping-arrival-location" hidden>
+              <small>傳說大陸的海岸起點</small>
+              <strong>安平鎮</strong>
+            </div>
+          </div>
+          <div class="story-content anping-arrival-content">
+            <div class="anping-arrival-heading">
+              <div>
+                <p id="anpingArrivalEyebrow" class="eyebrow">旅途的延續</p>
+                <h2 id="anpingArrivalTitle">森林的盡頭</h2>
+              </div>
+              <span id="anpingArrivalCounter" class="anping-arrival-counter">1 / 4</span>
+            </div>
+            <div id="anpingArrivalText" class="story-text anping-arrival-text"></div>
+            <div class="anping-arrival-progress" aria-label="抵達演出進度">
+              <i class="is-active"></i><i></i><i></i><i></i>
+            </div>
+            <p id="anpingArrivalUnlock" class="anping-arrival-unlock" hidden>安平鎮已解鎖</p>
+            <div class="story-actions">
+              <button id="revealAnpingArrivalButton" class="secondary-button" type="button">立即顯示全文</button>
+              <button id="continueAnpingArrivalButton" class="primary-button" type="button" hidden>繼續</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="deleteSavePanel" class="end-panel" aria-label="刪除存檔確認" aria-modal="true">
