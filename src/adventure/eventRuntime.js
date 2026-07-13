@@ -42,9 +42,7 @@ export function createEventRuntime(host) {
     clearEnemyGroup,
     setCombatActionState,
     applySceneContext,
-    setEnemyGroup,
-    resetHeroBattleState,
-    applyBattleStartSkills,
+    beginBattleRuntime,
     addFixedLog,
     logCurrentEnemyGroupEncounter,
     applyEnemyAmbushes,
@@ -160,20 +158,13 @@ export function createEventRuntime(host) {
 
     showCombatLayout(els);
     applySceneContext("gameScreen");
-    state.turn = 0;
-    state.awaitingBlessing = false;
-    state.phase = "danger";
-    state.canRest = false;
-    state.hasRested = false;
-    state.ambushAdvantage = false;
-    state.battleSource = "event";
-    state.battleEncounterType = "event";
-    state.log = [];
     const enemy = buildScaledEnemy(enemyDefinition, currentRegion(), state.encounterIndex);
     enemy.poison = 0;
-    setEnemyGroup([enemy]);
-    resetHeroBattleState();
-    applyBattleStartSkills();
+    beginBattleRuntime({
+      enemies: [enemy],
+      source: "event",
+      encounterType: "event"
+    });
 
     (battleStep.introText || []).forEach((text) => addFixedLog("system", text));
     logCurrentEnemyGroupEncounter();

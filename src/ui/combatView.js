@@ -4,12 +4,13 @@ import { renderStatList } from "./renderHelpers.js";
 
 const rosterTargetState = new WeakMap();
 
-export function renderCombatView({ els, hero, enemies, targetEnemyId, phase, characterStatusEntries = [], onTargetSelect }) {
+export function renderCombatView({ els, hero, enemies, targetEnemyId, phase, preparationStatus = null, characterStatusEntries = [], onTargetSelect }) {
   if (!hero) {
     return;
   }
 
   renderHeroStatus(els, hero, characterStatusEntries);
+  renderPreparationStatus(els, preparationStatus);
   renderEnemyRoster({
     roster: els.enemyRoster,
     countLabel: els.enemyCountLabel,
@@ -59,6 +60,21 @@ function renderHeroStatus(els, hero, characterStatusEntries) {
   });
   els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}`;
   renderHeroStatuses(els.heroStatusList, hero, characterStatusEntries);
+}
+
+function renderPreparationStatus(els, preparationStatus) {
+  const status = els.combatPreparationStatus;
+  if (!preparationStatus) {
+    status.hidden = true;
+    els.combatPreparationName.textContent = "未整備";
+    els.combatPreparationCharges.textContent = "";
+    return;
+  }
+
+  status.hidden = false;
+  status.classList.toggle("is-depleted", preparationStatus.isDepleted === true);
+  els.combatPreparationName.textContent = preparationStatus.name || "冒險整備";
+  els.combatPreparationCharges.textContent = preparationStatus.label || "";
 }
 
 function renderHeroStatuses(element, hero, characterStatusEntries = []) {

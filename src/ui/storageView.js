@@ -1,12 +1,6 @@
 import { getMaterialRarity } from "../data/materials.js";
+import { getInventoryMaterials, sortMaterials } from "./materialList.js";
 import { renderDetailInfoLayout } from "./renderHelpers.js";
-
-const SORTERS = {
-  rarity: compareByRarity,
-  quantity: compareByQuantity,
-  sellPrice: compareBySellPrice,
-  name: compareByName
-};
 
 export function renderStorageView({ els, inventory, materialDefinitions, sortMode, sortDirection, onSortChange, onDirectionChange, onMaterialClick }) {
   const items = getInventoryMaterials(inventory, materialDefinitions);
@@ -60,71 +54,6 @@ export function showMaterialDetail(els, item) {
 
 export function closeMaterialDetail(els) {
   els.materialInfoPanel.classList.remove("is-visible");
-}
-
-function getInventoryMaterials(inventory = {}, materialDefinitions = {}) {
-  const materials = inventory.materials || {};
-  return Object.entries(materials)
-    .map(([materialId, material]) => {
-      const definition = materialDefinitions[materialId] || {};
-      const quantity = Number.isFinite(material?.quantity) ? material.quantity : 0;
-      return {
-        id: materialId,
-        name: definition.name || material?.name || materialId,
-        rarity: definition.rarity || "common",
-        category: definition.category || "material",
-        description: definition.description || "",
-        usage: definition.usage || "",
-        source: definition.source || "",
-        sellPrice: Number.isFinite(definition.sellPrice) ? definition.sellPrice : 0,
-        sortOrder: Number.isFinite(definition.sortOrder) ? definition.sortOrder : 9999,
-        quantity
-      };
-    })
-    .filter((item) => item.quantity > 0);
-}
-
-function sortMaterials(items, sortMode, sortDirection) {
-  const sorter = SORTERS[sortMode] || SORTERS.rarity;
-  const direction = sortDirection === "asc" ? 1 : -1;
-  return [...items].sort((a, b) => {
-    if (sortMode === "rarity") {
-      const rankDiff = getMaterialRarity(b.rarity).rank - getMaterialRarity(a.rarity).rank;
-      if (rankDiff !== 0) {
-        return sortDirection === "asc" ? -rankDiff : rankDiff;
-      }
-      const orderDiff = a.sortOrder - b.sortOrder;
-      if (orderDiff !== 0) {
-        return orderDiff;
-      }
-      return compareByName(a, b);
-    }
-    const result = sorter(a, b);
-    if (result !== 0) {
-      return result * direction;
-    }
-    return compareByName(a, b);
-  });
-}
-
-function compareByRarity(a, b) {
-  const rankDiff = getMaterialRarity(a.rarity).rank - getMaterialRarity(b.rarity).rank;
-  if (rankDiff !== 0) {
-    return rankDiff;
-  }
-  return a.sortOrder - b.sortOrder;
-}
-
-function compareByQuantity(a, b) {
-  return a.quantity - b.quantity;
-}
-
-function compareBySellPrice(a, b) {
-  return a.sellPrice - b.sellPrice;
-}
-
-function compareByName(a, b) {
-  return a.name.localeCompare(b.name, "zh-Hant");
 }
 
 function getCategoryLabel(category) {

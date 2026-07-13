@@ -128,9 +128,7 @@ const eventRuntime = createEventRuntime({
   },
   setCombatActionState: () => {},
   applySceneContext: () => {},
-  setEnemyGroup: () => {},
-  resetHeroBattleState: () => {},
-  applyBattleStartSkills: () => {},
+  beginBattleRuntime: () => {},
   addFixedLog: () => {},
   logCurrentEnemyGroupEncounter: () => {},
   applyEnemyAmbushes: () => {},
@@ -181,9 +179,7 @@ const debugActions = createDebugRuntimeActions({
   render: () => {},
   initializeRunRuntime: () => {},
   currentRegion: () => ({}),
-  setEnemyGroup: () => {},
-  resetHeroBattleState: () => {},
-  applyBattleStartSkills: () => {},
+  beginBattleRuntime: () => {},
   addFixedLog: () => {},
   logCurrentEnemyGroupEncounter: () => {},
   addLog: () => {},
@@ -196,6 +192,9 @@ const debugActions = createDebugRuntimeActions({
   applySceneContext: () => {},
   consumeBattleLimitedEffects: () => {},
   returnToCamp: () => {},
+  returnToSafeArea: () => {},
+  showAnpingArrivalStory: () => true,
+  syncSafeAreaUiFromSave: () => {},
   syncSelectionFromSave: () => {},
   restart: () => {},
   syncMusicSettingsFromSave: () => {},
@@ -215,5 +214,11 @@ assert.deepEqual(
   "Debug Scenario 應可覆寫測試所有正式角色 definition，不受解鎖狀態限制"
 );
 assert.equal(typeof debugActions.startScenario, "function");
+assert.equal(typeof debugActions.getSafeAreaOptions, "function");
+assert.equal(typeof debugActions.prepareSafeArea, "function");
+assert.equal(typeof debugActions.visitSafeArea, "function");
+assert.equal(typeof debugActions.travelSafeArea, "function");
+assert.equal(typeof debugActions.resetSafeArea, "function");
+assert.equal(typeof debugActions.playAnpingArrival, "function");
 
 console.log("Runtime controller composition tests passed.");

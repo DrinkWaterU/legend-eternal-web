@@ -1,9 +1,11 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION, SAVE_KEY, SAVE_SCHEMA_VERSION } from "../config.js";
 import { normalizeInventory } from "./rewards.js";
+import { createDefaultSafeAreaProgression, getCurrentSafeAreaId, migrateSafeAreaProgression, syncSafeAreaUnlocks } from "./safeAreaProgression.js";
 import { achievementDefinitions } from "../data/achievements.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
-import { toSafeInteger, toSafeNumber } from "../utils.js";
+import { DEFAULT_SAFE_AREA_ID } from "../data/safeAreas.js";
+import { toSafeInteger } from "../utils.js";
 
 export function createDefaultSave() {
   const now = new Date().toISOString();
@@ -18,7 +20,8 @@ export function createDefaultSave() {
     },
     progression: {
       regions: createDefaultRegionProgression(),
-      characters: createDefaultCharacterProgression()
+      characters: createDefaultCharacterProgression(),
+      safeAreas: createDefaultSafeAreaProgression(undefined, { defaultVisitedAt: now })
     },
     inventory: {
       gold: 0,
@@ -46,6 +49,7 @@ export function createDefaultSave() {
     settings: {
       selectedRegionId: DEFAULT_REGION_ID,
       selectedCharacterId: DEFAULT_CHARACTER_ID,
+      currentSafeAreaId: DEFAULT_SAFE_AREA_ID,
       musicEnabled: true,
       musicVolume: 0.35
     }
@@ -85,19 +89,30 @@ export function migrateSave(rawSave, options = {}) {
   save.profile.migratedAt = shouldMarkMigration ? new Date().toISOString() : rawSave.profile?.migratedAt || save.profile.migratedAt;
   save.profile.exportedAt = rawSave.profile?.exportedAt || save.profile.exportedAt;
   mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
-  save.inventory.gold = toSafeNumber(rawSave.inventory?.gold);
+  save.inventory.gold = toSafeInteger(rawSave.inventory?.gold);
   normalizeInventory(save.inventory);
   migrateStoryFlags(save, rawSave);
   migrateAchievements(save, rawSave);
 
-  migrateStatistics(save, rawSave);
+  migrateStatistics(save, rawSave, { rawSchemaVersion });
   migrateProgression(save, rawSave, { rawSchemaVersion });
   migrateCharacterUnlocks(save);
+  save.progression.safeAreas = migrateSafeAreaProgression(rawSave, undefined, { defaultVisitedAt: save.profile.createdAt });
+  syncSafeAreaUnlocks(save);
 
   save.settings.selectedRegionId = regionDefinitions[rawSave.settings?.selectedRegionId] ? rawSave.settings.selectedRegionId : DEFAULT_REGION_ID;
   save.settings.selectedCharacterId = isUnlockedCharacter(save, rawSave.settings?.selectedCharacterId)
     ? rawSave.settings.selectedCharacterId
     : DEFAULT_CHARACTER_ID;
+  save.settings.currentSafeAreaId = getCurrentSafeAreaId({
+    ...save,
+    settings: {
+      ...save.settings,
+      currentSafeAreaId: rawSave.settings?.currentSafeAreaId
+        || rawSave.currentSafeAreaId
+        || rawSave.world?.currentSafeAreaId
+    }
+  });
   save.settings.musicEnabled = typeof rawSave.settings?.musicEnabled === "boolean"
     ? rawSave.settings.musicEnabled
     : save.settings.musicEnabled;
@@ -113,13 +128,23 @@ export function migrateSave(rawSave, options = {}) {
 
 export function saveGame(save, options = {}) {
   const { onError } = options;
+  const previousSchemaVersion = save.schemaVersion;
+  const previousGameVersion = save.gameVersion;
+  const previousUpdatedAt = save.profile?.updatedAt;
   try {
     save.schemaVersion = SAVE_SCHEMA_VERSION;
     save.gameVersion = GAME_VERSION;
     save.profile.updatedAt = new Date().toISOString();
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+    return true;
   } catch {
+    save.schemaVersion = previousSchemaVersion;
+    save.gameVersion = previousGameVersion;
+    if (save.profile && typeof save.profile === "object") {
+      save.profile.updatedAt = previousUpdatedAt;
+    }
     onError?.();
+    return false;
   }
 }
 
@@ -224,32 +249,33 @@ function migrateAchievements(save, rawSave) {
   });
 }
 
-function migrateStatistics(save, rawSave) {
+function migrateStatistics(save, rawSave, options = {}) {
+  const { rawSchemaVersion = 0 } = options;
   const rawStats = rawSave.statistics || {};
-  save.statistics.totalRuns = toSafeNumber(rawStats.totalRuns);
-  save.statistics.totalDefeats = toSafeNumber(rawStats.totalDefeats);
-  save.statistics.totalClears = toSafeNumber(rawStats.totalClears);
-  save.statistics.totalRetreats = toSafeNumber(rawStats.totalRetreats);
-  save.statistics.totalEnemiesDefeated = toSafeNumber(rawStats.totalEnemiesDefeated);
-  save.statistics.bossesDefeated = toSafeNumber(rawStats.bossesDefeated);
-  save.statistics.fleeAttempts = toSafeNumber(rawStats.fleeAttempts);
-  save.statistics.fleeSuccesses = toSafeNumber(rawStats.fleeSuccesses);
-  save.statistics.fleeFailures = toSafeNumber(rawStats.fleeFailures);
-  save.statistics.safeEscapes = toSafeNumber(rawStats.safeEscapes);
-  save.statistics.counterEscapes = toSafeNumber(rawStats.counterEscapes);
-  save.statistics.evacuationEscapes = toSafeNumber(rawStats.evacuationEscapes);
-  save.statistics.highestRunLevel = Math.max(1, toSafeNumber(rawStats.highestRunLevel, 1));
+  save.statistics.totalRuns = toSafeInteger(rawStats.totalRuns);
+  save.statistics.totalDefeats = toSafeInteger(rawStats.totalDefeats);
+  save.statistics.totalClears = toSafeInteger(rawStats.totalClears);
+  save.statistics.totalRetreats = toSafeInteger(rawStats.totalRetreats);
+  save.statistics.totalEnemiesDefeated = toSafeInteger(rawStats.totalEnemiesDefeated);
+  save.statistics.bossesDefeated = toSafeInteger(rawStats.bossesDefeated);
+  save.statistics.fleeAttempts = toSafeInteger(rawStats.fleeAttempts);
+  save.statistics.fleeSuccesses = toSafeInteger(rawStats.fleeSuccesses);
+  save.statistics.fleeFailures = toSafeInteger(rawStats.fleeFailures);
+  save.statistics.safeEscapes = toSafeInteger(rawStats.safeEscapes);
+  save.statistics.counterEscapes = toSafeInteger(rawStats.counterEscapes);
+  save.statistics.evacuationEscapes = toSafeInteger(rawStats.evacuationEscapes);
+  save.statistics.highestRunLevel = Math.max(1, toSafeInteger(rawStats.highestRunLevel, 1));
 
   Object.keys(regionDefinitions).forEach((regionId) => {
     const rawRegionStats = rawStats.regions?.[regionId] || rawSave.progression?.regions?.[regionId] || {};
-    save.statistics.regions[regionId].runs = toSafeNumber(rawRegionStats.runs);
-    save.statistics.regions[regionId].clears = toSafeNumber(rawRegionStats.clears);
-    save.statistics.regions[regionId].retreats = toSafeNumber(rawRegionStats.retreats);
-    save.statistics.regions[regionId].bestEncounter = toSafeNumber(rawRegionStats.bestEncounter);
+    save.statistics.regions[regionId].runs = toSafeInteger(rawRegionStats.runs);
+    save.statistics.regions[regionId].clears = toSafeInteger(rawRegionStats.clears);
+    save.statistics.regions[regionId].retreats = toSafeInteger(rawRegionStats.retreats);
+    save.statistics.regions[regionId].bestEncounter = toSafeInteger(rawRegionStats.bestEncounter);
     if (regionId === "forest") {
-      if (rawSave.schemaVersion >= 6) {
-        save.statistics.regions[regionId].routeClears.main = toSafeNumber(rawRegionStats.routeClears?.main);
-        save.statistics.regions[regionId].routeClears.goblinCamp = toSafeNumber(rawRegionStats.routeClears?.goblinCamp);
+      if (rawSchemaVersion >= 6) {
+        save.statistics.regions[regionId].routeClears.main = toSafeInteger(rawRegionStats.routeClears?.main);
+        save.statistics.regions[regionId].routeClears.goblinCamp = toSafeInteger(rawRegionStats.routeClears?.goblinCamp);
       } else {
         save.statistics.regions[regionId].routeClears.main = save.statistics.regions[regionId].clears;
         save.statistics.regions[regionId].routeClears.goblinCamp = 0;
@@ -259,10 +285,10 @@ function migrateStatistics(save, rawSave) {
 
   Object.keys(characterDefinitions).forEach((characterId) => {
     const rawCharacterStats = rawStats.characters?.[characterId] || rawSave.progression?.characters?.[characterId] || {};
-    save.statistics.characters[characterId].runs = toSafeNumber(rawCharacterStats.runs);
-    save.statistics.characters[characterId].clears = toSafeNumber(rawCharacterStats.clears);
-    save.statistics.characters[characterId].retreats = toSafeNumber(rawCharacterStats.retreats);
-    save.statistics.characters[characterId].highestRunLevel = Math.max(1, toSafeNumber(rawCharacterStats.highestRunLevel, 1));
+    save.statistics.characters[characterId].runs = toSafeInteger(rawCharacterStats.runs);
+    save.statistics.characters[characterId].clears = toSafeInteger(rawCharacterStats.clears);
+    save.statistics.characters[characterId].retreats = toSafeInteger(rawCharacterStats.retreats);
+    save.statistics.characters[characterId].highestRunLevel = Math.max(1, toSafeInteger(rawCharacterStats.highestRunLevel, 1));
   });
 }
 
@@ -290,8 +316,8 @@ function migrateProgression(save, rawSave, options = {}) {
       characterProgress.learnedSkills = [];
       return;
     }
-    characterProgress.level = Math.max(1, toSafeNumber(rawCharacterProgress.level, 1));
-    characterProgress.exp = toSafeNumber(rawCharacterProgress.exp);
+    characterProgress.level = Math.max(1, toSafeInteger(rawCharacterProgress.level, 1));
+    characterProgress.exp = toSafeInteger(rawCharacterProgress.exp);
     characterProgress.learnedSkills = Array.isArray(rawCharacterProgress.learnedSkills) ? rawCharacterProgress.learnedSkills : [];
   });
 }

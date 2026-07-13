@@ -63,14 +63,21 @@ class FakeAudio {
 function createTestManager(options = {}) {
   const warnings = [];
   const audio = options.audio || new FakeAudio(options.playResults);
+  const preloadAudios = [];
   const manager = createMusicManager({
     trackDefinitions: TRACKS,
     audioElement: audio,
+    preloadAudioFactory: () => {
+      const preloadAudio = new FakeAudio();
+      preloadAudios.push(preloadAudio);
+      return preloadAudio;
+    },
     fadeDurationMs: options.fadeDurationMs ?? 4,
     fadeStepMs: 1,
+    trackLabel: options.trackLabel,
     warn: (message) => warnings.push(message)
   });
-  return { manager, audio, warnings };
+  return { manager, audio, warnings, preloadAudios };
 }
 
 async function testLockedState() {
@@ -198,6 +205,37 @@ async function testVolumeAndGainAreNormalized() {
   assert.ok(Math.abs(audio.volume - 0.28) < 1e-9);
 }
 
+
+async function testPreloadDoesNotInterruptCurrentTrack() {
+  const { manager, audio, preloadAudios } = createTestManager();
+  await manager.requestTrack("forest");
+  await manager.handleUserInteraction();
+  audio.currentTime = 18;
+
+  assert.equal(manager.preloadTrack("camp"), true);
+  assert.equal(manager.preloadTrack("camp"), true);
+  assert.equal(preloadAudios.length, 1);
+  assert.equal(preloadAudios[0].src, "camp.mp3");
+  assert.equal(preloadAudios[0].preload, "auto");
+  assert.equal(preloadAudios[0].loadCalls, 1);
+  assert.equal(audio.src, "forest.mp3");
+  assert.equal(audio.currentTime, 18);
+  assert.equal(manager.getState().currentTrackId, "forest");
+}
+
+async function testMissingPreloadWarnsOnce() {
+  const { manager, warnings } = createTestManager();
+  assert.equal(manager.preloadTrack("missing_preload"), false);
+  assert.equal(manager.preloadTrack("missing_preload"), false);
+  assert.equal(warnings.length, 1);
+}
+async function testCustomTrackLabelIsUsedInWarnings() {
+  const { manager, warnings } = createTestManager({ trackLabel: "環境音" });
+  await manager.requestTrack("missing_ambient");
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /^找不到環境音 track definition：/);
+}
+
 async function testMusicSettingsMigration() {
   const defaultSave = createDefaultSave();
   assert.equal(defaultSave.settings.musicEnabled, true);
@@ -241,6 +279,9 @@ const tests = [
   testDisabledManagerTracksLatestScene,
   testPlayRejectionCanRetry,
   testVolumeAndGainAreNormalized,
+  testPreloadDoesNotInterruptCurrentTrack,
+  testMissingPreloadWarnsOnce,
+  testCustomTrackLabelIsUsedInWarnings,
   testMusicSettingsMigration
 ];
 

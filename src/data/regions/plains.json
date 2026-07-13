@@ -3,6 +3,10 @@
   "name": "平原",
   "description": "城鎮外圍的開闊草地。野豬、史萊姆與草原狼經常出沒，是新手冒險者最常踏入的第一片野外。",
   "difficulty": "入門",
+  "traits": [
+    "野獸出沒",
+    "強敵衝擊"
+  ],
   "audio": {
     "bgmId": "plains"
   },
@@ -13,6 +17,118 @@
       "tone": "morning-plains"
     }
   },
+  "preparations": [
+    {
+      "id": "simple-bandage",
+      "name": "簡易繃帶",
+      "summary": "傷勢恢復",
+      "cost": 4,
+      "description": "生命低於 80% 時，戰鬥結束後自動恢復少量生命。每次冒險最多發動一次。",
+      "effect": {
+        "type": "postEncounterLowHpHeal",
+        "hpThresholdRatio": 0.8,
+        "healMaxHpRatio": 0.06,
+        "charges": 1
+      },
+      "enhancement": {
+        "title": "加厚傷口包紮",
+        "materialCosts": [
+          {
+            "materialId": "slime_gel",
+            "quantity": 2
+          },
+          {
+            "materialId": "soft_hide",
+            "quantity": 1
+          }
+        ],
+        "description": "生命低於 80% 時，戰鬥結束後自動恢復 10% 最大生命。每次冒險最多發動一次。",
+        "changedFragments": [
+          "10%"
+        ],
+        "effect": {
+          "type": "postEncounterLowHpHeal",
+          "hpThresholdRatio": 0.8,
+          "healMaxHpRatio": 0.1,
+          "charges": 1
+        }
+      }
+    },
+    {
+      "id": "beast-repellent-herb",
+      "name": "驅獸香草",
+      "summary": "野獸對策",
+      "cost": 6,
+      "description": "面對野獸時，每場第一次受到的攻擊傷害降低 15%。",
+      "effect": {
+        "type": "firstFamilyDirectDamageReduction",
+        "targetFamily": "beast",
+        "reductionRatio": 0.15
+      },
+      "enhancement": {
+        "title": "刺激性調和",
+        "materialCosts": [
+          {
+            "materialId": "toxic_slime_drop",
+            "quantity": 1
+          },
+          {
+            "materialId": "slime_gel",
+            "quantity": 1
+          }
+        ],
+        "description": "面對野獸時，每場第一次受到的攻擊傷害降低 22%。",
+        "changedFragments": [
+          "22%"
+        ],
+        "effect": {
+          "type": "firstFamilyDirectDamageReduction",
+          "targetFamily": "beast",
+          "reductionRatio": 0.22
+        }
+      }
+    },
+    {
+      "id": "weapon-maintenance",
+      "name": "武器保養",
+      "summary": "強敵攻勢",
+      "cost": 6,
+      "description": "遇上菁英或首領時，開戰後第一次出手會獲得 2 點攻擊加成。",
+      "effect": {
+        "type": "openingActionAttackBonus",
+        "encounterTypes": [
+          "elite",
+          "boss"
+        ],
+        "attackBonus": 2
+      },
+      "enhancement": {
+        "title": "刃口與握柄補整",
+        "materialCosts": [
+          {
+            "materialId": "hard_tusk",
+            "quantity": 1
+          },
+          {
+            "materialId": "sharp_fang",
+            "quantity": 2
+          }
+        ],
+        "description": "遇上菁英或首領時，開戰後第一次出手會獲得 3 點攻擊加成。",
+        "changedFragments": [
+          "3 點攻擊加成"
+        ],
+        "effect": {
+          "type": "openingActionAttackBonus",
+          "encounterTypes": [
+            "elite",
+            "boss"
+          ],
+          "attackBonus": 3
+        }
+      }
+    }
+  ],
   "encounterPlan": [
     "normal",
     "normal",

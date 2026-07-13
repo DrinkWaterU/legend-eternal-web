@@ -28,6 +28,11 @@ assert.deepEqual(route.visual.backgroundStages.map((stage) => [stage.fromEncount
 assert.equal(route.ending.title, "營地深處");
 assert.equal(route.ending.pages.length, 4, "Route 應直接持有四頁 Ending content");
 assert.equal(route.ending.pages.at(-1).lines.at(-1).role, "ending");
+assert.equal(route.repeatEnding.title, "再次沉寂");
+assert.equal(route.repeatEnding.pages.length, 1, "重複通關應使用單頁掃蕩結尾");
+assert.equal(route.repeatEnding.pages[0].tone, "embers");
+assert.equal(route.repeatEnding.pages[0].lines.at(-1).role, "ending");
+assert.match(route.repeatEnding.pages[0].lines[1].text, /牢籠仍然空著/);
 assert.equal(route.events.scheduleChance, 1);
 assert.deepEqual(route.events.triggerBeforeEncounters, [5]);
 assert.ok(getEventDefinition("goblin-looted-supplies"), "Route 中段事件應註冊到通用事件 registry");

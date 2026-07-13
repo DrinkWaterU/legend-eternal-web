@@ -50,6 +50,15 @@ assert.deepEqual(
   { role: "ending", text: "「等我能重新拉弓，我會去找你。」" }
 );
 
+const repeatEnding = route?.repeatEnding;
+assert.ok(repeatEnding, "哥布林營地重複通關應持有獨立結尾");
+assert.equal(repeatEnding.title, "再次沉寂");
+assert.equal(repeatEnding.pages.length, 1);
+assert.deepEqual(
+  repeatEnding.pages[0].lines.at(-1),
+  { role: "ending", text: "你確認這批哥布林不會再追上來，帶著戰利品離開營地。" }
+);
+
 const plainsStory = regionDefinitions.plains?.clearStory;
 assert.ok(plainsStory, "平原正式劇情應放在 Region data");
 assert.equal(plainsStory.lines.length, 5);
@@ -94,6 +103,21 @@ assert.deepEqual(
 );
 assert.equal(eventNarrative.children.some((node) => node.classList.contains("event-narrative-emphasis")), false);
 assert.equal(els.eventContinueButton.textContent, "繼續");
+
+renderRouteEndingView({
+  els,
+  eyebrow: repeatEnding.eyebrow,
+  title: repeatEnding.title,
+  tone: repeatEnding.pages[0].tone,
+  narrative: repeatEnding.pages[0].lines,
+  actionLabel: "完成冒險"
+});
+
+assert.equal(panel.classList.contains("route-ending-panel"), true);
+assert.equal(panel.classList.contains("route-ending-tone-embers"), true);
+assert.equal(els.eventTitle.textContent, "再次沉寂");
+assert.equal(els.eventContinueButton.textContent, "完成冒險");
+assert.equal(eventNarrative.children.at(-1).classList.contains("route-ending-line-ending"), true);
 
 renderEventResultView({
   els,

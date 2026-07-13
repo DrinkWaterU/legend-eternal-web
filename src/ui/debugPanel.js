@@ -49,6 +49,26 @@ export function initDebugPanel({ enabled, actions }) {
         </div>
       </section>
 
+      <section class="debug-section" aria-labelledby="debugSafeAreaTitle">
+        <div class="debug-section-heading">
+          <strong id="debugSafeAreaTitle">安全區測試</strong>
+          <small>會修改正式存檔</small>
+        </div>
+        <label>
+          目標據點
+          <select class="debug-safe-area-select"></select>
+        </label>
+        <small class="debug-safe-area-note"></small>
+        <div class="debug-grid">
+          <button type="button" data-action="prepare-safe-area">解鎖未造訪</button>
+          <button type="button" data-action="visit-safe-area">標記並前往</button>
+          <button type="button" data-action="travel-safe-area">直接前往</button>
+          <button type="button" data-action="open-safe-area-travel">開啟移動頁</button>
+          <button type="button" data-action="reset-safe-area">重設據點</button>
+          <button type="button" data-action="play-anping-arrival">播放安平鎮抵達</button>
+        </div>
+      </section>
+
       <section class="debug-section debug-scenario-section" aria-labelledby="debugScenarioTitle">
         <div class="debug-section-heading">
           <strong id="debugScenarioTitle">冒險場景測試</strong>
@@ -108,6 +128,7 @@ export function initDebugPanel({ enabled, actions }) {
   const context = createDebugContext(panel, actions);
   bindDebugPanelEvents(context);
   populateMaterialGroups(context);
+  populateSafeAreaOptions(context);
   populateScenarioCatalog(context);
   populateCharacterOptions(context);
   syncDebugScenario(context, { applyDefaultProfile: true });
@@ -124,6 +145,8 @@ function createDebugContext(panel, actions) {
     expInput: panel.querySelector(".debug-exp"),
     materialGroupSelect: panel.querySelector(".debug-material-group"),
     materialGiveButton: panel.querySelector(".debug-material-give"),
+    safeAreaSelect: panel.querySelector(".debug-safe-area-select"),
+    safeAreaNote: panel.querySelector(".debug-safe-area-note"),
     scenarioSelect: panel.querySelector(".debug-scenario-select"),
     characterSelect: panel.querySelector(".debug-character-select"),
     scenarioNote: panel.querySelector(".debug-scenario-note"),
@@ -163,6 +186,10 @@ function bindDebugPanelEvents(context) {
     runSafe(context, () => context.actions.giveMaterials(context.materialGroupSelect.value));
   });
 
+  context.safeAreaSelect.addEventListener("change", () => {
+    syncSafeAreaNote(context);
+  });
+
   context.scenarioSelect.addEventListener("change", () => {
     syncDebugScenario(context, { applyDefaultProfile: true });
     setStatus(context.status, "已切換場景並套用預設混合 Build。", "ok");
@@ -194,6 +221,47 @@ function populateMaterialGroups(context) {
     context.materialGroupSelect.append(option);
   });
   context.materialGiveButton.disabled = groups.length === 0;
+}
+
+function populateSafeAreaOptions(context) {
+  const options = typeof context.actions.getSafeAreaOptions === "function"
+    ? context.actions.getSafeAreaOptions()
+    : [];
+  const previousValue = context.safeAreaSelect.value;
+  context.safeAreaSelect.replaceChildren();
+  options.forEach((safeArea) => {
+    const option = document.createElement("option");
+    option.value = safeArea.id;
+    const status = safeArea.visited
+      ? "已造訪"
+      : safeArea.unlocked
+        ? "已解鎖／未造訪"
+        : "未解鎖";
+    option.textContent = `${safeArea.name}｜${status}${safeArea.current ? "｜目前" : ""}`;
+    context.safeAreaSelect.append(option);
+  });
+  if ([...context.safeAreaSelect.options].some((option) => option.value === previousValue)) {
+    context.safeAreaSelect.value = previousValue;
+  }
+  context.safeAreaSelect.disabled = options.length === 0;
+  syncSafeAreaNote(context, options);
+}
+
+function syncSafeAreaNote(context, options = null) {
+  const safeAreas = options || (typeof context.actions.getSafeAreaOptions === "function"
+    ? context.actions.getSafeAreaOptions()
+    : []);
+  const selected = safeAreas.find((safeArea) => safeArea.id === context.safeAreaSelect.value);
+  if (!selected) {
+    context.safeAreaNote.textContent = "沒有可用的安全區資料。";
+    return;
+  }
+  const status = selected.visited
+    ? "已造訪"
+    : selected.unlocked
+      ? "已解鎖但尚未造訪"
+      : "尚未解鎖";
+  context.safeAreaNote.textContent = `${selected.name}：${status}${selected.current ? "，目前所在據點" : ""}。`;
 }
 
 function populateScenarioCatalog(context) {
@@ -261,6 +329,13 @@ function runDebugAction(action, context) {
     "unlock-phoenix": () => context.actions.unlockPhoenix(),
     "remove-phoenix": () => confirmDanger("要移除鳳凰加護並重置平原劇情旗標嗎？") && context.actions.removePhoenix(),
     "clear-inventory": () => confirmDanger("要清空金幣與素材嗎？") && context.actions.clearInventory(),
+    "prepare-safe-area": () => runSafeAreaAction(context, () => context.actions.prepareSafeArea(context.safeAreaSelect.value)),
+    "visit-safe-area": () => runSafeAreaAction(context, () => context.actions.visitSafeArea(context.safeAreaSelect.value)),
+    "travel-safe-area": () => runSafeAreaAction(context, () => context.actions.travelSafeArea(context.safeAreaSelect.value)),
+    "open-safe-area-travel": () => context.actions.openSafeAreaTravel(),
+    "reset-safe-area": () => confirmDanger("要重設這個據點的解鎖與造訪狀態嗎？")
+      && runSafeAreaAction(context, () => context.actions.resetSafeArea(context.safeAreaSelect.value)),
+    "play-anping-arrival": () => runSafeAreaAction(context, () => context.actions.playAnpingArrival()),
     camp: () => context.actions.returnToCamp(),
     "delete-save": () => confirmDanger("要刪除目前存檔嗎？這個動作無法復原。") && context.actions.deleteSave()
   };
@@ -471,6 +546,12 @@ function uniqueBlessings(blessings) {
     }
   });
   return [...byId.values()];
+}
+
+function runSafeAreaAction(context, action) {
+  const result = action();
+  populateSafeAreaOptions(context);
+  return result;
 }
 
 function runSafe(context, action) {

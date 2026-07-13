@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.3.4-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.5.0-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.3.4-alpha</p>
+            <p class="version-label">v0.2.5.0-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -63,9 +63,9 @@
       <section id="campScreen" class="screen camp-screen">
         <div class="camp-layout">
           <div class="camp-copy">
-            <p class="eyebrow">冒險營地</p>
-            <h2>火光暫時守住了平原的夜。</h2>
-            <p class="body-text">
+            <p id="campEyebrow" class="eyebrow">冒險營地</p>
+            <h2 id="campTitle">火光暫時守住了平原的夜。</h2>
+            <p id="campDescription" class="body-text">
               在出發前確認角色、地區與最近一次冒險紀錄。撤退、失敗或通關後也會回到這裡。
             </p>
           </div>
@@ -73,32 +73,63 @@
           <dl id="campStatusList" class="stat-list camp-status"></dl>
           <p id="campWarning" class="camp-warning" data-type="danger"></p>
 
-          <nav class="menu-actions camp-actions" aria-label="冒險營地">
-            <button id="campStartButton" class="menu-button primary-menu-button" type="button">
-              <span>出發冒險</span>
-              <small>從目前地區的第一段開始</small>
-            </button>
-            <button id="campRegionButton" class="menu-button" type="button">
-              <span>選擇地區</span>
-              <small>查看平原與未來地區</small>
-            </button>
-            <button id="campCharacterButton" class="menu-button" type="button">
-              <span>查看角色</span>
-              <small>確認冒險者能力</small>
-            </button>
-            <button id="campRecordButton" class="menu-button" type="button">
-              <span>冒險紀錄</span>
-              <small>查看統計數據</small>
-            </button>
-            <button id="campStorageButton" class="menu-button" type="button" hidden>
-              <span>倉庫</span>
-              <small>查看金幣與素材</small>
-            </button>
-            <button id="campBackButton" class="menu-button" type="button">
-              <span>返回主選單</span>
-              <small>離開營地</small>
-            </button>
-          </nav>
+          <button id="campStartButton" class="menu-button primary-menu-button camp-primary-action" type="button">
+            <span>出發冒險</span>
+            <small id="campStartHint">前往目前地區繼續旅程</small>
+          </button>
+
+          <section class="camp-feature-section" aria-label="營地功能">
+            <p id="campFeatureTitle" class="camp-feature-title">營地功能</p>
+            <nav id="campFeatureGrid" class="camp-feature-grid">
+              <button id="campRegionButton" class="camp-feature-button" data-feature="region" type="button">
+                <span>選擇地區</span>
+                <small id="campRegionHint">目前：平原</small>
+              </button>
+              <button id="campCharacterButton" class="camp-feature-button" data-feature="character" type="button">
+                <span>查看角色</span>
+                <small id="campCharacterHint">冒險者 Lv.1</small>
+              </button>
+              <button id="campStorageButton" class="camp-feature-button" data-feature="storage" type="button" hidden>
+                <span>倉庫</span>
+                <small id="campStorageHint">0 個素材</small>
+              </button>
+              <button id="campPlacesButton" class="camp-feature-button" data-feature="places" type="button" hidden>
+                <span>四處看看</span>
+                <small id="campPlacesHint">看看營地周圍</small>
+              </button>
+              <button id="campRecordButton" class="camp-feature-button camp-feature-wide" data-feature="records" type="button">
+                <span>冒險紀錄</span>
+                <small id="campRecordHint">最近：尚無紀錄</small>
+              </button>
+            </nav>
+          </section>
+
+          <button id="campTravelButton" class="camp-feature-button camp-feature-wide camp-travel-button" data-feature="travel" type="button" hidden>
+            <span>移動據點</span>
+            <small id="campTravelHint">前往其他已解鎖的據點</small>
+            <span id="campTravelBadge" class="camp-travel-badge" hidden>新地點</span>
+          </button>
+          <button id="campBackButton" class="secondary-button camp-menu-return" type="button">返回主選單</button>
+        </div>
+      </section>
+
+      <section id="safeAreaTravelScreen" class="screen">
+        <div class="selection-panel safe-area-travel-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">據點移動</p>
+              <h2>選擇據點</h2>
+            </div>
+            <button id="safeAreaTravelBackButton" class="secondary-button" type="button">返回安全區</button>
+          </div>
+          <p class="body-text">選擇一個已解鎖的據點。移動不消耗金幣、素材或冒險時間。</p>
+          <div class="safe-area-travel-current" aria-live="polite">
+            <small>目前位置</small>
+            <strong id="safeAreaTravelCurrentName">冒險營地</strong>
+          </div>
+          <div id="safeAreaTravelList" class="safe-area-travel-grid" aria-label="可前往據點"></div>
+          <p id="safeAreaTravelEmpty" class="empty-state" hidden>目前沒有其他可前往的據點。</p>
+          <p id="safeAreaTravelUnknownHint" class="safe-area-travel-unknown" hidden>旅途中仍有尚未發現的據點。</p>
         </div>
       </section>
 
@@ -106,7 +137,7 @@
         <div class="selection-panel storage-panel">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">冒險營地</p>
+              <p id="storageSafeAreaEyebrow" class="eyebrow">冒險營地</p>
               <h2>倉庫</h2>
             </div>
             <button id="storageBackButton" class="secondary-button" type="button">回營地</button>
@@ -139,6 +170,66 @@
         </div>
       </section>
 
+      <section id="facilityScreen" class="screen">
+        <div class="selection-panel facility-panel">
+          <div id="facilityListView" class="subview is-active">
+            <div class="section-heading">
+              <div>
+                <p id="facilityAreaName" class="eyebrow">冒險營地</p>
+                <h2 id="facilityPlacesTitle">營地去處</h2>
+              </div>
+              <button id="facilityBackButton" class="secondary-button" type="button">回營地</button>
+            </div>
+            <p id="facilityPlacesDescription" class="body-text"></p>
+            <p id="facilityEmpty" class="empty-state">目前沒有可前往的地方。</p>
+            <div id="facilityList" class="facility-list" aria-label="安全區去處"></div>
+          </div>
+
+          <div id="merchantView" class="subview">
+            <div class="section-heading">
+              <div>
+                <p id="merchantAreaLabel" class="eyebrow">營地去處</p>
+                <h2>旅行商人</h2>
+              </div>
+              <button id="merchantBackButton" class="secondary-button" type="button">返回營地去處</button>
+            </div>
+            <p class="body-text">最近，開始有人注意到你從野外帶回的戰利品。一名往返各地的商人暫時在營地停留，願意收購冒險素材。</p>
+            <dl class="stat-list merchant-summary">
+              <div>
+                <dt>目前金幣</dt>
+                <dd id="merchantGold">0</dd>
+              </div>
+            </dl>
+            <div class="storage-toolbar merchant-toolbar" aria-label="商人素材整理">
+              <label>
+                <span>整理方式</span>
+                <select id="merchantSortSelect">
+                  <option value="rarity">稀有度</option>
+                  <option value="quantity">數量</option>
+                  <option value="sellPrice">販賣金額</option>
+                  <option value="name">名稱</option>
+                </select>
+              </label>
+              <button id="merchantSortDirectionButton" class="secondary-button" type="button">降序</button>
+              <button id="merchantBatchToggleButton" class="secondary-button" type="button" aria-pressed="false">批次販賣</button>
+            </div>
+            <p id="merchantNotice" class="save-notice" aria-live="polite"></p>
+            <section id="merchantBatchBar" class="merchant-batch-bar" aria-label="批次販賣摘要" hidden>
+              <div>
+                <strong id="merchantBatchSummary">尚未選取素材</strong>
+                <span id="merchantBatchTotal">預計取得 0 金幣</span>
+              </div>
+              <div class="merchant-batch-actions">
+                <button id="confirmMerchantBatchButton" class="primary-button" type="button" disabled>確認批次販賣</button>
+                <button id="cancelMerchantBatchButton" class="secondary-button" type="button">取消批次</button>
+              </div>
+            </section>
+            <p id="merchantEmpty" class="empty-state">目前沒有可出售的素材。</p>
+            <div id="merchantGrid" class="merchant-grid" aria-label="可出售素材"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="regionScreen" class="screen">
         <div class="selection-panel">
           <div id="regionListView" class="subview is-active">
@@ -153,17 +244,43 @@
             <div id="regionChoiceList" class="choice-list"></div>
           </div>
 
-          <div id="regionDetailView" class="subview">
-            <div class="section-heading">
+          <div id="regionDetailView" class="subview region-detail-view">
+            <div class="section-heading region-detail-heading">
               <div>
                 <p class="eyebrow">地區詳情</p>
                 <h2 id="regionDetailName">平原</h2>
               </div>
               <button id="backToRegionListButton" class="secondary-button" type="button">返回地區列表</button>
             </div>
-            <p id="regionDetailDescription" class="body-text"></p>
-            <dl id="regionDetailStats" class="stat-list"></dl>
-            <button id="startButton" class="primary-button" type="button">開始平原冒險</button>
+            <p id="regionDetailDescription" class="body-text region-detail-description"></p>
+            <dl id="regionDetailStats" class="stat-list region-overview"></dl>
+            <div id="regionTraits" class="region-traits" aria-label="區域特色" hidden>
+              <span class="region-traits-label">區域特色</span>
+              <div id="regionTraitList" class="region-trait-list"></div>
+            </div>
+            <section id="regionDepartureMeta" class="region-departure-meta" aria-label="出發狀態">
+              <div class="region-departure-item">
+                <span>出發角色</span>
+                <strong id="regionDepartureCharacter">冒險者 Lv.1</strong>
+              </div>
+              <div id="regionDepartureGoldItem" class="region-departure-item" hidden>
+                <span>目前金幣</span>
+                <strong id="regionDepartureGold">0</strong>
+              </div>
+            </section>
+            <section id="regionPreparationSection" class="preparation-section" aria-label="出發前整備" hidden>
+              <div class="preparation-heading">
+                <div>
+                  <p class="eyebrow">出發準備</p>
+                  <h3>出發前整備</h3>
+                </div>
+              </div>
+              <p class="preparation-description">選擇一項整備，只在本次冒險中生效。</p>
+              <div id="regionPreparationChoices" class="preparation-list"></div>
+              <div id="regionPreparationDetail" class="preparation-detail" aria-live="polite" aria-hidden="true"></div>
+            </section>
+            <p id="regionStartNotice" class="save-notice" data-type="error" aria-live="polite" hidden></p>
+            <button id="startButton" class="primary-button region-start-button" type="button">開始平原冒險</button>
           </div>
         </div>
       </section>
@@ -301,6 +418,12 @@
                 <p id="heroHealthText" class="meter-text">100 / 100</p>
                 <div id="heroStatusList" class="combat-statuses" aria-label="玩家戰鬥狀態"></div>
               </div>
+            </section>
+
+            <section id="combatPreparationStatus" class="combat-preparation-status" aria-label="冒險整備" hidden>
+              <span class="combat-preparation-label">冒險整備</span>
+              <strong id="combatPreparationName">未整備</strong>
+              <small id="combatPreparationCharges"></small>
             </section>
 
             <section class="enemy-zone" aria-label="敵群">
@@ -451,6 +574,48 @@
             </div>
           </div>
         </section>
+
+
+      </section>
+
+      <section id="anpingArrivalPanel" class="story-panel anping-arrival-panel" aria-label="安平鎮首次抵達" aria-modal="true" role="dialog">
+        <div id="anpingArrivalDialog" class="story-dialog anping-arrival-dialog" data-stage="forest">
+          <div class="anping-arrival-visual" aria-hidden="true">
+            <picture class="anping-arrival-picture anping-arrival-background-picture">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-background-desktop.jpg">
+              <img src="assets/images/anping-town/arrival/anping-arrival-background-mobile.jpg" alt="">
+            </picture>
+            <picture class="anping-arrival-picture anping-arrival-scene-picture">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-scene-desktop.jpg">
+              <img src="assets/images/anping-town/arrival/anping-arrival-scene-mobile.jpg" alt="">
+            </picture>
+            <div class="anping-arrival-mist"></div>
+            <div class="anping-arrival-wind"><i></i><i></i><i></i></div>
+            <div class="anping-arrival-gulls"><i></i><i></i><i></i></div>
+            <div id="anpingArrivalLocation" class="anping-arrival-location" hidden>
+              <small>傳說大陸的海岸起點</small>
+              <strong>安平鎮</strong>
+            </div>
+          </div>
+          <div class="story-content anping-arrival-content">
+            <div class="anping-arrival-heading">
+              <div>
+                <p id="anpingArrivalEyebrow" class="eyebrow">旅途的延續</p>
+                <h2 id="anpingArrivalTitle">森林的盡頭</h2>
+              </div>
+              <span id="anpingArrivalCounter" class="anping-arrival-counter">1 / 4</span>
+            </div>
+            <div id="anpingArrivalText" class="story-text anping-arrival-text"></div>
+            <div class="anping-arrival-progress" aria-label="抵達演出進度">
+              <i class="is-active"></i><i></i><i></i><i></i>
+            </div>
+            <p id="anpingArrivalUnlock" class="anping-arrival-unlock" hidden>安平鎮已解鎖</p>
+            <div class="story-actions">
+              <button id="revealAnpingArrivalButton" class="secondary-button" type="button">立即顯示全文</button>
+              <button id="continueAnpingArrivalButton" class="primary-button" type="button" hidden>繼續</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section id="deleteSavePanel" class="end-panel" aria-label="刪除存檔確認" aria-modal="true">
@@ -524,6 +689,38 @@
         </div>
       </section>
 
+      <section id="merchantSalePanel" class="end-panel merchant-sale-panel" aria-label="出售素材" aria-modal="true">
+        <div class="end-dialog merchant-sale-dialog">
+          <div>
+            <p class="eyebrow">旅行商人</p>
+            <h2 id="merchantSaleTitle">素材</h2>
+            <p id="merchantSaleMeta" class="body-text"></p>
+            <div id="merchantQuantityControl" class="merchant-quantity-control" aria-label="出售數量">
+              <span>出售數量</span>
+              <div>
+                <button id="merchantSaleDecreaseFiveButton" class="secondary-button" type="button" aria-label="減少 5">−5</button>
+                <button id="merchantSaleDecreaseButton" class="secondary-button" type="button" aria-label="減少 1">−1</button>
+                <input id="merchantSaleQuantity" type="number" inputmode="numeric" min="1" step="1" value="1" aria-label="出售數量">
+                <button id="merchantSaleIncreaseButton" class="secondary-button" type="button" aria-label="增加 1">＋1</button>
+                <button id="merchantSaleIncreaseFiveButton" class="secondary-button" type="button" aria-label="增加 5">＋5</button>
+              </div>
+              <button id="merchantSaleMaxButton" class="secondary-button" type="button">最大</button>
+            </div>
+            <div id="merchantBatchSaleList" class="merchant-batch-sale-list" aria-label="批次出售清單" hidden></div>
+            <dl class="stat-list merchant-sale-total">
+              <div>
+                <dt>預計取得</dt>
+                <dd id="merchantSaleTotal">0 金幣</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="end-actions">
+            <button id="confirmMerchantSaleButton" class="primary-button" type="button">確認出售</button>
+            <button id="closeMerchantSaleButton" class="secondary-button" type="button">取消</button>
+          </div>
+        </div>
+      </section>
+
       <section id="materialInfoPanel" class="end-panel material-info-panel" aria-label="素材資訊" aria-modal="true">
         <div class="end-dialog material-info-dialog">
           <p id="materialInfoStatus" class="modal-status">普通</p>
@@ -536,6 +733,6 @@
       </section>
     </main>
 
-    <script type="module" src="game.js?v=0.2.3.4-alpha"></script>
+    <script type="module" src="game.js?v=0.2.5.0-alpha"></script>
   </body>
 </html>

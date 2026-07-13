@@ -52,7 +52,7 @@ body[data-scene="camp"] {
       rgba(5, 7, 10, 0.18) 100%
     ),
     linear-gradient(180deg, rgba(5, 7, 10, 0.14) 0%, rgba(5, 7, 10, 0.48) 100%),
-    url("../../assets/images/camp/camp-mobile.png") center / cover fixed no-repeat;
+    var(--safe-area-bg-mobile, url("../../assets/images/camp/camp-mobile.png")) center / cover fixed no-repeat;
 }
 
 body[data-scene="region"] {

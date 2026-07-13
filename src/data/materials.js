@@ -31,10 +31,6 @@ export const MATERIAL_RARITIES = {
 export const DEFAULT_MATERIAL_RARITY = "common";
 export const materialDefinitions = materialsData;
 
-export function getMaterialDefinition(materialId) {
-  return materialDefinitions[materialId] || null;
-}
-
 export function getMaterialRarity(rarityId) {
   return MATERIAL_RARITIES[rarityId] || MATERIAL_RARITIES[DEFAULT_MATERIAL_RARITY];
 }

@@ -1,7 +1,10 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID, GAME_VERSION } from "./src/config.js";
+import { resetBattleEntryState } from "./src/adventure/battleLifecycle.js";
 import { createEventRuntime } from "./src/adventure/eventRuntime.js";
+import { resetAdventureRunState } from "./src/adventure/runLifecycle.js";
 import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
+import { spendInventoryCost } from "./src/core/commerce.js";
 import {
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
@@ -38,16 +41,50 @@ import {
   normalizeCharacterProgress as normalizeCharacterProgressCore
 } from "./src/core/progression.js";
 import { applyRewardsToInventory, createEmptyRewards, formatInventorySummary, formatRewards, mergeRewards, normalizeInventory, rollEnemyRewards } from "./src/core/rewards.js";
+import {
+  assertRegionPreparations,
+  beginPreparationBattle,
+  consumePreparationEntangleRetry,
+  createRunPreparation,
+  getPreparationCombatStatus,
+  getPreparationSummary,
+  getRegionPreparation,
+  recordPreparationEntangleRetryResult,
+  resolvePostEncounterPreparation,
+  resolvePreparationIncomingDirectDamage,
+  resolvePreparationPoisonDamage,
+  runPreparationOpeningAction
+} from "./src/core/preparations.js";
 import { createDefaultSave, deleteStoredSave, isImportableSave, loadSave, migrateSave, saveGame } from "./src/core/storage.js";
+import {
+  canEnterSafeArea,
+  getCurrentSafeAreaId,
+  isSafeAreaUnlocked,
+  isSafeAreaVisited,
+  markSafeAreaVisited,
+  setCurrentSafeArea,
+  syncSafeAreaUnlocks
+} from "./src/core/safeAreaProgression.js";
 import { characterDefinitions } from "./src/data/characters/index.js";
 import { achievementDefinitions } from "./src/data/achievements.js";
 import { getAllIndependentBlessings, getBlessingPool } from "./src/data/blessings/index.js";
 import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
+import { assertFacilityDefinitions, facilityDefinitions, getFacilityDefinition } from "./src/data/facilities.js";
 import { materialDefinitions } from "./src/data/materials.js";
+import { ambientAudioDefinitions } from "./src/data/ambientAudio.js";
+import { ANPING_ARRIVAL_TIMING, anpingArrivalPages } from "./src/data/anpingArrival.js";
 import { musicDefinitions } from "./src/data/music.js";
 import { getEnemyDefinition } from "./src/data/enemies/index.js";
 import { getEventDefinition } from "./src/data/events/index.js";
 import { regionDefinitions } from "./src/data/regions/index.js";
+import {
+  ANPING_TOWN_SAFE_AREA_ID,
+  assertSafeAreaDefinitions,
+  DEFAULT_SAFE_AREA_ID,
+  getSafeAreaDefinition,
+  getSafeAreaDefinitions,
+  safeAreaDefinitions
+} from "./src/data/safeAreas.js";
 import { getRouteDefinition, getRouteGroup } from "./src/data/routes/index.js";
 import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
@@ -57,9 +94,13 @@ import { renderCharacterCards } from "./src/ui/characterSelectView.js";
 import { initDebugPanel } from "./src/ui/debugPanel.js";
 import { renderBlessingInfoView } from "./src/ui/blessingInfoView.js";
 import { renderCombatView, renderCurrentAbilityView } from "./src/ui/combatView.js";
-import { hideEventTransition, renderRouteEndingView, showCombatLayout } from "./src/ui/eventView.js";
+import { renderRouteEndingView, showCombatLayout } from "./src/ui/eventView.js";
 import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatList } from "./src/ui/renderHelpers.js";
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
+import { renderFacilityListView } from "./src/ui/facilityView.js";
+import { createMerchantController } from "./src/ui/merchantController.js";
+import { getEnhancementMaterialState, renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
+import { clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState } from "./src/ui/preparationState.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
 import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
 import { createDebugRuntimeActions } from "./src/debug/runtimeActions.js";
@@ -89,6 +130,7 @@ const FOREST_TRIAL_ACHIEVEMENT_ID = "forest_trial";
 const GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID = "goblin_camp_clear";
 const STORY_LINE_DELAY_MS = 1500;
 const STORY_FINISH_EXTRA_DELAY_MS = 1700;
+const ANPING_ARRIVAL_PAGES = anpingArrivalPages;
 const NAVIGATION_CONTEXTS = Object.freeze({
   menu: { scene: null, returnTarget: "menuScreen" },
   camp: { scene: "camp", returnTarget: "campScreen" },
@@ -123,6 +165,7 @@ const state = {
   deathCause: null,
   lastRunSummary: null,
   runStats: null,
+  runPreparation: null,
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
@@ -141,6 +184,11 @@ const state = {
   debugBuildRun: false,
   storyTimer: null,
   routeEndingContext: null,
+  runOriginSafeAreaId: null,
+  pendingAnpingArrival: false,
+  anpingArrivalContext: null,
+  anpingArrivalInputLocked: false,
+  anpingArrivalTimerIds: [],
   runResultRecorded: false,
   log: []
 };
@@ -154,13 +202,48 @@ const uiState = {
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID,
   storageSortMode: "rarity",
-  storageSortDirection: "desc"
+  storageSortDirection: "desc",
+  safeAreaId: DEFAULT_SAFE_AREA_ID,
+  facilityView: "list",
+  selectedPreparationId: null,
+  enhancedPreparationId: null,
+  preparationEnhancementRevealId: null,
+  preparationDetailId: null,
+  preparationDetailExpanded: false,
+  runStartNotice: "",
+  runStartLocked: false
 };
 
 let saveData = loadSave();
+syncSafeAreaUiFromSave();
 let pendingSaveCodeImport = null;
 const musicManager = createMusicManager({ trackDefinitions: musicDefinitions });
+const ambientManager = createMusicManager({
+  trackDefinitions: ambientAudioDefinitions,
+  trackLabel: "環境音"
+});
 let eventRuntime = null;
+
+const FACILITY_ACTION_HANDLERS = Object.freeze({
+  merchant: showMerchantFacility
+});
+
+const merchantController = createMerchantController({
+  els,
+  materialDefinitions,
+  getInventory: () => saveData.inventory,
+  getSafeArea: getCurrentSafeArea,
+  saveInventory: saveGameSafe
+});
+
+assertFacilityDefinitions(facilityDefinitions);
+assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
+Object.values(regionDefinitions).forEach(assertRegionPreparations);
+Object.values(facilityDefinitions).forEach((facility) => {
+  if (typeof FACILITY_ACTION_HANDLERS[facility.actionId] !== "function") {
+    throw new Error(`Facility ${facility.id} 使用未知 actionId：${facility.actionId}`);
+  }
+});
 
 function isDebugModeEnabled() {
   return new URLSearchParams(window.location.search).get("debug") === "1";
@@ -254,7 +337,7 @@ function resolveSceneMusicTrackId(screenId) {
     return currentAdventureSource()?.audio?.bgmId ?? null;
   }
   if (uiState.navigationContext === "camp") {
-    return "camp";
+    return getCurrentSafeArea()?.audio?.bgmId || "camp";
   }
   if (uiState.navigationContext === "menu") {
     return "menu";
@@ -262,12 +345,25 @@ function resolveSceneMusicTrackId(screenId) {
   return null;
 }
 
-function syncSceneMusic(screenId) {
-  const trackId = resolveSceneMusicTrackId(screenId);
-  if (trackId === undefined) {
-    return;
+function resolveSceneAmbientTrackId(screenId) {
+  if (uiState.navigationContext === "story") {
+    return undefined;
   }
-  void musicManager.requestTrack(trackId);
+  if (screenId === "campScreen" || uiState.navigationContext === "camp") {
+    return getCurrentSafeArea()?.audio?.ambientId || null;
+  }
+  return null;
+}
+
+function syncSceneAudio(screenId) {
+  const musicTrackId = resolveSceneMusicTrackId(screenId);
+  const ambientTrackId = resolveSceneAmbientTrackId(screenId);
+  if (musicTrackId !== undefined) {
+    void musicManager.requestTrack(musicTrackId);
+  }
+  if (ambientTrackId !== undefined) {
+    void ambientManager.requestTrack(ambientTrackId);
+  }
 }
 
 function applySceneContext(screenId) {
@@ -287,6 +383,9 @@ function applySceneContext(screenId) {
   }
 
   if (scene === "region") {
+    delete document.body.dataset.safeArea;
+    document.body.style.removeProperty("--safe-area-bg-mobile");
+    document.body.style.removeProperty("--safe-area-bg-desktop");
     document.body.dataset.region = state.selectedRegionId;
     if (state.activeRouteId) {
       document.body.dataset.route = state.activeRouteId;
@@ -300,9 +399,33 @@ function applySceneContext(screenId) {
     delete document.body.dataset.regionDepth;
     document.body.style.removeProperty("--region-bg-mobile");
     document.body.style.removeProperty("--region-bg-desktop");
+    if (scene === "camp") {
+      applySafeAreaBackground();
+    } else {
+      delete document.body.dataset.safeArea;
+      document.body.style.removeProperty("--safe-area-bg-mobile");
+      document.body.style.removeProperty("--safe-area-bg-desktop");
+    }
   }
 
-  syncSceneMusic(screenId);
+  syncSceneAudio(screenId);
+}
+
+function applySafeAreaBackground() {
+  const safeArea = getCurrentSafeArea();
+  const mobile = safeArea?.visual?.background?.mobile || safeArea?.visual?.background?.desktop || "";
+  const desktop = safeArea?.visual?.background?.desktop || safeArea?.visual?.background?.mobile || "";
+  document.body.dataset.safeArea = safeArea?.id || DEFAULT_SAFE_AREA_ID;
+  if (mobile) {
+    document.body.style.setProperty("--safe-area-bg-mobile", `url("${resolveAssetUrl(mobile)}")`);
+  } else {
+    document.body.style.removeProperty("--safe-area-bg-mobile");
+  }
+  if (desktop) {
+    document.body.style.setProperty("--safe-area-bg-desktop", `url("${resolveAssetUrl(desktop)}")`);
+  } else {
+    document.body.style.removeProperty("--safe-area-bg-desktop");
+  }
 }
 
 function applyRegionBackgroundStage() {
@@ -365,14 +488,27 @@ function showScreen(screenId) {
     renderMenuScreen();
   }
   if (screenId === "campScreen") {
-    els.resultLabel.textContent = "營地整備";
+    const safeArea = getCurrentSafeArea();
+    els.resultLabel.textContent = safeArea?.name || "安全區";
     els.encounterLabel.textContent = state.selectedRegion;
     renderCampScreen();
   }
+  if (screenId === "safeAreaTravelScreen") {
+    els.resultLabel.textContent = "據點移動";
+    els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
+    renderSafeAreaTravelScreen();
+  }
   if (screenId === "storageScreen") {
     els.resultLabel.textContent = "倉庫";
-    els.encounterLabel.textContent = "冒險營地";
+    els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
     renderStorageScreen();
+  }
+  if (screenId === "facilityScreen") {
+    els.resultLabel.textContent = uiState.facilityView === "merchant"
+      ? "旅行商人"
+      : getCurrentSafeArea()?.placesTitle || "安全區去處";
+    els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
+    renderFacilityScreen();
   }
   if (screenId === "regionScreen") {
     els.resultLabel.textContent = "選擇地區";
@@ -416,7 +552,9 @@ function isCharacterUnlocked(characterId) {
 
 function syncMusicSettingsFromSave() {
   const volume = musicManager.setVolume(saveData.settings.musicVolume);
+  ambientManager.setVolume(saveData.settings.musicVolume);
   void musicManager.setEnabled(saveData.settings.musicEnabled);
+  void ambientManager.setEnabled(saveData.settings.musicEnabled);
   renderMusicControls(saveData.settings.musicEnabled, volume);
 }
 
@@ -430,12 +568,14 @@ function renderMusicControls(enabled = saveData.settings.musicEnabled, volume = 
 function toggleMusicEnabled() {
   saveData.settings.musicEnabled = !saveData.settings.musicEnabled;
   void musicManager.setEnabled(saveData.settings.musicEnabled);
+  void ambientManager.setEnabled(saveData.settings.musicEnabled);
   renderMusicControls();
   saveGameSafe();
 }
 
 function previewMusicVolume() {
   const volume = musicManager.setVolume(Number(els.musicVolumeInput.value));
+  ambientManager.setVolume(volume);
   saveData.settings.musicVolume = volume;
   els.musicVolumeValue.textContent = `${Math.round(volume * 100)}%`;
 }
@@ -452,15 +592,26 @@ function showRegionList(contextId = uiState.navigationContext) {
   showScreen("regionScreen");
 }
 
+function resetPreparationUiState() {
+  clearPreparationSelectionState(uiState);
+  uiState.runStartNotice = "";
+  uiState.runStartLocked = false;
+}
+
 function showRegionDetail(regionId = DEFAULT_REGION_ID) {
   saveData.settings.selectedRegionId = regionId;
   saveGameSafe();
   syncSelectionFromSave();
   uiState.regionView = "detail";
+  resetPreparationUiState();
   showScreen("regionScreen");
 }
 
 function renderMenuScreen() {
+  const safeAreaHint = els.openRegionButton.querySelector("small");
+  if (safeAreaHint) {
+    safeAreaHint.textContent = `進入${getCurrentSafeArea()?.name || "安全區"}`;
+  }
   const achievementHint = els.openAchievementButton.querySelector("small");
   if (achievementHint) {
     achievementHint.textContent = saveData.storyFlags.achievementSystemUnlocked ? "查看已解鎖成就" : "尚未開放";
@@ -473,22 +624,41 @@ function renderCampScreen() {
   const progress = normalizeCharacterProgress(state.selectedHeroId);
   const expToNext = getExpToNextLevel(progress.level, character);
   const lastResult = state.lastRunSummary
-    ? `${state.lastRunSummary.result}｜${state.lastRunSummary.sourceName} 第 ${state.lastRunSummary.reachedEncounter} / ${state.lastRunSummary.encounterTotal} 場`
+    ? `${state.lastRunSummary.sourceName} ${state.lastRunSummary.reachedEncounter} / ${state.lastRunSummary.encounterTotal} 場${state.lastRunSummary.result}`
     : "尚無紀錄";
   const inventorySummary = formatInventorySummary(saveData.inventory, materialDefinitions);
+  const safeArea = getCurrentSafeArea();
+  const facilities = getAvailableFacilities(safeArea);
   const campStats = [
-    ["目前角色", character.name],
-    ["角色等級", `Lv. ${progress.level}`],
-    ["經驗", `${progress.exp} / ${expToNext}`],
+    ["目前角色", `${character.name} Lv.${progress.level}`],
     ["目前地區", region.name],
-    ["地區難度", region.difficulty],
-    ["最近冒險", lastResult]
+    ["經驗", `${progress.exp} / ${expToNext}`],
+    hasPhoenixBlessing()
+      ? ["目前金幣", inventorySummary.gold]
+      : ["最近冒險", lastResult]
   ];
-  if (hasPhoenixBlessing()) {
-    campStats.splice(3, 0, ["目前金幣", inventorySummary.gold]);
-  }
+
+  els.campEyebrow.textContent = safeArea.eyebrow || safeArea.name;
+  els.campTitle.textContent = safeArea.title || safeArea.name;
+  els.campDescription.textContent = safeArea.description || "";
+  els.campFeatureTitle.textContent = safeArea.featureTitle || "安全區功能";
+  els.campFeatureTitle.closest("section")?.setAttribute("aria-label", safeArea.featureTitle || "安全區功能");
   renderStatList(els.campStatusList, campStats);
+  els.campStartHint.textContent = hasPhoenixBlessing()
+    ? `前往${region.name}，確認本輪準備並繼續旅程`
+    : `前往${region.name}開始旅程`;
+  els.campRegionHint.textContent = `目前：${region.name}`;
+  els.campCharacterHint.textContent = `${character.name} Lv.${progress.level}`;
+  els.campStorageHint.textContent = "整理帶回的素材";
+  els.campPlacesHint.textContent = facilities.length > 0
+    ? safeArea.placesDescription || "四處看看"
+    : safeArea.placesLockedDescription || "目前沒有可前往的地方";
+  els.campRecordHint.textContent = "查看過往旅程";
   els.campStorageButton.hidden = !hasPhoenixBlessing();
+  els.campPlacesButton.hidden = facilities.length === 0 && safeArea.id === DEFAULT_SAFE_AREA_ID;
+  els.campPlacesButton.disabled = facilities.length === 0;
+  renderCampTravelButton(safeArea);
+
   if (els.campWarning) {
     els.campWarning.textContent = hasPhoenixBlessing()
       ? "鳳凰的加護已覺醒。死亡會結束本輪冒險，但角色等級與經驗會保留。"
@@ -496,7 +666,6 @@ function renderCampScreen() {
     els.campWarning.dataset.type = hasPhoenixBlessing() ? "blessed" : "danger";
   }
 }
-
 function renderRegionScreen() {
   els.regionListView.classList.toggle("is-active", uiState.regionView === "list");
   els.regionDetailView.classList.toggle("is-active", uiState.regionView === "detail");
@@ -512,18 +681,110 @@ function renderRegionScreen() {
 
   if (uiState.regionView === "detail") {
     const region = currentRegion();
+    const preparations = Array.isArray(region.preparations) ? region.preparations : [];
+    const traits = Array.isArray(region.traits)
+      ? region.traits.filter((trait) => typeof trait === "string" && trait.trim())
+      : [];
+    const inventory = normalizeInventory(saveData.inventory);
+    const character = characterDefinitions[state.selectedHeroId];
+    const progress = normalizeCharacterProgress(state.selectedHeroId);
+    const phoenixUnlocked = hasPhoenixBlessing();
+
+    normalizePreparationUiState({
+      uiState,
+      region,
+      gold: inventory.gold,
+      enabled: phoenixUnlocked
+    });
+
     els.regionDetailName.textContent = region.name;
     els.regionDetailDescription.textContent = region.note
       ? `${region.description}\n${region.note}`
       : region.description;
     renderStatList(els.regionDetailStats, [
-      ["遭遇數", region.encounterCount],
-      ["首領", region.bossName],
+      ["遭遇", `${region.encounterCount} 場`],
       ["難度", region.difficulty],
       ["推薦等級", region.recommendedLevel || "Lv.1+"],
-      ["角色", state.selectedHero]
+      ["首領", region.bossName]
     ]);
-    els.startButton.textContent = `開始${region.name}冒險`;
+
+    els.regionTraitList.replaceChildren();
+    traits.forEach((trait) => {
+      const item = document.createElement("span");
+      item.className = "region-trait";
+      item.textContent = trait;
+      els.regionTraitList.append(item);
+    });
+    els.regionTraits.hidden = traits.length === 0;
+
+    els.regionDepartureCharacter.textContent = `${character.name} Lv.${progress.level}`;
+    els.regionDepartureGoldItem.hidden = !phoenixUnlocked;
+    if (phoenixUnlocked) {
+      els.regionDepartureGold.textContent = String(inventory.gold);
+    }
+
+    els.regionPreparationSection.hidden = !phoenixUnlocked;
+    els.regionStartNotice.textContent = uiState.runStartNotice;
+    els.regionStartNotice.hidden = !uiState.runStartNotice;
+    if (phoenixUnlocked) {
+      renderPreparationChoices({
+        element: els.regionPreparationChoices,
+        preparations,
+        selectedPreparationId: uiState.selectedPreparationId,
+        detailPreparationId: uiState.preparationDetailId,
+        detailExpanded: uiState.preparationDetailExpanded,
+        enhancedPreparationId: uiState.enhancedPreparationId,
+        gold: inventory.gold,
+        inventoryMaterials: inventory.materials,
+        materialDefinitions,
+        onSelect: selectPreparation
+      });
+      const detailPreparation = getRegionPreparation(region, uiState.preparationDetailId);
+      const detailAffordable = !detailPreparation || inventory.gold >= detailPreparation.cost;
+      const detailEnhanced = detailPreparation?.id === uiState.enhancedPreparationId;
+      const animateEnhancement = consumePreparationEnhancementReveal(uiState, detailPreparation?.id);
+      renderPreparationDetail({
+        element: els.regionPreparationDetail,
+        preparation: detailPreparation,
+        expanded: uiState.preparationDetailExpanded,
+        priceLabel: detailPreparation
+          ? detailAffordable
+            ? `${detailPreparation.cost} 金幣`
+            : `金幣不足｜需 ${detailPreparation.cost} 金幣`
+          : "免費",
+        selected: detailPreparation?.id === uiState.selectedPreparationId,
+        enhanced: detailEnhanced,
+        animateEnhancement,
+        inventoryMaterials: inventory.materials,
+        materialDefinitions,
+        onToggleEnhancement: togglePreparationEnhancement
+      });
+    } else {
+      els.regionPreparationChoices.replaceChildren();
+      renderPreparationDetail({
+        element: els.regionPreparationDetail,
+        preparation: null,
+        expanded: false,
+        priceLabel: "免費",
+        selected: false,
+        enhanced: false
+      });
+    }
+
+    const activePreparation = phoenixUnlocked
+      ? getRegionPreparation(region, uiState.selectedPreparationId)
+      : null;
+    const activePreparationEnhanced = activePreparation?.id === uiState.enhancedPreparationId;
+    renderPreparationRunCostPreview({
+      preparation: activePreparation,
+      enhanced: activePreparationEnhanced
+    });
+    els.startButton.textContent = activePreparation
+      ? activePreparationEnhanced
+        ? `花費 ${activePreparation.cost} 金幣＋素材並開始${region.name}冒險`
+        : `花費 ${activePreparation.cost} 金幣並開始${region.name}冒險`
+      : `開始${region.name}冒險`;
+    els.startButton.disabled = uiState.runStartLocked;
   }
 }
 
@@ -612,6 +873,7 @@ function renderCharacterScreen() {
 
 function renderStorageScreen() {
   const inventory = normalizeInventory(saveData.inventory);
+  els.storageSafeAreaEyebrow.textContent = getCurrentSafeArea()?.name || "安全區";
   setReturnButton(els.storageBackButton, getNavigationReturnTarget());
   renderStorageView({
     els,
@@ -629,6 +891,278 @@ function renderStorageScreen() {
     },
     onMaterialClick: (item) => showMaterialDetail(els, item)
   });
+}
+
+function syncSafeAreaUiFromSave() {
+  uiState.safeAreaId = getCurrentSafeAreaId(saveData);
+}
+
+function activateSafeArea(safeAreaId, options = {}) {
+  const { persist = true, allowUnvisited = false } = options;
+  const previousSafeAreaId = getCurrentSafeAreaId(saveData);
+  const previousSetting = saveData.settings?.currentSafeAreaId || previousSafeAreaId;
+  setCurrentSafeArea(saveData, safeAreaId, { allowUnvisited });
+  uiState.safeAreaId = safeAreaId;
+  if (!persist || previousSafeAreaId === safeAreaId) {
+    return true;
+  }
+  if (saveGameSafe()) {
+    return true;
+  }
+  saveData.settings.currentSafeAreaId = previousSetting;
+  uiState.safeAreaId = previousSafeAreaId;
+  return false;
+}
+
+function travelToSafeArea(safeAreaId) {
+  if (!canEnterSafeArea(saveData, safeAreaId)) {
+    return false;
+  }
+  if (!activateSafeArea(safeAreaId)) {
+    return false;
+  }
+  resetPreparationUiState();
+  syncSelectionFromSave();
+  showScreenInContext("campScreen", "camp");
+  return true;
+}
+
+function getSafeAreaTravelDestinations(safeArea = getCurrentSafeArea()) {
+  return getSafeAreaDefinitions().filter((destination) => (
+    destination.id !== safeArea?.id
+    && isSafeAreaUnlocked(saveData, destination.id)
+  ));
+}
+
+function renderCampTravelButton(safeArea = getCurrentSafeArea()) {
+  const destinations = getSafeAreaTravelDestinations(safeArea);
+  const newLocationCount = destinations.filter((destination) => (
+    !isSafeAreaVisited(saveData, destination.id)
+  )).length;
+
+  els.campTravelButton.hidden = destinations.length === 0;
+  els.campTravelHint.textContent = "前往其他已解鎖的據點";
+  els.campTravelBadge.hidden = newLocationCount === 0;
+  els.campTravelBadge.textContent = newLocationCount > 1
+    ? `${newLocationCount} 個新地點`
+    : "新地點";
+
+  if (newLocationCount > 0) {
+    els.campTravelButton.dataset.newLocation = "true";
+  } else {
+    delete els.campTravelButton.dataset.newLocation;
+  }
+}
+
+function showSafeAreaTravelScreen() {
+  showScreenInContext("safeAreaTravelScreen", "camp");
+}
+
+function renderSafeAreaTravelScreen() {
+  const currentSafeArea = getCurrentSafeArea();
+  const destinations = getSafeAreaTravelDestinations(currentSafeArea);
+  const hasLockedSafeArea = getSafeAreaDefinitions().some((safeArea) => (
+    safeArea.id !== currentSafeArea?.id
+    && !isSafeAreaUnlocked(saveData, safeArea.id)
+  ));
+
+  els.safeAreaTravelCurrentName.textContent = currentSafeArea?.name || "安全區";
+  setReturnButton(els.safeAreaTravelBackButton, "campScreen");
+  els.safeAreaTravelList.replaceChildren();
+  els.safeAreaTravelEmpty.hidden = destinations.length > 0;
+  els.safeAreaTravelUnknownHint.hidden = !hasLockedSafeArea;
+
+  destinations.forEach((destination) => {
+    const isNewLocation = !isSafeAreaVisited(saveData, destination.id);
+    const button = document.createElement("button");
+    button.className = "safe-area-travel-card";
+    button.type = "button";
+    button.dataset.safeAreaId = destination.id;
+    if (isNewLocation) {
+      button.dataset.newLocation = "true";
+    }
+
+    const heading = document.createElement("span");
+    heading.className = "safe-area-travel-card-heading";
+    const name = document.createElement("strong");
+    name.textContent = destination.name;
+    heading.append(name);
+
+    if (isNewLocation) {
+      const badge = document.createElement("span");
+      badge.className = "safe-area-travel-card-badge";
+      badge.textContent = "新地點";
+      heading.append(badge);
+    }
+
+    const description = document.createElement("small");
+    description.textContent = destination.travelDescription || `前往${destination.name}`;
+    const action = document.createElement("b");
+    action.textContent = isNewLocation ? "首次抵達" : `前往${destination.name}`;
+    button.append(heading, description, action);
+    els.safeAreaTravelList.append(button);
+  });
+}
+
+function handleSafeAreaTravel(targetId) {
+  const destination = getSafeAreaDefinition(targetId);
+  if (!destination || targetId === getCurrentSafeArea()?.id || !isSafeAreaUnlocked(saveData, targetId)) {
+    return false;
+  }
+  if (targetId === ANPING_TOWN_SAFE_AREA_ID && !isSafeAreaVisited(saveData, targetId)) {
+    return showAnpingArrivalStory({ source: "safe-area-travel" });
+  }
+  return travelToSafeArea(targetId);
+}
+
+function getCurrentSafeArea() {
+  return getSafeAreaDefinition(uiState.safeAreaId) || getSafeAreaDefinition(DEFAULT_SAFE_AREA_ID);
+}
+
+function getAvailableFacilities(safeArea = getCurrentSafeArea()) {
+  const facilityIds = Array.isArray(safeArea?.facilityIds) ? safeArea.facilityIds : [];
+  return facilityIds
+    .map((facilityId) => getFacilityDefinition(facilityId))
+    .filter(Boolean)
+    .filter((facility) => facility.id !== "traveling-merchant" || hasPhoenixBlessing());
+}
+
+function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.navigationContext) {
+  const safeArea = getSafeAreaDefinition(safeAreaId);
+  if (!safeArea) {
+    throw new Error(`找不到安全區 definition：${safeAreaId || "(empty)"}`);
+  }
+  if (!isSafeAreaUnlocked(saveData, safeArea.id)) {
+    throw new Error(`安全區尚未解鎖：${safeArea.id}`);
+  }
+  activateSafeArea(safeArea.id);
+  setNavigationContext(contextId);
+  uiState.facilityView = "list";
+  merchantController.reset();
+  showScreen("facilityScreen");
+}
+
+function showMerchantFacility() {
+  uiState.facilityView = "merchant";
+  merchantController.reset();
+  showScreen("facilityScreen");
+}
+
+function openFacility(facility) {
+  const handler = FACILITY_ACTION_HANDLERS[facility?.actionId];
+  if (typeof handler !== "function") {
+    throw new Error(`無法處理 Facility action：${facility?.actionId || "(empty)"}`);
+  }
+  handler();
+}
+
+function renderFacilityScreen() {
+  const safeArea = getCurrentSafeArea();
+  const facilities = getAvailableFacilities(safeArea);
+  els.facilityListView.classList.toggle("is-active", uiState.facilityView === "list");
+  els.merchantView.classList.toggle("is-active", uiState.facilityView === "merchant");
+
+  if (uiState.facilityView === "list") {
+    renderFacilityListView({
+      els,
+      safeArea,
+      facilities,
+      onFacilityClick: openFacility
+    });
+    return;
+  }
+
+  merchantController.render();
+}
+
+function selectPreparation(preparationId) {
+  const region = currentRegion();
+  const preparation = getRegionPreparation(region, preparationId);
+  if (preparationId && !preparation) {
+    return;
+  }
+
+  const inventory = normalizeInventory(saveData.inventory);
+  const affordable = !preparation || inventory.gold >= preparation.cost;
+  const sameDetail = uiState.preparationDetailId === preparationId;
+  if (affordable) {
+    const selectionChanged = uiState.selectedPreparationId !== preparationId;
+    uiState.selectedPreparationId = preparationId;
+    if (selectionChanged) {
+      uiState.enhancedPreparationId = null;
+      uiState.preparationEnhancementRevealId = null;
+    }
+  }
+  uiState.preparationDetailId = preparationId;
+  uiState.preparationDetailExpanded = sameDetail
+    ? !uiState.preparationDetailExpanded
+    : true;
+  uiState.runStartNotice = "";
+  renderRegionScreen();
+}
+
+function togglePreparationEnhancement(preparationId) {
+  const region = currentRegion();
+  const preparation = getRegionPreparation(region, preparationId);
+  if (!preparation || preparation.id !== uiState.selectedPreparationId) {
+    uiState.runStartNotice = "請先選擇這項整備。";
+    renderRegionScreen();
+    return;
+  }
+  if (!preparation.enhancement) {
+    uiState.runStartNotice = "目前整備沒有素材強化。";
+    renderRegionScreen();
+    return;
+  }
+  if (uiState.enhancedPreparationId === preparation.id) {
+    uiState.enhancedPreparationId = null;
+    uiState.preparationEnhancementRevealId = null;
+    uiState.runStartNotice = "";
+    renderRegionScreen();
+    return;
+  }
+
+  const inventory = normalizeInventory(saveData.inventory);
+  if (inventory.gold < preparation.cost) {
+    uiState.runStartNotice = "金幣不足，無法使用目前整備。";
+    renderRegionScreen();
+    return;
+  }
+  const materialState = getEnhancementMaterialState({
+    preparation,
+    inventoryMaterials: inventory.materials,
+    materialDefinitions
+  });
+  if (!materialState.available) {
+    uiState.runStartNotice = "強化素材不足。";
+    renderRegionScreen();
+    return;
+  }
+
+  uiState.enhancedPreparationId = preparation.id;
+  uiState.preparationEnhancementRevealId = preparation.id;
+  uiState.runStartNotice = "";
+  renderRegionScreen();
+}
+
+function renderPreparationRunCostPreview({ preparation, enhanced }) {
+  const existing = els.regionDetailView.querySelector(".preparation-run-cost-preview");
+  existing?.remove();
+  if (!preparation || !enhanced || !preparation.enhancement) {
+    return;
+  }
+
+  const preview = document.createElement("div");
+  const gold = document.createElement("span");
+  preview.className = "preparation-run-cost-preview";
+  gold.textContent = `金幣 ${preparation.cost}`;
+  preview.append(gold);
+  preparation.enhancement.materialCosts.forEach((cost) => {
+    const item = document.createElement("span");
+    item.textContent = `${materialDefinitions[cost.materialId]?.name || cost.materialId} ×${cost.quantity}`;
+    preview.append(item);
+  });
+  els.startButton.before(preview);
 }
 
 function createRunStats() {
@@ -656,38 +1190,34 @@ function createRunStats() {
   };
 }
 
-function initializeRunRuntime({ hero, encounterIndex = 0, debugBuildRun = false, bossId = null } = {}) {
+function resetAdventureRunRuntime(options = {}) {
+  clearAnpingArrivalTimers();
+  state.anpingArrivalContext = null;
+  state.anpingArrivalInputLocked = false;
+  resetAdventureRunState(state, options);
+  clearEnemyGroup();
+  clearPendingThreat();
+  eventRuntime.resetEventRunState();
+  resetRouteRuntime();
+}
+
+function initializeRunRuntime({ hero, preparation = null, encounterIndex = 0, debugBuildRun = false, bossId = null } = {}) {
   if (!hero) {
     throw new Error("Run runtime 初始化需要 Hero。");
   }
 
-  resetRouteRuntime();
+  resetAdventureRunRuntime();
   state.debugBuildRun = Boolean(debugBuildRun);
   state.run += 1;
   state.encounterIndex = encounterIndex;
-  state.turn = 0;
   state.hero = hero;
   state.hero.fleesRemaining = RUN_STARTING_FLEES;
-  clearEnemyGroup();
   state.selectedBoss = selectRunBoss(currentRegion(), bossId);
   state.phase = "danger";
-  state.awaitingBlessing = false;
   state.ended = false;
   state.defeatedEnemies = encounterIndex;
-  state.defeatedBoss = false;
-  state.deathCause = null;
   state.runStats = createRunStats();
-  state.runResultRecorded = false;
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.battleSource = "main";
-  state.battleEncounterType = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.blessingPoolOverrideId = null;
-  eventRuntime.resetEventRunState();
-  state.log = [];
+  state.runPreparation = preparation;
   state.runStats.startLevel = state.hero.level;
   state.runStats.endLevel = state.hero.level;
   recordSelectedBossInRunStats();
@@ -802,6 +1332,33 @@ function recordRunStarted() {
   saveGameSafe();
 }
 
+function captureRunStartPermanentState() {
+  const regionId = state.selectedRegionId;
+  const characterId = state.selectedHeroId;
+  return {
+    regionId,
+    characterId,
+    gold: saveData.inventory.gold,
+    materials: clone(saveData.inventory.materials),
+    totalRuns: saveData.statistics.totalRuns,
+    regionRuns: saveData.statistics.regions[regionId].runs,
+    characterRuns: saveData.statistics.characters[characterId].runs,
+    characterProgressRuns: saveData.progression.characters[characterId].runs
+  };
+}
+
+function restoreRunStartPermanentState(snapshot) {
+  if (!snapshot) {
+    return;
+  }
+  saveData.inventory.gold = snapshot.gold;
+  saveData.inventory.materials = clone(snapshot.materials);
+  saveData.statistics.totalRuns = snapshot.totalRuns;
+  saveData.statistics.regions[snapshot.regionId].runs = snapshot.regionRuns;
+  saveData.statistics.characters[snapshot.characterId].runs = snapshot.characterRuns;
+  saveData.progression.characters[snapshot.characterId].runs = snapshot.characterProgressRuns;
+}
+
 function recordEnemyDefeated(isBoss) {
   if (state.debugBuildRun) {
     return;
@@ -856,6 +1413,7 @@ function recordRunFinished(outcome) {
     stats.totalDefeats += 1;
   }
 
+  syncSafeAreaUnlocks(saveData);
   state.runResultRecorded = true;
   saveGameSafe();
 }
@@ -945,7 +1503,9 @@ function setReturnButton(button, target) {
     return;
   }
   button.dataset.target = target;
-  button.textContent = target === "campScreen" ? "回營地" : "回主選單";
+  button.textContent = target === "campScreen"
+    ? `回${getCurrentSafeArea()?.name || "安全區"}`
+    : "回主選單";
 }
 
 function showStatisticsCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
@@ -1031,6 +1591,7 @@ function confirmImportSaveCode() {
   }
 
   saveData = migrateSave(pendingSaveCodeImport, { persist: true });
+  syncSafeAreaUiFromSave();
   pendingSaveCodeImport = null;
   resetAdventureRuntimeAfterSaveImport();
   syncSelectionFromSave();
@@ -1043,22 +1604,8 @@ function confirmImportSaveCode() {
 }
 
 function resetAdventureRuntimeAfterSaveImport() {
-  state.debugBuildRun = false;
-  state.hero = null;
-  state.selectedBoss = null;
-  state.runStats = null;
-  state.lastRunSummary = null;
-  state.awaitingBlessing = false;
-  state.ended = true;
-  state.phase = "camp";
-  state.battleSource = "main";
-  state.battleEncounterType = null;
-  state.blessingContext = "normal";
-  state.runResultRecorded = false;
-  clearEnemyGroup();
-  clearPendingThreat();
-  eventRuntime.resetEventRunState();
-  resetRouteRuntime();
+  resetAdventureRunRuntime({ clearLastRunSummary: true });
+  resetPreparationUiState();
 }
 
 function setSaveCodeNotice(element, message, type = "status") {
@@ -1103,6 +1650,9 @@ function deleteSave() {
     // The in-memory reset still keeps the page usable if storage is blocked.
   }
   saveData = createDefaultSave();
+  syncSafeAreaUiFromSave();
+  resetAdventureRunRuntime({ clearLastRunSummary: true });
+  resetPreparationUiState();
   saveGameSafe();
   syncSelectionFromSave();
   syncMusicSettingsFromSave();
@@ -1232,6 +1782,26 @@ function resetHeroBattleState() {
   initializeCharacterBattleState(state.hero);
 }
 
+function beginRunPreparationBattle() {
+  beginPreparationBattle(state.runPreparation);
+}
+
+function beginBattleRuntime(options = {}) {
+  const {
+    enemies = [],
+    restoreEnemies = false,
+    source = "main",
+    encounterType = null,
+    ambushAdvantage = false
+  } = options;
+
+  resetBattleEntryState(state, { source, encounterType, ambushAdvantage });
+  setEnemyGroup(enemies, { restore: restoreEnemies });
+  resetHeroBattleState();
+  beginRunPreparationBattle();
+  applyBattleStartSkills();
+}
+
 function healThreatEnemies(enemies, ratio) {
   return enemies.map((enemy) => {
     if (ratio <= 0 || enemy.hp <= 0) {
@@ -1254,22 +1824,16 @@ function resumePendingThreat(options = {}) {
   const restoredEnemies = restoreRuntimeEnemyGroup(threat.enemies);
   const healedEnemies = healThreatEnemies(restoredEnemies, healRatio);
 
-  setEnemyGroup(restoredEnemies, { restore: true });
   state.activeRouteId = threat.activeRouteId || null;
   state.routeEncounterIndex = Math.max(0, Number(threat.routeEncounterIndex) || 0);
-  state.battleSource = threat.battleSource || "main";
-  state.battleEncounterType = threat.battleEncounterType || getAdventureEncounterType();
   state.encounterIndex = threat.encounterIndex;
-  state.turn = 0;
-  state.awaitingBlessing = false;
-  state.phase = "danger";
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.log = [];
-  resetHeroBattleState();
   clearPendingThreat();
-  applyBattleStartSkills();
+  beginBattleRuntime({
+    enemies: restoredEnemies,
+    restoreEnemies: true,
+    source: threat.battleSource || "main",
+    encounterType: threat.battleEncounterType || getAdventureEncounterType()
+  });
 
   if (introText) {
     addFixedLog("system", introText);
@@ -1320,19 +1884,88 @@ function enterAdventureRoute(routeId) {
   startEncounter();
 }
 
-function startRun() {
-  syncSelectionFromSave();
-  initializeRunRuntime({ hero: buildHeroFromProgression(state.selectedHeroId) });
-  state.eventSchedule = scheduleRegionEvent(currentAdventureSource(), Math.random, {
-    scheduleChance: getAdventureEventScheduleChance()
-  });
+function startPlayerRun() {
+  if (uiState.runStartLocked) {
+    return;
+  }
 
-  showScreen("gameScreen");
-  closeTransientUiPanels();
-  els.nextButton.disabled = false;
+  uiState.runStartLocked = true;
+  uiState.runStartNotice = "";
+  renderRegionScreen();
+  let runStarted = false;
+  let permanentMutationStarted = false;
+  let permanentSnapshot = null;
+  const navigationContextBeforeStart = uiState.navigationContext;
 
-  recordRunStarted();
-  startEncounter();
+  try {
+    syncSelectionFromSave();
+    const region = currentRegion();
+    const requestedPreparationId = hasPhoenixBlessing()
+      ? uiState.selectedPreparationId
+      : null;
+    const definition = getRegionPreparation(region, requestedPreparationId);
+    if (requestedPreparationId && !definition) {
+      throw new Error("目前選擇的整備不屬於這個地區。");
+    }
+    if (definition && saveData.inventory.gold < definition.cost) {
+      throw new Error("金幣不足，無法使用目前整備。");
+    }
+    const requestedEnhanced = Boolean(
+      definition
+      && uiState.enhancedPreparationId === definition.id
+    );
+    if (requestedEnhanced && !definition.enhancement) {
+      throw new Error("目前整備沒有素材強化。");
+    }
+
+    permanentSnapshot = captureRunStartPermanentState();
+    const preparation = createRunPreparation(region, requestedPreparationId, {
+      enhanced: requestedEnhanced
+    });
+    const hero = buildHeroFromProgression(state.selectedHeroId);
+    const runOriginSafeAreaId = getCurrentSafeAreaId(saveData);
+    initializeRunRuntime({ hero, preparation });
+    state.runOriginSafeAreaId = runOriginSafeAreaId;
+    state.eventSchedule = scheduleRegionEvent(currentAdventureSource(), Math.random, {
+      scheduleChance: getAdventureEventScheduleChance()
+    });
+
+    closeTransientUiPanels();
+    els.nextButton.disabled = false;
+    startEncounter();
+
+    permanentMutationStarted = true;
+    if (preparation) {
+      spendInventoryCost({
+        inventory: saveData.inventory,
+        materialDefinitions,
+        goldCost: preparation.cost,
+        materialCosts: requestedEnhanced ? definition.enhancement.materialCosts : []
+      });
+    }
+    recordRunStarted();
+    showScreen("gameScreen");
+    runStarted = true;
+  } catch (error) {
+    if (permanentMutationStarted) {
+      restoreRunStartPermanentState(permanentSnapshot);
+      saveGameSafe();
+    }
+    resetFailedPlayerRunStart();
+    setNavigationContext(navigationContextBeforeStart);
+    uiState.runStartLocked = false;
+    uiState.runStartNotice = error instanceof Error ? error.message : "無法開始這次冒險。";
+    showScreen("regionScreen");
+  } finally {
+    if (!runStarted) {
+      uiState.runStartLocked = false;
+    }
+  }
+}
+
+function resetFailedPlayerRunStart() {
+  resetAdventureRunRuntime();
+  setCombatActionState();
 }
 
 function getAdventureEventScheduleChance() {
@@ -1343,41 +1976,50 @@ function getAdventureEventScheduleChance() {
 }
 
 function restart() {
-  state.debugBuildRun = false;
+  resetAdventureRunRuntime();
+  resetPreparationUiState();
   syncSelectionFromSave();
-  showScreen("menuScreen");
   closeTransientUiPanels();
+  showScreen("menuScreen");
   els.nextButton.disabled = true;
   setCombatActionState();
-  state.awaitingBlessing = false;
-  state.ended = true;
-  state.phase = "camp";
-  state.selectedBoss = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.battleEncounterType = null;
-  eventRuntime.resetEventRunState();
-  resetRouteRuntime();
   els.resultLabel.textContent = "冒險準備中";
   els.encounterLabel.textContent = "尚未開始";
   els.battleLogTitle.textContent = "戰鬥紀錄";
 }
 
-function returnToCamp() {
-  state.debugBuildRun = false;
+function returnToSafeArea(safeAreaId) {
+  const targetSafeAreaId = canEnterSafeArea(saveData, safeAreaId)
+    ? safeAreaId
+    : DEFAULT_SAFE_AREA_ID;
+  if (!activateSafeArea(targetSafeAreaId)) {
+    return false;
+  }
+  resetAdventureRunRuntime();
+  resetPreparationUiState();
   syncSelectionFromSave();
-  showScreen("campScreen");
   closeTransientUiPanels();
-  state.awaitingBlessing = false;
-  state.ended = true;
-  state.phase = "camp";
-  state.selectedBoss = null;
-  clearPendingThreat();
-  state.blessingContext = "normal";
-  state.battleEncounterType = null;
-  eventRuntime.resetEventRunState();
-  resetRouteRuntime();
+  showScreenInContext("campScreen", "camp");
   setCombatActionState();
+  return true;
+}
+
+function returnToRunOriginSafeArea() {
+  const originSafeAreaId = state.runOriginSafeAreaId;
+  return returnToSafeArea(originSafeAreaId);
+}
+
+function returnToCamp() {
+  return returnToSafeArea(DEFAULT_SAFE_AREA_ID);
+}
+
+function handleEndPrimaryAction() {
+  if (state.pendingAnpingArrival) {
+    els.endPanel.classList.remove("is-visible");
+    showAnpingArrivalStory({ source: "forest-clear" });
+    return;
+  }
+  returnToRunOriginSafeArea();
 }
 
 function startEncounter() {
@@ -1387,18 +2029,11 @@ function startEncounter() {
   const encounterType = getAdventureEncounterType();
   state.adventureProgressLocked = false;
   state.eventInputLocked = false;
-  state.battleSource = "main";
-  state.battleEncounterType = encounterType;
   showCombatLayout(els);
   applySceneContext("gameScreen");
-  state.turn = 0;
-  state.awaitingBlessing = false;
-  state.phase = "danger";
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = false;
-  state.log = [];
 
+  let battleEnemies;
+  let restoreEnemies = false;
   if (route) {
     const group = getRouteGroup(route, encounterEntry?.groupId);
     if (!group) {
@@ -1414,15 +2049,20 @@ function startEncounter() {
         rewardScale: member.rewardScale
       };
     });
-    setEnemyGroup(createRuntimeEnemyGroup(entries), { restore: true });
+    battleEnemies = createRuntimeEnemyGroup(entries);
+    restoreEnemies = true;
   } else {
     const enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
     enemy.poison = 0;
-    setEnemyGroup([enemy]);
+    battleEnemies = [enemy];
   }
 
-  resetHeroBattleState();
-  applyBattleStartSkills();
+  beginBattleRuntime({
+    enemies: battleEnemies,
+    restoreEnemies,
+    source: "main",
+    encounterType
+  });
 
   els.blessingPanel.classList.remove("is-visible");
   setCombatActionState();
@@ -1446,21 +2086,21 @@ function playTurn() {
   const log = createCombatLogger();
   state.phase = "combat";
   state.turn += 1;
-  const heroEntangled = resolveHeroEntangle({ hero: state.hero, log });
+  const heroEntangled = resolveHeroEntangle({
+    hero: state.hero,
+    log,
+    retryOnFailure: () => consumeEntangleRetryFromPreparation(log),
+    onRetryResult: ({ success }) => recordPreparationEntangleRetryResult({
+      preparation: state.runPreparation,
+      success
+    })
+  });
   if (!heroEntangled) {
     const target = currentTargetEnemy();
     if (!target) {
       return;
     }
-    const characterAction = resolveCharacterPlayerAction({
-      hero: state.hero,
-      enemies: state.enemies,
-      targetEnemyId: state.targetEnemyId,
-      log
-    });
-    if (!characterAction.handled) {
-      resolveHeroAction({ hero: state.hero, enemy: target, log });
-    }
+    runHeroPlayerAction({ target, log });
     settleDefeatedEnemies();
     if (getLivingEnemies(state.enemies).length === 0) {
       winEncounter();
@@ -1478,7 +2118,7 @@ function playTurn() {
       enemy,
       turn: state.turn,
       log,
-      modifyDirectDamage: modifyCharacterIncomingDirectDamage
+      modifyDirectDamage: modifyIncomingDirectDamage
     });
     applyEmergencyBandage();
     if (state.hero.hp <= 0) {
@@ -1490,7 +2130,11 @@ function playTurn() {
     }
   }
 
-  const endOfTurn = applyHeroEndOfTurnNegativeEffects({ hero: state.hero, log });
+  const endOfTurn = applyHeroEndOfTurnNegativeEffects({
+    hero: state.hero,
+    log,
+    modifyPoisonDamage: ({ damage }) => modifyPoisonDamageFromPreparation(damage)
+  });
   getLivingEnemies(state.enemies).forEach((enemy) => {
     applyEnemyEndOfTurnNegativeEffects({ enemy, log });
   });
@@ -1519,6 +2163,77 @@ function playTurn() {
   render();
 }
 
+function runHeroPlayerAction({ target, log }) {
+  return runPreparationOpeningAction({
+    preparation: state.runPreparation,
+    hero: state.hero,
+    encounterType: state.battleEncounterType,
+    onTrigger: ({ attackBonus }) => {
+      const preparationName = state.runPreparation?.name || "冒險整備";
+      log.fixed("status", `整備｜${preparationName}讓這次出手更有威力，攻擊提高 ${attackBonus} 點。`);
+    },
+    action: () => {
+      const characterAction = resolveCharacterPlayerAction({
+        hero: state.hero,
+        enemies: state.enemies,
+        targetEnemyId: state.targetEnemyId,
+        log
+      });
+      if (!characterAction.handled) {
+        resolveHeroAction({ hero: state.hero, enemy: target, log });
+      }
+      return characterAction;
+    }
+  });
+}
+
+function modifyIncomingDirectDamage(context) {
+  const characterModifiedDamage = modifyCharacterIncomingDirectDamage(context);
+  const result = resolvePreparationIncomingDirectDamage({
+    preparation: state.runPreparation,
+    enemy: context.enemy,
+    damage: characterModifiedDamage
+  });
+  if (result.triggered) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    context.log.fixed("status", `整備｜${preparationName}減輕了這次攻勢，少受到 ${result.preventedDamage} 點傷害。`);
+  }
+  return result.damage;
+}
+
+function consumeEntangleRetryFromPreparation(log) {
+  const consumed = consumePreparationEntangleRetry(state.runPreparation);
+  if (consumed) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    log.fixed("status", `整備｜${preparationName}割開纏絲，再次嘗試掙脫。`);
+  }
+  return consumed;
+}
+
+function modifyPoisonDamageFromPreparation(damage) {
+  const result = resolvePreparationPoisonDamage({
+    preparation: state.runPreparation,
+    damage
+  });
+  if (result.triggered) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    addFixedLog("status", `整備｜${preparationName}減輕毒性侵蝕，少受到 ${result.preventedDamage} 點傷害。`);
+  }
+  return result.damage;
+}
+
+function resolvePostEncounterRunPreparation({ isFinalEncounter = false } = {}) {
+  const result = resolvePostEncounterPreparation({
+    preparation: state.runPreparation,
+    hero: state.hero,
+    isFinalEncounter
+  });
+  if (result.triggered) {
+    const preparationName = state.runPreparation?.name || "冒險整備";
+    addFixedLog("heal", `整備｜${preparationName}發揮作用，恢復 ${result.healing} 點生命。`);
+  }
+}
+
 function winEncounter() {
   settleBattleVictory();
 
@@ -1536,9 +2251,12 @@ function winEncounter() {
   if (currentRoute()) {
     state.routeEncounterIndex += 1;
   }
+
+  const adventureComplete = getAdventureEncounterIndex() >= getAdventureEncounterCount();
+  resolvePostEncounterRunPreparation({ isFinalEncounter: adventureComplete });
   render();
 
-  if (getAdventureEncounterIndex() >= getAdventureEncounterCount()) {
+  if (adventureComplete) {
     addLog("system", "clear", { region: getAdventureSourceName() });
     if (currentRoute()?.id === "goblin-camp") {
       completeGoblinCampRoute();
@@ -1851,9 +2569,15 @@ function completeGoblinCampRoute() {
   })) {
     throw new Error("哥布林營地 Route completion 條件尚未成立。");
   }
+
+  let endingKey = "ending";
   if (!state.debugBuildRun) {
     const archerProgress = saveData.progression.characters.archer;
+    const archerAlreadyRescued = Boolean(
+      saveData.storyFlags.archerRescued || archerProgress?.unlocked
+    );
     const unlockedArcher = Boolean(archerProgress && !archerProgress.unlocked);
+    endingKey = archerAlreadyRescued ? "repeatEnding" : "ending";
     saveData.storyFlags.archerRescued = true;
     if (archerProgress) {
       archerProgress.unlocked = true;
@@ -1864,11 +2588,13 @@ function completeGoblinCampRoute() {
     unlockAdventureClearAchievements({ regionId: "forest", routeId: route.id });
     recordRunFinished("clear");
   }
-  showRouteEnding(route);
+  showRouteEnding(route, { endingKey });
 }
 
-function showRouteEnding(route = currentRoute()) {
-  const ending = route?.ending;
+function showRouteEnding(route = currentRoute(), options = {}) {
+  const requestedEndingKey = options.endingKey || "ending";
+  const endingKey = route?.[requestedEndingKey]?.pages?.length ? requestedEndingKey : "ending";
+  const ending = route?.[endingKey];
   if (!ending?.pages?.length) {
     finishRun("clear");
     return;
@@ -1877,7 +2603,7 @@ function showRouteEnding(route = currentRoute()) {
   state.ended = true;
   state.awaitingBlessing = false;
   state.phase = "routeEnding";
-  state.routeEndingContext = { routeId: route.id, pageIndex: 0 };
+  state.routeEndingContext = { routeId: route.id, endingKey, pageIndex: 0 };
   state.blessingContext = "normal";
   state.blessingPoolOverrideId = null;
   clearPendingThreat();
@@ -1892,7 +2618,9 @@ function showRouteEnding(route = currentRoute()) {
 
 function getActiveRouteEnding() {
   const routeId = state.routeEndingContext?.routeId || state.activeRouteId;
-  return getRouteDefinition(routeId)?.ending || null;
+  const endingKey = state.routeEndingContext?.endingKey || "ending";
+  const route = getRouteDefinition(routeId);
+  return route?.[endingKey] || route?.ending || null;
 }
 
 function renderRouteEndingPage() {
@@ -1939,6 +2667,21 @@ function handleEventContinueButton() {
   eventRuntime.continueEventResult();
 }
 
+function shouldOfferAnpingArrivalAfterRun(outcome) {
+  return !state.debugBuildRun
+    && outcome === "clear"
+    && state.selectedRegionId === "forest"
+    && !currentRoute()
+    && isSafeAreaUnlocked(saveData, ANPING_TOWN_SAFE_AREA_ID)
+    && !isSafeAreaVisited(saveData, ANPING_TOWN_SAFE_AREA_ID);
+}
+
+function getRunOriginSafeAreaName() {
+  return getSafeAreaDefinition(state.runOriginSafeAreaId)?.name
+    || getSafeAreaDefinition(DEFAULT_SAFE_AREA_ID)?.name
+    || "安全區";
+}
+
 function finishRun(outcome) {
   const region = currentRegion();
   const cleared = outcome === "clear";
@@ -1952,6 +2695,7 @@ function finishRun(outcome) {
     handleDefeatProgression();
   }
   recordRunFinished(outcome);
+  state.pendingAnpingArrival = shouldOfferAnpingArrivalAfterRun(outcome);
   clearPendingThreat();
   state.blessingContext = "normal";
   state.blessingPoolOverrideId = null;
@@ -1964,7 +2708,16 @@ function finishRun(outcome) {
   els.endText.textContent = getEndText(outcome, region);
   els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
   renderEndSummary(outcome, region);
-  els.resultLabel.textContent = cleared ? `${getAdventureSourceName()}突破` : evacuated ? "撤離成功" : retreated ? "回到營地" : "本輪結束";
+  els.retryButton.textContent = state.pendingAnpingArrival
+    ? "繼續前行"
+    : `回到${getRunOriginSafeAreaName()}`;
+  els.resultLabel.textContent = cleared
+    ? `${getAdventureSourceName()}突破`
+    : evacuated
+      ? "撤離成功"
+      : retreated
+        ? "返回據點"
+        : "本輪結束";
   render();
 }
 
@@ -1979,12 +2732,12 @@ function getEndText(outcome, region) {
   }
   if (outcome === "retreat") {
     if (state.runStats?.evacuated) {
-      return "你在追擊中找到回營地的路線，結束了這輪冒險。本輪的臨時祝福會重置，角色等級與經驗會保留。";
+      return `你在追擊中找到返回${getRunOriginSafeAreaName()}的路線，結束了這輪冒險。本輪的臨時祝福會重置，角色等級與經驗會保留。`;
     }
-    return "你回到營地。本輪的臨時祝福會重置，角色等級與經驗會保留。";
+    return `你回到${getRunOriginSafeAreaName()}。本輪的臨時祝福會重置，角色等級與經驗會保留。`;
   }
   if (hasPhoenixBlessing()) {
-    return "你倒下了。鳳凰的加護在灰燼般的微光中甦醒，將你帶回營地。";
+    return `你倒下了。鳳凰的加護在灰燼般的微光中甦醒，將你帶回${getRunOriginSafeAreaName()}。`;
   }
 
   return "你倒在野外，這段旅途累積的等級與經驗已經失去。";
@@ -2032,6 +2785,23 @@ function renderEndSummary(outcome, region) {
       items.push(["本輪金幣", rewards.gold]);
     }
     items.push(["本輪素材", rewards.materials]);
+  }
+
+  if (hasPhoenixBlessing()) {
+    const preparationSummary = getPreparationSummary(state.runPreparation);
+    items.push(["冒險整備", preparationSummary?.name || "無"]);
+    if (preparationSummary) {
+      items.push(["整備發動", `${preparationSummary.triggerCount} 次`]);
+      if (preparationSummary.healing > 0) {
+        items.push(["整備治療", preparationSummary.healing]);
+      }
+      if (preparationSummary.damagePrevented > 0) {
+        items.push(["整備減傷", preparationSummary.damagePrevented]);
+      }
+      if (preparationSummary.retrySuccessCount > 0) {
+        items.push(["額外掙脫成功", `${preparationSummary.retrySuccessCount} 次`]);
+      }
+    }
   }
 
   if (state.runStats?.levelUps.length > 0) {
@@ -2141,7 +2911,7 @@ function resolveFleeFailure() {
     enemy: attacker,
     turn: Math.max(1, state.turn),
     log,
-    modifyDirectDamage: modifyCharacterIncomingDirectDamage
+    modifyDirectDamage: modifyIncomingDirectDamage
   });
   applyEmergencyBandage();
   if (state.hero.hp <= 0) {
@@ -2171,20 +2941,14 @@ function resolveCounterEscape() {
   savePendingThreat("counterEscape");
   addLog("system", "counterEscape");
   consumeBattleLimitedEffects();
-  state.phase = "danger";
-  state.turn = 0;
-  state.awaitingBlessing = false;
-  state.canRest = false;
-  state.hasRested = false;
-  state.ambushAdvantage = true;
-  state.battleSource = "counterEscape";
-  state.battleEncounterType = "counter";
-  state.log = [];
   const counterEnemy = buildCounterEnemy(currentRegion(), state.encounterIndex);
   counterEnemy.poison = 0;
-  setEnemyGroup([counterEnemy]);
-  resetHeroBattleState();
-  applyBattleStartSkills();
+  beginBattleRuntime({
+    enemies: [counterEnemy],
+    source: "counterEscape",
+    encounterType: "counter",
+    ambushAdvantage: true
+  });
   const enemy = currentTargetEnemy();
   const reducedHp = Math.max(1, Math.round(enemy.maxHp * 0.85));
   const reducedAmount = enemy.maxHp - reducedHp;
@@ -2352,6 +3116,190 @@ function closeBlessingInfoPanel() {
   els.blessingInfoPanel.classList.remove("is-visible");
 }
 
+function clearAnpingArrivalTimers() {
+  state.anpingArrivalTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+  state.anpingArrivalTimerIds = [];
+}
+
+function queueAnpingArrivalTimer(callback, delayMs) {
+  const timerId = window.setTimeout(() => {
+    state.anpingArrivalTimerIds = state.anpingArrivalTimerIds.filter((id) => id !== timerId);
+    callback();
+  }, delayMs);
+  state.anpingArrivalTimerIds.push(timerId);
+  return timerId;
+}
+
+function closeAnpingArrivalPanel() {
+  clearAnpingArrivalTimers();
+  state.anpingArrivalContext = null;
+  state.anpingArrivalInputLocked = false;
+  els.anpingArrivalPanel.classList.remove("is-visible");
+  els.anpingArrivalLocation.classList.remove("is-visible");
+  els.anpingArrivalLocation.hidden = true;
+  els.continueAnpingArrivalButton.disabled = false;
+}
+
+function showAnpingArrivalStory(options = {}) {
+  if (
+    !isSafeAreaUnlocked(saveData, ANPING_TOWN_SAFE_AREA_ID)
+    || isSafeAreaVisited(saveData, ANPING_TOWN_SAFE_AREA_ID)
+  ) {
+    return false;
+  }
+
+  setNavigationContext("story");
+  state.anpingArrivalContext = {
+    pageIndex: 0,
+    source: options.source || "safe-area-travel"
+  };
+  state.anpingArrivalInputLocked = false;
+  clearAnpingArrivalTimers();
+  els.endPanel.classList.remove("is-visible");
+  els.storyPanel.classList.remove("is-visible");
+  closeAbilityInfoPanel();
+  closeBlessingInfoPanel();
+  els.anpingArrivalPanel.classList.add("is-visible");
+  els.resultLabel.textContent = "旅途的延續";
+  els.encounterLabel.textContent = "森林道路盡頭";
+  musicManager.preloadTrack("anping-town");
+  void musicManager.requestTrack(null);
+  void ambientManager.requestTrack("anping-coast");
+  renderAnpingArrivalPage(false);
+  return true;
+}
+
+function renderAnpingArrivalPage(revealed = false) {
+  const pageIndex = state.anpingArrivalContext?.pageIndex ?? 0;
+  const page = ANPING_ARRIVAL_PAGES[pageIndex];
+  if (!page) {
+    return;
+  }
+
+  clearAnpingArrivalTimers();
+  els.anpingArrivalDialog.dataset.stage = page.key;
+  els.anpingArrivalEyebrow.textContent = page.eyebrow;
+  els.anpingArrivalTitle.textContent = page.title;
+  els.anpingArrivalCounter.textContent = `${pageIndex + 1} / ${ANPING_ARRIVAL_PAGES.length}`;
+  els.anpingArrivalProgress.forEach((item, index) => {
+    item.classList.toggle("is-active", index <= pageIndex);
+  });
+  els.anpingArrivalUnlock.hidden = page.key !== "history";
+  els.anpingArrivalUnlock.textContent = "安平鎮已解鎖";
+  els.continueAnpingArrivalButton.textContent = page.key === "history" ? "進入安平鎮" : "繼續";
+  els.continueAnpingArrivalButton.disabled = false;
+  els.anpingArrivalLocation.classList.remove("is-visible");
+  els.anpingArrivalLocation.hidden = true;
+
+  renderAnpingArrivalText(revealed);
+
+  if (page.key === "town") {
+    void musicManager.requestTrack("anping-town");
+    queueAnpingArrivalTimer(() => {
+      els.anpingArrivalLocation.hidden = false;
+      window.requestAnimationFrame(() => els.anpingArrivalLocation.classList.add("is-visible"));
+    }, ANPING_ARRIVAL_TIMING.locationDelayMs);
+    queueAnpingArrivalTimer(() => {
+      els.anpingArrivalLocation.classList.remove("is-visible");
+    }, ANPING_ARRIVAL_TIMING.locationHideDelayMs);
+  } else if (page.key === "history") {
+    void musicManager.requestTrack("anping-town");
+  }
+}
+
+function renderAnpingArrivalText(revealed = false) {
+  const pageIndex = state.anpingArrivalContext?.pageIndex ?? 0;
+  const page = ANPING_ARRIVAL_PAGES[pageIndex];
+  if (!page) {
+    return;
+  }
+
+  els.anpingArrivalText.replaceChildren();
+  page.lines.forEach((line, index) => {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = line;
+    paragraph.style.animationDelay = revealed ? "0ms" : `${index * ANPING_ARRIVAL_TIMING.lineDelayMs}ms`;
+    if (revealed) {
+      paragraph.classList.add("is-revealed");
+    }
+    els.anpingArrivalText.append(paragraph);
+  });
+
+  els.revealAnpingArrivalButton.hidden = revealed;
+  els.continueAnpingArrivalButton.hidden = !revealed;
+  if (!revealed) {
+    queueAnpingArrivalTimer(() => {
+      els.revealAnpingArrivalButton.hidden = true;
+      els.continueAnpingArrivalButton.hidden = false;
+    }, Math.max(0, page.lines.length - 1) * ANPING_ARRIVAL_TIMING.lineDelayMs + ANPING_ARRIVAL_TIMING.finishExtraDelayMs);
+  }
+}
+
+function revealAnpingArrivalPage() {
+  clearAnpingArrivalTimers();
+  renderAnpingArrivalText(true);
+  const page = ANPING_ARRIVAL_PAGES[state.anpingArrivalContext?.pageIndex ?? 0];
+  if (page?.key === "town") {
+    els.anpingArrivalLocation.hidden = false;
+    els.anpingArrivalLocation.classList.add("is-visible");
+  }
+}
+
+function continueAnpingArrivalStory() {
+  if (!state.anpingArrivalContext || state.anpingArrivalInputLocked) {
+    return;
+  }
+  state.anpingArrivalInputLocked = true;
+  els.continueAnpingArrivalButton.disabled = true;
+  const pageIndex = state.anpingArrivalContext.pageIndex;
+  if (pageIndex >= ANPING_ARRIVAL_PAGES.length - 1) {
+    completeAnpingArrivalStory();
+    return;
+  }
+  state.anpingArrivalContext.pageIndex += 1;
+  renderAnpingArrivalPage(false);
+  queueAnpingArrivalTimer(() => {
+    if (state.anpingArrivalInputLocked === true) {
+      state.anpingArrivalInputLocked = false;
+      els.continueAnpingArrivalButton.disabled = false;
+    }
+  }, ANPING_ARRIVAL_TIMING.inputUnlockDelayMs);
+}
+
+function completeAnpingArrivalStory() {
+  if (!state.anpingArrivalContext || state.anpingArrivalInputLocked === "saving") {
+    return false;
+  }
+
+  state.anpingArrivalInputLocked = "saving";
+  els.continueAnpingArrivalButton.disabled = true;
+  els.continueAnpingArrivalButton.textContent = "進入中…";
+  const previousSafeAreaProgress = clone(saveData.progression.safeAreas[ANPING_TOWN_SAFE_AREA_ID]);
+  const previousCurrentSafeAreaId = saveData.settings.currentSafeAreaId;
+  const previousUiSafeAreaId = uiState.safeAreaId;
+
+  markSafeAreaVisited(saveData, ANPING_TOWN_SAFE_AREA_ID);
+  setCurrentSafeArea(saveData, ANPING_TOWN_SAFE_AREA_ID);
+  uiState.safeAreaId = ANPING_TOWN_SAFE_AREA_ID;
+
+  if (!saveGameSafe()) {
+    saveData.progression.safeAreas[ANPING_TOWN_SAFE_AREA_ID] = previousSafeAreaProgress;
+    saveData.settings.currentSafeAreaId = previousCurrentSafeAreaId;
+    uiState.safeAreaId = previousUiSafeAreaId;
+    state.anpingArrivalInputLocked = false;
+    els.continueAnpingArrivalButton.disabled = false;
+    els.continueAnpingArrivalButton.textContent = "重新嘗試進入安平鎮";
+    els.anpingArrivalUnlock.hidden = false;
+    els.anpingArrivalUnlock.textContent = "瀏覽器無法保存目前進度，請重新嘗試。";
+    return false;
+  }
+
+  state.pendingAnpingArrival = false;
+  closeAnpingArrivalPanel();
+  returnToSafeArea(ANPING_TOWN_SAFE_AREA_ID);
+  return true;
+}
+
 function closeStoryPanel() {
   if (state.storyTimer) {
     window.clearTimeout(state.storyTimer);
@@ -2366,11 +3314,13 @@ function closeTransientUiPanels() {
   closeSkillPanel();
   closeLockedCharacterHint();
   closeMaterialInfoPanel();
+  merchantController.closeSaleDialog();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
   closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   closeStoryPanel();
+  closeAnpingArrivalPanel();
   closeDeleteSaveDialog();
 }
 
@@ -2416,6 +3366,7 @@ function showPlainsStory() {
   closeAbilityInfoPanel();
   closeBlessingInfoPanel();
   els.storyPanel.classList.add("is-visible");
+  els.finishStoryButton.textContent = `回到${getRunOriginSafeAreaName()}`;
   els.resultLabel.textContent = story.resultLabel || "命運覺醒";
   els.encounterLabel.textContent = story.encounterLabel || "星穹之外";
   renderStoryText(false);
@@ -2458,7 +3409,7 @@ function completePlainsStory() {
     unlockPhoenixBlessing();
   }
   els.storyPanel.classList.remove("is-visible");
-  returnToCamp();
+  returnToRunOriginSafeArea();
 }
 
 function unlockPhoenixBlessing() {
@@ -2482,6 +3433,11 @@ function render() {
     enemies: state.enemies,
     targetEnemyId: state.targetEnemyId,
     phase: state.phase,
+    preparationStatus: getPreparationCombatStatus({
+      preparation: state.runPreparation,
+      encounterType: state.battleEncounterType,
+      enemies: state.enemies
+    }),
     characterStatusEntries: getCharacterCombatStatusEntries(hero),
     onTargetSelect: selectEnemyTarget
   });
@@ -2570,8 +3526,12 @@ function currentRegion() {
 }
 
 function saveGameSafe() {
-  saveGame(saveData, {
-    onError: () => addFixedLog("system", "瀏覽器無法保存目前進度。")
+  return saveGame(saveData, {
+    onError: () => {
+      if (state.hero) {
+        addFixedLog("system", "瀏覽器無法保存目前進度。");
+      }
+    }
   });
 }
 
@@ -2591,13 +3551,31 @@ function bindEvents() {
   els.musicToggleButton.addEventListener("click", toggleMusicEnabled);
   els.musicVolumeInput.addEventListener("input", previewMusicVolume);
   els.musicVolumeInput.addEventListener("change", commitMusicVolume);
-  els.campStartButton.addEventListener("click", startRun);
+  els.campStartButton.addEventListener("click", () => {
+    setNavigationContext("camp");
+    showRegionDetail(state.selectedRegionId);
+  });
   els.campRegionButton.addEventListener("click", () => showRegionList("camp"));
   els.campCharacterButton.addEventListener("click", () => showCharacterList("camp"));
   els.campRecordButton.addEventListener("click", () => showStatisticsScreen("camp"));
   els.campStorageButton.addEventListener("click", () => showScreenInContext("storageScreen", "camp"));
+  els.campPlacesButton.addEventListener("click", () => {
+    if (!els.campPlacesButton.disabled) {
+      showFacilityList(uiState.safeAreaId, "camp");
+    }
+  });
+  els.campTravelButton.addEventListener("click", showSafeAreaTravelScreen);
+  els.safeAreaTravelList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-safe-area-id]");
+    if (button && els.safeAreaTravelList.contains(button)) {
+      handleSafeAreaTravel(button.dataset.safeAreaId);
+    }
+  });
+  els.safeAreaTravelBackButton.addEventListener("click", () => showScreen("campScreen"));
   els.campBackButton.addEventListener("click", restart);
   els.storageBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
+  els.facilityBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
+  els.merchantBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
   els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
   els.statisticsTabs.forEach((button) => {
@@ -2613,12 +3591,14 @@ function bindEvents() {
   document.querySelectorAll(".home-button").forEach((button) => {
     button.addEventListener("click", restart);
   });
-  els.startButton.addEventListener("click", startRun);
+  els.startButton.addEventListener("click", startPlayerRun);
   els.restartButton.addEventListener("click", restart);
-  els.retryButton.addEventListener("click", returnToCamp);
+  els.retryButton.addEventListener("click", handleEndPrimaryAction);
   els.viewLogButton.addEventListener("click", closeEndPanel);
   els.revealStoryButton.addEventListener("click", revealStoryText);
   els.finishStoryButton.addEventListener("click", completePlainsStory);
+  els.revealAnpingArrivalButton.addEventListener("click", revealAnpingArrivalPage);
+  els.continueAnpingArrivalButton.addEventListener("click", continueAnpingArrivalStory);
   els.nextButton.addEventListener("click", playTurn);
   els.fleeButton.addEventListener("click", tryFlee);
   els.continueButton.addEventListener("click", continueAdventure);
@@ -2643,8 +3623,10 @@ function bindEvents() {
   els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
   els.closeSkillInfoButton.addEventListener("click", closeSkillPanel);
   els.closeMaterialInfoButton.addEventListener("click", closeMaterialInfoPanel);
+  els.closeMerchantSaleButton.addEventListener("click", merchantController.closeSaleDialog);
   [
     [els.skillInfoPanel, closeSkillPanel],
+    [els.merchantSalePanel, merchantController.closeSaleDialog],
     [els.materialInfoPanel, closeMaterialInfoPanel],
     [els.abilityInfoPanel, closeAbilityInfoPanel],
     [els.blessingInfoPanel, closeBlessingInfoPanel],
@@ -2653,6 +3635,7 @@ function bindEvents() {
   ].forEach(([panel, closePanel]) => bindBackdropClose(panel, closePanel));
   document.addEventListener("click", () => {
     void musicManager.handleUserInteraction();
+    void ambientManager.handleUserInteraction();
   });
 }
 
@@ -2665,9 +3648,7 @@ eventRuntime = createEventRuntime({
   clearEnemyGroup,
   setCombatActionState,
   applySceneContext,
-  setEnemyGroup,
-  resetHeroBattleState,
-  applyBattleStartSkills,
+  beginBattleRuntime,
   addFixedLog,
   logCurrentEnemyGroupEncounter,
   applyEnemyAmbushes,
@@ -2688,6 +3669,7 @@ const debugActions = createDebugRuntimeActions({
   getSaveData: () => saveData,
   replaceSaveData: (nextSaveData) => {
     saveData = nextSaveData;
+    syncSafeAreaUiFromSave();
   },
   isDebugModeEnabled,
   getCharacterDefinition,
@@ -2698,9 +3680,7 @@ const debugActions = createDebugRuntimeActions({
   render,
   initializeRunRuntime,
   currentRegion,
-  setEnemyGroup,
-  resetHeroBattleState,
-  applyBattleStartSkills,
+  beginBattleRuntime,
   addFixedLog,
   logCurrentEnemyGroupEncounter,
   addLog,
@@ -2713,6 +3693,10 @@ const debugActions = createDebugRuntimeActions({
   applySceneContext,
   consumeBattleLimitedEffects,
   returnToCamp,
+  returnToSafeArea,
+  showAnpingArrivalStory,
+  showSafeAreaTravelScreen,
+  syncSafeAreaUiFromSave,
   syncSelectionFromSave,
   restart,
   syncMusicSettingsFromSave,

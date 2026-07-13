@@ -1,4 +1,4 @@
-import { toSafeNumber } from "../utils.js";
+import { toSafeInteger } from "../utils.js";
 
 export function createEmptyRewards() {
   return {
@@ -46,7 +46,7 @@ export function rollEnemyRewards(enemy, options = {}, randomFn = Math.random) {
 export function mergeRewards(baseRewards = createEmptyRewards(), addedRewards = createEmptyRewards()) {
   const merged = normalizeRewards(baseRewards);
   const added = normalizeRewards(addedRewards);
-  merged.gold += added.gold;
+  merged.gold = addSafeIntegers(merged.gold, added.gold);
   Object.entries(added.materials).forEach(([materialId, material]) => {
     mergeMaterial(merged.materials, materialId, material);
   });
@@ -56,7 +56,7 @@ export function mergeRewards(baseRewards = createEmptyRewards(), addedRewards = 
 export function applyRewardsToInventory(inventory, rewards) {
   const normalizedInventory = normalizeInventory(inventory);
   const normalizedRewards = normalizeRewards(rewards);
-  normalizedInventory.gold += normalizedRewards.gold;
+  normalizedInventory.gold = addSafeIntegers(normalizedInventory.gold, normalizedRewards.gold);
   Object.entries(normalizedRewards.materials).forEach(([materialId, material]) => {
     mergeMaterial(normalizedInventory.materials, materialId, material);
   });
@@ -64,14 +64,14 @@ export function applyRewardsToInventory(inventory, rewards) {
 }
 
 export function normalizeInventory(inventory = {}) {
-  inventory.gold = toSafeNumber(inventory.gold);
+  inventory.gold = toSafeInteger(inventory.gold);
   inventory.materials = normalizeMaterials(inventory.materials);
   return inventory;
 }
 
 export function normalizeRewards(rewards = {}) {
   return {
-    gold: toSafeNumber(rewards.gold),
+    gold: toSafeInteger(rewards.gold),
     materials: normalizeMaterials(rewards.materials)
   };
 }
@@ -138,7 +138,7 @@ function normalizeMaterials(materials = {}) {
       {
         id: materialId,
         name: material?.name || materialId,
-        quantity: toSafeNumber(material?.quantity)
+        quantity: toSafeInteger(material?.quantity)
       }
     ])
     .filter(([, material]) => material.quantity > 0));
@@ -153,8 +153,20 @@ function mergeMaterial(materials, materialId, material) {
   materials[materialId] = {
     id: materialId,
     name: material.name || current.name || materialId,
-    quantity: toSafeNumber(current.quantity) + toSafeNumber(material.quantity)
+    quantity: addSafeIntegers(current.quantity, material.quantity)
   };
+}
+
+function addSafeIntegers(...values) {
+  let total = 0;
+  for (const value of values) {
+    const normalized = toSafeInteger(value);
+    if (normalized > Number.MAX_SAFE_INTEGER - total) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    total += normalized;
+  }
+  return total;
 }
 
 function hydrateMaterial(material, materialDefinitions) {

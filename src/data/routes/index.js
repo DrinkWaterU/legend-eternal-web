@@ -55,7 +55,8 @@ function validateRouteDefinition(route, registry) {
   });
 
   validateRouteEvents(route);
-  validateRouteEnding(route);
+  validateRouteEnding(route, "ending");
+  validateRouteEnding(route, "repeatEnding");
 
   const finalEncounter = route.encounterPlan.at(-1);
   const finalGroup = groups.get(finalEncounter.groupId);
@@ -81,33 +82,33 @@ function validateRouteDefinition(route, registry) {
     }
   });
 }
-function validateRouteEnding(route) {
-  const ending = route.ending;
+function validateRouteEnding(route, endingKey) {
+  const ending = route?.[endingKey];
   if (!ending) {
     return;
   }
 
   const routeId = route.id;
   if (!String(ending.title || "").trim()) {
-    throw new Error(`Route ${routeId} ending 缺少 title。`);
+    throw new Error(`Route ${routeId} ${endingKey} 缺少 title。`);
   }
   if (!Array.isArray(ending.pages) || ending.pages.length === 0) {
-    throw new Error(`Route ${routeId} ending.pages 不可為空。`);
+    throw new Error(`Route ${routeId} ${endingKey}.pages 不可為空。`);
   }
 
   ending.pages.forEach((page, pageIndex) => {
     if (!ROUTE_ENDING_TONES.includes(page?.tone)) {
-      throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁 tone 無效：${page?.tone || "(empty)"}`);
+      throw new Error(`Route ${routeId} ${endingKey} 第 ${pageIndex + 1} 頁 tone 無效：${page?.tone || "(empty)"}`);
     }
     if (!Array.isArray(page.lines) || page.lines.length === 0) {
-      throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁 lines 不可為空。`);
+      throw new Error(`Route ${routeId} ${endingKey} 第 ${pageIndex + 1} 頁 lines 不可為空。`);
     }
     page.lines.forEach((line, lineIndex) => {
       if (!ROUTE_ENDING_ROLES.includes(line?.role)) {
-        throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁第 ${lineIndex + 1} 行 role 無效：${line?.role || "(empty)"}`);
+        throw new Error(`Route ${routeId} ${endingKey} 第 ${pageIndex + 1} 頁第 ${lineIndex + 1} 行 role 無效：${line?.role || "(empty)"}`);
       }
       if (!String(line?.text || "").trim()) {
-        throw new Error(`Route ${routeId} ending 第 ${pageIndex + 1} 頁第 ${lineIndex + 1} 行缺少 text。`);
+        throw new Error(`Route ${routeId} ${endingKey} 第 ${pageIndex + 1} 頁第 ${lineIndex + 1} 行缺少 text。`);
       }
     });
   });
