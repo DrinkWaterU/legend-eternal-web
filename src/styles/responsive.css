@@ -234,13 +234,18 @@
 }
 
 @media (max-width: 480px) {
+  .character-emblem {
+    width: 60px;
+    height: 60px;
+  }
+
   .character-card-heading {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
   .character-card-status {
     grid-column: 1 / -1;
-    margin-left: 62px;
+    margin-left: 72px;
   }
 }
 
