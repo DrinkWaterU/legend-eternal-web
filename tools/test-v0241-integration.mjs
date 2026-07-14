@@ -104,6 +104,6 @@ const domIds = [...dom.matchAll(/document\.querySelector\("#([^"]+)"\)/g)].map((
 const missingIds = domIds.filter((id) => !htmlIds.has(id));
 assert.deepEqual(missingIds, [], `dom.js 不可引用不存在的 HTML id：${missingIds.join(", ")}`);
 
-assert.match(config, /SAVE_SCHEMA_VERSION = 7/);
+assert.match(config, /SAVE_SCHEMA_VERSION = 8/);
 
 console.log("v0.2.4.1 merchant quantity and atomic batch sale integration tests passed.");

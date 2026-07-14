@@ -116,7 +116,7 @@ export function sellMaterial({ inventory, materialDefinitions = {}, materialId, 
   };
 }
 
-function createInventoryCostPlan({ inventory, materialDefinitions = {}, goldCost, materialCosts = [] }) {
+export function createInventoryCostPlan({ inventory, materialDefinitions = {}, goldCost, materialCosts = [] }) {
   if (!inventory || typeof inventory !== "object") {
     throw new Error("付款需要有效的 inventory。");
   }
@@ -223,5 +223,83 @@ export function spendGold(inventory, cost) {
   return {
     cost: result.goldCost,
     gold: result.gold
+  };
+}
+
+export function getInventoryCostStatus({
+  inventory,
+  materialDefinitions = {},
+  goldCost,
+  materialCosts = []
+}) {
+  const currentGold = Number.isSafeInteger(inventory?.gold) && inventory.gold >= 0
+    ? inventory.gold
+    : 0;
+  const materials = Array.isArray(materialCosts)
+    ? materialCosts.map((cost) => {
+      const definition = materialDefinitions[cost?.materialId];
+      const heldQuantity = Number(inventory?.materials?.[cost?.materialId]?.quantity);
+      const quantity = Number.isSafeInteger(cost?.quantity) && cost.quantity > 0
+        ? cost.quantity
+        : 0;
+      return {
+        materialId: cost?.materialId || null,
+        name: definition?.name || cost?.materialId || "未知素材",
+        quantity,
+        heldQuantity: Number.isSafeInteger(heldQuantity) && heldQuantity >= 0 ? heldQuantity : 0,
+        enough: Boolean(definition) && quantity > 0 && Number.isSafeInteger(heldQuantity) && heldQuantity >= quantity
+      };
+    })
+    : [];
+  const normalizedGoldCost = Number.isSafeInteger(goldCost) && goldCost >= 0 ? goldCost : 0;
+
+  return {
+    goldCost: normalizedGoldCost,
+    currentGold,
+    goldEnough: currentGold >= normalizedGoldCost,
+    materialCosts: materials,
+    affordable: currentGold >= normalizedGoldCost && materials.every((item) => item.enough)
+  };
+}
+
+export function craftWeapon({
+  inventory,
+  weapon,
+  materialDefinitions = {}
+}) {
+  if (!inventory || typeof inventory !== "object") {
+    throw new Error("製作需要有效的 inventory。");
+  }
+  if (!weapon || typeof weapon.id !== "string" || !weapon.id) {
+    throw new Error("製作需要有效的武器 definition。");
+  }
+  if (inventory.weapons?.[weapon.id] === true) {
+    throw new Error(`已擁有${weapon.name || weapon.id}。`);
+  }
+  if (!weapon.recipe || typeof weapon.recipe !== "object") {
+    throw new Error(`${weapon.name || weapon.id}缺少有效配方。`);
+  }
+
+  const plan = createInventoryCostPlan({
+    inventory,
+    materialDefinitions,
+    goldCost: weapon.recipe.goldCost,
+    materialCosts: weapon.recipe.materialCosts
+  });
+  const nextWeapons = inventory.weapons && typeof inventory.weapons === "object" && !Array.isArray(inventory.weapons)
+    ? { ...inventory.weapons }
+    : {};
+  nextWeapons[weapon.id] = true;
+
+  inventory.gold = plan.gold;
+  inventory.materials = plan.materials;
+  inventory.weapons = nextWeapons;
+
+  return {
+    weaponId: weapon.id,
+    weaponName: weapon.name || weapon.id,
+    goldCost: plan.goldCost,
+    materialCosts: plan.materialCosts,
+    gold: plan.gold
   };
 }

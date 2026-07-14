@@ -23,7 +23,7 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 assert.match(officialVersion, /^v\d+\.\d+\.\d+(?:\.\d+)?-[a-z0-9.-]+$/i, "VERSION 格式無效");
 assert.equal(GAME_VERSION, officialVersion, "src/config.js 的 GAME_VERSION 必須與 VERSION 一致");
-assert.equal(SAVE_SCHEMA_VERSION, 7, "v0.2.5.0 應使用 Safe Area progression schema");
+assert.equal(SAVE_SCHEMA_VERSION, 8, "v0.2.5.2 應維持永久武器與角色裝備 schema");
 assert.match(readme, new RegExp("目前版本：`" + escapeRegExp(officialVersion) + "`"), "README 目前版本未同步");
 assert.match(html, new RegExp(`<p class="version-label">${escapeRegExp(officialVersion)}</p>`), "主選單版本標籤未同步");
 
@@ -32,7 +32,7 @@ assert.equal(htmlCacheVersions.length, 2, "index.html 應有 styles.css 與 game
 assert.deepEqual([...new Set(htmlCacheVersions)], [cacheVersion], "index.html cache version 未同步");
 
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
-assert.equal(styleCacheVersions.length, 6, "styles.css 應維持 6 個內部樣式 import");
+assert.equal(styleCacheVersions.length, 7, "styles.css 應維持 7 個內部樣式 import");
 assert.deepEqual([...new Set(styleCacheVersions)], [cacheVersion], "內部 CSS cache version 未同步");
 
 const editorVersion = editorSource.match(/const DEFAULT_GAME_VERSION = "([^"]+)"/)?.[1] || null;

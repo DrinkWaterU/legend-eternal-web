@@ -6,6 +6,12 @@ import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
 import { spendInventoryCost } from "./src/core/commerce.js";
 import {
+  equipWeapon,
+  getOwnedCompatibleWeapons,
+  resolveEquippedWeapon,
+  unequipWeapon
+} from "./src/core/equipment.js";
+import {
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
   applyHeroEndOfTurnNegativeEffects,
@@ -71,6 +77,11 @@ import { getAllIndependentBlessings, getBlessingPool } from "./src/data/blessing
 import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
 import { assertFacilityDefinitions, facilityDefinitions, getFacilityDefinition } from "./src/data/facilities.js";
 import { materialDefinitions } from "./src/data/materials.js";
+import {
+  assertWeaponDefinitions,
+  weaponCategoryDefinitions,
+  weaponDefinitions
+} from "./src/data/weapons.js";
 import { ambientAudioDefinitions } from "./src/data/ambientAudio.js";
 import { ANPING_ARRIVAL_TIMING, anpingArrivalPages } from "./src/data/anpingArrival.js";
 import { musicDefinitions } from "./src/data/music.js";
@@ -90,7 +101,9 @@ import { getBlessingRarity } from "./src/data/rarities.js";
 import { templates } from "./src/data/templates.js";
 import { els } from "./src/ui/dom.js";
 import { renderCharacterSkills } from "./src/ui/characterSkillsView.js";
+import { renderCharacterDetailView } from "./src/ui/characterDetailView.js";
 import { renderCharacterCards } from "./src/ui/characterSelectView.js";
+import { filterEquipmentWeapons, renderCharacterEquipmentView } from "./src/ui/characterEquipmentView.js";
 import { initDebugPanel } from "./src/ui/debugPanel.js";
 import { renderBlessingInfoView } from "./src/ui/blessingInfoView.js";
 import { renderCombatView, renderCurrentAbilityView } from "./src/ui/combatView.js";
@@ -99,10 +112,17 @@ import { renderBattleLog, renderBlessingChoices, renderChoiceList, renderStatLis
 import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/ui/saveTools.js";
 import { renderFacilityListView } from "./src/ui/facilityView.js";
 import { createMerchantController } from "./src/ui/merchantController.js";
+import { createBlacksmithController } from "./src/ui/blacksmithController.js";
 import { getEnhancementMaterialState, renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
 import { clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState } from "./src/ui/preparationState.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
-import { closeMaterialDetail, renderStorageView, showMaterialDetail } from "./src/ui/storageView.js";
+import { buildMaterialUsageIndex } from "./src/ui/materialUsage.js";
+import { renderStorageView } from "./src/ui/storageView.js";
+import {
+  closeAchievementDetailView,
+  renderAchievementUnlockToast,
+  renderAchievementView
+} from "./src/ui/achievementView.js";
 import { createDebugRuntimeActions } from "./src/debug/runtimeActions.js";
 import {
   getCharacterCombatStatusEntries,
@@ -142,6 +162,9 @@ const ROOT_SCREEN_CONTEXTS = Object.freeze({
   campScreen: "camp",
   gameScreen: "adventure"
 });
+
+const materialUsageIndex = buildMaterialUsageIndex({ regionDefinitions, weaponDefinitions });
+const ACHIEVEMENT_TOAST_DURATION_MS = 4600;
 
 const state = {
   run: 0,
@@ -190,6 +213,9 @@ const state = {
   anpingArrivalInputLocked: false,
   anpingArrivalTimerIds: [],
   runResultRecorded: false,
+  pendingAchievementUnlocks: [],
+  activeAchievementToastId: null,
+  achievementToastTimer: null,
   log: []
 };
 
@@ -198,11 +224,30 @@ const uiState = {
   regionView: "list",
   characterView: "list",
   characterDetailId: DEFAULT_CHARACTER_ID,
+  equipmentPreviewWeaponId: null,
+  equipmentNotice: "",
+  equipmentNoticeType: "status",
+  characterSkillSelectedId: null,
+  characterSkillSearchQuery: "",
+  characterSkillTypeFilter: "all",
+  characterSkillStageFilter: "all",
+  equipmentSearchQuery: "",
+  equipmentCategoryFilter: "all",
+  equipmentSortMode: "rarity",
   statisticsView: "overview",
   statisticsCharacterId: DEFAULT_CHARACTER_ID,
   statisticsRegionId: DEFAULT_REGION_ID,
   storageSortMode: "rarity",
   storageSortDirection: "desc",
+  storageSearchQuery: "",
+  storageRarityFilter: "all",
+  storageSelectedMaterialId: null,
+  storageUsageFilter: "all",
+  storageExpandedUsageIds: new Set(),
+  achievementFilter: "all",
+  achievementSelectedId: null,
+  achievementNewIds: new Set(),
+  achievementDetailOpen: false,
   safeAreaId: DEFAULT_SAFE_AREA_ID,
   facilityView: "list",
   selectedPreparationId: null,
@@ -217,6 +262,7 @@ const uiState = {
 let saveData = loadSave();
 syncSafeAreaUiFromSave();
 let pendingSaveCodeImport = null;
+let achievementDetailTrigger = null;
 const musicManager = createMusicManager({ trackDefinitions: musicDefinitions });
 const ambientManager = createMusicManager({
   trackDefinitions: ambientAudioDefinitions,
@@ -225,7 +271,8 @@ const ambientManager = createMusicManager({
 let eventRuntime = null;
 
 const FACILITY_ACTION_HANDLERS = Object.freeze({
-  merchant: showMerchantFacility
+  merchant: showMerchantFacility,
+  blacksmith: showBlacksmithFacility
 });
 
 const merchantController = createMerchantController({
@@ -236,7 +283,18 @@ const merchantController = createMerchantController({
   saveInventory: saveGameSafe
 });
 
+const blacksmithController = createBlacksmithController({
+  els,
+  weaponDefinitions,
+  weaponCategoryDefinitions,
+  materialDefinitions,
+  getInventory: () => saveData.inventory,
+  getSafeArea: getCurrentSafeArea,
+  saveInventory: saveGameSafe
+});
+
 assertFacilityDefinitions(facilityDefinitions);
+assertWeaponDefinitions(weaponDefinitions, { materialDefinitions });
 assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
 Object.values(regionDefinitions).forEach(assertRegionPreparations);
 Object.values(facilityDefinitions).forEach((facility) => {
@@ -474,7 +532,6 @@ function getAdventureBackgroundStage(source, encounterIndex) {
 }
 
 function showScreen(screenId) {
-  closeMaterialDetail(els);
   syncRootScreenContext(screenId);
   applySceneContext(screenId);
 
@@ -506,7 +563,9 @@ function showScreen(screenId) {
   if (screenId === "facilityScreen") {
     els.resultLabel.textContent = uiState.facilityView === "merchant"
       ? "旅行商人"
-      : getCurrentSafeArea()?.placesTitle || "安全區去處";
+      : uiState.facilityView === "blacksmith"
+        ? "鐵匠鋪"
+        : getCurrentSafeArea()?.placesTitle || "安全區去處";
     els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
     renderFacilityScreen();
   }
@@ -694,6 +753,7 @@ function renderRegionScreen() {
       uiState,
       region,
       gold: inventory.gold,
+      inventoryMaterials: inventory.materials,
       enabled: phoenixUnlocked
     });
 
@@ -799,8 +859,44 @@ function showCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
     showLockedCharacterHint();
     return;
   }
+  const changedCharacter = uiState.characterDetailId !== characterId;
   uiState.characterDetailId = characterId;
   uiState.characterView = "detail";
+  uiState.equipmentNotice = "";
+  if (changedCharacter) {
+    uiState.characterSkillSelectedId = null;
+    uiState.characterSkillSearchQuery = "";
+    uiState.characterSkillTypeFilter = "all";
+    uiState.characterSkillStageFilter = "all";
+  }
+  showScreen("characterScreen");
+}
+
+function showCharacterEquipment(characterId = uiState.characterDetailId) {
+  if (!isCharacterUnlocked(characterId)) {
+    showLockedCharacterHint();
+    return;
+  }
+  uiState.characterDetailId = characterId;
+  uiState.characterView = "equipment";
+  uiState.equipmentNotice = "";
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const equippedWeapon = resolveEquippedWeapon({
+    character,
+    progress,
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+  const ownedWeapons = getOwnedCompatibleWeapons({
+    character,
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+  uiState.equipmentPreviewWeaponId = equippedWeapon?.id || ownedWeapons[0]?.id || null;
+  uiState.equipmentSearchQuery = "";
+  uiState.equipmentCategoryFilter = "all";
+  uiState.equipmentSortMode = "rarity";
   showScreen("characterScreen");
 }
 
@@ -824,63 +920,225 @@ function selectCharacterFromDetail() {
   renderCharacterScreen();
 }
 
+function selectEquipmentPreview(weaponId) {
+  if (!weaponDefinitions[weaponId]) {
+    return;
+  }
+  uiState.equipmentPreviewWeaponId = weaponId;
+  uiState.equipmentNotice = "";
+  renderCharacterScreen();
+}
+
+function equipCharacterWeapon(weaponId) {
+  const characterId = uiState.characterDetailId;
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const previousWeaponId = progress.equipment?.weaponId || null;
+  try {
+    const weapon = equipWeapon({
+      character,
+      progress,
+      inventory: saveData.inventory,
+      weaponDefinitions,
+      weaponId
+    });
+    if (!saveGameSafe()) {
+      progress.equipment = { weaponId: previousWeaponId };
+      throw new Error("瀏覽器無法保存裝備變更，已恢復原本武器。");
+    }
+    uiState.equipmentPreviewWeaponId = weapon.id;
+    uiState.equipmentNotice = `已為${character.name}裝備${weapon.name}。下一輪冒險開始時生效。`;
+    uiState.equipmentNoticeType = "status";
+  } catch (error) {
+    uiState.equipmentNotice = error instanceof Error ? error.message : "裝備武器失敗。";
+    uiState.equipmentNoticeType = "error";
+  }
+  renderCharacterScreen();
+}
+
+function unequipCharacterWeapon() {
+  const characterId = uiState.characterDetailId;
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const previousWeaponId = unequipWeapon(progress);
+  const previousWeapon = weaponDefinitions[previousWeaponId];
+  if (!saveGameSafe()) {
+    progress.equipment = { weaponId: previousWeaponId };
+    uiState.equipmentNotice = "瀏覽器無法保存卸下結果，已恢復原本武器。";
+    uiState.equipmentNoticeType = "error";
+    renderCharacterScreen();
+    return;
+  }
+  uiState.equipmentNotice = previousWeapon
+    ? `已卸下${previousWeapon.name}。下一輪冒險開始時生效。`
+    : "目前沒有已裝備的武器。";
+  uiState.equipmentNoticeType = "status";
+  renderCharacterScreen();
+}
+
+function buildHeroPreviewForWeapon(characterId, weaponId) {
+  const character = characterDefinitions[characterId];
+  const progress = clone(normalizeCharacterProgress(characterId));
+  progress.equipment = { weaponId: weaponId || null };
+  return buildHeroFromProgressionCore(character, progress, {
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+}
+
 function renderCharacterScreen() {
   els.characterListView.classList.toggle("is-active", uiState.characterView === "list");
   els.characterDetailView.classList.toggle("is-active", uiState.characterView === "detail");
+  els.characterEquipmentView.classList.toggle("is-active", uiState.characterView === "equipment");
   setReturnButton(els.characterListView.querySelector(".back-button"), getNavigationReturnTarget());
+
+  const equippedWeaponsByCharacterId = Object.fromEntries(
+    Object.entries(characterDefinitions).map(([characterId, character]) => {
+      const progress = getCharacterProgress(characterId);
+      return [characterId, resolveEquippedWeapon({
+        character,
+        progress,
+        inventory: saveData.inventory,
+        weaponDefinitions
+      })];
+    })
+  );
 
   renderCharacterCards({
     element: els.characterChoiceList,
     characterDefinitions,
     characterProgression: saveData.progression.characters,
     selectedCharacterId: saveData.settings.selectedCharacterId,
+    equippedWeaponsByCharacterId,
+    weaponCategoryDefinitions,
     onCharacterClick: showCharacterDetail,
     onLockedCharacterClick: showLockedCharacterHint
   });
 
+  if (uiState.characterView === "list") {
+    return;
+  }
+
+  const characterId = isCharacterUnlocked(uiState.characterDetailId)
+    ? uiState.characterDetailId
+    : saveData.settings.selectedCharacterId;
+  uiState.characterDetailId = characterId;
+  const character = characterDefinitions[characterId];
+  const progress = getCharacterProgress(characterId);
+  const preview = buildHeroFromProgression(characterId);
+  const equippedWeapon = equippedWeaponsByCharacterId[characterId] || null;
+
   if (uiState.characterView === "detail") {
-    const characterId = isCharacterUnlocked(uiState.characterDetailId)
-      ? uiState.characterDetailId
-      : saveData.settings.selectedCharacterId;
-    uiState.characterDetailId = characterId;
-    const character = characterDefinitions[characterId];
-    const preview = buildHeroFromProgression(characterId);
-    const progress = getCharacterProgress(characterId);
-    const selected = characterId === saveData.settings.selectedCharacterId;
-    els.characterDetailName.textContent = character.name;
-    els.characterDetailRole.textContent = character.role || "";
-    els.characterDetailRole.hidden = !character.role;
-    els.characterDetailDescription.textContent = character.description;
-    renderStatList(els.characterDetailStats, [
-      ["等級", `Lv. ${progress.level}`],
-      ["經驗", `${progress.exp} / ${getExpToNextLevel(progress.level, character)}`],
-      ["最大生命", preview.maxHp],
-      ["攻擊", preview.attack],
-      ["防禦", preview.defense],
-      ["暴擊", `${Math.round(preview.critChance * 100)}%`]
-    ]);
-    renderCharacterSkills({
-      learnedListElement: els.characterSkillList,
-      nextSkillElement: els.characterNextSkillPanel,
+    const maxLevel = getCharacterMaxLevel(character);
+    const experienceLabel = progress.level >= maxLevel
+      ? "經驗 MAX"
+      : `經驗 ${progress.exp} / ${getExpToNextLevel(progress.level, character)}`;
+    renderCharacterDetailView({
+      els,
+      characterId,
       character,
       progress,
-      onSkillClick: showSkillInfo
+      hero: preview,
+      equippedWeapon,
+      weaponCategoryDefinitions,
+      experienceLabel,
+      selected: characterId === saveData.settings.selectedCharacterId,
+      onEquipmentOpen: () => showCharacterEquipment(characterId)
     });
-    els.selectCharacterButton.textContent = selected ? "目前使用中" : `使用${character.name}`;
-    els.selectCharacterButton.disabled = selected;
+
+    els.characterSkillSearchInput.value = uiState.characterSkillSearchQuery;
+    els.characterSkillTypeSelect.value = uiState.characterSkillTypeFilter;
+    const skillResult = renderCharacterSkills({
+      listElement: els.characterSkillList,
+      detailElement: els.characterSkillDetail,
+      nextSkillElement: els.characterNextSkillPanel,
+      countElement: els.characterSkillCount,
+      emptyElement: els.characterSkillEmpty,
+      stageFilterElement: els.characterSkillStageFilters,
+      character,
+      progress,
+      selectedSkillId: uiState.characterSkillSelectedId,
+      searchQuery: uiState.characterSkillSearchQuery,
+      typeFilter: uiState.characterSkillTypeFilter,
+      stageFilter: uiState.characterSkillStageFilter,
+      onSkillSelect: (skillId) => {
+        uiState.characterSkillSelectedId = skillId;
+        renderCharacterScreen();
+      }
+    });
+    uiState.characterSkillSelectedId = skillResult.selectedSkillId;
+    return;
   }
+
+  const ownedWeapons = getOwnedCompatibleWeapons({
+    character,
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
+  const visibleWeapons = filterEquipmentWeapons(ownedWeapons, {
+    searchQuery: uiState.equipmentSearchQuery,
+    categoryFilter: uiState.equipmentCategoryFilter,
+    sortMode: uiState.equipmentSortMode
+  });
+  const selectedWeapon = visibleWeapons.find((weapon) => weapon.id === uiState.equipmentPreviewWeaponId)
+    || visibleWeapons.find((weapon) => weapon.id === equippedWeapon?.id)
+    || visibleWeapons[0]
+    || null;
+  uiState.equipmentPreviewWeaponId = selectedWeapon?.id || null;
+  const equipmentPreview = selectedWeapon
+    ? buildHeroPreviewForWeapon(characterId, selectedWeapon.id)
+    : preview;
+
+  renderCharacterEquipmentView({
+    els,
+    character,
+    progress,
+    equippedWeapon,
+    selectedWeapon,
+    ownedWeapons,
+    visibleWeapons,
+    weaponCategoryDefinitions,
+    currentHero: preview,
+    previewHero: equipmentPreview,
+    notice: uiState.equipmentNotice,
+    noticeType: uiState.equipmentNoticeType,
+    searchQuery: uiState.equipmentSearchQuery,
+    categoryFilter: uiState.equipmentCategoryFilter,
+    sortMode: uiState.equipmentSortMode,
+    onSearchChange: (searchQuery) => {
+      uiState.equipmentSearchQuery = searchQuery;
+      renderCharacterScreen();
+    },
+    onSortChange: (sortMode) => {
+      uiState.equipmentSortMode = sortMode;
+      renderCharacterScreen();
+    },
+    onCategoryChange: (categoryFilter) => {
+      uiState.equipmentCategoryFilter = categoryFilter;
+      renderCharacterScreen();
+    },
+    onWeaponSelect: selectEquipmentPreview,
+    onEquip: equipCharacterWeapon,
+    onUnequip: unequipCharacterWeapon
+  });
 }
 
 function renderStorageScreen() {
   const inventory = normalizeInventory(saveData.inventory);
   els.storageSafeAreaEyebrow.textContent = getCurrentSafeArea()?.name || "安全區";
   setReturnButton(els.storageBackButton, getNavigationReturnTarget());
-  renderStorageView({
+  const result = renderStorageView({
     els,
     inventory,
     materialDefinitions,
+    usageIndex: materialUsageIndex,
     sortMode: uiState.storageSortMode,
     sortDirection: uiState.storageSortDirection,
+    searchQuery: uiState.storageSearchQuery,
+    rarityFilter: uiState.storageRarityFilter,
+    selectedMaterialId: uiState.storageSelectedMaterialId,
+    usageFilter: uiState.storageUsageFilter,
+    expandedUsageIds: uiState.storageExpandedUsageIds,
     onSortChange: (sortMode) => {
       uiState.storageSortMode = sortMode;
       renderStorageScreen();
@@ -889,8 +1147,44 @@ function renderStorageScreen() {
       uiState.storageSortDirection = sortDirection;
       renderStorageScreen();
     },
-    onMaterialClick: (item) => showMaterialDetail(els, item)
+    onSearchChange: (searchQuery) => {
+      uiState.storageSearchQuery = searchQuery;
+      renderStorageScreen();
+    },
+    onRarityChange: (rarityFilter) => {
+      uiState.storageRarityFilter = rarityFilter;
+      renderStorageScreen();
+    },
+    onMaterialSelect: (materialId) => {
+      if (uiState.storageSelectedMaterialId !== materialId) {
+        uiState.storageUsageFilter = "all";
+        uiState.storageExpandedUsageIds = new Set();
+      }
+      uiState.storageSelectedMaterialId = materialId;
+      renderStorageScreen();
+    },
+    onUsageFilterChange: (usageFilter) => {
+      uiState.storageUsageFilter = usageFilter;
+      renderStorageScreen();
+    },
+    onUsageToggle: (usageId) => {
+      const nextExpanded = new Set(uiState.storageExpandedUsageIds);
+      if (nextExpanded.has(usageId)) {
+        nextExpanded.delete(usageId);
+      } else {
+        nextExpanded.add(usageId);
+      }
+      uiState.storageExpandedUsageIds = nextExpanded;
+      renderStorageScreen();
+    },
+    onClearFilters: () => {
+      uiState.storageSearchQuery = "";
+      uiState.storageRarityFilter = "all";
+      renderStorageScreen();
+    }
   });
+  uiState.storageSelectedMaterialId = result.selectedMaterialId;
+  uiState.storageUsageFilter = result.usageFilter;
 }
 
 function syncSafeAreaUiFromSave() {
@@ -1039,12 +1333,19 @@ function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.n
   setNavigationContext(contextId);
   uiState.facilityView = "list";
   merchantController.reset();
+  blacksmithController.reset();
   showScreen("facilityScreen");
 }
 
 function showMerchantFacility() {
   uiState.facilityView = "merchant";
   merchantController.reset();
+  showScreen("facilityScreen");
+}
+
+function showBlacksmithFacility() {
+  uiState.facilityView = "blacksmith";
+  blacksmithController.reset();
   showScreen("facilityScreen");
 }
 
@@ -1061,6 +1362,7 @@ function renderFacilityScreen() {
   const facilities = getAvailableFacilities(safeArea);
   els.facilityListView.classList.toggle("is-active", uiState.facilityView === "list");
   els.merchantView.classList.toggle("is-active", uiState.facilityView === "merchant");
+  els.blacksmithView.classList.toggle("is-active", uiState.facilityView === "blacksmith");
 
   if (uiState.facilityView === "list") {
     renderFacilityListView({
@@ -1072,7 +1374,11 @@ function renderFacilityScreen() {
     return;
   }
 
-  merchantController.render();
+  if (uiState.facilityView === "merchant") {
+    merchantController.render();
+    return;
+  }
+  blacksmithController.render();
 }
 
 function selectPreparation(preparationId) {
@@ -1186,6 +1492,7 @@ function createRunStats() {
     retreated: false,
     bossId: null,
     bossName: null,
+    preparationCost: null,
     rewards: createEmptyRewards()
   };
 }
@@ -1240,7 +1547,10 @@ function normalizeCharacterProgress(characterId = state.selectedHeroId) {
 function buildHeroFromProgression(characterId = state.selectedHeroId) {
   const character = getCharacterDefinition(characterId);
   const progress = normalizeCharacterProgress(characterId);
-  return buildHeroFromProgressionCore(character, progress);
+  return buildHeroFromProgressionCore(character, progress, {
+    inventory: saveData.inventory,
+    weaponDefinitions
+  });
 }
 
 function gainCharacterExp(amount) {
@@ -1426,65 +1736,136 @@ function unlockAchievement(achievementId) {
     unlocked: false,
     unlockedAt: null
   };
-  if (!achievement.unlocked) {
-    achievement.unlocked = true;
-    achievement.unlockedAt = new Date().toISOString();
+  if (achievement.unlocked) {
+    return false;
   }
+  achievement.unlocked = true;
+  achievement.unlockedAt = new Date().toISOString();
   saveData.achievements[achievementId] = achievement;
+  return true;
+}
+
+function queueAchievementUnlock(achievementId) {
+  if (!unlockAchievement(achievementId)) {
+    return false;
+  }
+  state.pendingAchievementUnlocks.push(achievementId);
+  uiState.achievementNewIds.add(achievementId);
   return true;
 }
 
 function renderStatistics() {
   setReturnButton(els.statisticsScreen.querySelector(".back-button"), getNavigationReturnTarget());
+  const equippedWeaponsByCharacterId = Object.fromEntries(
+    Object.entries(characterDefinitions).map(([characterId, character]) => [
+      characterId,
+      resolveEquippedWeapon({
+        character,
+        progress: getCharacterProgress(characterId),
+        inventory: saveData.inventory,
+        weaponDefinitions
+      })
+    ])
+  );
   renderStatisticsView({
     els,
     uiState,
     saveData,
     characterDefinitions,
     regionDefinitions,
-    onCharacterDetail: showStatisticsCharacterDetail,
-    onRegionDetail: showStatisticsRegionDetail
+    equippedWeaponsByCharacterId,
+    onCharacterSelect: showStatisticsCharacterDetail,
+    onRegionSelect: showStatisticsRegionDetail
   });
 }
 
 function renderAchievementScreen() {
-  if (!els.achievementTitle || !els.achievementText || !els.achievementList) {
-    return;
-  }
   setReturnButton(els.achievementScreen.querySelector(".back-button"), getNavigationReturnTarget());
-  const unlocked = saveData.storyFlags.achievementSystemUnlocked;
-  els.achievementTitle.textContent = unlocked ? "已解鎖成就" : "尚未開放";
-  els.achievementText.textContent = unlocked
-    ? "這裡記錄你在傳說大陸留下的節點。"
-    : "這裡之後會記錄冒險進度、擊敗首領、角色解鎖與特殊挑戰。";
-  els.achievementList.innerHTML = "";
-  if (!unlocked) {
+  if (!saveData.storyFlags.achievementSystemUnlocked) {
+    uiState.achievementDetailOpen = false;
+    achievementDetailTrigger = null;
+  }
+  const result = renderAchievementView({
+    els,
+    definitions: achievementDefinitions,
+    achievementState: saveData.achievements,
+    systemUnlocked: saveData.storyFlags.achievementSystemUnlocked,
+    filter: uiState.achievementFilter,
+    selectedId: uiState.achievementSelectedId,
+    newAchievementIds: uiState.achievementNewIds,
+    detailOpen: uiState.achievementDetailOpen,
+    regionDefinitions,
+    getRouteName: (routeId) => getRouteDefinition(routeId)?.name || routeId,
+    onFilterChange: (filter) => {
+      uiState.achievementFilter = filter;
+      uiState.achievementSelectedId = null;
+      uiState.achievementDetailOpen = false;
+      renderAchievementScreen();
+    },
+    onAchievementSelect: (achievementId, trigger) => {
+      achievementDetailTrigger = trigger || null;
+      uiState.achievementSelectedId = achievementId;
+      uiState.achievementNewIds.delete(achievementId);
+      uiState.achievementDetailOpen = window.matchMedia("(max-width: 760px)").matches;
+      renderAchievementScreen();
+    }
+  });
+  uiState.achievementFilter = result.filter;
+  uiState.achievementSelectedId = result.selectedId;
+}
+
+function closeAchievementDetailPanel({ restoreFocus = true } = {}) {
+  uiState.achievementDetailOpen = false;
+  closeAchievementDetailView(els);
+  if (restoreFocus && achievementDetailTrigger?.isConnected) {
+    achievementDetailTrigger.focus();
+  }
+  achievementDetailTrigger = null;
+}
+
+function closeAchievementUnlockToast({ showNext = true } = {}) {
+  if (state.achievementToastTimer) {
+    window.clearTimeout(state.achievementToastTimer);
+    state.achievementToastTimer = null;
+  }
+  state.activeAchievementToastId = null;
+  renderAchievementUnlockToast({ els, definition: null });
+  if (showNext && state.pendingAchievementUnlocks.length > 0) {
+    window.setTimeout(flushAchievementUnlockQueue, 180);
+  }
+}
+
+function flushAchievementUnlockQueue() {
+  if (state.activeAchievementToastId || state.pendingAchievementUnlocks.length === 0) {
     return;
   }
-  Object.values(achievementDefinitions).forEach((definition) => {
-    const achievement = saveData.achievements[definition.id] || {};
-    if (definition.hiddenUntilUnlocked && !achievement.unlocked) {
-      return;
-    }
-    const item = document.createElement("div");
-    item.className = "achievement-card";
-    item.classList.toggle("is-locked", !achievement.unlocked);
+  const achievementId = state.pendingAchievementUnlocks.shift();
+  const definition = achievementDefinitions[achievementId];
+  if (!definition) {
+    flushAchievementUnlockQueue();
+    return;
+  }
+  state.activeAchievementToastId = achievementId;
+  renderAchievementUnlockToast({ els, definition });
+  state.achievementToastTimer = window.setTimeout(
+    () => closeAchievementUnlockToast(),
+    ACHIEVEMENT_TOAST_DURATION_MS
+  );
+}
 
-    const title = document.createElement("strong");
-    const condition = document.createElement("span");
-    const description = document.createElement("p");
-    const meta = document.createElement("small");
-    title.textContent = definition.title;
-    condition.textContent = definition.conditionText;
-    description.textContent = achievement.unlocked ? definition.description : "尚未解鎖。";
-    meta.textContent = achievement.unlocked
-      ? achievement.unlockedAt
-        ? `解鎖於 ${new Date(achievement.unlockedAt).toLocaleString("zh-TW")}`
-        : "已解鎖"
-      : "未解鎖";
-    item.append(title, condition, description, meta);
-    els.achievementList.append(item);
-  });
+function resetAchievementUiRuntime() {
+  if (state.achievementToastTimer) {
+    window.clearTimeout(state.achievementToastTimer);
+  }
+  state.achievementToastTimer = null;
+  state.activeAchievementToastId = null;
+  state.pendingAchievementUnlocks = [];
+  renderAchievementUnlockToast({ els, definition: null });
+  uiState.achievementFilter = "all";
+  uiState.achievementSelectedId = null;
+  uiState.achievementNewIds = new Set();
+  uiState.achievementDetailOpen = false;
+  closeAchievementDetailPanel({ restoreFocus: false });
 }
 
 function showStatisticsScreen(contextId = uiState.navigationContext) {
@@ -1510,19 +1891,25 @@ function setReturnButton(button, target) {
 
 function showStatisticsCharacterDetail(characterId = DEFAULT_CHARACTER_ID) {
   uiState.statisticsCharacterId = characterId;
-  uiState.statisticsView = "characterDetail";
+  uiState.statisticsView = "characters";
   renderStatistics();
 }
 
 function showStatisticsRegionDetail(regionId = DEFAULT_REGION_ID) {
   uiState.statisticsRegionId = regionId;
-  uiState.statisticsView = "regionDetail";
+  uiState.statisticsView = "regions";
   renderStatistics();
 }
 
 function setSaveNotice(message, type = "status") {
   els.saveNotice.textContent = message;
   els.saveNotice.dataset.type = type;
+}
+
+function resetStatisticsUiAfterSaveReplacement() {
+  uiState.statisticsView = "overview";
+  uiState.statisticsCharacterId = saveData.settings.selectedCharacterId || DEFAULT_CHARACTER_ID;
+  uiState.statisticsRegionId = saveData.settings.selectedRegionId || DEFAULT_REGION_ID;
 }
 
 function openExportSaveCodeDialog() {
@@ -1596,6 +1983,7 @@ function confirmImportSaveCode() {
   resetAdventureRuntimeAfterSaveImport();
   syncSelectionFromSave();
   syncMusicSettingsFromSave();
+  resetStatisticsUiAfterSaveReplacement();
   renderStatistics();
   closeImportSaveCodeDialog();
   setSaveNotice("存檔碼已匯入並轉換為目前版本。");
@@ -1606,6 +1994,7 @@ function confirmImportSaveCode() {
 function resetAdventureRuntimeAfterSaveImport() {
   resetAdventureRunRuntime({ clearLastRunSummary: true });
   resetPreparationUiState();
+  resetAchievementUiRuntime();
 }
 
 function setSaveCodeNotice(element, message, type = "status") {
@@ -1621,28 +2010,6 @@ function closeDeleteSaveDialog() {
   els.deleteSavePanel.classList.remove("is-visible");
 }
 
-function showSkillInfo(skill, context) {
-  const type = context?.type || { label: "技能" };
-  const remaining = context?.levelsRemaining || 0;
-  const status = context?.learned
-    ? "已學會"
-    : `Lv. ${skill.level} 解鎖，還差 ${remaining} 等`;
-
-  els.skillInfoStatus.textContent = status;
-  els.skillInfoTitle.textContent = skill.name;
-  els.skillInfoMeta.textContent = `Lv. ${skill.level} ${type.label}`;
-  els.skillInfoDescription.textContent = skill.description || "尚未記錄技能說明。";
-  els.skillInfoPanel.classList.add("is-visible");
-}
-
-function closeSkillPanel() {
-  els.skillInfoPanel.classList.remove("is-visible");
-}
-
-function closeMaterialInfoPanel() {
-  closeMaterialDetail(els);
-}
-
 function deleteSave() {
   try {
     deleteStoredSave();
@@ -1650,12 +2017,14 @@ function deleteSave() {
     // The in-memory reset still keeps the page usable if storage is blocked.
   }
   saveData = createDefaultSave();
+  resetAchievementUiRuntime();
   syncSafeAreaUiFromSave();
   resetAdventureRunRuntime({ clearLastRunSummary: true });
   resetPreparationUiState();
   saveGameSafe();
   syncSelectionFromSave();
   syncMusicSettingsFromSave();
+  resetStatisticsUiAfterSaveReplacement();
   closeDeleteSaveDialog();
   renderStatistics();
   setSaveNotice("存檔已刪除，新的空白存檔已建立。");
@@ -1930,20 +2299,28 @@ function startPlayerRun() {
       scheduleChance: getAdventureEventScheduleChance()
     });
 
-    closeTransientUiPanels();
-    els.nextButton.disabled = false;
-    startEncounter();
-
     permanentMutationStarted = true;
     if (preparation) {
-      spendInventoryCost({
+      const spentCost = spendInventoryCost({
         inventory: saveData.inventory,
         materialDefinitions,
         goldCost: preparation.cost,
         materialCosts: requestedEnhanced ? definition.enhancement.materialCosts : []
       });
+      state.runStats.preparationCost = {
+        gold: spentCost.goldCost,
+        materials: spentCost.materialCosts.map((cost) => ({
+          materialId: cost.materialId,
+          name: cost.name,
+          quantity: cost.quantity
+        }))
+      };
     }
     recordRunStarted();
+
+    closeTransientUiPanels();
+    els.nextButton.disabled = false;
+    startEncounter();
     showScreen("gameScreen");
     runStarted = true;
   } catch (error) {
@@ -2001,6 +2378,7 @@ function returnToSafeArea(safeAreaId) {
   closeTransientUiPanels();
   showScreenInContext("campScreen", "camp");
   setCombatActionState();
+  window.requestAnimationFrame(flushAchievementUnlockQueue);
   return true;
 }
 
@@ -2719,6 +3097,9 @@ function finishRun(outcome) {
         ? "返回據點"
         : "本輪結束";
   render();
+  if (!state.pendingAnpingArrival) {
+    window.requestAnimationFrame(flushAchievementUnlockQueue);
+  }
 }
 
 function getEndText(outcome, region) {
@@ -3311,10 +3692,10 @@ function closeStoryPanel() {
 function closeTransientUiPanels() {
   els.blessingPanel.classList.remove("is-visible");
   closeEndPanel();
-  closeSkillPanel();
   closeLockedCharacterHint();
-  closeMaterialInfoPanel();
+  closeAchievementDetailPanel({ restoreFocus: false });
   merchantController.closeSaleDialog();
+  blacksmithController.closeCraftDialog();
   closeExportSaveCodeDialog();
   closeImportSaveCodeDialog();
   closeAbilityInfoPanel();
@@ -3335,9 +3716,9 @@ function unlockAdventureClearAchievements({ regionId = state.selectedRegionId, r
     return;
   }
   if (regionId === "forest") {
-    unlockAchievement(FOREST_TRIAL_ACHIEVEMENT_ID);
+    queueAchievementUnlock(FOREST_TRIAL_ACHIEVEMENT_ID);
     if (routeId === "goblin-camp") {
-      unlockAchievement(GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID);
+      queueAchievementUnlock(GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID);
     }
     saveData.storyFlags.achievementSystemUnlocked = true;
   }
@@ -3416,7 +3797,7 @@ function unlockPhoenixBlessing() {
   saveData.storyFlags.phoenixBlessingUnlocked = true;
   saveData.storyFlags.plainsBossStorySeen = true;
   saveData.storyFlags.achievementSystemUnlocked = true;
-  unlockAchievement(PLAINS_TRIAL_ACHIEVEMENT_ID);
+  queueAchievementUnlock(PLAINS_TRIAL_ACHIEVEMENT_ID);
   saveGameSafe();
 }
 
@@ -3576,13 +3957,30 @@ function bindEvents() {
   els.storageBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
   els.facilityBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
   els.merchantBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
+  els.blacksmithBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
   els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
+  els.backToCharacterDetailButton.addEventListener("click", () => showCharacterDetail(uiState.characterDetailId));
+  els.openCharacterEquipmentButton.addEventListener("click", () => showCharacterEquipment(uiState.characterDetailId));
+  els.characterSkillSearchInput.addEventListener("input", () => {
+    uiState.characterSkillSearchQuery = els.characterSkillSearchInput.value;
+    renderCharacterScreen();
+  });
+  els.characterSkillTypeSelect.addEventListener("change", () => {
+    uiState.characterSkillTypeFilter = els.characterSkillTypeSelect.value;
+    renderCharacterScreen();
+  });
+  els.characterSkillStageFilters.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-stage-filter]");
+    if (!button || !els.characterSkillStageFilters.contains(button)) {
+      return;
+    }
+    uiState.characterSkillStageFilter = button.dataset.stageFilter || "all";
+    renderCharacterScreen();
+  });
   els.statisticsTabs.forEach((button) => {
     button.addEventListener("click", () => showStatisticsView(button.dataset.statisticsView));
   });
-  els.backToStatisticsCharacterListButton.addEventListener("click", () => showStatisticsView("characters"));
-  els.backToStatisticsRegionListButton.addEventListener("click", () => showStatisticsView("regions"));
   els.selectCharacterButton.addEventListener("click", selectCharacterFromDetail);
   els.closeCharacterLockedButton.addEventListener("click", closeLockedCharacterHint);
   document.querySelectorAll(".back-button").forEach((button) => {
@@ -3621,18 +4019,24 @@ function bindEvents() {
   els.deleteSaveButton.addEventListener("click", openDeleteSaveDialog);
   els.confirmDeleteSaveButton.addEventListener("click", deleteSave);
   els.cancelDeleteSaveButton.addEventListener("click", closeDeleteSaveDialog);
-  els.closeSkillInfoButton.addEventListener("click", closeSkillPanel);
-  els.closeMaterialInfoButton.addEventListener("click", closeMaterialInfoPanel);
+  els.closeAchievementDetailButton.addEventListener("click", closeAchievementDetailPanel);
+  els.achievementDetailBackdrop.addEventListener("click", closeAchievementDetailPanel);
+  els.closeAchievementUnlockToastButton.addEventListener("click", () => closeAchievementUnlockToast());
   els.closeMerchantSaleButton.addEventListener("click", merchantController.closeSaleDialog);
+  els.closeBlacksmithCraftButton.addEventListener("click", blacksmithController.closeCraftDialog);
   [
-    [els.skillInfoPanel, closeSkillPanel],
     [els.merchantSalePanel, merchantController.closeSaleDialog],
-    [els.materialInfoPanel, closeMaterialInfoPanel],
+    [els.blacksmithCraftPanel, blacksmithController.closeCraftDialog],
     [els.abilityInfoPanel, closeAbilityInfoPanel],
     [els.blessingInfoPanel, closeBlessingInfoPanel],
     [els.exportSaveCodePanel, closeExportSaveCodeDialog],
     [els.importSaveCodePanel, closeImportSaveCodeDialog]
   ].forEach(([panel, closePanel]) => bindBackdropClose(panel, closePanel));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && uiState.achievementDetailOpen) {
+      closeAchievementDetailPanel();
+    }
+  });
   document.addEventListener("click", () => {
     void musicManager.handleUserInteraction();
     void ambientManager.handleUserInteraction();
@@ -3669,6 +4073,7 @@ const debugActions = createDebugRuntimeActions({
   getSaveData: () => saveData,
   replaceSaveData: (nextSaveData) => {
     saveData = nextSaveData;
+    resetAchievementUiRuntime();
     syncSafeAreaUiFromSave();
   },
   isDebugModeEnabled,

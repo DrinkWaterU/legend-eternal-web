@@ -54,7 +54,7 @@ assert.match(startPlayerRunSource, /getRegionPreparation\(region, requestedPrepa
 assert.match(startPlayerRunSource, /createRunPreparation\(region, requestedPreparationId,[\s\S]*enhanced: requestedEnhanced/);
 assert.doesNotMatch(startPlayerRunSource, /preparationDetailId|preparationDetailExpanded/, "Run Start 不得讀 detail preview state");
 assert.match(game, /if \(hasPendingThreat\("counterEscape"\)\)[\s\S]*state\.battleSource === "event"[\s\S]*state\.encounterIndex \+= 1[\s\S]*resolvePostEncounterRunPreparation\(\{ isFinalEncounter: adventureComplete \}\)/);
-assert.match(game, /initializeRunRuntime\(\{ hero, preparation \}\)[\s\S]*startEncounter\(\)[\s\S]*spendInventoryCost\(\{[\s\S]*goldCost: preparation\.cost[\s\S]*showScreen\("gameScreen"\)/);
+assert.match(game, /initializeRunRuntime\(\{ hero, preparation \}\)[\s\S]*spendInventoryCost\(\{[\s\S]*goldCost: preparation\.cost[\s\S]*recordRunStarted\(\)[\s\S]*startEncounter\(\)[\s\S]*showScreen\("gameScreen"\)/, "整備成本必須在進入第一場遭遇前一次扣除，失敗時再由永久快照回復");
 assert.match(game, /function recordRunStarted\(\)[\s\S]*saveGameSafe\(\)/);
 assert.match(game, /permanentMutationStarted = true[\s\S]*recordRunStarted\(\)[\s\S]*showScreen\("gameScreen"\)/);
 assert.match(game, /restoreRunStartPermanentState\(permanentSnapshot\)/);

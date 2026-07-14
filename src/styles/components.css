@@ -498,16 +498,6 @@
   border-color: rgba(241, 211, 134, 0.62);
 }
 
-.skill-info-dialog {
-  max-width: 560px;
-}
-
-.skill-info-meta {
-  margin: 0 0 12px;
-  color: var(--sky);
-  font-weight: 800;
-}
-
 .save-tools {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -635,8 +625,8 @@
 .character-emblem {
   display: grid;
   place-items: center;
-  width: 50px;
-  height: 50px;
+  width: 72px;
+  height: 72px;
   overflow: hidden;
   border: 1px solid rgba(241, 211, 134, 0.38);
   border-radius: 50%;
@@ -648,10 +638,10 @@
 }
 
 .character-emblem img {
-  width: 72%;
-  height: 72%;
-  object-fit: contain;
-  image-rendering: pixelated;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
 }
 
 .character-card.is-locked .character-emblem {
@@ -1740,4 +1730,502 @@
     animation: none;
     transition: none;
   }
+}
+
+/* v0.2.5.1 — weapon crafting and character equipment */
+.weapon-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(241, 211, 134, 0.32);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.08), transparent 35%),
+    linear-gradient(145deg, rgba(35, 43, 41, 0.96), rgba(12, 17, 18, 0.96));
+  color: var(--gold);
+  font-size: 1.1rem;
+  font-weight: 900;
+  box-shadow: var(--inner-light);
+}
+
+.weapon-icon img {
+  position: relative;
+  z-index: 1;
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.weapon-icon-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.weapon-icon.has-image .weapon-icon-fallback {
+  display: none;
+}
+
+.weapon-icon[data-category="bow"] {
+  border-color: rgba(111, 176, 193, 0.42);
+  color: var(--sky);
+}
+
+.blacksmith-summary {
+  width: min(100%, 680px);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.blacksmith-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+  gap: 16px;
+  width: min(100%, 760px);
+  margin-top: 8px;
+  text-align: left;
+}
+
+.blacksmith-catalog,
+.blacksmith-detail-panel,
+.equipment-character-panel,
+.equipment-preview-panel,
+.equipment-inventory {
+  border: 1px solid rgba(217, 199, 150, 0.22);
+  border-radius: 11px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 44%),
+    rgba(14, 20, 20, 0.9);
+  box-shadow: var(--inner-light), 0 14px 30px rgba(0, 0, 0, 0.18);
+}
+
+.blacksmith-catalog,
+.blacksmith-detail-panel {
+  padding: 16px;
+}
+
+.blacksmith-catalog > h3,
+.blacksmith-detail-section h4 {
+  margin: 0 0 12px;
+  color: var(--gold);
+}
+
+.blacksmith-weapon-list {
+  display: grid;
+  gap: 10px;
+}
+
+.blacksmith-weapon-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 98px;
+  padding: 12px;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 9px;
+  background: rgba(8, 14, 14, 0.62);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.blacksmith-weapon-card:hover,
+.blacksmith-weapon-card:focus-visible,
+.blacksmith-weapon-card.is-selected {
+  transform: translateY(-1px);
+  border-color: rgba(241, 211, 134, 0.64);
+  background: rgba(35, 42, 39, 0.88);
+  outline: none;
+}
+
+.blacksmith-weapon-card.rarity-uncommon,
+.equipment-weapon-card.rarity-uncommon {
+  border-color: rgba(127, 183, 127, 0.48);
+  background:
+    linear-gradient(145deg, rgba(94, 145, 96, 0.08), transparent 46%),
+    rgba(8, 14, 14, 0.68);
+}
+
+.blacksmith-weapon-card.rarity-uncommon:hover,
+.blacksmith-weapon-card.rarity-uncommon:focus-visible,
+.blacksmith-weapon-card.rarity-uncommon.is-selected,
+.equipment-weapon-card.rarity-uncommon:hover,
+.equipment-weapon-card.rarity-uncommon:focus-visible,
+.equipment-weapon-card.rarity-uncommon.is-selected {
+  border-color: rgba(168, 215, 154, 0.82);
+  background:
+    linear-gradient(145deg, rgba(94, 145, 96, 0.16), transparent 48%),
+    rgba(29, 43, 34, 0.9);
+}
+
+.blacksmith-weapon-card.rarity-uncommon strong,
+.equipment-weapon-card.rarity-uncommon strong,
+.blacksmith-detail-heading[data-rarity="uncommon"] span,
+.equipment-preview-heading[data-rarity="uncommon"] small {
+  color: #a8d79a;
+}
+
+.blacksmith-card-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.blacksmith-card-copy strong {
+  color: #fff4d8;
+  font-size: 1rem;
+}
+
+.blacksmith-card-copy small,
+.blacksmith-card-copy span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.blacksmith-card-status {
+  align-self: start;
+  padding: 4px 7px;
+  border: 1px solid rgba(241, 211, 134, 0.28);
+  border-radius: 999px;
+  color: var(--gold);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.blacksmith-weapon-card[data-state="owned"] .blacksmith-card-status {
+  border-color: rgba(127, 218, 160, 0.38);
+  color: var(--grass);
+}
+
+.blacksmith-weapon-card[data-state="locked"] {
+  opacity: 0.72;
+}
+
+.blacksmith-weapon-card[data-state="locked"] .blacksmith-card-status {
+  border-color: rgba(184, 176, 160, 0.2);
+  color: var(--muted);
+}
+
+.blacksmith-detail-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.blacksmith-detail {
+  display: grid;
+  gap: 14px;
+  flex: 1 1 auto;
+}
+
+.blacksmith-detail-heading,
+.equipment-preview-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.blacksmith-detail-heading h3,
+.equipment-preview-heading h3 {
+  margin: 2px 0;
+  color: #fff4d8;
+  font-size: 1.24rem;
+}
+
+.blacksmith-detail-heading span,
+.equipment-preview-heading span {
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.blacksmith-detail-heading p,
+.equipment-preview-heading small {
+  margin: 0;
+  color: var(--muted);
+}
+
+.blacksmith-weapon-description {
+  margin: 0;
+}
+
+.blacksmith-detail-section {
+  padding-top: 12px;
+  border-top: 1px solid rgba(217, 199, 150, 0.16);
+}
+
+.blacksmith-detail-section p {
+  margin: 0;
+  color: var(--sky);
+  line-height: 1.65;
+}
+
+.blacksmith-recipe-list,
+.blacksmith-craft-cost-list {
+  display: grid;
+  gap: 8px;
+}
+
+.blacksmith-recipe-row,
+.blacksmith-craft-cost-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border: 1px solid rgba(217, 199, 150, 0.17);
+  border-radius: 8px;
+  background: rgba(5, 10, 10, 0.45);
+}
+
+.blacksmith-recipe-row span,
+.blacksmith-craft-cost-list span {
+  color: var(--muted);
+}
+
+.blacksmith-recipe-row strong,
+.blacksmith-craft-cost-list strong {
+  color: var(--grass);
+}
+
+.blacksmith-recipe-row.is-missing strong {
+  color: var(--clay);
+}
+
+.blacksmith-craft-dialog {
+  max-width: 520px;
+}
+
+.blacksmith-craft-cost-list {
+  margin: 18px 0 6px;
+}
+
+.character-equipment-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: min(100%, 520px);
+  margin: 18px 0;
+  padding: 14px;
+  border: 1px solid rgba(241, 211, 134, 0.28);
+  border-radius: 9px;
+  background: rgba(13, 19, 19, 0.72);
+  text-align: left;
+}
+
+.character-equipment-summary > div {
+  display: grid;
+  gap: 3px;
+}
+
+.character-equipment-summary span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.character-equipment-summary strong {
+  color: var(--gold);
+}
+
+.equipment-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.85fr) minmax(0, 1.15fr);
+  gap: 16px;
+  width: min(100%, 760px);
+  margin-top: 8px;
+  text-align: left;
+}
+
+.equipment-character-panel,
+.equipment-preview-panel,
+.equipment-inventory {
+  padding: 16px;
+}
+
+.equipment-current-slot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 122px;
+  padding: 14px;
+  border: 2px solid rgba(241, 211, 134, 0.42);
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, rgba(224, 179, 93, 0.08), transparent 50%),
+    rgba(7, 12, 13, 0.72);
+}
+
+.equipment-current-slot[data-rarity="uncommon"] {
+  border-color: rgba(127, 183, 127, 0.5);
+  background:
+    linear-gradient(145deg, rgba(94, 145, 96, 0.1), transparent 50%),
+    rgba(7, 12, 13, 0.72);
+}
+
+.equipment-current-slot.is-empty {
+  border-style: dashed;
+  border-color: rgba(184, 176, 160, 0.28);
+}
+
+.equipment-current-slot > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.equipment-current-slot span {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.equipment-current-slot strong {
+  color: #fff4d8;
+  font-size: 1.08rem;
+}
+
+.equipment-current-slot small {
+  color: var(--sky);
+  line-height: 1.55;
+}
+
+.equipment-actions {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.equipment-actions .primary-button,
+.equipment-actions .secondary-button {
+  width: 100%;
+}
+
+.equipment-preview-panel {
+  min-height: 250px;
+}
+
+.equipment-preview-effect {
+  margin: 12px 0;
+  color: var(--gold);
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.equipment-comparison-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.equipment-comparison-list > div {
+  display: grid;
+  gap: 3px;
+  padding: 9px 10px;
+  border: 1px solid rgba(217, 199, 150, 0.14);
+  border-radius: 7px;
+  background: rgba(5, 10, 10, 0.42);
+}
+
+.equipment-comparison-list span {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.equipment-comparison-list strong {
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+
+.equipment-comparison-list > div.is-changed {
+  border-color: rgba(127, 218, 160, 0.38);
+  background: rgba(44, 82, 56, 0.18);
+}
+
+.equipment-comparison-list > div.is-changed strong {
+  color: var(--grass);
+}
+
+.equipment-inventory {
+  width: min(100%, 760px);
+  margin-top: 16px;
+  text-align: left;
+}
+
+.equipment-weapon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.equipment-weapon-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 10px;
+  align-items: center;
+  min-height: 112px;
+  padding: 12px;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 9px;
+  background: rgba(8, 14, 14, 0.68);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.equipment-weapon-card:hover,
+.equipment-weapon-card:focus-visible,
+.equipment-weapon-card.is-selected {
+  transform: translateY(-1px);
+  border-color: rgba(241, 211, 134, 0.68);
+  background: rgba(35, 42, 39, 0.9);
+  outline: none;
+}
+
+.equipment-weapon-card.is-equipped {
+  box-shadow: inset 0 0 0 1px rgba(127, 218, 160, 0.28);
+}
+
+.equipment-card-icon {
+  grid-row: 1 / span 3;
+  width: 58px;
+  height: 58px;
+}
+
+.equipment-weapon-card strong,
+.equipment-weapon-card small,
+.equipment-weapon-card > span:last-child {
+  grid-column: 2;
+}
+
+.equipment-weapon-card strong {
+  color: #fff4d8;
+}
+
+.equipment-weapon-card small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.equipment-weapon-card > span:last-child {
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.equipment-slot-icon,
+.equipment-preview-icon,
+.blacksmith-detail-icon {
+  width: 82px;
+  height: 82px;
 }

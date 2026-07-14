@@ -3,6 +3,12 @@
   "role": "精準・追擊",
   "summary": "以精準爆擊帶動連續箭矢，快速建立射擊節奏。",
   "description": "曾獨自在森林中追查哥布林的行蹤。她習慣先觀察敵人的動作，再用最少的箭矢解決眼前的威脅。",
+  "weaponCompatibility": {
+    "mode": "include",
+    "categoryIds": [
+      "bow"
+    ]
+  },
   "template": {
     "name": "弓箭手",
     "maxHp": 100,
@@ -34,7 +40,7 @@
   },
   "levelCurve": {
     "base": 18,
-    "exponent": 1.55,
+    "exponent": 1.48,
     "linear": 8,
     "offset": 0,
     "maxLevel": 25

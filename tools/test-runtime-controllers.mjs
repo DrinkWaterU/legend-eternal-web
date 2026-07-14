@@ -220,5 +220,25 @@ assert.equal(typeof debugActions.visitSafeArea, "function");
 assert.equal(typeof debugActions.travelSafeArea, "function");
 assert.equal(typeof debugActions.resetSafeArea, "function");
 assert.equal(typeof debugActions.playAnpingArrival, "function");
+assert.equal(typeof debugActions.giveBlacksmithResources, "function");
+assert.equal(typeof debugActions.giveAllWeapons, "function");
+assert.equal(typeof debugActions.clearAllWeapons, "function");
+
+const blacksmithResourcesMessage = debugActions.giveBlacksmithResources();
+assert.match(blacksmithResourcesMessage, /1000 金幣/);
+assert.equal(debugSaveData.inventory.gold, 1000);
+assert.ok(debugSaveData.inventory.materials.goblin_scrap.quantity >= 8);
+assert.ok(debugSaveData.inventory.materials.spider_silk.quantity >= 5);
+
+const giveWeaponsMessage = debugActions.giveAllWeapons();
+assert.match(giveWeaponsMessage, /全部 4 把武器/);
+assert.equal(Object.keys(debugSaveData.inventory.weapons).length, 4, "Debug 應可一次取得全部正式武器");
+debugSaveData.progression.characters.adventurer.equipment.weaponId = "iron-longsword";
+debugSaveData.progression.characters.archer.equipment.weaponId = "hunter-shortbow";
+const clearWeaponsMessage = debugActions.clearAllWeapons();
+assert.match(clearWeaponsMessage, /清空全部武器/);
+assert.deepEqual(debugSaveData.inventory.weapons, {});
+assert.equal(debugSaveData.progression.characters.adventurer.equipment.weaponId, null);
+assert.equal(debugSaveData.progression.characters.archer.equipment.weaponId, null);
 
 console.log("Runtime controller composition tests passed.");

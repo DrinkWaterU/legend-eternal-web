@@ -1,3 +1,4 @@
+import { applyEquippedWeapon } from "./equipment.js";
 import { clone } from "../utils.js";
 
 export function getCharacterMaxLevel(character) {
@@ -28,10 +29,15 @@ export function normalizeCharacterProgress(progress, character) {
   progress.level = Math.max(1, Math.min(getCharacterMaxLevel(character), Math.floor(progress.level || 1)));
   progress.exp = Math.max(0, Math.floor(progress.exp || 0));
   progress.learnedSkills = getSkillsForLevel(character, progress.level).map((skill) => skill.id);
+  progress.equipment = {
+    weaponId: typeof progress.equipment?.weaponId === "string"
+      ? progress.equipment.weaponId
+      : null
+  };
   return progress;
 }
 
-export function buildHeroFromProgression(character, progress) {
+export function buildHeroFromProgression(character, progress, options = {}) {
   const normalizedProgress = normalizeCharacterProgress(progress, character);
   const hero = clone(character.template);
   hero.characterId = character.id || null;
@@ -50,6 +56,13 @@ export function buildHeroFromProgression(character, progress) {
 
   getSkillsForLevel(character, normalizedProgress.level).forEach((skill) => {
     applyProgressionEffects(hero, skill.effects || [], { recover: false });
+  });
+
+  applyEquippedWeapon(hero, {
+    character,
+    progress: normalizedProgress,
+    inventory: options.inventory,
+    weaponDefinitions: options.weaponDefinitions
   });
 
   hero.hp = hero.maxHp;

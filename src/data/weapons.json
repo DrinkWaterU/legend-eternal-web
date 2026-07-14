@@ -1,0 +1,143 @@
+{
+  "iron-longsword": {
+    "id": "iron-longsword",
+    "name": "鐵製長劍",
+    "categoryId": "sword",
+    "rarityId": "common",
+    "description": "以重新熔煉的鐵材打造，刃形樸實，適合長時間冒險使用。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 100,
+      "materialCosts": [
+        {
+          "materialId": "goblin_scrap",
+          "quantity": 4
+        },
+        {
+          "materialId": "hard_tusk",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "iron-longsword"
+  },
+  "guard-short-sword": {
+    "id": "guard-short-sword",
+    "name": "守備短劍",
+    "categoryId": "sword",
+    "rarityId": "uncommon",
+    "description": "加厚護手與穩固握柄讓持劍者更容易守住第一波攻勢。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 1
+      }
+    ],
+    "specialEffect": {
+      "type": "add",
+      "stat": "shieldStart",
+      "amount": 8
+    },
+    "recipe": {
+      "goldCost": 160,
+      "materialCosts": [
+        {
+          "materialId": "goblin_scrap",
+          "quantity": 4
+        },
+        {
+          "materialId": "bark_shell",
+          "quantity": 1
+        },
+        {
+          "materialId": "vine_fiber",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "guard-short-sword"
+  },
+  "hunter-shortbow": {
+    "id": "hunter-shortbow",
+    "name": "獵人短弓",
+    "categoryId": "bow",
+    "rarityId": "common",
+    "description": "弓身輕巧而弓弦穩定，適合在複雜地形中迅速瞄準。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 1
+      },
+      {
+        "type": "add",
+        "stat": "critChance",
+        "amount": 0.04
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 100,
+      "materialCosts": [
+        {
+          "materialId": "soft_hide",
+          "quantity": 2
+        },
+        {
+          "materialId": "spider_silk",
+          "quantity": 2
+        },
+        {
+          "materialId": "sharp_fang",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "hunter-shortbow"
+  },
+  "vanguard-hunting-bow": {
+    "id": "vanguard-hunting-bow",
+    "name": "先鋒獵弓",
+    "categoryId": "bow",
+    "rarityId": "uncommon",
+    "description": "經過反覆校準的獵弓，能讓持弓者在交戰之初更快抓住破綻。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 1
+      }
+    ],
+    "specialEffect": {
+      "type": "add",
+      "stat": "openingCritChance",
+      "amount": 0.5
+    },
+    "recipe": {
+      "goldCost": 160,
+      "materialCosts": [
+        {
+          "materialId": "spider_silk",
+          "quantity": 3
+        },
+        {
+          "materialId": "bee_wing",
+          "quantity": 2
+        },
+        {
+          "materialId": "vine_fiber",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "vanguard-hunting-bow"
+  }
+}

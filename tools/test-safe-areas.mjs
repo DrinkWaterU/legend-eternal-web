@@ -48,7 +48,7 @@ assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).travelOrder, 20);
 assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).travelDescription, "前往森林道路盡頭的城鎮");
 assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).audio.bgmId, "anping-town");
 assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).audio.ambientId, "anping-coast");
-assert.deepEqual(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).facilityIds, []);
+assert.deepEqual(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).facilityIds, ["blacksmith"]);
 assert.deepEqual(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).unlockCondition, {
   type: "region-route-clear",
   regionId: "forest",
@@ -56,6 +56,8 @@ assert.deepEqual(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).unlockCondition
   minimumClears: 1
 });
 assert.equal(facilityDefinitions["traveling-merchant"].actionId, "merchant");
+assert.equal(facilityDefinitions.blacksmith.actionId, "blacksmith");
+assert.match(facilityDefinitions.blacksmith.description, /武器/);
 
 assert.throws(() => assertSafeAreaDefinitions({
   camp: makeSafeArea({ facilityIds: ["traveling-merchant", "traveling-merchant"] })

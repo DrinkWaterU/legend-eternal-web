@@ -3,6 +3,9 @@
   "role": "均衡・適應",
   "summary": "能力均衡，擅長依照旅途中的選擇調整戰鬥方式。",
   "description": "傳說大陸最常見的職業。冒險者使用的武器各式各樣，會依照手上的裝備與旅途中的選擇調整戰鬥方式，能力平均且適合探索未知地區。",
+  "weaponCompatibility": {
+    "mode": "all"
+  },
   "template": {
     "name": "冒險者",
     "maxHp": 100,
@@ -34,7 +37,7 @@
   },
   "levelCurve": {
     "base": 18,
-    "exponent": 1.55,
+    "exponent": 1.48,
     "linear": 8,
     "offset": 0,
     "maxLevel": 25
