@@ -40,7 +40,7 @@
   },
   "levelCurve": {
     "base": 18,
-    "exponent": 1.55,
+    "exponent": 1.48,
     "linear": 8,
     "offset": 0,
     "maxLevel": 25
