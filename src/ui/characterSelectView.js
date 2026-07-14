@@ -1,8 +1,12 @@
+import { createWeaponIcon, formatWeaponCategory } from "./weaponViewHelpers.js";
+
 export function renderCharacterCards({
   element,
   characterDefinitions,
   characterProgression,
   selectedCharacterId,
+  equippedWeaponsByCharacterId = {},
+  weaponCategoryDefinitions = {},
   onCharacterClick,
   onLockedCharacterClick
 }) {
@@ -33,6 +37,7 @@ export function renderCharacterCards({
       return;
     }
 
+    const equippedWeapon = equippedWeaponsByCharacterId[characterId] || null;
     card.dataset.characterId = characterId;
     card.append(
       createCharacterHeading({
@@ -45,6 +50,7 @@ export function renderCharacterCards({
       }),
       createRoleLabel(character.role || "尚未分類"),
       createSummary(character.summary || character.description || "尚未記錄角色簡介。"),
+      createWeaponSummary(equippedWeapon, weaponCategoryDefinitions),
       createCardAction(selected ? "查看目前角色" : "查看角色")
     );
     card.addEventListener("click", () => onCharacterClick?.(characterId));
@@ -98,6 +104,20 @@ function createSummary(summary) {
   const element = document.createElement("span");
   element.className = "character-card-summary";
   element.textContent = summary;
+  return element;
+}
+
+function createWeaponSummary(weapon, categoryDefinitions) {
+  const element = document.createElement("span");
+  element.className = "character-card-weapon";
+  const icon = createWeaponIcon(weapon, { className: "weapon-icon character-card-weapon-icon" });
+  const copy = document.createElement("span");
+  const label = document.createElement("small");
+  const name = document.createElement("strong");
+  label.textContent = weapon ? formatWeaponCategory(weapon, categoryDefinitions) : "武器";
+  name.textContent = weapon?.name || "尚未裝備武器";
+  copy.append(label, name);
+  element.append(icon, copy);
   return element;
 }
 

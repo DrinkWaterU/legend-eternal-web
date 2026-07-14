@@ -4,6 +4,7 @@ import { access, readFile } from "node:fs/promises";
 import { getFacilityDefinition } from "../src/data/facilities.js";
 import { getSafeAreaDefinition } from "../src/data/safeAreas.js";
 import { weaponDefinitions } from "../src/data/weapons.js";
+import { GAME_VERSION } from "../src/config.js";
 
 const root = new URL("../", import.meta.url);
 const [html, game, dom, componentsCss, responsiveCss, gitignore] = await Promise.all([
@@ -60,8 +61,9 @@ assert.match(game, /function equipCharacterWeapon\(/);
 assert.match(game, /function unequipCharacterWeapon\(/);
 assert.match(game, /buildHeroFromProgressionCore\(character, progress, \{[\s\S]*inventory: saveData\.inventory,[\s\S]*weaponDefinitions/);
 assert.match(game, /blacksmithController\.closeCraftDialog\(\)/);
-assert.match(html, /styles\.css\?v=0\.2\.5\.1-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.5\.1-alpha/);
+const cacheVersion = GAME_VERSION.replace(/^v/, "");
+assert.match(html, new RegExp(`styles\\.css\\?v=${cacheVersion.replaceAll(".", "\\.")}`));
+assert.match(html, new RegExp(`game\\.js\\?v=${cacheVersion.replaceAll(".", "\\.")}`));
 
 assert.match(componentsCss, /\.blacksmith-layout/);
 assert.match(componentsCss, /\.equipment-layout/);
@@ -74,4 +76,4 @@ assert.match(responsiveCss, /\.equipment-layout/);
 assert.match(gitignore, /^\/武器icon生圖通用prompt\.md$/m);
 await access(new URL("assets/images/icons/weapons/.gitkeep", root));
 
-console.log("v0.2.5.1 blacksmith, weapon equipment UI, fallback asset, and wiring tests passed.");
+console.log("Blacksmith, weapon equipment UI, fallback asset, and wiring tests passed.");

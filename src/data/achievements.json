@@ -5,7 +5,8 @@
     "conditionText": "擊敗平原首領",
     "description": "你跨過了第一片野外的終點，並在死亡邊緣觸及了新的命運。",
     "category": "region",
-    "regionId": "plains"
+    "regionId": "plains",
+    "order": 10
   },
   "forest_trial": {
     "id": "forest_trial",
@@ -13,7 +14,8 @@
     "conditionText": "擊敗森林任一首領",
     "description": "你突破了森林深處的考驗，證明自己能踏入更長程的冒險。",
     "category": "region",
-    "regionId": "forest"
+    "regionId": "forest",
+    "order": 20
   },
   "goblin_camp_clear": {
     "id": "goblin_camp_clear",
@@ -23,6 +25,7 @@
     "category": "route",
     "regionId": "forest",
     "routeId": "goblin-camp",
-    "hiddenUntilUnlocked": true
+    "hiddenUntilUnlocked": true,
+    "order": 30
   }
 }

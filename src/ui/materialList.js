@@ -33,6 +33,36 @@ export function getSellableMaterials(inventory = {}, materialDefinitions = {}) {
   return getInventoryMaterials(inventory, materialDefinitions).filter((item) => item.sellPrice > 0);
 }
 
+
+export function filterMaterials(items = [], options = {}) {
+  const query = String(options.searchQuery || "").trim().toLocaleLowerCase("zh-Hant");
+  const rarityFilter = options.rarityFilter || "all";
+  const usageIndex = options.usageIndex || {};
+  return items.filter((item) => {
+    const matchesRarity = rarityFilter === "all" || item.rarity === rarityFilter;
+    if (!matchesRarity) {
+      return false;
+    }
+    if (!query) {
+      return true;
+    }
+    const usageSearchText = Array.isArray(usageIndex[item.id])
+      ? usageIndex[item.id]
+        .flatMap((entry) => [entry.regionName, entry.title, entry.subtitle, entry.description, entry.location])
+        .filter(Boolean)
+        .join(" ")
+      : "";
+    const searchable = [
+      item.name,
+      item.description,
+      item.usage,
+      item.source,
+      usageSearchText
+    ].filter(Boolean).join(" ").toLocaleLowerCase("zh-Hant");
+    return searchable.includes(query);
+  });
+}
+
 export function sortMaterials(items, sortMode, sortDirection) {
   const normalizedSortMode = MATERIAL_SORT_MODES[sortMode] ? sortMode : "rarity";
   const sorter = MATERIAL_SORT_MODES[normalizedSortMode];

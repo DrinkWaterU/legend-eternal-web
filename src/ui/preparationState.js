@@ -16,7 +16,13 @@ export function clearPreparationSelectionState(uiState) {
   return uiState;
 }
 
-export function normalizePreparationUiState({ uiState, region, gold, enabled = true }) {
+export function normalizePreparationUiState({
+  uiState,
+  region,
+  gold,
+  inventoryMaterials = null,
+  enabled = true
+}) {
   assertPreparationUiState(uiState);
 
   if (!enabled) {
@@ -37,11 +43,18 @@ export function normalizePreparationUiState({ uiState, region, gold, enabled = t
   }
 
   const enhancedPreparation = getRegionPreparation(region, uiState.enhancedPreparationId);
+  const hasEnhancementMaterials = inventoryMaterials === null
+    ? true
+    : enhancedPreparation?.enhancement?.materialCosts?.every((cost) => {
+      const quantity = Number(inventoryMaterials?.[cost.materialId]?.quantity) || 0;
+      return quantity >= cost.quantity;
+    }) ?? false;
   if (
     uiState.enhancedPreparationId
     && (
       uiState.enhancedPreparationId !== uiState.selectedPreparationId
       || !enhancedPreparation?.enhancement
+      || !hasEnhancementMaterials
     )
   ) {
     uiState.enhancedPreparationId = null;

@@ -28,6 +28,7 @@ class TestNode {
     this.hidden = false;
     this.disabled = false;
     this.textContent = "";
+    this.value = "";
     this.className = "";
     this.onclick = null;
     this.listeners = new Map();
@@ -45,6 +46,7 @@ globalThis.document = { createElement: (tagName) => new TestNode(tagName) };
 function createElements() {
   const ids = [
     "equipmentCharacterName", "equipmentCharacterRole", "equipmentNotice",
+    "equipmentSearchInput", "equipmentSortSelect", "equipmentCategoryFilters", "equipmentWeaponCount",
     "equipmentCurrentSlot", "equipmentWeaponGrid", "equipmentEmpty", "equipmentPreview",
     "equipWeaponButton", "unequipWeaponButton"
   ];

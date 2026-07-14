@@ -498,16 +498,6 @@
   border-color: rgba(241, 211, 134, 0.62);
 }
 
-.skill-info-dialog {
-  max-width: 560px;
-}
-
-.skill-info-meta {
-  margin: 0 0 12px;
-  color: var(--sky);
-  font-weight: 800;
-}
-
 .save-tools {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

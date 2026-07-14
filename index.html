@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.5.1-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.5.2-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.5.1-alpha</p>
+            <p class="version-label">v0.2.5.2-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -115,7 +115,7 @@
 
       <section id="safeAreaTravelScreen" class="screen">
         <div class="selection-panel safe-area-travel-panel">
-          <div class="section-heading">
+          <div class="section-heading app-page-heading">
             <div>
               <p class="eyebrow">據點移動</p>
               <h2>選擇據點</h2>
@@ -134,26 +134,25 @@
       </section>
 
       <section id="storageScreen" class="screen">
-        <div class="selection-panel storage-panel">
-          <div class="section-heading">
+        <div class="selection-panel storage-panel storage-browser-panel">
+          <div class="section-heading app-page-heading">
             <div>
               <p id="storageSafeAreaEyebrow" class="eyebrow">冒險營地</p>
               <h2>倉庫</h2>
+              <p class="body-text page-heading-description">整理冒險中帶回的素材，查看目前用途與已知配方。</p>
             </div>
             <button id="storageBackButton" class="secondary-button" type="button">回營地</button>
           </div>
-          <p class="body-text">整理冒險中帶回的素材。這裡會保存你在野外取得的戰利品。</p>
-          <dl class="stat-list storage-summary">
-            <div>
-              <dt>目前金幣</dt>
-              <dd id="storageGold">0</dd>
-            </div>
-            <div>
-              <dt>素材總數</dt>
-              <dd id="storageMaterialCount">0</dd>
-            </div>
+          <dl class="stat-list storage-summary storage-summary-strip">
+            <div><dt>目前金幣</dt><dd id="storageGold">0</dd></div>
+            <div><dt>素材種類</dt><dd id="storageMaterialKinds">0</dd></div>
+            <div><dt>素材總量</dt><dd id="storageMaterialCount">0</dd></div>
           </dl>
-          <div class="storage-toolbar" aria-label="倉庫整理">
+          <div class="storage-toolbar storage-browser-toolbar" aria-label="倉庫整理">
+            <label class="storage-search-field">
+              <span>搜尋素材</span>
+              <input id="storageSearchInput" type="search" autocomplete="off" placeholder="名稱、來源、用途或配方" />
+            </label>
             <label>
               <span>整理方式</span>
               <select id="storageSortSelect">
@@ -165,15 +164,51 @@
             </label>
             <button id="storageSortDirectionButton" class="secondary-button" type="button">降序</button>
           </div>
-          <p id="storageEmpty" class="empty-state">倉庫裡還沒有素材。</p>
-          <div id="storageGrid" class="inventory-grid" aria-label="素材列表"></div>
+          <div id="storageRarityFilters" class="filter-chip-list" role="group" aria-label="素材稀有度篩選"></div>
+          <div class="storage-workspace">
+            <section class="storage-library" aria-label="素材庫">
+              <div class="browser-panel-heading">
+                <div><p class="eyebrow">持有素材</p><h3>素材庫</h3></div>
+                <strong id="storageResultCount" class="result-count-badge">0 種</strong>
+              </div>
+              <div id="storageEmpty" class="empty-state storage-empty-state">倉庫裡還沒有素材。</div>
+              <div id="storageGrid" class="inventory-grid storage-inventory-grid" aria-label="素材列表"></div>
+            </section>
+            <aside id="storageDetailPanel" class="storage-detail-panel" aria-label="素材詳細資訊">
+              <div id="storageDetailEmpty" class="browser-detail-empty">選擇素材以查看描述、來源與目前用途。</div>
+              <div id="storageDetailContent" class="storage-detail-content" hidden>
+                <header class="storage-detail-heading">
+                  <div>
+                    <span id="storageDetailRarity" class="modal-status rarity-common">普通</span>
+                    <h3 id="storageDetailName">素材</h3>
+                    <p id="storageDetailMeta">素材｜持有 0</p>
+                  </div>
+                  <strong id="storageDetailQuantity" class="storage-detail-quantity">×0</strong>
+                </header>
+                <p id="storageDetailDescription" class="body-text"></p>
+                <dl class="storage-detail-facts">
+                  <div><dt>主要來源</dt><dd id="storageDetailSource">來源不明</dd></div>
+                  <div><dt>單個價值</dt><dd id="storageDetailPrice">0 金幣</dd></div>
+                  <div class="storage-detail-usage-copy"><dt>一般用途</dt><dd id="storageDetailGeneralUsage">尚未記錄用途。</dd></div>
+                </dl>
+                <section class="material-usage-browser" aria-label="目前可用於">
+                  <div class="browser-panel-heading material-usage-heading">
+                    <div><p class="eyebrow">正式用途</p><h4>目前可用於</h4></div>
+                    <strong id="storageUsageCount" class="result-count-badge">0 項</strong>
+                  </div>
+                  <div id="storageUsageFilters" class="filter-chip-list material-usage-filters" role="group" aria-label="素材用途篩選"></div>
+                  <div id="storageUsageList" class="material-usage-list" tabindex="0"></div>
+                </section>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
 
       <section id="facilityScreen" class="screen">
         <div class="selection-panel facility-panel">
           <div id="facilityListView" class="subview is-active">
-            <div class="section-heading">
+            <div class="section-heading app-page-heading facility-location-heading">
               <div>
                 <p id="facilityAreaName" class="eyebrow">冒險營地</p>
                 <h2 id="facilityPlacesTitle">營地去處</h2>
@@ -186,7 +221,7 @@
           </div>
 
           <div id="merchantView" class="subview">
-            <div class="section-heading">
+            <div class="section-heading app-page-heading facility-location-heading">
               <div>
                 <p id="merchantAreaLabel" class="eyebrow">營地去處</p>
                 <h2>旅行商人</h2>
@@ -229,7 +264,7 @@
           </div>
 
           <div id="blacksmithView" class="subview">
-            <div class="section-heading">
+            <div class="section-heading app-page-heading facility-location-heading">
               <div>
                 <p id="blacksmithAreaLabel" class="eyebrow">鎮內去處</p>
                 <h2>鐵匠鋪</h2>
@@ -262,7 +297,7 @@
       <section id="regionScreen" class="screen">
         <div class="selection-panel">
           <div id="regionListView" class="subview is-active">
-            <div class="section-heading">
+            <div class="section-heading app-page-heading">
               <div>
                 <p class="eyebrow">開始遊戲</p>
                 <h2>選擇地區</h2>
@@ -274,7 +309,7 @@
           </div>
 
           <div id="regionDetailView" class="subview region-detail-view">
-            <div class="section-heading region-detail-heading">
+            <div class="section-heading app-page-heading region-detail-heading">
               <div>
                 <p class="eyebrow">地區詳情</p>
                 <h2 id="regionDetailName">平原</h2>
@@ -315,154 +350,191 @@
       </section>
 
       <section id="characterScreen" class="screen">
-        <div class="selection-panel">
+        <div class="selection-panel character-screen-panel">
           <div id="characterListView" class="subview is-active">
-            <div class="section-heading">
+            <div class="section-heading app-page-heading character-page-heading">
               <div>
                 <p class="eyebrow">選擇角色</p>
                 <h2>角色列表</h2>
+                <p class="body-text page-heading-description">查看角色成長與目前裝備，再決定要由誰踏上旅程。</p>
               </div>
               <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
             </div>
-            <p class="body-text">選擇要踏上旅程的角色。查看角色詳情後，再決定目前使用的角色。</p>
             <div id="characterChoiceList" class="character-grid"></div>
           </div>
 
           <div id="characterDetailView" class="subview">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">角色詳情</p>
-                <h2 id="characterDetailName">冒險者</h2>
-              </div>
+            <div class="section-heading app-page-heading character-page-heading">
+              <div><p class="eyebrow">角色詳情</p><h2 id="characterDetailName">冒險者</h2></div>
               <button id="backToCharacterListButton" class="secondary-button" type="button">返回角色列表</button>
             </div>
-            <p id="characterDetailRole" class="character-detail-role"></p>
-            <p id="characterDetailDescription" class="body-text"></p>
-            <dl id="characterDetailStats" class="stat-list"></dl>
-            <section class="skill-section" aria-label="角色技能">
-              <div class="skill-section-heading">
-                <h3>技能</h3>
-                <p>點擊技能查看效果。</p>
+            <div class="character-detail-layout">
+              <div class="character-profile-column">
+                <aside class="character-identity-panel" aria-label="角色身分">
+                  <div id="characterDetailEmblem" class="character-detail-emblem" aria-hidden="true"></div>
+                  <p id="characterDetailRole" class="character-detail-role"></p>
+                  <p id="characterDetailDescription" class="character-detail-description"></p>
+                  <div class="character-identity-action">
+                    <span class="character-identity-action-label">目前選擇</span>
+                    <button id="selectCharacterButton" class="primary-button" type="button">使用冒險者</button>
+                  </div>
+                </aside>
+                <section class="character-equipment-overview" aria-label="裝備概覽">
+                  <div class="equipment-overview-heading">
+                    <div><p class="eyebrow">永久成長</p><h3>裝備概覽</h3></div>
+                    <button id="openCharacterEquipmentButton" class="secondary-button equipment-manage-button" type="button">管理裝備</button>
+                  </div>
+                  <button id="characterEquipmentWeaponSlot" class="equipment-overview-slot" type="button" aria-label="查看目前武器並管理裝備">
+                    <span id="characterDetailWeaponIcon" class="character-detail-weapon-icon"></span>
+                    <span class="equipment-overview-copy">
+                      <span>武器</span>
+                      <strong id="characterDetailWeaponName">未裝備武器</strong>
+                      <small id="characterDetailWeaponEffect">選擇武器後，效果會套用至下一輪冒險。</small>
+                    </span>
+                    <span id="characterEquipmentSlotState" class="equipment-overview-state">未裝備</span>
+                  </button>
+                </section>
               </div>
-              <div class="skill-group">
-                <h4>已學技能</h4>
-                <div id="characterSkillList" class="skill-chip-list"></div>
+              <div class="character-growth-column">
+                <section class="character-growth-panel" aria-label="角色能力">
+                  <div class="character-section-heading">
+                    <div><p class="eyebrow">成長狀態</p><h3>能力總覽</h3></div>
+                    <span id="characterDetailLevelSummary" class="character-level-summary"></span>
+                  </div>
+                  <dl id="characterDetailStats" class="stat-list character-detail-stats"></dl>
+                </section>
+                <section class="skill-section character-skill-section" aria-label="角色技能">
+                  <div class="skill-section-heading character-skill-heading">
+                    <div><p class="eyebrow">戰鬥能力</p><h3>技能</h3></div>
+                    <p>選擇技能，查看目前生效階段與歷次強化。</p>
+                  </div>
+                  <div class="skill-stage-legend" aria-label="技能強化階段配色">
+                    <span class="skill-stage-legend-label">技能階段</span>
+                    <span class="skill-stage-swatch upgrade-tier-0">基礎</span>
+                    <span class="skill-stage-swatch upgrade-tier-1">強化 I</span>
+                    <span class="skill-stage-swatch upgrade-tier-2">強化 II</span>
+                    <span class="skill-stage-swatch upgrade-tier-3">強化 III</span>
+                  </div>
+                  <div class="skill-toolbar" aria-label="技能搜尋與篩選">
+                    <label><span>搜尋技能</span><input id="characterSkillSearchInput" type="search" autocomplete="off" placeholder="輸入技能名稱" /></label>
+                    <label><span>技能類型</span><select id="characterSkillTypeSelect"><option value="all">全部類型</option><option value="minor">一般技能</option><option value="milestone">里程碑技能</option><option value="rare">稀有技能</option></select></label>
+                  </div>
+                  <div id="characterSkillStageFilters" class="filter-chip-list skill-stage-filters" role="group" aria-label="技能階段篩選">
+                    <button type="button" class="filter-chip is-active" data-stage-filter="all" aria-pressed="true">全部</button>
+                    <button type="button" class="filter-chip" data-stage-filter="base" aria-pressed="false">基礎</button>
+                    <button type="button" class="filter-chip" data-stage-filter="upgraded" aria-pressed="false">已強化</button>
+                  </div>
+                  <div class="skill-browser">
+                    <section class="skill-list-pane" aria-label="已學技能清單">
+                      <div class="skill-index-heading"><h4>已學技能</h4><span id="characterSkillCount" class="result-count-badge">0 項</span></div>
+                      <p id="characterSkillEmpty" class="empty-state" hidden>沒有符合條件的技能。</p>
+                      <div id="characterSkillList" class="skill-index-list" role="list"></div>
+                    </section>
+                    <aside class="skill-detail-pane" aria-label="技能詳細資訊">
+                      <div id="characterSkillDetail" class="character-skill-detail" aria-live="polite"></div>
+                      <div id="characterNextSkillPanel" class="skill-next-strip" aria-live="polite"></div>
+                    </aside>
+                  </div>
+                </section>
               </div>
-              <div class="skill-group">
-                <h4>下一技能</h4>
-                <div id="characterNextSkillPanel" class="next-skill-list"></div>
-              </div>
-            </section>
-            <section class="character-equipment-summary" aria-label="目前裝備">
-              <div>
-                <span>目前武器</span>
-                <strong id="characterDetailWeaponName">未裝備武器</strong>
-              </div>
-              <button id="openCharacterEquipmentButton" class="secondary-button" type="button">管理裝備</button>
-            </section>
-            <button id="selectCharacterButton" class="primary-button" type="button">使用冒險者</button>
+            </div>
           </div>
 
           <div id="characterEquipmentView" class="subview">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">角色裝備</p>
-                <h2 id="equipmentCharacterName">冒險者</h2>
-              </div>
+            <div class="section-heading app-page-heading character-page-heading">
+              <div><p class="eyebrow">角色裝備</p><h2 id="equipmentCharacterName">冒險者</h2><p id="equipmentCharacterRole" class="character-detail-role"></p></div>
               <button id="backToCharacterDetailButton" class="secondary-button" type="button">返回角色詳情</button>
             </div>
-            <p id="equipmentCharacterRole" class="character-detail-role"></p>
-            <p id="equipmentNotice" class="save-notice" aria-live="polite"></p>
-            <div class="equipment-layout">
-              <section class="equipment-character-panel" aria-label="目前武器欄位">
-                <div id="equipmentCurrentSlot" class="equipment-current-slot is-empty"></div>
-                <div class="equipment-actions">
-                  <button id="equipWeaponButton" class="primary-button" type="button">選擇武器</button>
-                  <button id="unequipWeaponButton" class="secondary-button" type="button" hidden>卸下武器</button>
+            <p id="equipmentNotice" class="save-notice equipment-notice" aria-live="polite"></p>
+            <div class="equipment-workspace">
+              <section class="equipment-inventory equipment-library" aria-label="可裝備武器">
+                <div class="equipment-library-heading"><div><p class="eyebrow">武器庫</p><h3>已持有武器</h3><p>只顯示這名角色可使用的武器。</p></div><strong id="equipmentWeaponCount" class="result-count-badge">0 把</strong></div>
+                <div class="equipment-toolbar" aria-label="武器篩選與排序">
+                  <label><span>搜尋武器</span><input id="equipmentSearchInput" type="search" autocomplete="off" placeholder="輸入武器名稱" /></label>
+                  <label><span>排序</span><select id="equipmentSortSelect"><option value="rarity">品級</option><option value="name">名稱</option></select></label>
                 </div>
+                <div id="equipmentCategoryFilters" class="filter-chip-list equipment-filter-list" role="group" aria-label="武器類別篩選"></div>
+                <p id="equipmentEmpty" class="empty-state">目前沒有可裝備的武器，可以前往安平鎮鐵匠鋪製作。</p>
+                <div id="equipmentWeaponGrid" class="equipment-weapon-grid equipment-scroll-list"></div>
               </section>
-              <section id="equipmentPreview" class="equipment-preview-panel" aria-label="武器效果預覽"></section>
+              <aside class="equipment-inspector" aria-label="裝備比較與操作">
+                <section class="equipment-character-panel" aria-label="目前武器欄位">
+                  <div class="equipment-panel-label">目前裝備</div>
+                  <div id="equipmentCurrentSlot" class="equipment-current-slot is-empty"></div>
+                </section>
+                <section id="equipmentPreview" class="equipment-preview-panel" aria-label="武器效果預覽"></section>
+                <div class="equipment-actions"><button id="equipWeaponButton" class="primary-button" type="button">選擇武器</button><button id="unequipWeaponButton" class="secondary-button" type="button" hidden>卸下武器</button></div>
+              </aside>
             </div>
-            <section class="equipment-inventory" aria-label="可裝備武器">
-              <div class="skill-section-heading">
-                <h3>已持有武器</h3>
-                <p>只顯示這名角色可使用的武器。</p>
-              </div>
-              <p id="equipmentEmpty" class="empty-state">目前沒有可裝備的武器，可以前往安平鎮鐵匠鋪製作。</p>
-              <div id="equipmentWeaponGrid" class="equipment-weapon-grid"></div>
-            </section>
           </div>
         </div>
       </section>
 
       <section id="achievementScreen" class="screen">
-        <div class="selection-panel locked-panel">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">成就系統</p>
-              <h2 id="achievementTitle">尚未開放</h2>
-            </div>
+        <div class="selection-panel achievement-panel">
+          <div class="section-heading app-page-heading">
+            <div><p class="eyebrow">成就系統</p><h2 id="achievementTitle">冒險成就</h2><p id="achievementText" class="body-text page-heading-description">這裡記錄你在傳說大陸留下的旅程節點。</p></div>
             <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
-          <p id="achievementText" class="body-text">
-            這裡之後會記錄冒險進度、擊敗首領、角色解鎖與特殊挑戰。
-          </p>
-          <div id="achievementList" class="achievement-list"></div>
+          <div id="achievementLockedState" class="achievement-locked-state" hidden>
+            <strong>成就系統尚未開放</strong>
+            <p>繼續完成冒險，新的旅程紀錄會在適當時機出現。</p>
+          </div>
+          <div id="achievementBrowser" class="achievement-browser">
+            <div class="achievement-summary-row"><p id="achievementSummary">目前尚未留下旅程節點。</p><strong id="achievementVisibleCount" class="result-count-badge">0 項</strong></div>
+            <div id="achievementFilters" class="filter-chip-list achievement-filter-list" role="group" aria-label="成就分類"></div>
+            <div class="achievement-workspace">
+              <section class="achievement-index-panel" aria-label="成就索引">
+                <div class="browser-panel-heading"><div><p class="eyebrow">旅程索引</p><h3>成就紀錄</h3></div><strong id="achievementUnlockedCount" class="result-count-badge">0 已解鎖</strong></div>
+                <p id="achievementEmpty" class="empty-state" hidden>目前分類沒有可顯示的成就。</p>
+                <div id="achievementList" class="achievement-index-list" role="list"></div>
+              </section>
+              <aside id="achievementDetailPanel" class="achievement-detail-panel" aria-label="成就紀錄詳情">
+                <button id="closeAchievementDetailButton" class="secondary-button achievement-detail-close" type="button">關閉</button>
+                <div id="achievementDetail" class="achievement-detail"></div>
+              </aside>
+            </div>
+          </div>
         </div>
+        <button id="achievementDetailBackdrop" class="achievement-detail-backdrop" type="button" aria-label="關閉成就詳情" hidden></button>
       </section>
 
       <section id="statisticsScreen" class="screen">
-        <div class="selection-panel">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">統計數據</p>
-              <h2>冒險紀錄</h2>
-            </div>
+        <div class="selection-panel statistics-panel">
+          <div class="section-heading app-page-heading">
+            <div><p class="eyebrow">統計數據</p><h2>冒險紀錄</h2><p class="body-text page-heading-description">回顧這個瀏覽器上的冒險足跡、角色成長與地區紀錄。</p></div>
             <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
-          <p class="body-text">
-            這裡會保存這個瀏覽器上的冒險紀錄。更換裝置前可以先匯出存檔碼，再於新裝置匯入。
-          </p>
-          <div class="tab-list" aria-label="統計分類">
+          <div class="tab-list statistics-tabs" aria-label="統計分類">
             <button class="tab-button is-active" type="button" data-statistics-view="overview">總覽</button>
             <button class="tab-button" type="button" data-statistics-view="characters">角色</button>
             <button class="tab-button" type="button" data-statistics-view="regions">地區</button>
             <button class="tab-button" type="button" data-statistics-view="save">存檔管理</button>
           </div>
-
           <div id="statisticsOverviewView" class="statistics-view is-active">
-            <dl id="statisticsOverviewList" class="stat-list statistics-list"></dl>
+            <section class="statistics-journey-summary"><p class="eyebrow">旅程摘要</p><h3 id="statisticsJourneySummary">尚未留下冒險紀錄。</h3></section>
+            <dl id="statisticsKeyMetrics" class="statistics-key-metrics"></dl>
+            <div class="statistics-dashboard-grid">
+              <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">已結算結果</p><h3>冒險結果</h3></div><strong id="statisticsResolvedRuns" class="result-count-badge">0 次</strong></div><div id="statisticsOutcomeList" class="statistics-outcome-list"></div></section>
+              <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">戰鬥累積</p><h3>戰鬥足跡</h3></div></div><dl id="statisticsCombatMetrics" class="statistics-compact-list"></dl></section>
+              <section class="statistics-card statistics-escape-card"><div class="browser-panel-heading"><div><p class="eyebrow">撤離方式</p><h3>成功脫離</h3></div><strong id="statisticsEscapeRate" class="result-count-badge">0%</strong></div><div id="statisticsEscapeMetrics"></div></section>
+            </div>
           </div>
-
           <div id="statisticsCharacterListView" class="statistics-view">
-            <div id="statisticsCharacterList" class="choice-list"></div>
+            <div class="statistics-browser-layout">
+              <section class="statistics-browser-index"><div class="browser-panel-heading"><div><p class="eyebrow">角色紀錄</p><h3>選擇角色</h3></div></div><div id="statisticsCharacterList" class="statistics-browser-list"></div></section>
+              <aside id="statisticsCharacterDetail" class="statistics-browser-detail"></aside>
+            </div>
           </div>
-
-          <div id="statisticsCharacterDetailView" class="statistics-view">
-            <button id="backToStatisticsCharacterListButton" class="secondary-button inline-back-button" type="button">返回角色列表</button>
-            <h2 id="statisticsCharacterName">冒險者</h2>
-            <dl id="statisticsCharacterDetailList" class="stat-list statistics-list"></dl>
-          </div>
-
           <div id="statisticsRegionListView" class="statistics-view">
-            <div id="statisticsRegionList" class="choice-list"></div>
+            <div class="statistics-browser-layout">
+              <section class="statistics-browser-index"><div class="browser-panel-heading"><div><p class="eyebrow">地區紀錄</p><h3>選擇地區</h3></div></div><div id="statisticsRegionList" class="statistics-browser-list"></div></section>
+              <aside id="statisticsRegionDetail" class="statistics-browser-detail"></aside>
+            </div>
           </div>
-
-          <div id="statisticsRegionDetailView" class="statistics-view">
-            <button id="backToStatisticsRegionListButton" class="secondary-button inline-back-button" type="button">返回地區列表</button>
-            <h2 id="statisticsRegionName">平原</h2>
-            <dl id="statisticsRegionDetailList" class="stat-list statistics-list"></dl>
-          </div>
-
           <div id="statisticsSaveView" class="statistics-view">
-            <div class="save-tools">
-              <button id="exportSaveCodeButton" class="secondary-button" type="button">匯出存檔碼</button>
-              <button id="importSaveCodeButton" class="secondary-button" type="button">匯入存檔碼</button>
-              <p id="saveNotice" class="save-notice" aria-live="polite"></p>
-            </div>
-            <div class="danger-zone">
-              <button id="deleteSaveButton" class="danger-button" type="button">刪除存檔</button>
-            </div>
+            <section class="save-management-card"><div><p class="eyebrow">存檔移轉</p><h3>匯出與匯入</h3><p>更換裝置前先匯出存檔碼，再於新裝置匯入。</p></div><div class="save-tools"><button id="exportSaveCodeButton" class="secondary-button" type="button">匯出存檔碼</button><button id="importSaveCodeButton" class="secondary-button" type="button">匯入存檔碼</button><p id="saveNotice" class="save-notice" aria-live="polite"></p></div></section>
+            <div class="danger-zone"><div><p class="eyebrow">危險操作</p><h3>刪除本機存檔</h3><p>刪除後無法復原，請先確認已完成備份。</p></div><button id="deleteSaveButton" class="danger-button" type="button">刪除存檔</button></div>
           </div>
         </div>
       </section>
@@ -708,20 +780,6 @@
         </div>
       </section>
 
-      <section id="skillInfoPanel" class="end-panel skill-info-panel" aria-label="技能資訊" aria-modal="true">
-        <div class="end-dialog skill-info-dialog">
-          <div>
-            <p class="eyebrow" id="skillInfoStatus">技能資訊</p>
-            <h2 id="skillInfoTitle">技能名稱</h2>
-            <p id="skillInfoMeta" class="skill-info-meta"></p>
-            <p id="skillInfoDescription" class="body-text"></p>
-          </div>
-          <div class="end-actions">
-            <button id="closeSkillInfoButton" class="primary-button" type="button">關閉</button>
-          </div>
-        </div>
-      </section>
-
       <section id="exportSaveCodePanel" class="end-panel save-code-panel" aria-label="匯出存檔碼" aria-modal="true">
         <div class="end-dialog save-code-dialog">
           <div>
@@ -802,18 +860,12 @@
         </div>
       </section>
 
-      <section id="materialInfoPanel" class="end-panel material-info-panel" aria-label="素材資訊" aria-modal="true">
-        <div class="end-dialog material-info-dialog">
-          <p id="materialInfoStatus" class="modal-status">普通</p>
-          <h2 id="materialInfoTitle">素材</h2>
-          <p id="materialInfoMeta" class="body-text"></p>
-          <p id="materialInfoDescription" class="body-text"></p>
-          <div id="materialInfoDetails" class="detail-info-layout" aria-label="物品詳細資訊"></div>
-          <button id="closeMaterialInfoButton" class="secondary-button" type="button">關閉</button>
-        </div>
-      </section>
+      <aside id="achievementUnlockToast" class="achievement-unlock-toast" aria-live="polite" aria-atomic="true" hidden>
+        <div><span>成就解鎖</span><strong id="achievementUnlockToastTitle"></strong><small id="achievementUnlockToastCondition"></small></div>
+        <button id="closeAchievementUnlockToastButton" type="button" aria-label="關閉成就通知">×</button>
+      </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.5.1-alpha"></script>
+    <script type="module" src="game.js?v=0.2.5.2-alpha"></script>
   </body>
 </html>
