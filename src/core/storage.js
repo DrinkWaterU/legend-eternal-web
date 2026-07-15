@@ -197,7 +197,9 @@ function createDefaultStoryFlags() {
     phoenixBlessingUnlocked: false,
     plainsBossStorySeen: false,
     achievementSystemUnlocked: false,
-    archerRescued: false
+    archerRescued: false,
+    metAnpingBlacksmith: false,
+    knowsAnpingBlacksmithName: false
   };
 }
 
@@ -245,6 +247,10 @@ function migrateStoryFlags(save, rawSave) {
   if (save.storyFlags.phoenixBlessingUnlocked) {
     save.storyFlags.plainsBossStorySeen = true;
     save.storyFlags.achievementSystemUnlocked = true;
+  }
+
+  if (save.storyFlags.knowsAnpingBlacksmithName) {
+    save.storyFlags.metAnpingBlacksmith = true;
   }
 }
 

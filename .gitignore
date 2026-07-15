@@ -8,6 +8,8 @@
 /武器icon生圖通用prompt.md
 /角色設定規格.md
 /傳說永恆_世界觀設定.md
+/AI專案打包使用說明.md
+/開頭prompt_媒體排除版.txt
 
 # Local environment files
 .env
@@ -20,6 +22,7 @@ dist/
 build/
 __pycache__/
 *.py[cod]
+/AI-exports/
 
 # Logs and temporary files
 *.log

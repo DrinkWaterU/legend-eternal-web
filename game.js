@@ -4,6 +4,7 @@ import { createEventRuntime } from "./src/adventure/eventRuntime.js";
 import { resetAdventureRunState } from "./src/adventure/runLifecycle.js";
 import { createMusicManager } from "./src/audio/musicManager.js";
 import { applyBlessingEffects } from "./src/core/blessings.js";
+import { assertDialogueDefinitions } from "./src/core/dialogue.js";
 import { spendInventoryCost } from "./src/core/commerce.js";
 import {
   equipWeapon,
@@ -76,6 +77,8 @@ import { achievementDefinitions } from "./src/data/achievements.js";
 import { getAllIndependentBlessings, getBlessingPool } from "./src/data/blessings/index.js";
 import { getBlessingFlowDefinitions } from "./src/data/blessingFlows.js";
 import { assertFacilityDefinitions, facilityDefinitions, getFacilityDefinition } from "./src/data/facilities.js";
+import { dialogueDefinitions } from "./src/data/dialogues.js";
+import { assertNpcDefinitions, getNpcDefinition, npcDefinitions, resolveNpcDisplayName } from "./src/data/npcs.js";
 import { materialDefinitions } from "./src/data/materials.js";
 import {
   assertWeaponDefinitions,
@@ -113,6 +116,7 @@ import { copyText, createSaveTransferCode, parseSaveTransferCode } from "./src/u
 import { renderFacilityListView } from "./src/ui/facilityView.js";
 import { createMerchantController } from "./src/ui/merchantController.js";
 import { createBlacksmithController } from "./src/ui/blacksmithController.js";
+import { createDialogueController } from "./src/ui/dialogueController.js";
 import { getEnhancementMaterialState, renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
 import { clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState } from "./src/ui/preparationState.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
@@ -250,6 +254,8 @@ const uiState = {
   achievementDetailOpen: false,
   safeAreaId: DEFAULT_SAFE_AREA_ID,
   facilityView: "list",
+  blacksmithReturnView: "list",
+  blacksmithReturnNpcId: null,
   selectedPreparationId: null,
   enhancedPreparationId: null,
   preparationEnhancementRevealId: null,
@@ -293,13 +299,35 @@ const blacksmithController = createBlacksmithController({
   saveInventory: saveGameSafe
 });
 
+const dialogueController = createDialogueController({
+  els,
+  npcDefinitions,
+  dialogueDefinitions,
+  getStoryFlags: () => saveData.storyFlags,
+  setStoryFlag: setDialogueStoryFlag,
+  onOpenFacility: openFacilityFromDialogue,
+  onReturnToFacilityList: () => showFacilityList(uiState.safeAreaId, uiState.navigationContext),
+  onEndDialogue: () => showFacilityList(uiState.safeAreaId, uiState.navigationContext)
+});
+
+const STORY_FLAG_KEYS = Object.freeze(Object.keys(createDefaultSave().storyFlags));
+
 assertFacilityDefinitions(facilityDefinitions);
+assertNpcDefinitions(npcDefinitions, { storyFlagKeys: STORY_FLAG_KEYS, dialogueDefinitions });
+assertDialogueDefinitions(dialogueDefinitions, {
+  npcDefinitions,
+  storyFlagKeys: STORY_FLAG_KEYS,
+  facilityDefinitions
+});
 assertWeaponDefinitions(weaponDefinitions, { materialDefinitions });
 assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
 Object.values(regionDefinitions).forEach(assertRegionPreparations);
 Object.values(facilityDefinitions).forEach((facility) => {
   if (typeof FACILITY_ACTION_HANDLERS[facility.actionId] !== "function") {
     throw new Error(`Facility ${facility.id} 使用未知 actionId：${facility.actionId}`);
+  }
+  if (facility.npcId && !getNpcDefinition(facility.npcId)) {
+    throw new Error(`Facility ${facility.id} 使用未知 npcId：${facility.npcId}`);
   }
 });
 
@@ -561,11 +589,14 @@ function showScreen(screenId) {
     renderStorageScreen();
   }
   if (screenId === "facilityScreen") {
+    const dialogueNpc = getNpcDefinition(dialogueController.getState().npcId);
     els.resultLabel.textContent = uiState.facilityView === "merchant"
       ? "旅行商人"
       : uiState.facilityView === "blacksmith"
         ? "鐵匠鋪"
-        : getCurrentSafeArea()?.placesTitle || "安全區去處";
+        : uiState.facilityView === "dialogue"
+          ? resolveNpcDisplayName(dialogueNpc, { storyFlags: saveData.storyFlags })
+          : getCurrentSafeArea()?.placesTitle || "安全區去處";
     els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
     renderFacilityScreen();
   }
@@ -1321,6 +1352,13 @@ function getAvailableFacilities(safeArea = getCurrentSafeArea()) {
     .filter((facility) => facility.id !== "traveling-merchant" || hasPhoenixBlessing());
 }
 
+function resetFacilityUiState() {
+  uiState.facilityView = "list";
+  uiState.blacksmithReturnView = "list";
+  uiState.blacksmithReturnNpcId = null;
+  dialogueController.reset();
+}
+
 function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.navigationContext) {
   const safeArea = getSafeAreaDefinition(safeAreaId);
   if (!safeArea) {
@@ -1331,7 +1369,7 @@ function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.n
   }
   activateSafeArea(safeArea.id);
   setNavigationContext(contextId);
-  uiState.facilityView = "list";
+  resetFacilityUiState();
   merchantController.reset();
   blacksmithController.reset();
   showScreen("facilityScreen");
@@ -1349,12 +1387,59 @@ function showBlacksmithFacility() {
   showScreen("facilityScreen");
 }
 
+function showNpcDialogue(npcId, options = {}) {
+  const npc = getNpcDefinition(npcId);
+  if (!npc) {
+    throw new Error(`找不到 NPC definition：${npcId || "(empty)"}`);
+  }
+  uiState.facilityView = "dialogue";
+  els.dialogueAreaLabel.textContent = getCurrentSafeArea()?.placesTitle || "城鎮去處";
+  els.dialogueHeading.textContent = npc.title || "人物交談";
+  els.dialogueBackButton.textContent = `返回${getCurrentSafeArea()?.placesTitle || "城鎮去處"}`;
+  dialogueController.open(npc.id, {
+    animateText: options.animateText !== false,
+    renderAfter: false
+  });
+  showScreen("facilityScreen");
+}
+
 function openFacility(facility) {
+  if (facility?.npcId) {
+    showNpcDialogue(facility.npcId);
+    return;
+  }
+  dispatchFacilityAction(facility, { returnView: "list" });
+}
+
+function dispatchFacilityAction(facility, options = {}) {
   const handler = FACILITY_ACTION_HANDLERS[facility?.actionId];
   if (typeof handler !== "function") {
     throw new Error(`無法處理 Facility action：${facility?.actionId || "(empty)"}`);
   }
+  if (facility.actionId === "blacksmith") {
+    uiState.blacksmithReturnView = options.returnView === "dialogue" ? "dialogue" : "list";
+    uiState.blacksmithReturnNpcId = options.returnNpcId || null;
+  }
   handler();
+}
+
+function openFacilityFromDialogue(facilityId, npcId) {
+  const facility = getFacilityDefinition(facilityId);
+  if (!facility) {
+    throw new Error(`找不到 Facility definition：${facilityId || "(empty)"}`);
+  }
+  dispatchFacilityAction(facility, {
+    returnView: "dialogue",
+    returnNpcId: npcId
+  });
+}
+
+function handleBlacksmithBack() {
+  if (uiState.blacksmithReturnView === "dialogue" && uiState.blacksmithReturnNpcId) {
+    showNpcDialogue(uiState.blacksmithReturnNpcId, { animateText: false });
+    return;
+  }
+  showFacilityList(uiState.safeAreaId, uiState.navigationContext);
 }
 
 function renderFacilityScreen() {
@@ -1362,7 +1447,9 @@ function renderFacilityScreen() {
   const facilities = getAvailableFacilities(safeArea);
   els.facilityListView.classList.toggle("is-active", uiState.facilityView === "list");
   els.merchantView.classList.toggle("is-active", uiState.facilityView === "merchant");
+  els.dialogueView.classList.toggle("is-active", uiState.facilityView === "dialogue");
   els.blacksmithView.classList.toggle("is-active", uiState.facilityView === "blacksmith");
+  els.facilityPanel.classList.toggle("is-dialogue-mode", uiState.facilityView === "dialogue");
 
   if (uiState.facilityView === "list") {
     renderFacilityListView({
@@ -1376,6 +1463,10 @@ function renderFacilityScreen() {
 
   if (uiState.facilityView === "merchant") {
     merchantController.render();
+    return;
+  }
+  if (uiState.facilityView === "dialogue") {
+    dialogueController.render();
     return;
   }
   blacksmithController.render();
@@ -1995,6 +2086,7 @@ function resetAdventureRuntimeAfterSaveImport() {
   resetAdventureRunRuntime({ clearLastRunSummary: true });
   resetPreparationUiState();
   resetAchievementUiRuntime();
+  resetFacilityUiState();
 }
 
 function setSaveCodeNotice(element, message, type = "status") {
@@ -2018,6 +2110,7 @@ function deleteSave() {
   }
   saveData = createDefaultSave();
   resetAchievementUiRuntime();
+  resetFacilityUiState();
   syncSafeAreaUiFromSave();
   resetAdventureRunRuntime({ clearLastRunSummary: true });
   resetPreparationUiState();
@@ -2355,6 +2448,7 @@ function getAdventureEventScheduleChance() {
 function restart() {
   resetAdventureRunRuntime();
   resetPreparationUiState();
+  resetFacilityUiState();
   syncSelectionFromSave();
   closeTransientUiPanels();
   showScreen("menuScreen");
@@ -3906,6 +4000,19 @@ function currentRegion() {
   return regionDefinitions[state.selectedRegionId];
 }
 
+function setDialogueStoryFlag(key, value) {
+  if (!Object.prototype.hasOwnProperty.call(saveData.storyFlags, key) || typeof value !== "boolean") {
+    return false;
+  }
+  const previousValue = saveData.storyFlags[key];
+  saveData.storyFlags[key] = value;
+  if (saveGameSafe()) {
+    return true;
+  }
+  saveData.storyFlags[key] = previousValue;
+  return false;
+}
+
 function saveGameSafe() {
   return saveGame(saveData, {
     onError: () => {
@@ -3957,7 +4064,8 @@ function bindEvents() {
   els.storageBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
   els.facilityBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
   els.merchantBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
-  els.blacksmithBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
+  els.dialogueBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
+  els.blacksmithBackButton.addEventListener("click", handleBlacksmithBack);
   els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
   els.backToCharacterDetailButton.addEventListener("click", () => showCharacterDetail(uiState.characterDetailId));

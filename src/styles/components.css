@@ -2229,3 +2229,249 @@
   width: 82px;
   height: 82px;
 }
+
+/* NPC dialogue */
+.facility-panel.is-dialogue-mode {
+  width: min(100%, 960px);
+  max-width: 960px;
+}
+
+.dialogue-page-heading {
+  margin-bottom: 18px;
+}
+
+.dialogue-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.78fr) minmax(0, 1.35fr);
+  gap: 18px;
+  width: min(100%, 900px);
+  height: 615px;
+  text-align: left;
+}
+
+.dialogue-portrait-card,
+.dialogue-content-card {
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.24);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 46%),
+    rgba(12, 18, 18, 0.94);
+  box-shadow: var(--inner-light), 0 18px 38px rgba(0, 0, 0, 0.24);
+}
+
+.dialogue-portrait-card {
+  position: relative;
+  margin: 0;
+  background:
+    radial-gradient(circle at 68% 24%, rgba(224, 179, 93, 0.18), transparent 42%),
+    rgba(9, 14, 14, 0.96);
+}
+
+.dialogue-portrait-card::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 34%;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgba(5, 8, 8, 0.72));
+  content: "";
+}
+
+.dialogue-portrait-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+  object-position: 50% 36%;
+}
+
+.dialogue-portrait-card img[hidden],
+.dialogue-portrait-fallback[hidden] {
+  display: none;
+}
+
+.dialogue-portrait-fallback {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  place-items: center;
+  padding: 28px;
+  color: rgba(241, 211, 134, 0.86);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.dialogue-content-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.dialogue-speaker-heading {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(217, 199, 150, 0.18);
+}
+
+.dialogue-speaker-heading .eyebrow {
+  margin-bottom: 5px;
+}
+
+.dialogue-speaker-heading h3 {
+  margin: 0;
+  color: #fff4d8;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+}
+
+.dialogue-text-region {
+  position: relative;
+  display: flex;
+  min-height: 150px;
+  max-height: 250px;
+  flex: 1 1 auto;
+  align-items: center;
+  margin: 18px 0 12px;
+  padding: 22px 22px 34px;
+  overflow-y: auto;
+  border: 1px solid rgba(111, 176, 193, 0.2);
+  border-radius: 10px;
+  background: rgba(5, 10, 10, 0.5);
+  outline: none;
+}
+
+.dialogue-text-region:focus-visible {
+  border-color: rgba(111, 176, 193, 0.68);
+  box-shadow: 0 0 0 3px rgba(111, 176, 193, 0.12);
+}
+
+.dialogue-text-region p {
+  width: 100%;
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+.dialogue-page-indicator {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.dialogue-skip-button {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  min-width: 0;
+  min-height: 30px;
+  padding: 5px 11px;
+  border: 1px solid rgba(241, 211, 134, 0.3);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), transparent 56%),
+    rgba(12, 19, 19, 0.58);
+  -webkit-backdrop-filter: blur(10px) saturate(115%);
+  backdrop-filter: blur(10px) saturate(115%);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.28);
+  color: rgba(255, 244, 216, 0.88);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.dialogue-skip-button[hidden] {
+  display: none;
+}
+
+.dialogue-skip-button:hover,
+.dialogue-skip-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(241, 211, 134, 0.72);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14), transparent 58%),
+    rgba(26, 34, 33, 0.72);
+  color: #fff4d8;
+  outline: none;
+}
+
+.dialogue-notice {
+  min-height: 1.4em;
+  margin: 0 0 10px;
+}
+
+.dialogue-choice-list {
+  display: grid;
+  min-height: 0;
+  margin-top: auto;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.dialogue-choice-list[hidden] {
+  display: none;
+}
+
+.dialogue-choice-button {
+  min-height: 48px;
+  padding: 11px 15px;
+  border: 1px solid rgba(217, 199, 150, 0.24);
+  border-radius: 9px;
+  background:
+    linear-gradient(135deg, rgba(224, 179, 93, 0.08), transparent 54%),
+    rgba(22, 28, 28, 0.92);
+  color: #fff4d8;
+  cursor: pointer;
+  font-weight: 800;
+  text-align: left;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.dialogue-choice-button:hover,
+.dialogue-choice-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(241, 211, 134, 0.72);
+  background:
+    linear-gradient(135deg, rgba(224, 179, 93, 0.15), transparent 58%),
+    rgba(35, 42, 40, 0.96);
+  outline: none;
+}
+
+.dialogue-advance-button {
+  width: 100%;
+  margin-top: auto;
+}
+
+.dialogue-text-region.is-typing #dialogueText::after {
+  display: inline-block;
+  width: 0.55em;
+  margin-left: 0.12em;
+  border-bottom: 2px solid rgba(241, 211, 134, 0.82);
+  content: "";
+  animation: dialogue-caret 760ms steps(1, end) infinite;
+  transform: translateY(-0.08em);
+}
+
+@keyframes dialogue-caret {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogue-text-region.is-typing #dialogueText::after {
+    animation: none;
+  }
+}

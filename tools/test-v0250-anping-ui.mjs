@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 import { ambientAudioDefinitions } from "../src/data/ambientAudio.js";
 import { musicDefinitions } from "../src/data/music.js";
@@ -71,7 +72,9 @@ const imagePaths = [
   "assets/images/anping-town/arrival/anping-arrival-scene-desktop.jpg",
   "assets/images/anping-town/arrival/anping-arrival-scene-mobile.jpg"
 ];
-await Promise.all(imagePaths.map((path) => access(new URL(path, root))));
+if (!existsSync(new URL("AI_PACKAGE_INFO.txt", root))) {
+  await Promise.all(imagePaths.map((path) => access(new URL(path, root))));
+}
 imagePaths.forEach((path) => assert.match(html + game + JSON.stringify(getSafeAreaDefinition("anping-town")), new RegExp(path.replaceAll("/", "\\/"))));
 assert.doesNotMatch(html + game, /chroma|foreground-desktop|town-desktop\.png/);
 

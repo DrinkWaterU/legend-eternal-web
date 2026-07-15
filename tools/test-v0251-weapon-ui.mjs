@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 import { getFacilityDefinition } from "../src/data/facilities.js";
 import { getSafeAreaDefinition } from "../src/data/safeAreas.js";
@@ -74,6 +75,8 @@ assert.doesNotMatch(componentsCss, /grade-special/);
 assert.match(responsiveCss, /\.blacksmith-layout/);
 assert.match(responsiveCss, /\.equipment-layout/);
 assert.match(gitignore, /^\/武器icon生圖通用prompt\.md$/m);
-await access(new URL("assets/images/icons/weapons/.gitkeep", root));
+if (!existsSync(new URL("AI_PACKAGE_INFO.txt", root))) {
+  await access(new URL("assets/images/icons/weapons/.gitkeep", root));
+}
 
 console.log("Blacksmith, weapon equipment UI, fallback asset, and wiring tests passed.");

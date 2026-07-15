@@ -9,7 +9,8 @@ export const facilityDefinitions = Object.freeze({
     id: "blacksmith",
     name: "鐵匠鋪",
     description: "鎮上的鐵匠願意把冒險中取得的素材重新鍛造成可長期使用的武器。",
-    actionId: "blacksmith"
+    actionId: "blacksmith",
+    npcId: "anping-blacksmith"
   })
 });
 
@@ -27,6 +28,9 @@ export function assertFacilityDefinitions(facilities = facilityDefinitions) {
     }
     if (!String(facility.actionId || "").trim()) {
       throw new Error(`Facility ${facilityId} 缺少 actionId。`);
+    }
+    if (facility.npcId !== undefined && !String(facility.npcId || "").trim()) {
+      throw new Error(`Facility ${facilityId} npcId 必須是有效字串。`);
     }
   });
   return true;
