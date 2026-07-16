@@ -5,7 +5,7 @@ const normalize = (source) => source.replace(/\r\n?/g, "\n");
 const root = new URL("../", import.meta.url);
 const [html, game, dom, style, achievementView, storageView, statisticsView] = (await Promise.all([
   readFile(new URL("index.html", root), "utf8"),
-  readFile(new URL("game.js", root), "utf8"),
+  Promise.all(["src/features/profile/achievementController.js", "src/features/adventure/adventureAchievements.js", "src/app/createApplication.js", "src/app/createProfileFeatures.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dom.js", root), "utf8"),
   readFile(new URL("src/styles/ui-refresh.css", root), "utf8"),
   readFile(new URL("src/ui/achievementView.js", root), "utf8"),
@@ -25,9 +25,9 @@ for (const id of [
 assert.doesNotMatch(html, /id="materialInfoPanel"/, "素材資訊應整合進倉庫，不應保留雙軌彈窗");
 assert.doesNotMatch(html, /id="skillInfoPanel"/, "技能資訊應整合進角色詳情，不應保留雙軌彈窗");
 assert.doesNotMatch(game, /showMaterialDetail|closeMaterialDetail|materialInfoPanel/, "game.js 不應保留舊素材彈窗流程");
-assert.match(game, /queueAchievementUnlock\(FOREST_TRIAL_ACHIEVEMENT_ID\)/);
-assert.match(game, /if \(achievement\.unlocked\) \{\n    return false;/, "重複成就解鎖必須回傳 false");
-assert.match(game, /unlockAchievement,\n  plainsTrialAchievementId/, "Debug Runtime 應保留純資料解鎖函式");
+assert.match(game, /queueAchievementUnlock\(forestTrialAchievementId\)/);
+assert.match(game, /if \(achievement\.unlocked\) return false;/, "重複成就解鎖必須回傳 false");
+assert.match(game, /unlockAchievement: profile\.unlockAchievement[\s\S]*plainsTrialAchievementId: PLAINS_TRIAL_ACHIEVEMENT_ID/, "Debug Runtime 應保留純資料解鎖函式");
 assert.match(storageView, /overflow|renderUsageList/);
 assert.match(statisticsView, /\["overview", "characters", "regions", "save"\]/);
 assert.match(achievementView, /hiddenUntilUnlocked/);

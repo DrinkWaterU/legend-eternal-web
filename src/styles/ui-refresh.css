@@ -54,15 +54,7 @@ button:disabled {
 
 .app-page-heading .page-heading-description {
   max-width: 650px;
-  margin: 8px 0 0;
-}
-
-#statisticsScreen .app-page-heading > div {
-  text-align: center;
-}
-
-#statisticsScreen .app-page-heading .page-heading-description {
-  margin-inline: auto;
+  margin: 8px auto 0;
   text-align: center;
 }
 

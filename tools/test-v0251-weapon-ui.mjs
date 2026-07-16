@@ -10,7 +10,7 @@ import { GAME_VERSION } from "../src/config.js";
 const root = new URL("../", import.meta.url);
 const [html, game, dom, componentsCss, responsiveCss, gitignore] = await Promise.all([
   readFile(new URL("index.html", root), "utf8"),
-  readFile(new URL("game.js", root), "utf8"),
+  Promise.all(["src/features/facility/facilityController.js", "src/features/character/characterController.js", "src/features/character/characterEquipmentController.js", "src/app/createFoundation.js", "src/app/eventBindings.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dom.js", root), "utf8"),
   readFile(new URL("src/styles/components.css", root), "utf8"),
   readFile(new URL("src/styles/responsive.css", root), "utf8"),
@@ -56,12 +56,12 @@ assert.deepEqual(Object.keys(weaponDefinitions), [
   "vanguard-hunting-bow"
 ]);
 
-assert.match(game, /const FACILITY_ACTION_HANDLERS = Object\.freeze\(\{[\s\S]*blacksmith: showBlacksmithFacility/);
+assert.match(game, /const actionHandlers = Object\.freeze\(\{[\s\S]*blacksmith: showBlacksmithFacility/);
 assert.match(game, /function showCharacterEquipment\(/);
 assert.match(game, /function equipCharacterWeapon\(/);
 assert.match(game, /function unequipCharacterWeapon\(/);
-assert.match(game, /buildHeroFromProgressionCore\(character, progress, \{[\s\S]*inventory: saveData\.inventory,[\s\S]*weaponDefinitions/);
-assert.match(game, /blacksmithController\.closeCraftDialog\(\)/);
+assert.match(game, /buildHeroFromProgression\(characterDefinitions\[characterId\], progress, \{[\s\S]*inventory: saveStore\.current\.inventory,[\s\S]*weaponDefinitions/);
+assert.match(game, /closeBlacksmithCraft: blacksmithController\.closeCraftDialog/);
 const cacheVersion = GAME_VERSION.replace(/^v/, "");
 assert.match(html, new RegExp(`styles\\.css\\?v=${cacheVersion.replaceAll(".", "\\.")}`));
 assert.match(html, new RegExp(`game\\.js\\?v=${cacheVersion.replaceAll(".", "\\.")}`));

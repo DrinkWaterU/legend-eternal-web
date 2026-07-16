@@ -125,13 +125,13 @@ assert.equal(migratedLegacyIds[ANPING_TOWN_SAFE_AREA_ID].unlocked, true, "早期
 assert.ok(migratedLegacyIds[ANPING_TOWN_SAFE_AREA_ID].unlockedAt, "已解鎖舊資料缺少時間時應補上 unlockedAt");
 assert.equal(migratedLegacyIds[ANPING_TOWN_SAFE_AREA_ID].visitedAt, null);
 
-const gameSource = await readFile(new URL("../game.js", import.meta.url), "utf8");
-assert.match(gameSource, /function syncSafeAreaUiFromSave\(\)[\s\S]*uiState\.safeAreaId = getCurrentSafeAreaId\(saveData\)/);
-assert.match(gameSource, /function travelToSafeArea\(safeAreaId\)[\s\S]*canEnterSafeArea\(saveData, safeAreaId\)/);
-assert.match(gameSource, /function completeAnpingArrivalStory\(\)[\s\S]*markSafeAreaVisited\(saveData, ANPING_TOWN_SAFE_AREA_ID\)[\s\S]*setCurrentSafeArea\(saveData, ANPING_TOWN_SAFE_AREA_ID\)/);
-assert.match(gameSource, /state\.runOriginSafeAreaId = runOriginSafeAreaId/);
-assert.match(gameSource, /function returnToRunOriginSafeArea\(\)/);
-assert.match(gameSource, /function shouldOfferAnpingArrivalAfterRun\(outcome\)[\s\S]*!currentRoute\(\)/);
-assert.match(gameSource, /function getAdventureEventScheduleChance\(\)[\s\S]*state\.selectedRegionId === "forest"[\s\S]*!saveData\.storyFlags\.archerRescued[\s\S]*return 0\.5/);
+const runtimeSources = (await Promise.all(["../src/features/safeArea/safeAreaController.js", "../src/features/story/anpingArrivalController.js", "../src/features/adventure/runLifecycleController.js", "../src/features/adventure/runResultController.js"].map((path) => readFile(new URL(path, import.meta.url), "utf8")))).join("\n");
+assert.match(runtimeSources, /function syncSafeAreaUiFromSave\(\)[\s\S]*uiState\.safeAreaId = getCurrentSafeAreaId\(saveStore\.current\)/);
+assert.match(runtimeSources, /function travelToSafeArea\(safeAreaId\)[\s\S]*canEnterSafeArea\(saveStore\.current, safeAreaId\)/);
+assert.match(runtimeSources, /function completeStory\(\)[\s\S]*markSafeAreaVisited\(saveStore\.current, ANPING_TOWN_SAFE_AREA_ID\)[\s\S]*setCurrentSafeArea\(saveStore\.current, ANPING_TOWN_SAFE_AREA_ID\)/);
+assert.match(runtimeSources, /state\.runOriginSafeAreaId = startContext\.runOriginSafeAreaId/);
+assert.match(runtimeSources, /function returnToRunOriginSafeArea\(\)/);
+assert.match(runtimeSources, /function shouldOfferAnpingArrivalAfterRun\(outcome\)[\s\S]*!currentRoute\(\)/);
+assert.match(runtimeSources, /function getAdventureEventScheduleChance\(\)[\s\S]*state\.selectedRegionId === "forest"[\s\S]*!saveStore\.current\.storyFlags\.archerRescued[\s\S]*return 0\.5/);
 
 console.log("v0.2.5.0 Safe Area progression and arrival state tests passed.");

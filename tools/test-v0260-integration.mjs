@@ -10,12 +10,12 @@ import { npcDefinitions } from "../src/data/npcs.js";
 const root = new URL("../", import.meta.url);
 const [html, game, dom, componentsCss, responsiveCss, storage, dialogueView, dialogueController] = await Promise.all([
   readFile(new URL("index.html", root), "utf8"),
-  readFile(new URL("game.js", root), "utf8"),
+  Promise.all(["src/features/facility/facilityController.js", "src/app/eventBindings.js", "src/app/createWorldFeatures.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dom.js", root), "utf8"),
   readFile(new URL("src/styles/components.css", root), "utf8"),
   readFile(new URL("src/styles/responsive.css", root), "utf8"),
-  readFile(new URL("src/core/storage.js", root), "utf8"),
-  readFile(new URL("src/ui/dialogueView.js", root), "utf8"),
+  Promise.all(["src/core/storage.js", "src/core/saveDefaults.js", "src/core/saveMigrations.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
+  Promise.all(["src/ui/dialogueView.js", "src/ui/dialogueTextAnimation.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dialogueController.js", root), "utf8")
 ]);
 

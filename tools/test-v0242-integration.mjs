@@ -16,9 +16,9 @@ const [
   html,
   config
 ] = await Promise.all([
-  readFile(new URL("../game.js", import.meta.url), "utf8"),
-  readFile(new URL("../src/core/preparations.js", import.meta.url), "utf8"),
-  readFile(new URL("../src/core/commerce.js", import.meta.url), "utf8"),
+  Promise.all(["../src/app/runtimeState.js", "../src/features/adventure/regionController.js", "../src/features/adventure/runRecords.js", "../src/features/adventure/runLifecycleController.js"].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
+  Promise.all(["../src/core/preparations.js", "../src/core/preparationValidation.js", "../src/core/preparationEffects.js"].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
+  Promise.all(["../src/core/commerce.js", "../src/core/inventoryCosts.js"].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("../src/ui/preparationView.js", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/preparationState.js", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/components.css", import.meta.url), "utf8"),
@@ -126,8 +126,8 @@ assert.match(game, /花費 \$\{activePreparation\.cost\} 金幣＋素材並開�
 
 const snapshotSource = game.match(/function captureRunStartPermanentState\(\) \{[\s\S]*?\n\}/)?.[0] || "";
 const restoreSource = game.match(/function restoreRunStartPermanentState\(snapshot\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(snapshotSource, /materials: clone\(saveData\.inventory\.materials\)/);
-assert.match(restoreSource, /saveData\.inventory\.materials = clone\(snapshot\.materials\)/);
+assert.match(snapshotSource, /materials: clone\(saveStore\.current\.inventory\.materials\)/);
+assert.match(restoreSource, /saveStore\.current\.inventory\.materials = clone\(snapshot\.materials\)/);
 const startRunSource = game.match(/function startPlayerRun\(\) \{[\s\S]*?\n\}/)?.[0] || "";
 assert.match(startRunSource, /requestedEnhanced/);
 assert.match(startRunSource, /createRunPreparation\(region, requestedPreparationId,[\s\S]*enhanced: requestedEnhanced/);

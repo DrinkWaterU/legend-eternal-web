@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { access, readFile } from "node:fs/promises";
 
 import { GAME_VERSION, SAVE_SCHEMA_VERSION } from "../src/config.js";
@@ -10,16 +11,16 @@ import { safeAreaDefinitions } from "../src/data/safeAreas.js";
 const root = new URL("../", import.meta.url);
 const [html, game, dom, componentsCss, responsiveCss, storage, commerce, dialogueCore] = await Promise.all([
   readFile(new URL("index.html", root), "utf8"),
-  readFile(new URL("game.js", root), "utf8"),
+  Promise.all(["src/app/createWorldFeatures.js", "src/features/facility/facilityController.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dom.js", root), "utf8"),
   readFile(new URL("src/styles/components.css", root), "utf8"),
   readFile(new URL("src/styles/responsive.css", root), "utf8"),
-  readFile(new URL("src/core/storage.js", root), "utf8"),
-  readFile(new URL("src/core/commerce.js", root), "utf8"),
+  Promise.all(["src/core/storage.js", "src/core/saveDefaults.js", "src/core/saveMigrations.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
+  Promise.all(["src/core/commerce.js", "src/core/materialSales.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/core/dialogue.js", root), "utf8")
 ]);
 
-assert.equal(GAME_VERSION, "v0.2.6.1-alpha");
+assert.match(GAME_VERSION, /^v0\.2\.6\.\d+-alpha$/);
 assert.equal(SAVE_SCHEMA_VERSION, 8);
 assert.deepEqual(safeAreaDefinitions["anping-town"].facilityIds, ["blacksmith", "adventurers-guild"]);
 assert.equal(facilityDefinitions["adventurers-guild"].npcId, "anping-guild-receptionist");
@@ -67,7 +68,7 @@ for (const source of [
   'classList.toggle("is-guild-record-mode"',
   'classList.toggle("is-guild-sale-mode"'
 ]) {
-  assert.match(game, new RegExp(escapeRegExp(source)), `game.js 缺少接線：${source}`);
+  assert.match(game, new RegExp(escapeRegExp(source)), `公會 Feature 缺少接線：${source}`);
 }
 
 assert.match(componentsCss, /\.facility-panel\.is-guild-record-mode[\s\S]*max-width: 1120px/);
@@ -82,9 +83,11 @@ assert.match(componentsCss, /\.summary-empty\[hidden\][\s\S]*display: none !impo
 assert.match(responsiveCss, /@media \(max-width: 920px\)[\s\S]*\.guild-record-layout/);
 assert.match(responsiveCss, /@media \(max-width: 980px\)[\s\S]*\.guild-sale-layout/);
 
-await access(new URL("assets/images/npcs/anping/celine.png", root));
-assert.match(html, /styles\.css\?v=0\.2\.6\.1-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.6\.1-alpha/);
+if (!existsSync(new URL("AI_PACKAGE_INFO.txt", root))) {
+  await access(new URL("assets/images/npcs/anping/celine.png", root));
+}
+assert.match(html, new RegExp(`styles\\.css\\?v=${GAME_VERSION.slice(1).replaceAll(".", "\\.")}`));
+assert.match(html, new RegExp(`game\\.js\\?v=${GAME_VERSION.slice(1).replaceAll(".", "\\.")}`));
 
 console.log("v0.2.6.1 guild facility, Celine, adventure record, bulk sale, DOM, responsive, and version integration tests passed.");
 

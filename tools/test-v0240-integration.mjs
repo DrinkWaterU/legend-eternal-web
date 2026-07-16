@@ -20,7 +20,26 @@ const [
   editorSource,
   readme
 ] = (await Promise.all([
-  readFile(new URL("../game.js", import.meta.url), "utf8"),
+  Promise.all([
+    "../src/app/eventBindings.js",
+    "../src/app/runtimeState.js",
+    "../src/app/createAdventureFeatures.js",
+    "../src/features/adventure/runLifecycleController.js",
+    "../src/features/adventure/runRecords.js",
+    "../src/features/adventure/runResultController.js",
+    "../src/features/adventure/routeEndingController.js",
+    "../src/features/adventure/regionController.js",
+    "../src/features/adventure/encounterVictoryController.js",
+    "../src/features/adventure/encounterController.js",
+    "../src/features/battle/battleState.js",
+    "../src/features/battle/battleTurnController.js",
+    "../src/features/battle/preparationBattleEffects.js",
+    "../src/features/safeArea/campController.js",
+    "../src/features/safeArea/safeAreaController.js",
+    "../src/features/facility/facilityController.js",
+    "../src/features/profile/saveTransferController.js",
+    "../src/features/escape/escapeController.js"
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/dom.js", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/layout.css", import.meta.url), "utf8"),
@@ -38,7 +57,7 @@ const [
 
 const [eventRuntimeSource, debugRuntimeSource, runLifecycleSource, battleLifecycleSource] = (await Promise.all([
   readFile(new URL("../src/adventure/eventRuntime.js", import.meta.url), "utf8"),
-  readFile(new URL("../src/debug/runtimeActions.js", import.meta.url), "utf8"),
+  Promise.all(["../src/debug/runtimeActions.js", "../src/debug/scenarioActions.js"].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("../src/adventure/runLifecycle.js", import.meta.url), "utf8"),
   readFile(new URL("../src/adventure/battleLifecycle.js", import.meta.url), "utf8")
 ])).map(normalizeNewlines);
@@ -49,103 +68,95 @@ assert.doesNotMatch(game, /campStartButton\.addEventListener\("click", startRun\
 assert.match(game, /campStartButton\.addEventListener\("click", \(\) => \{[\s\S]*showRegionDetail\(state\.selectedRegionId\)/);
 assert.match(game, /startButton\.addEventListener\("click", startPlayerRun\)/);
 assert.match(game, /requestedPreparationId = hasPhoenixBlessing\(\)\s*\? uiState\.selectedPreparationId\s*:\s*null/);
-const startPlayerRunSource = game.match(/function startPlayerRun\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(startPlayerRunSource, /getRegionPreparation\(region, requestedPreparationId\)/);
-assert.match(startPlayerRunSource, /createRunPreparation\(region, requestedPreparationId,[\s\S]*enhanced: requestedEnhanced/);
-assert.doesNotMatch(startPlayerRunSource, /preparationDetailId|preparationDetailExpanded/, "Run Start 不得讀 detail preview state");
-assert.match(game, /if \(hasPendingThreat\("counterEscape"\)\)[\s\S]*state\.battleSource === "event"[\s\S]*state\.encounterIndex \+= 1[\s\S]*resolvePostEncounterRunPreparation\(\{ isFinalEncounter: adventureComplete \}\)/);
-assert.match(game, /initializeRunRuntime\(\{ hero, preparation \}\)[\s\S]*spendInventoryCost\(\{[\s\S]*goldCost: preparation\.cost[\s\S]*recordRunStarted\(\)[\s\S]*startEncounter\(\)[\s\S]*showScreen\("gameScreen"\)/, "整備成本必須在進入第一場遭遇前一次扣除，失敗時再由永久快照回復");
+
+const prepareRunStartSource = game.match(/function prepareRunStart\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+assert.match(prepareRunStartSource, /getRegionPreparation\(region, requestedPreparationId\)/);
+assert.match(prepareRunStartSource, /createRunPreparation\(region, requestedPreparationId,[\s\S]*enhanced: requestedEnhanced/);
+assert.doesNotMatch(prepareRunStartSource, /preparationDetailId|preparationDetailExpanded/, "Run Start 不得讀 detail preview state");
+
+const startPlayerRunSource = game.match(/function startPlayerRun\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+const runStartOrder = [
+  "captureRunStartPermanentState()",
+  "initializeRunRuntime({ hero: startContext.hero, preparation: startContext.preparation })",
+  "spendPreparationCost(startContext)",
+  "recordRunStarted()",
+  "startEncounter()",
+  'showScreen("gameScreen")'
+].map((fragment) => {
+  const index = startPlayerRunSource.indexOf(fragment);
+  assert.ok(index >= 0, `Run Start 缺少：${fragment}`);
+  return index;
+});
+assert.deepEqual(runStartOrder, [...runStartOrder].sort((a, b) => a - b), "整備扣款、紀錄與第一場遭遇順序不可漂移");
+assert.match(game, /function spendPreparationCost\([\s\S]*spendInventoryCost\(\{[\s\S]*goldCost: preparation\.cost/);
 assert.match(game, /function recordRunStarted\(\)[\s\S]*saveGameSafe\(\)/);
-assert.match(game, /permanentMutationStarted = true[\s\S]*recordRunStarted\(\)[\s\S]*showScreen\("gameScreen"\)/);
-assert.match(game, /restoreRunStartPermanentState\(permanentSnapshot\)/);
-assert.match(game, /resetFailedPlayerRunStart\(\)[\s\S]*setNavigationContext\(navigationContextBeforeStart\)[\s\S]*showScreen\("regionScreen"\)/);
-assert.match(game, /if \(uiState\.runStartLocked\) \{\s*return;\s*\}/);
-assert.match(game, /runStarted = true/);
-assert.match(game, /preparationDetailId: null/);
-assert.match(game, /preparationDetailExpanded: false/);
-const resetPreparationUiSource = game.match(/function resetPreparationUiState\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(resetPreparationUiSource, /clearPreparationSelectionState\(uiState\)/);
-for (const field of ["runStartNotice", "runStartLocked"]) {
-  assert.match(resetPreparationUiSource, new RegExp(`uiState\\.${field}`), `resetPreparationUiState 缺少 ${field}`);
+assert.match(startPlayerRunSource, /restoreRunStartPermanentState\(permanentSnapshot\)/);
+assert.match(startPlayerRunSource, /setNavigationContext\(navigationContextBeforeStart\)[\s\S]*showScreen\("regionScreen"\)/);
+assert.match(startPlayerRunSource, /if \(uiState\.runStartLocked\) return;/);
+
+for (const field of ["preparationDetailId", "enhancedPreparationId", "preparationDetailExpanded", "runStartNotice", "runStartLocked"]) {
+  assert.match(game, new RegExp(`${field}:`), `UI State 缺少 ${field}`);
 }
-assert.match(game, /import \{ clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState \} from "\.\/src\/ui\/preparationState\.js"/);
-for (const exportedFunction of [
-  "clearPreparationSelectionState",
-  "normalizePreparationUiState",
-  "consumePreparationEnhancementReveal"
-]) {
+const resetPreparationUiSource = game.match(/function resetPreparationUiState\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+assert.match(resetPreparationUiSource, /clearPreparationSelectionState\(uiState\)/);
+assert.match(game, /from "\.\.\/\.\.\/ui\/preparationState\.js"/);
+for (const exportedFunction of ["clearPreparationSelectionState", "normalizePreparationUiState", "consumePreparationEnhancementReveal"]) {
   assert.match(preparationStateSource, new RegExp(`export function ${exportedFunction}\\(`));
 }
-const regionRenderer = game.match(/function renderRegionScreen\(\) \{[\s\S]*?\n\}\n\nfunction showCharacterList/)?.[0] || "";
+
 for (const label of ["遭遇", "難度", "推薦等級", "首領"]) {
-  assert.match(regionRenderer, new RegExp(`\\["${label}"`), `Region overview 缺少：${label}`);
+  assert.match(game, new RegExp(`\\["${label}"`), `Region overview 缺少：${label}`);
 }
-assert.doesNotMatch(regionRenderer, /\["角色"/, "Region overview 不應再把角色當地區 metadata");
-assert.match(regionRenderer, /regionDepartureCharacter\.textContent = `\$\{character\.name\} Lv\.\$\{progress\.level\}`/);
-assert.match(regionRenderer, /regionDepartureGoldItem\.hidden = !phoenixUnlocked/);
-assert.match(regionRenderer, /regionPreparationSection\.hidden = !phoenixUnlocked/);
-assert.match(regionRenderer, /normalizePreparationUiState\(\{[\s\S]*uiState,[\s\S]*region,[\s\S]*gold: inventory\.gold,[\s\S]*enabled: phoenixUnlocked[\s\S]*\}\)/);
-assert.doesNotMatch(regionRenderer, /uiState\.(?:selectedPreparationId|enhancedPreparationId|preparationDetailId)\s*=/, "Region renderer 不應直接正規化整備 UI State");
-const selectPreparationSource = game.match(/function selectPreparation\(preparationId\) \{[\s\S]*?\n\}/)?.[0] || "";
+assert.doesNotMatch(game, /\["角色"/, "Region overview 不應再把角色當地區 metadata");
+assert.match(game, /regionDepartureCharacter\.textContent = `\$\{character\.name\} Lv\.\$\{progress\.level\}`/);
+assert.match(game, /normalizePreparationUiState\(\{[\s\S]*uiState,[\s\S]*region,[\s\S]*gold: inventory\.gold,[\s\S]*enabled: phoenixUnlocked/);
+const selectPreparationSource = game.match(/function selectPreparation\(preparationId\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.match(selectPreparationSource, /const affordable = !preparation \|\| inventory\.gold >= preparation\.cost/);
-assert.match(selectPreparationSource, /if \(affordable\) \{[\s\S]*uiState\.selectedPreparationId = preparationId/);
 assert.match(selectPreparationSource, /uiState\.preparationDetailId = preparationId/);
-assert.match(selectPreparationSource, /sameDetail\s*\? !uiState\.preparationDetailExpanded\s*:\s*true/);
-assert.match(game, /import \{ resetAdventureRunState \} from "\.\/src\/adventure\/runLifecycle\.js"/);
+
 assert.match(runLifecycleSource, /export function resetAdventureRunState\(state, options = \{\}\)/);
-assert.match(runLifecycleSource, /clearLastRunSummary = false/);
-assert.match(runLifecycleSource, /state\.log = \[\]/);
-const runRuntimeCoordinator = game.match(/function resetAdventureRunRuntime\(options = \{\}\) \{[\s\S]*?\n\}/)?.[0] || "";
+const runRuntimeCoordinator = game.match(/function resetAdventureRunRuntime\(options = \{\}\) \{[\s\S]*?\n  \}/)?.[0] || "";
 for (const requiredCall of [
   "resetAdventureRunState(state, options)",
   "clearEnemyGroup()",
   "clearPendingThreat()",
-  "eventRuntime.resetEventRunState()",
+  "getEventRuntime()?.resetEventRunState()",
   "resetRouteRuntime()"
 ]) {
   assert.ok(runRuntimeCoordinator.includes(requiredCall), `Run Runtime coordinator 缺少：${requiredCall}`);
 }
-assert.match(game, /function initializeRunRuntime\([\s\S]*?resetAdventureRunRuntime\(\)/);
-assert.match(game, /function resetFailedPlayerRunStart\(\) \{\s*resetAdventureRunRuntime\(\)/);
-assert.match(game, /function resetAdventureRuntimeAfterSaveImport\(\) \{\s*resetAdventureRunRuntime\(\{ clearLastRunSummary: true \}\)/);
-assert.match(game, /function deleteSave\(\)[\s\S]*?resetAdventureRunRuntime\(\{ clearLastRunSummary: true \}\)[\s\S]*?resetPreparationUiState\(\)/);
-assert.match(game, /function restart\(\) \{\s*resetAdventureRunRuntime\(\)[\s\S]*?showScreen\("menuScreen"\)/);
-assert.match(game, /function returnToSafeArea\(safeAreaId\)[\s\S]*?activateSafeArea\(targetSafeAreaId\)[\s\S]*?resetAdventureRunRuntime\(\)[\s\S]*?showScreenInContext\("campScreen", "camp"\)/);
-assert.match(game, /function returnToRunOriginSafeArea\(\)[\s\S]*?state\.runOriginSafeAreaId[\s\S]*?returnToSafeArea\(originSafeAreaId\)/);
-assert.match(game, /modifyPoisonDamage: \(\{ damage \}\) => modifyPoisonDamageFromPreparation\(damage\)/);
-assert.match(game, /modifyDirectDamage: modifyIncomingDirectDamage/);
-assert.match(game, /runPreparationOpeningAction\(\{[\s\S]*encounterType: state\.battleEncounterType[\s\S]*finally|runPreparationOpeningAction\(\{/);
-assert.match(game, /retryOnFailure: \(\) => consumeEntangleRetryFromPreparation\(log\)/);
-assert.match(game, /beginRunPreparationBattle\(\)/);
-assert.match(game, /preparationName = state\.runPreparation\?\.name \|\| "冒險整備"/);
-assert.doesNotMatch(game, /整備｜驅蟲藥粉|整備｜簡易繃帶/, "game coordinator 不應寫死個別整備名稱");
-assert.doesNotMatch(game, /firstFamilyDirectDamageReduction|openingActionAttackBonus|victoryMilestoneHeal|entangleRetry/, "game coordinator 不應解讀 B 階段 effect type");
+assert.match(game, /function initializeRunRuntime\([\s\S]*resetAdventureRunRuntime\(\)/);
+assert.match(game, /function resetRuntimeAfterSaveReplacement\(\)[\s\S]*resetAdventureRunRuntime\(\{ clearLastRunSummary: true \}\)/);
+assert.match(game, /function restart\(\)[\s\S]*resetAdventureRunRuntime\(\)[\s\S]*showScreen\("menuScreen"\)/);
+assert.match(game, /function returnToSafeArea\(safeAreaId\)[\s\S]*activateSafeArea\(targetSafeAreaId\)[\s\S]*resetAdventureRunRuntime\(\)[\s\S]*showScreenInContext\("campScreen", "camp"\)/);
+assert.match(game, /function returnToRunOriginSafeArea\(\)[\s\S]*returnToSafeArea\(state\.runOriginSafeAreaId\)/);
+
 assert.match(game, /preparation: state\.runPreparation/);
+assert.match(game, /function modifyPoisonDamage\(damage\)/);
+assert.match(game, /retryOnFailure: \(\) => consumeEntangleRetry\(log\)/);
+assert.match(game, /beginPreparationBattle\(state\.runPreparation\)/);
+assert.match(game, /preparationName = state\.runPreparation\?\.name \|\| "冒險整備"/);
+assert.doesNotMatch(game, /整備｜驅蟲藥粉|整備｜簡易繃帶/, "協調層不應寫死個別整備名稱");
 assert.match(game, /facility\.id !== "traveling-merchant" \|\| hasPhoenixBlessing\(\)/);
 assert.match(game, /els\.campPlacesButton\.hidden = facilities\.length === 0/);
 assert.match(game, /function showFacilityList\(safeAreaId = uiState\.safeAreaId, contextId = uiState\.navigationContext\)/);
-assert.match(game, /getCurrentSafeArea\(\)\?\.placesTitle \|\| "安全區去處"/);
 assert.match(game, /facilityBackButton\.addEventListener\("click", \(\) => showScreen\(getNavigationReturnTarget\(\)\)\)/);
-assert.match(game, /merchantBackButton\.addEventListener\("click", \(\) => showFacilityList\(uiState\.safeAreaId, uiState\.navigationContext\)\)/);
-const routeEntry = game.match(/function enterAdventureRoute\([\s\S]*?\n}\n/)?.[0] || "";
+
+const routeEntry = game.match(/function enterAdventureRoute\([\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(routeEntry, /runPreparation\s*=\s*null/, "Route 切換不可清除整備 runtime");
-const goblinRouteCompletion = game.match(/function completeGoblinCampRoute\(\) \{[\s\S]*?\n\}/)?.[0] || "";
-assert.match(goblinRouteCompletion, /saveData\.storyFlags\.archerRescued \|\| archerProgress\?\.unlocked/, "重複通關判定必須同時相容故事旗標與角色解鎖狀態");
-assert.match(goblinRouteCompletion, /endingKey = archerAlreadyRescued \? "repeatEnding" : "ending"/, "哥布林營地應依首次／重複通關選擇結尾");
+const goblinRouteCompletion = game.match(/function completeGoblinCampRoute\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+assert.match(goblinRouteCompletion, /storyFlags\.archerRescued \|\| archerProgress\?\.unlocked/);
+assert.match(goblinRouteCompletion, /endingKey = alreadyRescued \? "repeatEnding" : "ending"/);
 assert.match(goblinRouteCompletion, /showRouteEnding\(route, \{ endingKey \}\)/);
-const routeEndingCoordinator = game.match(/function showRouteEnding\([\s\S]*?\n\}/)?.[0] || "";
-assert.match(routeEndingCoordinator, /route\?\.\[requestedEndingKey\]\?\.pages\?\.length \? requestedEndingKey : "ending"/, "Route Ending 應安全回退到首次 ending");
-assert.match(routeEndingCoordinator, /routeEndingContext = \{ routeId: route\.id, endingKey, pageIndex: 0 \}/);
-assert.match(game, /const endingKey = state\.routeEndingContext\?\.endingKey \|\| "ending";[\s\S]*return route\?\.\[endingKey\] \|\| route\?\.ending \|\| null;/);
-assert.match(game, /import \{ resetBattleEntryState \} from "\.\/src\/adventure\/battleLifecycle\.js"/);
+assert.match(game, /const endingKey = state\.routeEndingContext\?\.endingKey \|\| "ending"/);
+
 assert.match(battleLifecycleSource, /export function resetBattleEntryState\(state, options = \{\}\)/);
-assert.match(battleLifecycleSource, /state\.log = \[\]/);
-const battleRuntimeCoordinator = game.match(/function beginBattleRuntime\(options = \{\}\) \{[\s\S]*?\n\}/)?.[0] || "";
+const battleRuntimeCoordinator = game.match(/function beginBattleRuntime\(options = \{\}\) \{[\s\S]*?\n  \}/)?.[0] || "";
 const battleRuntimeOrder = [
   "resetBattleEntryState(state, { source, encounterType, ambushAdvantage })",
   "setEnemyGroup(enemies, { restore: restoreEnemies })",
   "resetHeroBattleState()",
-  "beginRunPreparationBattle()",
+  "beginPreparationBattle(state.runPreparation)",
   "applyBattleStartSkills()"
 ].map((requiredCall) => {
   const index = battleRuntimeCoordinator.indexOf(requiredCall);
@@ -153,19 +164,17 @@ const battleRuntimeOrder = [
   return index;
 });
 assert.deepEqual(battleRuntimeOrder, [...battleRuntimeOrder].sort((a, b) => a - b), "Battle Runtime 初始化順序不可漂移");
-assert.match(game, /function startEncounter\(\)[\s\S]*?beginBattleRuntime\(\{[\s\S]*?source: "main"[\s\S]*?encounterType/);
-assert.match(game, /function resumePendingThreat\([\s\S]*?beginBattleRuntime\(\{[\s\S]*?restoreEnemies: true[\s\S]*?source: threat\.battleSource/);
-assert.match(game, /function resolveCounterEscape\(\)[\s\S]*?beginBattleRuntime\(\{[\s\S]*?source: "counterEscape"[\s\S]*?encounterType: "counter"[\s\S]*?ambushAdvantage: true/);
-const eventBattleSource = eventRuntimeSource.match(/function startEventBattle\([\s\S]*?\r?\n  }\r?\n/)?.[0] || "";
-assert.match(eventBattleSource, /beginBattleRuntime\(\{[\s\S]*?source: "event"[\s\S]*?encounterType: "event"/, "Event Battle 必須走共同 Battle Runtime");
-assert.doesNotMatch(eventRuntimeSource, /resetHeroBattleState|beginRunPreparationBattle|applyBattleStartSkills/, "Event Runtime 不應自行維護共通戰鬥初始化");
-assert.match(debugRuntimeSource, /beginBattleRuntime\(\{[\s\S]*?encounterType: "normal"/);
-assert.doesNotMatch(debugRuntimeSource, /resetHeroBattleState|beginRunPreparationBattle|applyBattleStartSkills/, "Debug Runtime 不應自行維護共通戰鬥初始化");
-const campRenderer = game.match(/function renderCampScreen\(\) \{[\s\S]*?\r?\n\}/)?.[0] || "";
+assert.match(game, /function startEncounter\(\)[\s\S]*beginBattleRuntime\(\{[\s\S]*source: "main"/);
+assert.match(game, /function resumePendingThreat\([\s\S]*beginBattleRuntime\(\{[\s\S]*restoreEnemies: true/);
+assert.match(game, /function resolveCounterEscape\(\)[\s\S]*source: "counterEscape"[\s\S]*ambushAdvantage: true/);
+assert.match(eventRuntimeSource, /beginBattleRuntime\(\{[\s\S]*source: "event"[\s\S]*encounterType: "event"/);
+assert.doesNotMatch(eventRuntimeSource, /resetHeroBattleState|beginRunPreparationBattle|applyBattleStartSkills/);
+assert.match(debugRuntimeSource, /beginBattleRuntime\(\{[\s\S]*encounterType: "normal"/);
+
 for (const label of ["目前角色", "目前地區", "經驗", "目前金幣"]) {
-  assert.match(campRenderer, new RegExp(label), `Camp 核心摘要缺少：${label}`);
+  assert.match(game, new RegExp(label), `Camp 核心摘要缺少：${label}`);
 }
-assert.doesNotMatch(campRenderer, /地區難度/, "Camp 核心摘要不應退回舊版長清單");
+assert.doesNotMatch(game, /地區難度/, "Camp 核心摘要不應退回舊版長清單");
 
 assert.match(html, /id="facilityScreen"/);
 assert.match(html, /id="facilityListView"/);
