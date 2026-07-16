@@ -57,6 +57,15 @@ button:disabled {
   margin: 8px 0 0;
 }
 
+#statisticsScreen .app-page-heading > div {
+  text-align: center;
+}
+
+#statisticsScreen .app-page-heading .page-heading-description {
+  margin-inline: auto;
+  text-align: center;
+}
+
 .browser-panel-heading,
 .character-section-heading,
 .equipment-overview-heading,

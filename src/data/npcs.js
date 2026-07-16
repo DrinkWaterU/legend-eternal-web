@@ -1,21 +1,26 @@
-export const npcDefinitions = Object.freeze({
-  "anping-blacksmith": Object.freeze({
-    id: "anping-blacksmith",
-    name: "羅根",
-    title: "安平鎮的鐵匠",
-    race: "human",
-    gender: "male",
-    ageGroup: "older-adult",
-    portrait: "assets/images/npcs/anping/logan.jpg",
-    dialogueId: "anping-blacksmith-main",
-    identity: Object.freeze({
-      unknownLabel: "安平鎮的鐵匠",
-      acquaintedLabel: "鐵匠",
-      metFlag: "metAnpingBlacksmith",
-      nameKnownFlag: "knowsAnpingBlacksmithName"
-    })
-  })
-});
+import anpingBlacksmithData from "./npcs/anping-blacksmith.json" with { type: "json" };
+import anpingGuildReceptionistData from "./npcs/anping-guild-receptionist.json" with { type: "json" };
+
+function deepFreeze(value) {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) {
+    return value;
+  }
+  Object.values(value).forEach(deepFreeze);
+  return Object.freeze(value);
+}
+
+function createNpcDefinition(data) {
+  return deepFreeze(structuredClone(data));
+}
+
+const definitions = [
+  createNpcDefinition(anpingBlacksmithData),
+  createNpcDefinition(anpingGuildReceptionistData)
+];
+
+export const npcDefinitions = Object.freeze(Object.fromEntries(
+  definitions.map((npc) => [npc.id, npc])
+));
 
 export function getNpcDefinition(npcId) {
   return npcDefinitions[npcId] || null;

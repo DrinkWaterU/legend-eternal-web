@@ -547,3 +547,295 @@
     line-height: 1.75;
   }
 }
+
+@media (max-width: 960px) {
+  .guild-record-layout,
+  .guild-bulk-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .guild-record-celine-card,
+  .guild-bulk-summary-card {
+    position: static;
+  }
+
+  .guild-record-celine-card {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    column-gap: 18px;
+    align-items: center;
+  }
+
+  .guild-record-celine-portrait {
+    grid-row: span 3;
+    min-height: 220px;
+    margin-bottom: 0;
+  }
+
+  .guild-record-celine-portrait img {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 700px) {
+  .guild-bulk-dialogue-card,
+  .guild-bulk-status-row {
+    grid-template-columns: 1fr;
+  }
+
+  .guild-record-summary,
+  .guild-bulk-price-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guild-bulk-quantity-control {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .guild-bulk-quantity-control input {
+    grid-column: span 1;
+  }
+
+  .guild-bulk-quantity-control button:nth-last-child(-n + 2) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 520px) {
+  .guild-record-celine-card {
+    display: block;
+  }
+
+  .guild-record-celine-portrait {
+    min-height: 300px;
+    margin-bottom: 16px;
+  }
+
+  .guild-record-celine-portrait img {
+    min-height: 300px;
+  }
+
+  .guild-record-summary,
+  .guild-record-character-list,
+  .guild-bulk-price-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guild-record-experience-list > div,
+  .guild-bulk-tier-row,
+  .guild-bulk-summary-list > div,
+  .guild-bulk-confirm-list > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .guild-record-experience-list span {
+    text-align: left;
+  }
+
+  .guild-bulk-quantity-control {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .guild-bulk-quantity-control input {
+    order: -1;
+    grid-column: 1 / -1;
+  }
+
+  .guild-bulk-quantity-control button:nth-last-child(-n + 2) {
+    grid-column: auto;
+  }
+
+  .guild-bulk-dialogue-text-region {
+    min-height: 176px;
+    height: 176px;
+  }
+}
+
+/* v0.2.6.1 冒險者公會定版 Demo 響應式 */
+@media (max-width: 980px) {
+  .guild-sale-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sale-summary {
+    position: static;
+  }
+
+  .summary-items {
+    max-height: none;
+  }
+}
+
+@media (max-width: 920px) {
+  .guild-record-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .guild-record-reception-card {
+    display: grid;
+    grid-template-columns: minmax(190px, 0.72fr) minmax(0, 1.28fr);
+  }
+
+  .guild-record-portrait-card {
+    height: 300px;
+  }
+
+  .guild-record-reception-copy {
+    align-self: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .guild-record-page-heading,
+  .guild-sale-page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .guild-record-page-heading .secondary-button,
+  .guild-sale-page-heading .secondary-button {
+    width: 100%;
+  }
+
+  .guild-clerk-strip {
+    grid-template-columns: 58px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .guild-clerk-portrait {
+    width: 58px;
+    height: 58px;
+  }
+
+  .clerk-dialogue-region {
+    height: 148px;
+    padding-right: 52px;
+  }
+
+  .wallet-card {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    text-align: left;
+  }
+
+  .bulk-tier-guide {
+    grid-template-columns: 1fr;
+  }
+
+  .tier-guide-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .is-guild-sale-mode .material-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .is-guild-sale-mode .search-field {
+    grid-column: 1 / -1;
+  }
+
+  .material-card-body {
+    grid-template-columns: 1fr;
+  }
+
+  .quantity-control {
+    grid-template-columns: 40px 40px minmax(62px, 1fr) 40px 40px;
+  }
+}
+
+@media (max-width: 680px) {
+  .facility-panel.is-guild-record-mode,
+  .facility-panel.is-guild-sale-mode {
+    padding: 20px 16px;
+  }
+
+  .guild-record-reception-card {
+    grid-template-columns: 1fr;
+  }
+
+  .guild-record-portrait-card {
+    height: 300px;
+  }
+
+  .guild-record-sheet-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .guild-record-identity-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .guild-record-status {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
+  .guild-record-metrics,
+  .guild-record-milestone-list,
+  .guild-record-character-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .guild-record-sheet {
+    padding: 16px;
+  }
+
+  .guild-record-portrait-card {
+    height: 260px;
+  }
+
+  .guild-record-metrics,
+  .guild-record-milestone-list,
+  .guild-record-character-list {
+    grid-template-columns: 1fr;
+  }
+
+  .is-guild-sale-mode .material-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .is-guild-sale-mode .search-field {
+    grid-column: auto;
+  }
+
+  .material-card-top {
+    grid-template-columns: 1fr;
+  }
+
+  .material-held {
+    grid-template-columns: auto auto;
+    justify-content: start;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .quantity-control {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .quantity-input {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 42px;
+  }
+
+  .quantity-button {
+    min-height: 40px;
+  }
+
+  .quantity-secondary-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 921px) and (max-width: 960px) {
+  .guild-record-layout {
+    grid-template-columns: minmax(230px, 0.72fr) minmax(0, 1.55fr);
+  }
+}

@@ -303,3 +303,77 @@ function renderPortrait({ els, npc, displayName }) {
     els.dialoguePortraitFallback.hidden = true;
   }
 }
+
+export function renderStandaloneDialogueText({
+  els,
+  text,
+  animateText = true,
+  pageKey = "",
+  typewriterOptions = {},
+  onComplete = () => {}
+}) {
+  const fullText = String(text || "……");
+  const applyCompletedControls = ({ focus = false } = {}) => {
+    els.dialogueTextRegion.classList.remove("is-typing");
+    els.dialogueTextRegion.setAttribute?.("aria-busy", "false");
+    els.dialogueTextRegion.setAttribute?.("aria-live", "polite");
+    els.dialogueTextRegion.onclick = null;
+    els.dialogueTextRegion.onkeydown = null;
+    els.dialogueSkipButton.hidden = true;
+    els.dialogueSkipButton.onclick = null;
+    if (focus) {
+      focusWithoutScroll(els.dialogueTextRegion);
+    }
+    onComplete();
+  };
+  const applyTypingControls = ({ focus = false } = {}) => {
+    els.dialogueTextRegion.classList.add("is-typing");
+    els.dialogueTextRegion.setAttribute?.("aria-busy", "true");
+    els.dialogueTextRegion.setAttribute?.("aria-live", "off");
+    const reveal = () => revealDialogueTextImmediately(els);
+    els.dialogueSkipButton.hidden = false;
+    els.dialogueSkipButton.onclick = (event) => {
+      event?.stopPropagation?.();
+      reveal();
+    };
+    els.dialogueTextRegion.onclick = reveal;
+    els.dialogueTextRegion.onkeydown = (event) => {
+      if (event?.key !== "Enter" && event?.key !== " " && event?.key !== "Spacebar") {
+        return;
+      }
+      event.preventDefault?.();
+      reveal();
+    };
+    if (focus) {
+      focusWithoutScroll(els.dialogueSkipButton);
+    }
+  };
+
+  const existingAnimation = activeTextAnimations.get(els.dialogueText);
+  if (existingAnimation?.pageKey === pageKey) {
+    existingAnimation.applyCompletedControls = applyCompletedControls;
+    applyTypingControls({ focus: false });
+    return;
+  }
+
+  cancelDialogueTextAnimation(els);
+  const animationConfig = resolveTypewriterOptions(typewriterOptions);
+  const shouldAnimate = animateText
+    && animationConfig.enabled
+    && !animationConfig.reducedMotion
+    && fullText.length > 0;
+  if (!shouldAnimate) {
+    els.dialogueText.textContent = fullText;
+    applyCompletedControls();
+    return;
+  }
+
+  startDialogueTextAnimation({
+    els,
+    fullText,
+    pageKey,
+    animationConfig,
+    applyCompletedControls,
+    applyTypingControls
+  });
+}

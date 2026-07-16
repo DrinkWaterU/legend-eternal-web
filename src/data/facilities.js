@@ -11,6 +11,27 @@ export const facilityDefinitions = Object.freeze({
     description: "鎮上的鐵匠願意把冒險中取得的素材重新鍛造成可長期使用的武器。",
     actionId: "blacksmith",
     npcId: "anping-blacksmith"
+  }),
+  "adventurers-guild": Object.freeze({
+    id: "adventurers-guild",
+    name: "冒險者公會",
+    description: "安平鎮的冒險者公會負責整理冒險紀錄、收購大批物資，並彙整旅途情報。",
+    actionId: "guild",
+    npcId: "anping-guild-receptionist"
+  }),
+  "guild-adventure-record": Object.freeze({
+    id: "guild-adventure-record",
+    name: "冒險資歷",
+    description: "查看公會整理的冒險經歷與累積紀錄。",
+    actionId: "guild-adventure-record",
+    hiddenFromList: true
+  }),
+  "guild-bulk-sale": Object.freeze({
+    id: "guild-bulk-sale",
+    name: "交付冒險物資",
+    description: "將同種五件以上的素材交由公會統一收購。",
+    actionId: "guild-bulk-sale",
+    hiddenFromList: true
   })
 });
 

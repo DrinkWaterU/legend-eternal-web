@@ -117,6 +117,8 @@ import { renderFacilityListView } from "./src/ui/facilityView.js";
 import { createMerchantController } from "./src/ui/merchantController.js";
 import { createBlacksmithController } from "./src/ui/blacksmithController.js";
 import { createDialogueController } from "./src/ui/dialogueController.js";
+import { createGuildAdventureRecordController } from "./src/ui/guildAdventureRecordController.js";
+import { createGuildBulkSaleController } from "./src/ui/guildBulkSaleController.js";
 import { getEnhancementMaterialState, renderPreparationChoices, renderPreparationDetail } from "./src/ui/preparationView.js";
 import { clearPreparationSelectionState, consumePreparationEnhancementReveal, normalizePreparationUiState } from "./src/ui/preparationState.js";
 import { renderStatisticsView } from "./src/ui/statisticsView.js";
@@ -256,6 +258,7 @@ const uiState = {
   facilityView: "list",
   blacksmithReturnView: "list",
   blacksmithReturnNpcId: null,
+  guildReturnNpcId: null,
   selectedPreparationId: null,
   enhancedPreparationId: null,
   preparationEnhancementRevealId: null,
@@ -278,7 +281,10 @@ let eventRuntime = null;
 
 const FACILITY_ACTION_HANDLERS = Object.freeze({
   merchant: showMerchantFacility,
-  blacksmith: showBlacksmithFacility
+  blacksmith: showBlacksmithFacility,
+  guild: showGuildFacility,
+  "guild-adventure-record": showGuildAdventureRecordFacility,
+  "guild-bulk-sale": showGuildBulkSaleFacility
 });
 
 const merchantController = createMerchantController({
@@ -299,11 +305,28 @@ const blacksmithController = createBlacksmithController({
   saveInventory: saveGameSafe
 });
 
+const guildAdventureRecordController = createGuildAdventureRecordController({
+  els,
+  characterDefinitions,
+  npcDefinition: npcDefinitions["anping-guild-receptionist"],
+  getSave: () => saveData
+});
+
+const guildBulkSaleController = createGuildBulkSaleController({
+  els,
+  materialDefinitions,
+  npcDefinition: npcDefinitions["anping-guild-receptionist"],
+  dialogueDefinition: dialogueDefinitions["anping-guild-receptionist-main"],
+  getInventory: () => saveData.inventory,
+  saveInventory: saveGameSafe
+});
+
 const dialogueController = createDialogueController({
   els,
   npcDefinitions,
   dialogueDefinitions,
   getStoryFlags: () => saveData.storyFlags,
+  getDialogueContext: () => ({ statistics: saveData.statistics }),
   setStoryFlag: setDialogueStoryFlag,
   onOpenFacility: openFacilityFromDialogue,
   onReturnToFacilityList: () => showFacilityList(uiState.safeAreaId, uiState.navigationContext),
@@ -594,9 +617,13 @@ function showScreen(screenId) {
       ? "旅行商人"
       : uiState.facilityView === "blacksmith"
         ? "鐵匠鋪"
-        : uiState.facilityView === "dialogue"
-          ? resolveNpcDisplayName(dialogueNpc, { storyFlags: saveData.storyFlags })
-          : getCurrentSafeArea()?.placesTitle || "安全區去處";
+        : uiState.facilityView === "guild-record"
+          ? "冒險資歷"
+          : uiState.facilityView === "guild-bulk"
+            ? "交付冒險物資"
+            : uiState.facilityView === "dialogue"
+              ? resolveNpcDisplayName(dialogueNpc, { storyFlags: saveData.storyFlags })
+              : getCurrentSafeArea()?.placesTitle || "安全區去處";
     els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
     renderFacilityScreen();
   }
@@ -1356,6 +1383,7 @@ function resetFacilityUiState() {
   uiState.facilityView = "list";
   uiState.blacksmithReturnView = "list";
   uiState.blacksmithReturnNpcId = null;
+  uiState.guildReturnNpcId = null;
   dialogueController.reset();
 }
 
@@ -1372,6 +1400,7 @@ function showFacilityList(safeAreaId = uiState.safeAreaId, contextId = uiState.n
   resetFacilityUiState();
   merchantController.reset();
   blacksmithController.reset();
+  guildBulkSaleController.reset();
   showScreen("facilityScreen");
 }
 
@@ -1384,6 +1413,23 @@ function showMerchantFacility() {
 function showBlacksmithFacility() {
   uiState.facilityView = "blacksmith";
   blacksmithController.reset();
+  showScreen("facilityScreen");
+}
+
+function showGuildFacility() {
+  showNpcDialogue("anping-guild-receptionist");
+}
+
+function showGuildAdventureRecordFacility() {
+  uiState.facilityView = "guild-record";
+  els.guildRecordAreaLabel.textContent = getCurrentSafeArea()?.name || "安平鎮";
+  showScreen("facilityScreen");
+}
+
+function showGuildBulkSaleFacility() {
+  uiState.facilityView = "guild-bulk";
+  els.guildBulkAreaLabel.textContent = getCurrentSafeArea()?.name || "安平鎮";
+  guildBulkSaleController.reset();
   showScreen("facilityScreen");
 }
 
@@ -1420,6 +1466,9 @@ function dispatchFacilityAction(facility, options = {}) {
     uiState.blacksmithReturnView = options.returnView === "dialogue" ? "dialogue" : "list";
     uiState.blacksmithReturnNpcId = options.returnNpcId || null;
   }
+  if (facility.actionId === "guild-adventure-record" || facility.actionId === "guild-bulk-sale") {
+    uiState.guildReturnNpcId = options.returnNpcId || "anping-guild-receptionist";
+  }
   handler();
 }
 
@@ -1442,14 +1491,41 @@ function handleBlacksmithBack() {
   showFacilityList(uiState.safeAreaId, uiState.navigationContext);
 }
 
+function returnToGuildDialogue(nodeId = "default-greeting") {
+  const npcId = uiState.guildReturnNpcId || "anping-guild-receptionist";
+  if (dialogueController.getState().npcId !== npcId) {
+    showNpcDialogue(npcId, { animateText: false });
+    if (nodeId !== "default-greeting") {
+      dialogueController.gotoNode(nodeId);
+    }
+    return;
+  }
+  uiState.facilityView = "dialogue";
+  dialogueController.gotoNode(nodeId);
+  showScreen("facilityScreen");
+}
+
+function handleGuildRecordBack() {
+  returnToGuildDialogue("record-return");
+}
+
+function handleGuildBulkBack() {
+  guildBulkSaleController.reset();
+  returnToGuildDialogue("default-greeting");
+}
+
 function renderFacilityScreen() {
   const safeArea = getCurrentSafeArea();
   const facilities = getAvailableFacilities(safeArea);
   els.facilityListView.classList.toggle("is-active", uiState.facilityView === "list");
   els.merchantView.classList.toggle("is-active", uiState.facilityView === "merchant");
   els.dialogueView.classList.toggle("is-active", uiState.facilityView === "dialogue");
+  els.guildRecordView.classList.toggle("is-active", uiState.facilityView === "guild-record");
+  els.guildBulkView.classList.toggle("is-active", uiState.facilityView === "guild-bulk");
   els.blacksmithView.classList.toggle("is-active", uiState.facilityView === "blacksmith");
   els.facilityPanel.classList.toggle("is-dialogue-mode", uiState.facilityView === "dialogue");
+  els.facilityPanel.classList.toggle("is-guild-record-mode", uiState.facilityView === "guild-record");
+  els.facilityPanel.classList.toggle("is-guild-sale-mode", uiState.facilityView === "guild-bulk");
 
   if (uiState.facilityView === "list") {
     renderFacilityListView({
@@ -1467,6 +1543,14 @@ function renderFacilityScreen() {
   }
   if (uiState.facilityView === "dialogue") {
     dialogueController.render();
+    return;
+  }
+  if (uiState.facilityView === "guild-record") {
+    guildAdventureRecordController.render();
+    return;
+  }
+  if (uiState.facilityView === "guild-bulk") {
+    guildBulkSaleController.render();
     return;
   }
   blacksmithController.render();
@@ -4066,6 +4150,8 @@ function bindEvents() {
   els.merchantBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
   els.dialogueBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
   els.blacksmithBackButton.addEventListener("click", handleBlacksmithBack);
+  els.guildRecordBackButton.addEventListener("click", handleGuildRecordBack);
+  els.guildBulkBackButton.addEventListener("click", handleGuildBulkBack);
   els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
   els.backToCharacterDetailButton.addEventListener("click", () => showCharacterDetail(uiState.characterDetailId));
@@ -4131,9 +4217,11 @@ function bindEvents() {
   els.achievementDetailBackdrop.addEventListener("click", closeAchievementDetailPanel);
   els.closeAchievementUnlockToastButton.addEventListener("click", () => closeAchievementUnlockToast());
   els.closeMerchantSaleButton.addEventListener("click", merchantController.closeSaleDialog);
+  els.closeGuildBulkConfirmButton.addEventListener("click", guildBulkSaleController.closeConfirm);
   els.closeBlacksmithCraftButton.addEventListener("click", blacksmithController.closeCraftDialog);
   [
     [els.merchantSalePanel, merchantController.closeSaleDialog],
+    [els.guildBulkConfirmPanel, guildBulkSaleController.closeConfirm],
     [els.blacksmithCraftPanel, blacksmithController.closeCraftDialog],
     [els.abilityInfoPanel, closeAbilityInfoPanel],
     [els.blessingInfoPanel, closeBlessingInfoPanel],

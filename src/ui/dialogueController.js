@@ -1,5 +1,6 @@
 import {
   getVisibleDialogueChoices,
+  getVisibleDialoguePages,
   resolveDialogueEntryNode
 } from "../core/dialogue.js";
 import { resolveNpcDisplayName } from "../data/npcs.js";
@@ -16,6 +17,7 @@ export function createDialogueController(options = {}) {
     npcDefinitions,
     dialogueDefinitions,
     getStoryFlags,
+    getDialogueContext = () => ({}),
     setStoryFlag,
     onOpenFacility,
     onReturnToFacilityList,
@@ -94,7 +96,8 @@ export function createDialogueController(options = {}) {
     if (!node) {
       return;
     }
-    const lastPageIndex = Math.max(0, (node.pages?.length || 1) - 1);
+    const pages = getCurrentPages();
+    const lastPageIndex = Math.max(0, pages.length - 1);
     if (state.pageIndex < lastPageIndex) {
       state.pageIndex += 1;
       state.notice = "";
@@ -208,10 +211,10 @@ export function createDialogueController(options = {}) {
     renderDialogueView({
       els,
       npc,
-      displayName: resolveNpcDisplayName(npc, getContext()),
-      node,
+      displayName: node.speakerLabel || resolveNpcDisplayName(npc, getContext()),
+      node: { ...node, pages: getCurrentPages() },
       pageIndex: state.pageIndex,
-      visibleChoices: state.pageIndex >= (node.pages?.length || 1) - 1
+      visibleChoices: state.pageIndex >= getCurrentPages().length - 1
         ? getVisibleDialogueChoices(node, getContext())
         : [],
       notice: state.notice,
@@ -231,7 +234,15 @@ export function createDialogueController(options = {}) {
   }
 
   function getContext() {
-    return { storyFlags: getStoryFlags() || {} };
+    const extraContext = getDialogueContext() || {};
+    return {
+      ...extraContext,
+      storyFlags: getStoryFlags() || extraContext.storyFlags || {}
+    };
+  }
+
+  function getCurrentPages() {
+    return getVisibleDialoguePages(getCurrentNode(), getContext());
   }
 
   function getCurrentNpc() {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.6.0-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.6.1-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.6.0-alpha</p>
+            <p class="version-label">v0.2.6.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -290,6 +290,130 @@
                 <div id="dialogueChoices" class="dialogue-choice-list" aria-label="對話選項"></div>
                 <button id="dialogueAdvanceButton" class="primary-button dialogue-advance-button" type="button">繼續</button>
               </section>
+            </div>
+          </div>
+
+          <div id="guildRecordView" class="subview">
+            <div class="section-heading app-page-heading facility-location-heading guild-record-page-heading">
+              <div>
+                <p id="guildRecordAreaLabel" class="eyebrow">安平鎮冒險者公會</p>
+                <h2>冒險資歷</h2>
+                <p class="body-text page-heading-description">公會依照現有紀錄整理的角色身分、主要經歷與冒險足跡。</p>
+              </div>
+              <button id="guildRecordBackButton" class="secondary-button" type="button">返回公會櫃檯</button>
+            </div>
+            <div id="guildRecordContent"></div>
+          </div>
+
+          <div id="guildBulkView" class="subview">
+            <div class="section-heading app-page-heading facility-location-heading guild-sale-page-heading">
+              <div>
+                <p id="guildBulkAreaLabel" class="eyebrow">安平鎮冒險者公會</p>
+                <h2>交付冒險物資</h2>
+                <p class="body-text page-heading-description">同一種素材至少五件起收。每項素材依自己的交付數量計算收購級距。</p>
+              </div>
+              <button id="guildBulkBackButton" class="secondary-button" type="button">返回公會櫃檯</button>
+            </div>
+
+            <section class="guild-clerk-strip" aria-label="接待員瑟琳與目前金幣">
+              <div class="guild-clerk-portrait">
+                <img id="guildBulkSpeakerPortraitImage" alt="" hidden />
+                <span id="guildBulkSpeakerPortraitFallback">瑟琳</span>
+              </div>
+              <div class="guild-clerk-copy">
+                <p class="eyebrow"><span id="guildBulkSpeakerTitle">冒險者公會資深接待員</span>・<span id="guildBulkSpeakerName">瑟琳</span></p>
+                <div id="guildBulkDialogueTextRegion" class="dialogue-text-region clerk-dialogue-region" tabindex="0" aria-live="polite" aria-atomic="true">
+                  <button id="guildBulkDialogueSkipButton" class="dialogue-skip-button clerk-dialogue-skip-button" type="button" aria-label="跳過文字動畫並顯示完整對話" aria-controls="guildBulkDialogueText" hidden>跳過</button>
+                  <p id="guildBulkDialogueText">……</p>
+                </div>
+              </div>
+              <div class="wallet-card">
+                <span>目前持有</span>
+                <strong><b id="guildBulkGold">0</b> G</strong>
+              </div>
+            </section>
+
+            <section class="bulk-tier-guide" aria-label="公會收購級距">
+              <div class="tier-guide-heading">
+                <p class="eyebrow">收購級距</p>
+                <p>價格以旅行商人的正式素材單價為基準，再依每種素材的交付數量計算。</p>
+              </div>
+              <div class="tier-guide-list">
+                <div class="tier-chip tier-ineligible"><strong>1～4 件</strong><span>不受理</span></div>
+                <div class="tier-chip tier-low"><strong>5～9 件</strong><span>90%</span></div>
+                <div class="tier-chip tier-standard"><strong>10～19 件</strong><span>110%</span></div>
+                <div class="tier-chip tier-bulk"><strong>20 件以上</strong><span>115%</span></div>
+              </div>
+            </section>
+
+            <p id="guildBulkNotice" class="save-notice guild-bulk-notice" aria-live="polite"></p>
+
+            <div class="guild-sale-layout">
+              <section class="material-browser" aria-label="可交付素材">
+                <div class="material-toolbar">
+                  <label class="search-field">
+                    <span>搜尋素材</span>
+                    <input id="guildBulkSearchInput" type="search" placeholder="輸入素材名稱或來源" autocomplete="off" />
+                  </label>
+                  <label>
+                    <span>地區</span>
+                    <select id="guildBulkRegionFilter">
+                      <option value="all">全部地區</option>
+                      <option value="plains">平原</option>
+                      <option value="forest">森林</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>排序</span>
+                    <select id="guildBulkSortSelect">
+                      <option value="order">正式順序</option>
+                      <option value="quantity-desc">持有量：高到低</option>
+                      <option value="price-desc">單價：高到低</option>
+                      <option value="name">名稱</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="material-browser-heading">
+                  <div>
+                    <p class="eyebrow">可交付物資</p>
+                    <h3>素材庫存</h3>
+                  </div>
+                  <strong id="guildBulkResultCount" class="result-count-badge">0 項</strong>
+                </div>
+
+                <div id="guildBulkGrid" class="guild-material-list"></div>
+                <p id="guildBulkEmpty" class="empty-state" hidden>目前沒有符合條件的素材。</p>
+              </section>
+
+              <aside class="sale-summary" aria-label="本次交付摘要">
+                <div class="summary-heading">
+                  <div>
+                    <p class="eyebrow">本次交付</p>
+                    <h3>報價摘要</h3>
+                  </div>
+                  <button id="guildBulkClearDraftButton" class="text-button" type="button" disabled>全部清除</button>
+                </div>
+
+                <div id="guildBulkSummaryEmpty" class="summary-empty">
+                  <span class="summary-empty-mark">＋</span>
+                  <p>從左側選擇至少五件同種素材，即可查看公會報價。</p>
+                </div>
+
+                <div id="guildBulkSummaryContent" hidden>
+                  <div id="guildBulkSummaryList" class="summary-items"></div>
+                  <dl class="summary-totals">
+                    <div><dt>交付種類</dt><dd id="guildBulkSummaryKinds">0</dd></div>
+                    <div><dt>交付總數</dt><dd id="guildBulkSummaryQuantity">0 件</dd></div>
+                    <div><dt>旅行商人參考</dt><dd id="guildBulkSummaryReference">0 G</dd></div>
+                    <div class="summary-primary"><dt>公會報價</dt><dd id="guildBulkSummaryTotal">0 G</dd></div>
+                    <div><dt>本次價差</dt><dd id="guildBulkSummaryDifference">0 G</dd></div>
+                  </dl>
+                  <button id="confirmGuildBulkDraftButton" class="primary-button full-width" type="button" disabled>確認交付內容</button>
+                </div>
+
+                <p id="guildBulkSummaryHint" class="summary-hint">公會會逐項驗收；不同素材不能合併湊足級距。</p>
+              </aside>
             </div>
           </div>
 
@@ -875,6 +999,26 @@
         </div>
       </section>
 
+      <section id="guildBulkConfirmPanel" class="end-panel guild-bulk-confirm-panel" aria-label="確認交付冒險物資" aria-modal="true">
+        <div class="end-dialog guild-bulk-confirm-dialog">
+          <div>
+            <p class="eyebrow">冒險者公會</p>
+            <h2>確認交付內容</h2>
+            <p id="guildBulkConfirmMeta" class="body-text"></p>
+            <div id="guildBulkConfirmList" class="guild-bulk-confirm-list"></div>
+            <dl class="stat-list guild-bulk-confirm-totals">
+              <div><dt>商人參考</dt><dd id="guildBulkConfirmReference">0 金幣</dd></div>
+              <div><dt>公會報價</dt><dd id="guildBulkConfirmTotal">0 金幣</dd></div>
+              <div><dt>價差</dt><dd id="guildBulkConfirmDifference">0 金幣</dd></div>
+            </dl>
+          </div>
+          <div class="end-actions">
+            <button id="confirmGuildBulkSaleButton" class="primary-button" type="button">確認交付</button>
+            <button id="closeGuildBulkConfirmButton" class="secondary-button" type="button">返回修改</button>
+          </div>
+        </div>
+      </section>
+
       <section id="blacksmithCraftPanel" class="end-panel blacksmith-craft-panel" aria-label="確認製作武器" aria-modal="true">
         <div class="end-dialog blacksmith-craft-dialog">
           <div>
@@ -896,6 +1040,6 @@
       </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.6.0-alpha"></script>
+    <script type="module" src="game.js?v=0.2.6.1-alpha"></script>
   </body>
 </html>

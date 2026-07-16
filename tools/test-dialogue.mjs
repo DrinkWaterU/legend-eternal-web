@@ -5,6 +5,7 @@ import {
   assertDialogueDefinitions,
   evaluateDialogueCondition,
   getVisibleDialogueChoices,
+  getVisibleDialoguePages,
   resolveDialogueEntryNode
 } from "../src/core/dialogue.js";
 import { dialogueDefinitions } from "../src/data/dialogues.js";
@@ -74,6 +75,51 @@ assert.deepEqual(
   ["return-after-principle-known"]
 );
 
+
+const guildDialogue = dialogueDefinitions["anping-guild-receptionist-main"];
+const guildNpc = npcDefinitions["anping-guild-receptionist"];
+assert.equal(resolveDialogueEntryNode(guildDialogue, { storyFlags: {} }), "first-meeting");
+assert.equal(resolveDialogueEntryNode(guildDialogue, {
+  storyFlags: { metAnpingGuildReceptionist: true }
+}), "experience-check");
+assert.equal(resolveDialogueEntryNode(guildDialogue, {
+  storyFlags: { knowsAnpingGuildReceptionistName: true }
+}), "feature-introduction");
+assert.equal(resolveDialogueEntryNode(guildDialogue, {
+  storyFlags: { registeredAtAnpingGuild: true }
+}), "default-greeting");
+assert.equal(resolveNpcDisplayName(guildNpc, { storyFlags: {} }), "公會接待員");
+assert.equal(resolveNpcDisplayName(guildNpc, {
+  storyFlags: { metAnpingGuildReceptionist: true }
+}), "接待員小姐");
+assert.equal(resolveNpcDisplayName(guildNpc, {
+  storyFlags: { knowsAnpingGuildReceptionistName: true }
+}), "瑟琳");
+
+assert.equal(evaluateDialogueCondition({
+  type: "regionRouteClear",
+  regionId: "forest",
+  routeClearKey: "goblinCamp",
+  minimumClears: 1
+}, { statistics: { regions: { forest: { routeClears: { goblinCamp: 1 } } } } }), true);
+assert.equal(evaluateDialogueCondition({
+  type: "regionRouteClear",
+  regionId: "forest",
+  routeClearKey: "goblinCamp",
+  minimumClears: 2
+}, { statistics: { regions: { forest: { routeClears: { goblinCamp: 1 } } } } }), false);
+
+const experienceNode = guildDialogue.nodes["experience-check"];
+assert.equal(getVisibleDialoguePages(experienceNode, { storyFlags: {}, statistics: {} }).length, 1);
+assert.equal(getVisibleDialoguePages(experienceNode, {
+  storyFlags: { archerRescued: true },
+  statistics: { regions: { forest: { routeClears: { goblinCamp: 1 } } } }
+}).length, 3);
+assert.equal(guildDialogue.nodes["first-feature-overview"].pages.length, 4);
+assert.equal(guildDialogue.nodes["about-guild"].pages.length, 5);
+assert.equal(guildDialogue.nodes["about-work"].pages.length, 4);
+assert.equal(guildDialogue.nodes["about-anping"].pages.length, 4);
+
 const oldSave = createDefaultSave();
 delete oldSave.storyFlags.metAnpingBlacksmith;
 delete oldSave.storyFlags.knowsAnpingBlacksmithName;
@@ -88,6 +134,16 @@ const normalizedIdentitySave = migrateSave(inconsistentOldSave);
 assert.equal(normalizedIdentitySave.storyFlags.knowsAnpingBlacksmithName, true);
 assert.equal(normalizedIdentitySave.storyFlags.metAnpingBlacksmith, true);
 
+
+const inconsistentGuildSave = createDefaultSave();
+inconsistentGuildSave.storyFlags.metAnpingGuildReceptionist = false;
+inconsistentGuildSave.storyFlags.knowsAnpingGuildReceptionistName = false;
+inconsistentGuildSave.storyFlags.registeredAtAnpingGuild = true;
+const normalizedGuildSave = migrateSave(inconsistentGuildSave);
+assert.equal(normalizedGuildSave.storyFlags.registeredAtAnpingGuild, true);
+assert.equal(normalizedGuildSave.storyFlags.knowsAnpingGuildReceptionistName, true);
+assert.equal(normalizedGuildSave.storyFlags.metAnpingGuildReceptionist, true);
+
 assert.throws(() => assertDialogueDefinitions({
   broken: {
     id: "broken",
@@ -97,4 +153,4 @@ assert.throws(() => assertDialogueDefinitions({
   }
 }), /fallbackNodeId 無效/);
 
-console.log("Dialogue definitions, entry rules, choice conditions, identity, and migration tests passed.");
+console.log("Dialogue JSON definitions, conditional pages, identity, and migration tests passed.");

@@ -199,7 +199,10 @@ function createDefaultStoryFlags() {
     achievementSystemUnlocked: false,
     archerRescued: false,
     metAnpingBlacksmith: false,
-    knowsAnpingBlacksmithName: false
+    knowsAnpingBlacksmithName: false,
+    metAnpingGuildReceptionist: false,
+    knowsAnpingGuildReceptionistName: false,
+    registeredAtAnpingGuild: false
   };
 }
 
@@ -251,6 +254,14 @@ function migrateStoryFlags(save, rawSave) {
 
   if (save.storyFlags.knowsAnpingBlacksmithName) {
     save.storyFlags.metAnpingBlacksmith = true;
+  }
+
+  if (save.storyFlags.knowsAnpingGuildReceptionistName) {
+    save.storyFlags.metAnpingGuildReceptionist = true;
+  }
+  if (save.storyFlags.registeredAtAnpingGuild) {
+    save.storyFlags.metAnpingGuildReceptionist = true;
+    save.storyFlags.knowsAnpingGuildReceptionistName = true;
   }
 }
 

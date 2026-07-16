@@ -19,7 +19,7 @@ const [html, game, dom, componentsCss, responsiveCss, storage, dialogueView, dia
   readFile(new URL("src/ui/dialogueController.js", root), "utf8")
 ]);
 
-assert.equal(GAME_VERSION, "v0.2.6.0-alpha");
+assert.match(GAME_VERSION, /^v0\.2\.6\.\d+-alpha$/, "v0.2.6.x 應維持同一版本線");
 assert.equal(SAVE_SCHEMA_VERSION, 8);
 assert.equal(getFacilityDefinition("blacksmith").npcId, "anping-blacksmith");
 assert.equal(npcDefinitions["anping-blacksmith"].name, "羅根");
