@@ -12,16 +12,22 @@ import { questDefinitions } from "../src/data/quests.js";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
 
-assert.equal(GAME_VERSION, "v0.2.6.3-alpha");
+assert.equal(GAME_VERSION, "v0.2.6.4-alpha");
 assert.equal(SAVE_SCHEMA_VERSION, 9);
-assert.equal(Object.keys(questDefinitions).length, 6);
+assert.equal(Object.keys(questDefinitions).length, 12);
 assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) => [quest.id, [quest.rarity, quest.rewards.gold]])), {
   "broad-monster-control": ["common", 20],
   "route-patrol": ["common", 20],
   "elite-suppression": ["common", 25],
   "forest-insect-control": ["advanced", 35],
   "boss-threat-removal": ["advanced", 30],
-  "plains-boss-trophy": ["rare", 55]
+  "plains-boss-trophy": ["rare", 55],
+  "plains-slime-suppression": ["common", 20],
+  "forest-plant-control": ["common", 25],
+  "goblin-camp-patrol": ["advanced", 35],
+  "ancient-wood-core-research": ["rare", 45],
+  "verdant-antler-procurement": ["rare", 45],
+  "bloodbone-charm-ritual": ["rare", 45]
 });
 assert.equal(questDefinitions["broad-monster-control"].objective.target, 30);
 assert.equal(questDefinitions["route-patrol"].objective.target, 2);
@@ -29,6 +35,15 @@ assert.equal(questDefinitions["elite-suppression"].objective.target, 5);
 assert.equal(questDefinitions["forest-insect-control"].objective.target, 18);
 assert.equal(questDefinitions["boss-threat-removal"].objective.target, 3);
 assert.deepEqual(questDefinitions["plains-boss-trophy"].objective.materials, [{ id: "tainted_tusk", quantity: 3 }]);
+assert.equal(questDefinitions["plains-slime-suppression"].objective.target, 20);
+assert.deepEqual(questDefinitions["plains-slime-suppression"].objective.enemyFamilies, ["slime"]);
+assert.equal(questDefinitions["forest-plant-control"].objective.target, 15);
+assert.deepEqual(questDefinitions["forest-plant-control"].objective.enemyFamilies, ["plant"]);
+assert.deepEqual(questDefinitions["goblin-camp-patrol"].objective.routeIds, ["goblin-camp"]);
+assert.deepEqual(questDefinitions["goblin-camp-patrol"].objective.clearSourceIds, ["goblinCamp"]);
+assert.deepEqual(questDefinitions["ancient-wood-core-research"].objective.materials, [{ id: "ancient_wood_core", quantity: 1 }]);
+assert.deepEqual(questDefinitions["verdant-antler-procurement"].objective.materials, [{ id: "verdant_antler", quantity: 1 }]);
+assert.deepEqual(questDefinitions["bloodbone-charm-ritual"].objective.materials, [{ id: "bloodbone_charm", quantity: 1 }]);
 
 assert.equal(facilityDefinitions["guild-quests"].hiddenFromList, true);
 assert.equal(facilityDefinitions["guild-quests"].actionId, "guild-quests");
@@ -76,14 +91,15 @@ for (const id of [
   "guildQuestAbandonPanel",
   "statisticsQuestMetrics"
 ]) assert.match(html, new RegExp(`id="${id}"`));
-assert.match(html, /styles\.css\?v=0\.2\.6\.3-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.6\.3-alpha/);
+assert.match(html, /styles\.css\?v=0\.2\.6\.4-alpha/);
+assert.match(html, /game\.js\?v=0\.2\.6\.4-alpha/);
 assert.doesNotMatch(html, /目前登記身分維持展開|其餘紀錄可按標題查看/);
-assert.equal([...styles.matchAll(/0\.2\.6\.3-alpha/g)].length, 7);
+assert.equal([...styles.matchAll(/0\.2\.6\.4-alpha/g)].length, 7);
 assert.match(components, /\.guild-quest-board\s*\{/);
 assert.match(components, /grid-template-columns:\s*repeat\(2/);
 assert.match(responsive, /\.guild-quest-board\s*\{\s*grid-template-columns:\s*1fr/);
 assert.match(components, /\.guild-record-collapse-content/);
+assert.match(components, /\.guild-record-collapsible\s*\{[^}]*padding:\s*0;/);
 assert.match(components, /\.quest-briefing-progress\s*\{/);
 assert.match(components, /\.quest-intro-portrait-card\[data-intro-step="5"\] \.quest-mini-board/);
 assert.match(components, /\.quest-danger-seal/);

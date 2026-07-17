@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { validateGameDefinitions } from "../src/app/validateGameDefinitions.js";
 import {
   generateQuestBoard,
+  formatQuestObjective,
   getQuestProgress,
   matchClearObjective,
   matchEnemyObjective,
@@ -14,7 +15,20 @@ import { questDefinitions } from "../src/data/quests.js";
 import { createQuestRuntime } from "../src/features/quest/questRuntime.js";
 
 validateGameDefinitions();
-assert.equal(Object.keys(questDefinitions).length, 6);
+assert.equal(Object.keys(questDefinitions).length, 12);
+
+assert.equal(
+  formatQuestObjective(questDefinitions["plains-slime-suppression"]),
+  "在平原擊敗史萊姆系敵人 20 隻"
+);
+assert.equal(
+  formatQuestObjective(questDefinitions["forest-plant-control"]),
+  "在森林擊敗植物系敵人 15 隻"
+);
+assert.equal(
+  formatQuestObjective(questDefinitions["goblin-camp-patrol"]),
+  "完成哥布林營地正式冒險 1 次"
+);
 
 const noRareBoard = generateQuestBoard(questDefinitions, { random: sequenceRandom([0.99, 0, 0.2, 0.4, 0.6]) });
 assert.equal(noRareBoard.length, 4);
@@ -88,6 +102,18 @@ assert.equal(matchClearObjective(questDefinitions["route-patrol"].objective, {
   clearSourceId: "main",
   debugBuildRun: false
 }), true);
+assert.equal(matchClearObjective(questDefinitions["goblin-camp-patrol"].objective, {
+  regionId: "forest",
+  routeId: "goblin-camp",
+  clearSourceId: "goblinCamp",
+  debugBuildRun: false
+}), true);
+assert.equal(matchClearObjective(questDefinitions["goblin-camp-patrol"].objective, {
+  regionId: "forest",
+  routeId: "goblin-camp",
+  clearSourceId: "main",
+  debugBuildRun: false
+}), false);
 
 const migrated = migrateSave({ schemaVersion: 8, inventory: { gold: 7 }, storyFlags: {} });
 assert.equal(migrated.schemaVersion, 9);

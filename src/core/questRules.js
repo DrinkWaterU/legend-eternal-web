@@ -1,9 +1,23 @@
 import { questDefinitions as defaultQuestDefinitions } from "../data/quests.js";
 import { QUEST_RARITIES } from "../data/questRarities.js";
+import { getRouteDefinition } from "../data/routes/index.js";
 import { toSafeInteger } from "../utils.js";
 
 export const QUEST_BOARD_SIZE = 4;
 export const QUEST_RARE_BOARD_CHANCE = 0.35;
+
+const REGION_LABELS = Object.freeze({
+  plains: "平原",
+  forest: "森林"
+});
+
+const ENEMY_FAMILY_LABELS = Object.freeze({
+  slime: "史萊姆系",
+  insect: "蟲類",
+  plant: "植物系",
+  beast: "野獸系",
+  goblin: "哥布林系"
+});
 
 export function createDefaultQuestState() {
   return {
@@ -169,16 +183,27 @@ export function formatQuestObjective(quest, materialDefinitions = {}) {
     )).join("、");
   }
   if (objective.type === "clearAdventure") {
-    const region = objective.regionIds?.length === 1
-      ? objective.regionIds[0] === "forest" ? "森林" : objective.regionIds[0] === "plains" ? "平原" : "指定地區"
-      : "任意";
+    const route = objective.routeIds?.length === 1
+      ? getRouteDefinition(objective.routeIds[0])
+      : null;
+    if (route) {
+      return `完成${route.name}正式冒險 ${objective.target} 次`;
+    }
+    const region = getRegionLabel(objective) || "任意";
     return `完成${region}正式冒險 ${objective.target} 次`;
   }
   if (objective.enemyKinds?.length === 1) return `擊敗任意${objective.enemyKinds[0]}敵人 ${objective.target} 隻`;
-  if (objective.enemyFamilies?.includes("insect") && objective.regionIds?.includes("forest")) {
-    return `在森林擊敗蟲類敵人 ${objective.target} 隻`;
+  if (objective.enemyFamilies?.length === 1) {
+    const familyLabel = ENEMY_FAMILY_LABELS[objective.enemyFamilies[0]] || `${objective.enemyFamilies[0]}系`;
+    const regionLabel = getRegionLabel(objective);
+    return `${regionLabel ? `在${regionLabel}` : ""}擊敗${familyLabel}敵人 ${objective.target} 隻`;
   }
   return `擊敗任意正式敵人 ${objective.target} 隻`;
+}
+
+function getRegionLabel(objective) {
+  if (objective?.regionIds?.length !== 1) return "";
+  return REGION_LABELS[objective.regionIds[0]] || "指定地區";
 }
 
 function isValidQuestBoard(boardIds, questDefinitions, excludedQuestId) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.6.3-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.6.4-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.6.3-alpha</p>
+            <p class="version-label">v0.2.6.4-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -486,22 +486,63 @@
               <button id="blacksmithBackButton" class="secondary-button" type="button">返回鎮內去處</button>
             </div>
             <p class="body-text">把旅途中取得的素材交給鐵匠，鍛造成能長期使用的武器。每種武器只需製作一次。</p>
-            <dl class="stat-list blacksmith-summary">
-              <div>
-                <dt>目前金幣</dt>
-                <dd id="blacksmithGold">0</dd>
+            <div class="blacksmith-resource-strip" aria-label="鍛造資源">
+              <div class="blacksmith-resource-item blacksmith-resource-item--gold">
+                <span class="blacksmith-resource-icon">＄</span>
+                <span>
+                  <small>目前金幣</small>
+                  <strong id="blacksmithGold">0</strong>
+                </span>
               </div>
-            </dl>
+              <div class="blacksmith-resource-item">
+                <span class="blacksmith-resource-icon">◆</span>
+                <span>
+                  <small>已擁有武器</small>
+                  <strong id="blacksmithOwnedValue">0 / 0</strong>
+                </span>
+              </div>
+            </div>
             <p id="blacksmithNotice" class="save-notice" aria-live="polite"></p>
             <div class="blacksmith-layout">
               <section class="blacksmith-catalog" aria-label="武器配方">
-                <h3>武器配方</h3>
+                <div class="blacksmith-catalog-heading">
+                  <h3>武器配方</h3>
+                  <span id="blacksmithVisibleCount" class="result-count-badge">0 把</span>
+                </div>
+                <div class="blacksmith-catalog-tools">
+                  <div id="blacksmithFilterTabs" class="blacksmith-filter-tabs" role="group" aria-label="武器狀態篩選">
+                    <button class="blacksmith-filter-tab is-active" type="button" data-blacksmith-filter="all" aria-pressed="true">全部</button>
+                    <button class="blacksmith-filter-tab" type="button" data-blacksmith-filter="available" aria-pressed="false">可製作</button>
+                    <button class="blacksmith-filter-tab" type="button" data-blacksmith-filter="owned" aria-pressed="false">已擁有</button>
+                  </div>
+                  <div class="blacksmith-category-filter" aria-label="武器類別篩選">
+                    <button id="blacksmithCategoryPrev" class="blacksmith-category-arrow" type="button" aria-label="往左查看武器類別" hidden>‹</button>
+                    <div id="blacksmithCategoryScroller" class="blacksmith-category-scroller">
+                      <div id="blacksmithCategoryList" class="blacksmith-category-list" role="tablist" aria-label="武器類別"></div>
+                    </div>
+                    <button id="blacksmithCategoryNext" class="blacksmith-category-arrow" type="button" aria-label="往右查看武器類別" hidden>›</button>
+                  </div>
+                  <label class="blacksmith-search-field">
+                    <span class="sr-only">搜尋武器</span>
+                    <span aria-hidden="true">⌕</span>
+                    <input id="blacksmithSearchInput" type="search" placeholder="搜尋武器或類別" autocomplete="off">
+                  </label>
+                </div>
                 <p id="blacksmithEmpty" class="empty-state">目前沒有可製作的武器。</p>
                 <div id="blacksmithWeaponList" class="blacksmith-weapon-list"></div>
               </section>
               <section class="blacksmith-detail-panel" aria-label="武器詳情">
+                <div class="blacksmith-detail-topline">
+                  <span id="blacksmithDetailState" class="blacksmith-state-badge">可製作</span>
+                </div>
                 <div id="blacksmithDetail" class="blacksmith-detail"></div>
-                <button id="blacksmithCraftButton" class="primary-button" type="button">選擇武器</button>
+                <div class="blacksmith-detail-actions">
+                  <div>
+                    <strong id="blacksmithCraftHint">選擇一項武器查看配方。</strong>
+                    <span>製作後會永久登錄到武器庫。</span>
+                  </div>
+                  <button id="blacksmithCraftButton" class="primary-button" type="button">選擇武器</button>
+                </div>
               </section>
             </div>
           </div>
@@ -1115,6 +1156,6 @@
       </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.6.3-alpha"></script>
+    <script type="module" src="game.js?v=0.2.6.4-alpha"></script>
   </body>
 </html>

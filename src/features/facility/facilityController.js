@@ -302,6 +302,7 @@ export function createFacilityController({
     els.guildBulkView.classList.toggle("is-active", uiState.facilityView === "guild-bulk");
     els.blacksmithView.classList.toggle("is-active", uiState.facilityView === "blacksmith");
     els.facilityPanel.classList.toggle("is-dialogue-mode", uiState.facilityView === "dialogue");
+    els.facilityPanel.classList.toggle("is-blacksmith-mode", uiState.facilityView === "blacksmith");
     els.facilityPanel.classList.toggle("is-guild-record-mode", uiState.facilityView === "guild-record");
     els.facilityPanel.classList.toggle("is-guild-quest-mode", uiState.facilityView === "guild-quests");
     els.facilityPanel.classList.toggle("is-guild-sale-mode", uiState.facilityView === "guild-bulk");

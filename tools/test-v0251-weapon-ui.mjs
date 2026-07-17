@@ -53,7 +53,11 @@ assert.deepEqual(Object.keys(weaponDefinitions), [
   "iron-longsword",
   "guard-short-sword",
   "hunter-shortbow",
-  "vanguard-hunting-bow"
+  "vanguard-hunting-bow",
+  "verdant-pursuit-bow",
+  "ancient-wood-eroding-bow",
+  "bloodbone-guardian-mace",
+  "spider-silk-stinger-dagger"
 ]);
 
 assert.match(game, /const actionHandlers = Object\.freeze\(\{[\s\S]*blacksmith: showBlacksmithFacility/);

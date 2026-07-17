@@ -68,7 +68,7 @@ export function createDebugInventoryActions({ getSaveData, saveGameSafe, refresh
     applyRewardsToInventory(saveData.inventory, rewards);
     saveGameSafe();
     refresh();
-    return "已給予 1000 金幣與製作四把武器所需素材。";
+    return "已給予 1000 金幣與製作八把武器所需素材。";
   }
 
   function giveAllWeapons() {

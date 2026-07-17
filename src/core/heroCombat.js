@@ -48,7 +48,7 @@ export function resolveHeroAction({ hero, enemy, log }) {
 
   const enemyName = getEnemyDisplayName(enemy);
   if (enemy.hp > 0 && hasSkill(hero, "skilled-follow-up") && roll(FOLLOW_UP_CHANCE)) {
-    const followUpDamage = Math.max(1, Math.round(hero.attack * FOLLOW_UP_ATTACK_RATIO));
+    const followUpDamage = Math.max(1, Math.round(getHeroEffectiveAttack(hero) * FOLLOW_UP_ATTACK_RATIO));
     enemy.hp = Math.max(0, enemy.hp - followUpDamage);
     log.template("hero-damage", "skilledFollowUp", {
       actor: hero.name,
@@ -102,7 +102,7 @@ export function resolveHeroStrike({ hero, enemy, log, options = {} }) {
 export function getHeroDirectAttackDamage({ hero, enemy, damageMultiplier = 1 }) {
   const poisonedDefenseIgnore = enemy.poison > 0 ? Math.max(0, Number(hero.poisonedTargetDefenseIgnore) || 0) : 0;
   const effectiveDefense = Math.max(0, (Number(enemy.defense) || 0) - poisonedDefenseIgnore);
-  let damage = Math.max(1, getHeroAttack(hero) - effectiveDefense);
+  let damage = Math.max(1, getHeroEffectiveAttack(hero) - effectiveDefense);
   const familyBonus = getFamilyDamageBonus(hero, enemy.family);
   if (familyBonus > 0) {
     damage = Math.round(damage * (1 + familyBonus));
@@ -120,8 +120,27 @@ function getFamilyDamageBonus(hero, family) {
   return (familyDamageBonus[family] || 0) + legacySlimeBonus;
 }
 
-function getHeroAttack(hero) {
-  return hero.attack + (hero.battleAttackBonus || 0);
+export function getHeroEffectiveAttack(hero) {
+  return (Number(hero?.attack) || 0)
+    + (Number(hero?.battleAttackBonus) || 0)
+    + getLowHpAttackBonus(hero);
+}
+
+function getLowHpAttackBonus(hero) {
+  const maxHp = Number(hero?.maxHp);
+  const hp = Number(hero?.hp);
+  const cap = Math.max(0, Number(hero?.lowHpAttackBonus) || 0);
+  if (!(maxHp > 0) || !Number.isFinite(hp) || cap <= 0) {
+    return 0;
+  }
+  const hpRatio = hp / maxHp;
+  if (hpRatio <= 0.25) {
+    return cap;
+  }
+  if (hpRatio <= 0.5) {
+    return Math.min(cap, 2);
+  }
+  return 0;
 }
 
 function applyStatusFamiliarity(hero, log) {

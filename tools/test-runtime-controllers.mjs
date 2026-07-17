@@ -240,8 +240,8 @@ assert.ok(debugSaveData.inventory.materials.goblin_scrap.quantity >= 8);
 assert.ok(debugSaveData.inventory.materials.spider_silk.quantity >= 5);
 
 const giveWeaponsMessage = debugActions.giveAllWeapons();
-assert.match(giveWeaponsMessage, /全部 4 把武器/);
-assert.equal(Object.keys(debugSaveData.inventory.weapons).length, 4, "Debug 應可一次取得全部正式武器");
+assert.match(giveWeaponsMessage, /全部 8 把武器/);
+assert.equal(Object.keys(debugSaveData.inventory.weapons).length, 8, "Debug 應可一次取得全部正式武器");
 debugSaveData.progression.characters.adventurer.equipment.weaponId = "iron-longsword";
 debugSaveData.progression.characters.archer.equipment.weaponId = "hunter-shortbow";
 const clearWeaponsMessage = debugActions.clearAllWeapons();

@@ -107,5 +107,108 @@
     "weight": 100,
     "repeatable": true,
     "enabled": true
+  },
+  {
+    "id": "plains-slime-suppression",
+    "name": "平原黏液清掃",
+    "rarity": "common",
+    "description": "清理反覆聚集在平原道路附近的史萊姆，避免牠們影響商旅通行。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 20,
+      "regionIds": ["plains"],
+      "routeIds": [],
+      "enemyIds": [],
+      "enemyKinds": [],
+      "enemyFamilies": ["slime"]
+    },
+    "rewards": { "gold": 20, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "forest-plant-control",
+    "name": "森林蔓生壓制",
+    "rarity": "common",
+    "description": "壓制逐漸逼近森林道路的藤蔓與植物魔物。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 15,
+      "regionIds": ["forest"],
+      "routeIds": [],
+      "enemyIds": [],
+      "enemyKinds": [],
+      "enemyFamilies": ["plant"]
+    },
+    "rewards": { "gold": 25, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "goblin-camp-patrol",
+    "name": "哥布林營地巡查",
+    "rarity": "advanced",
+    "description": "完成哥布林營地巡查，確認營地路線仍可安全通行。",
+    "objective": {
+      "type": "clearAdventure",
+      "target": 1,
+      "regionIds": ["forest"],
+      "routeIds": ["goblin-camp"],
+      "clearSourceIds": ["goblinCamp"]
+    },
+    "rewards": { "gold": 35, "materials": [] },
+    "weight": 70,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "ancient-wood-core-research",
+    "name": "古木芯核研究",
+    "rarity": "rare",
+    "description": "公會需要古木芯核，以研究森林深處的古老力量。",
+    "objective": {
+      "type": "deliverMaterials",
+      "materials": [
+        { "id": "ancient_wood_core", "quantity": 1 }
+      ]
+    },
+    "rewards": { "gold": 45, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "verdant-antler-procurement",
+    "name": "翠影鹿角採購",
+    "rarity": "rare",
+    "description": "公會需要翠影鹿王留下的鹿角，作為弓材研究樣本。",
+    "objective": {
+      "type": "deliverMaterials",
+      "materials": [
+        { "id": "verdant_antler", "quantity": 1 }
+      ]
+    },
+    "rewards": { "gold": 45, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "bloodbone-charm-ritual",
+    "name": "血骨祭符調查",
+    "rarity": "rare",
+    "description": "公會需要血骨薩滿留下的祭符，以確認哥布林血祭的來源。",
+    "objective": {
+      "type": "deliverMaterials",
+      "materials": [
+        { "id": "bloodbone_charm", "quantity": 1 }
+      ]
+    },
+    "rewards": { "gold": 45, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
   }
 ]

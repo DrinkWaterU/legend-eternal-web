@@ -43,7 +43,9 @@ const modelGroups = [
       { weaponId: "iron-longsword", label: "鐵製長劍" },
       { weaponId: "guard-short-sword", label: "守備短劍" },
       { weaponId: "hunter-shortbow", label: "獵人短弓" },
-      { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" }
+      { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" },
+      { weaponId: "bloodbone-guardian-mace", label: "血骨衛士鎚" },
+      { weaponId: "spider-silk-stinger-dagger", label: "蛛絲刺匕" }
     ]
   },
   {
@@ -58,7 +60,9 @@ const modelGroups = [
       { weaponId: "iron-longsword", label: "鐵製長劍" },
       { weaponId: "guard-short-sword", label: "守備短劍" },
       { weaponId: "hunter-shortbow", label: "獵人短弓" },
-      { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" }
+      { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" },
+      { weaponId: "bloodbone-guardian-mace", label: "血骨衛士鎚" },
+      { weaponId: "spider-silk-stinger-dagger", label: "蛛絲刺匕" }
     ]
   },
   {
@@ -71,7 +75,9 @@ const modelGroups = [
     cases: [
       { weaponId: null, label: "未裝備" },
       { weaponId: "hunter-shortbow", label: "獵人短弓" },
-      { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" }
+      { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" },
+      { weaponId: "verdant-pursuit-bow", label: "翠影追擊弓" },
+      { weaponId: "ancient-wood-eroding-bow", label: "古木蝕甲弓" }
     ]
   }
 ];
