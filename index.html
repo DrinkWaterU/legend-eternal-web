@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.5.2-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.6.4-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.5.2-alpha</p>
+            <p class="version-label">v0.2.6.4-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -206,7 +206,7 @@
       </section>
 
       <section id="facilityScreen" class="screen">
-        <div class="selection-panel facility-panel">
+        <div id="facilityPanel" class="selection-panel facility-panel">
           <div id="facilityListView" class="subview is-active">
             <div class="section-heading app-page-heading facility-location-heading">
               <div>
@@ -263,6 +263,220 @@
             <div id="merchantGrid" class="merchant-grid" aria-label="可出售素材"></div>
           </div>
 
+          <div id="dialogueView" class="subview">
+            <div class="section-heading app-page-heading facility-location-heading dialogue-page-heading">
+              <div>
+                <p id="dialogueAreaLabel" class="eyebrow">鎮內去處</p>
+                <h2 id="dialogueHeading">人物交談</h2>
+              </div>
+              <button id="dialogueBackButton" class="secondary-button" type="button">返回鎮內去處</button>
+            </div>
+            <div id="dialogueBriefingProgress" class="quest-briefing-progress" aria-label="委託說明進度" hidden>
+              <span data-scene-step="papers">委託單</span>
+              <span data-scene-step="sources">來源</span>
+              <span data-scene-step="single">承接</span>
+              <span data-scene-step="rarities">稀有度</span>
+              <span data-scene-step="warning">風險</span>
+              <span data-scene-step="board">看板</span>
+            </div>
+            <div id="dialogueLayout" class="dialogue-layout">
+              <figure id="dialoguePortraitCard" class="dialogue-portrait-card" aria-label="交談人物插圖">
+                <img id="dialoguePortraitImage" alt="" hidden />
+                <div id="dialoguePortraitFallback" class="dialogue-portrait-fallback">安平鎮的鐵匠</div>
+                <div id="dialogueSceneOverlay" class="dialogue-scene-overlay quest-intro-scene" aria-hidden="true" hidden>
+                  <div class="quest-desk-glow"></div>
+                  <div class="quest-paper-stack">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="quest-source-stamps">
+                    <span>鎮民</span><span>商隊</span><span>公會</span>
+                  </div>
+                  <div class="quest-single-slot">
+                    <span class="slot-card">目前委託</span>
+                    <strong>一次一件</strong>
+                  </div>
+                  <div class="quest-rarity-seals">
+                    <span class="common">普通</span>
+                    <span class="advanced">進階</span>
+                    <span class="rare">稀有</span>
+                  </div>
+                  <div class="quest-danger-seal">量力而為</div>
+                  <div class="quest-mini-board">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
+              </figure>
+              <section class="dialogue-content-card" aria-label="對話內容">
+                <header class="dialogue-speaker-heading">
+                  <p id="dialogueNpcTitle" class="eyebrow">安平鎮的鐵匠</p>
+                  <h3 id="dialogueNpcName">安平鎮的鐵匠</h3>
+                </header>
+                <div id="dialogueTextRegion" class="dialogue-text-region" tabindex="0" aria-live="polite" aria-atomic="true">
+                  <button id="dialogueSkipButton" class="dialogue-skip-button" type="button" aria-label="跳過文字動畫並顯示完整對話" aria-controls="dialogueText" hidden>跳過</button>
+                  <p id="dialogueText">……</p>
+                  <span id="dialoguePageIndicator" class="dialogue-page-indicator" aria-label="對話頁數"></span>
+                </div>
+                <p id="dialogueNotice" class="save-notice dialogue-notice" aria-live="assertive"></p>
+                <div id="dialogueChoices" class="dialogue-choice-list" aria-label="對話選項"></div>
+                <button id="dialogueAdvanceButton" class="primary-button dialogue-advance-button" type="button">繼續</button>
+              </section>
+            </div>
+          </div>
+
+          <div id="guildRecordView" class="subview">
+            <div class="section-heading app-page-heading facility-location-heading guild-record-page-heading">
+              <div>
+                <p id="guildRecordAreaLabel" class="eyebrow">安平鎮冒險者公會</p>
+                <h2>冒險資歷</h2>
+                <p class="body-text page-heading-description">公會依照現有紀錄整理的角色身分、主要經歷與冒險足跡。</p>
+              </div>
+              <button id="guildRecordBackButton" class="secondary-button" type="button">返回公會櫃檯</button>
+            </div>
+            <div id="guildRecordContent"></div>
+          </div>
+
+          <div id="guildQuestView" class="subview">
+            <div class="section-heading app-page-heading facility-location-heading guild-sale-page-heading">
+              <div>
+                <p id="guildQuestAreaLabel" class="eyebrow">安平鎮冒險者公會</p>
+                <h2>公會委託</h2>
+              </div>
+              <button id="guildQuestBackButton" class="secondary-button" type="button">返回公會櫃檯</button>
+            </div>
+
+            <section class="guild-clerk-strip" aria-label="接待員瑟琳與目前金幣">
+              <div class="guild-clerk-portrait">
+                <img id="guildQuestSpeakerPortraitImage" alt="" hidden />
+                <span id="guildQuestSpeakerPortraitFallback">瑟琳</span>
+              </div>
+              <div class="guild-clerk-copy">
+                <p class="eyebrow"><span id="guildQuestSpeakerTitle">冒險者公會資深接待員</span>・<span id="guildQuestSpeakerName">瑟琳</span></p>
+                <div id="guildQuestDialogueTextRegion" class="dialogue-text-region clerk-dialogue-region" tabindex="0" aria-live="polite" aria-atomic="true">
+                  <button id="guildQuestDialogueSkipButton" class="dialogue-skip-button clerk-dialogue-skip-button" type="button" aria-label="跳過文字動畫並顯示完整對話" aria-controls="guildQuestDialogueText" hidden>跳過</button>
+                  <p id="guildQuestDialogueText">……</p>
+                </div>
+              </div>
+              <div class="wallet-card">
+                <span>目前持有</span>
+                <strong><b id="guildQuestGold">0</b> G</strong>
+              </div>
+            </section>
+            <p id="guildQuestNotice" class="save-notice guild-bulk-notice" aria-live="polite"></p>
+            <div id="guildQuestContent"></div>
+          </div>
+
+          <div id="guildBulkView" class="subview">
+            <div class="section-heading app-page-heading facility-location-heading guild-sale-page-heading">
+              <div>
+                <p id="guildBulkAreaLabel" class="eyebrow">安平鎮冒險者公會</p>
+                <h2>交付冒險物資</h2>
+                <p class="body-text page-heading-description">同一種素材至少五件起收。每項素材依自己的交付數量計算收購級距。</p>
+              </div>
+              <button id="guildBulkBackButton" class="secondary-button" type="button">返回公會櫃檯</button>
+            </div>
+
+            <section class="guild-clerk-strip" aria-label="接待員瑟琳與目前金幣">
+              <div class="guild-clerk-portrait">
+                <img id="guildBulkSpeakerPortraitImage" alt="" hidden />
+                <span id="guildBulkSpeakerPortraitFallback">瑟琳</span>
+              </div>
+              <div class="guild-clerk-copy">
+                <p class="eyebrow"><span id="guildBulkSpeakerTitle">冒險者公會資深接待員</span>・<span id="guildBulkSpeakerName">瑟琳</span></p>
+                <div id="guildBulkDialogueTextRegion" class="dialogue-text-region clerk-dialogue-region" tabindex="0" aria-live="polite" aria-atomic="true">
+                  <button id="guildBulkDialogueSkipButton" class="dialogue-skip-button clerk-dialogue-skip-button" type="button" aria-label="跳過文字動畫並顯示完整對話" aria-controls="guildBulkDialogueText" hidden>跳過</button>
+                  <p id="guildBulkDialogueText">……</p>
+                </div>
+              </div>
+              <div class="wallet-card">
+                <span>目前持有</span>
+                <strong><b id="guildBulkGold">0</b> G</strong>
+              </div>
+            </section>
+
+            <section class="bulk-tier-guide" aria-label="公會收購級距">
+              <div class="tier-guide-heading">
+                <p class="eyebrow">收購級距</p>
+                <p>價格以旅行商人的正式素材單價為基準，再依每種素材的交付數量計算。</p>
+              </div>
+              <div class="tier-guide-list">
+                <div class="tier-chip tier-ineligible"><strong>1～4 件</strong><span>不受理</span></div>
+                <div class="tier-chip tier-low"><strong>5～9 件</strong><span>90%</span></div>
+                <div class="tier-chip tier-standard"><strong>10～19 件</strong><span>110%</span></div>
+                <div class="tier-chip tier-bulk"><strong>20 件以上</strong><span>115%</span></div>
+              </div>
+            </section>
+
+            <p id="guildBulkNotice" class="save-notice guild-bulk-notice" aria-live="polite"></p>
+
+            <div class="guild-sale-layout">
+              <section class="material-browser" aria-label="可交付素材">
+                <div class="material-toolbar">
+                  <label class="search-field">
+                    <span>搜尋素材</span>
+                    <input id="guildBulkSearchInput" type="search" placeholder="輸入素材名稱或來源" autocomplete="off" />
+                  </label>
+                  <label>
+                    <span>地區</span>
+                    <select id="guildBulkRegionFilter">
+                      <option value="all">全部地區</option>
+                      <option value="plains">平原</option>
+                      <option value="forest">森林</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>排序</span>
+                    <select id="guildBulkSortSelect">
+                      <option value="order">正式順序</option>
+                      <option value="quantity-desc">持有量：高到低</option>
+                      <option value="price-desc">單價：高到低</option>
+                      <option value="name">名稱</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="material-browser-heading">
+                  <div>
+                    <p class="eyebrow">可交付物資</p>
+                    <h3>素材庫存</h3>
+                  </div>
+                  <strong id="guildBulkResultCount" class="result-count-badge">0 項</strong>
+                </div>
+
+                <div id="guildBulkGrid" class="guild-material-list"></div>
+                <p id="guildBulkEmpty" class="empty-state" hidden>目前沒有符合條件的素材。</p>
+              </section>
+
+              <aside class="sale-summary" aria-label="本次交付摘要">
+                <div class="summary-heading">
+                  <div>
+                    <p class="eyebrow">本次交付</p>
+                    <h3>報價摘要</h3>
+                  </div>
+                  <button id="guildBulkClearDraftButton" class="text-button" type="button" disabled>全部清除</button>
+                </div>
+
+                <div id="guildBulkSummaryEmpty" class="summary-empty">
+                  <span class="summary-empty-mark">＋</span>
+                  <p>從左側選擇至少五件同種素材，即可查看公會報價。</p>
+                </div>
+
+                <div id="guildBulkSummaryContent" hidden>
+                  <div id="guildBulkSummaryList" class="summary-items"></div>
+                  <dl class="summary-totals">
+                    <div><dt>交付種類</dt><dd id="guildBulkSummaryKinds">0</dd></div>
+                    <div><dt>交付總數</dt><dd id="guildBulkSummaryQuantity">0 件</dd></div>
+                    <div><dt>旅行商人參考</dt><dd id="guildBulkSummaryReference">0 G</dd></div>
+                    <div class="summary-primary"><dt>公會報價</dt><dd id="guildBulkSummaryTotal">0 G</dd></div>
+                    <div><dt>本次價差</dt><dd id="guildBulkSummaryDifference">0 G</dd></div>
+                  </dl>
+                  <button id="confirmGuildBulkDraftButton" class="primary-button full-width" type="button" disabled>確認交付內容</button>
+                </div>
+
+                <p id="guildBulkSummaryHint" class="summary-hint">公會會逐項驗收；不同素材不能合併湊足級距。</p>
+              </aside>
+            </div>
+          </div>
+
           <div id="blacksmithView" class="subview">
             <div class="section-heading app-page-heading facility-location-heading">
               <div>
@@ -272,22 +486,63 @@
               <button id="blacksmithBackButton" class="secondary-button" type="button">返回鎮內去處</button>
             </div>
             <p class="body-text">把旅途中取得的素材交給鐵匠，鍛造成能長期使用的武器。每種武器只需製作一次。</p>
-            <dl class="stat-list blacksmith-summary">
-              <div>
-                <dt>目前金幣</dt>
-                <dd id="blacksmithGold">0</dd>
+            <div class="blacksmith-resource-strip" aria-label="鍛造資源">
+              <div class="blacksmith-resource-item blacksmith-resource-item--gold">
+                <span class="blacksmith-resource-icon">＄</span>
+                <span>
+                  <small>目前金幣</small>
+                  <strong id="blacksmithGold">0</strong>
+                </span>
               </div>
-            </dl>
+              <div class="blacksmith-resource-item">
+                <span class="blacksmith-resource-icon">◆</span>
+                <span>
+                  <small>已擁有武器</small>
+                  <strong id="blacksmithOwnedValue">0 / 0</strong>
+                </span>
+              </div>
+            </div>
             <p id="blacksmithNotice" class="save-notice" aria-live="polite"></p>
             <div class="blacksmith-layout">
               <section class="blacksmith-catalog" aria-label="武器配方">
-                <h3>武器配方</h3>
+                <div class="blacksmith-catalog-heading">
+                  <h3>武器配方</h3>
+                  <span id="blacksmithVisibleCount" class="result-count-badge">0 把</span>
+                </div>
+                <div class="blacksmith-catalog-tools">
+                  <div id="blacksmithFilterTabs" class="blacksmith-filter-tabs" role="group" aria-label="武器狀態篩選">
+                    <button class="blacksmith-filter-tab is-active" type="button" data-blacksmith-filter="all" aria-pressed="true">全部</button>
+                    <button class="blacksmith-filter-tab" type="button" data-blacksmith-filter="available" aria-pressed="false">可製作</button>
+                    <button class="blacksmith-filter-tab" type="button" data-blacksmith-filter="owned" aria-pressed="false">已擁有</button>
+                  </div>
+                  <div class="blacksmith-category-filter" aria-label="武器類別篩選">
+                    <button id="blacksmithCategoryPrev" class="blacksmith-category-arrow" type="button" aria-label="往左查看武器類別" hidden>‹</button>
+                    <div id="blacksmithCategoryScroller" class="blacksmith-category-scroller">
+                      <div id="blacksmithCategoryList" class="blacksmith-category-list" role="tablist" aria-label="武器類別"></div>
+                    </div>
+                    <button id="blacksmithCategoryNext" class="blacksmith-category-arrow" type="button" aria-label="往右查看武器類別" hidden>›</button>
+                  </div>
+                  <label class="blacksmith-search-field">
+                    <span class="sr-only">搜尋武器</span>
+                    <span aria-hidden="true">⌕</span>
+                    <input id="blacksmithSearchInput" type="search" placeholder="搜尋武器或類別" autocomplete="off">
+                  </label>
+                </div>
                 <p id="blacksmithEmpty" class="empty-state">目前沒有可製作的武器。</p>
                 <div id="blacksmithWeaponList" class="blacksmith-weapon-list"></div>
               </section>
               <section class="blacksmith-detail-panel" aria-label="武器詳情">
+                <div class="blacksmith-detail-topline">
+                  <span id="blacksmithDetailState" class="blacksmith-state-badge">可製作</span>
+                </div>
                 <div id="blacksmithDetail" class="blacksmith-detail"></div>
-                <button id="blacksmithCraftButton" class="primary-button" type="button">選擇武器</button>
+                <div class="blacksmith-detail-actions">
+                  <div>
+                    <strong id="blacksmithCraftHint">選擇一項武器查看配方。</strong>
+                    <span>製作後會永久登錄到武器庫。</span>
+                  </div>
+                  <button id="blacksmithCraftButton" class="primary-button" type="button">選擇武器</button>
+                </div>
               </section>
             </div>
           </div>
@@ -518,6 +773,7 @@
               <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">已結算結果</p><h3>冒險結果</h3></div><strong id="statisticsResolvedRuns" class="result-count-badge">0 次</strong></div><div id="statisticsOutcomeList" class="statistics-outcome-list"></div></section>
               <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">戰鬥累積</p><h3>戰鬥足跡</h3></div></div><dl id="statisticsCombatMetrics" class="statistics-compact-list"></dl></section>
               <section class="statistics-card statistics-escape-card"><div class="browser-panel-heading"><div><p class="eyebrow">撤離方式</p><h3>成功脫離</h3></div><strong id="statisticsEscapeRate" class="result-count-badge">0%</strong></div><div id="statisticsEscapeMetrics"></div></section>
+              <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">公會紀錄</p><h3>委託履歷</h3></div><strong id="statisticsQuestCompleted" class="result-count-badge">0 件</strong></div><dl id="statisticsQuestMetrics" class="statistics-compact-list"></dl></section>
             </div>
           </div>
           <div id="statisticsCharacterListView" class="statistics-view">
@@ -845,6 +1101,40 @@
         </div>
       </section>
 
+      <section id="guildBulkConfirmPanel" class="end-panel guild-bulk-confirm-panel" aria-label="確認交付冒險物資" aria-modal="true">
+        <div class="end-dialog guild-bulk-confirm-dialog">
+          <div>
+            <p class="eyebrow">冒險者公會</p>
+            <h2>確認交付內容</h2>
+            <p id="guildBulkConfirmMeta" class="body-text"></p>
+            <div id="guildBulkConfirmList" class="guild-bulk-confirm-list"></div>
+            <dl class="stat-list guild-bulk-confirm-totals">
+              <div><dt>商人參考</dt><dd id="guildBulkConfirmReference">0 金幣</dd></div>
+              <div><dt>公會報價</dt><dd id="guildBulkConfirmTotal">0 金幣</dd></div>
+              <div><dt>價差</dt><dd id="guildBulkConfirmDifference">0 金幣</dd></div>
+            </dl>
+          </div>
+          <div class="end-actions">
+            <button id="confirmGuildBulkSaleButton" class="primary-button" type="button">確認交付</button>
+            <button id="closeGuildBulkConfirmButton" class="secondary-button" type="button">返回修改</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="guildQuestAbandonPanel" class="end-panel guild-quest-abandon-panel" aria-label="放棄委託確認" aria-modal="true">
+        <div class="end-dialog guild-quest-abandon-dialog">
+          <div>
+            <p class="eyebrow">公會委託</p>
+            <h2 id="guildQuestAbandonTitle">目前委託</h2>
+            <p id="guildQuestAbandonMeta" class="body-text"></p>
+          </div>
+          <div class="end-actions">
+            <button id="confirmGuildQuestAbandonButton" class="danger-button" type="button">確認放棄</button>
+            <button id="closeGuildQuestAbandonButton" class="secondary-button" type="button">返回委託榜</button>
+          </div>
+        </div>
+      </section>
+
       <section id="blacksmithCraftPanel" class="end-panel blacksmith-craft-panel" aria-label="確認製作武器" aria-modal="true">
         <div class="end-dialog blacksmith-craft-dialog">
           <div>
@@ -866,6 +1156,6 @@
       </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.5.2-alpha"></script>
+    <script type="module" src="game.js?v=0.2.6.4-alpha"></script>
   </body>
 </html>

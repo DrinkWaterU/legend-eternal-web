@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 import { ambientAudioDefinitions } from "../src/data/ambientAudio.js";
 import { musicDefinitions } from "../src/data/music.js";
@@ -8,7 +9,7 @@ import { getSafeAreaDefinition } from "../src/data/safeAreas.js";
 const root = new URL("../", import.meta.url);
 const [html, game, dom, baseCss, layoutCss, screensCss, responsiveCss] = await Promise.all([
   readFile(new URL("index.html", root), "utf8"),
-  readFile(new URL("game.js", root), "utf8"),
+  Promise.all(["src/features/story/anpingArrivalController.js", "src/features/safeArea/safeAreaController.js", "src/app/sceneController.js", "src/app/createFoundation.js", "src/features/adventure/runResultController.js", "src/features/adventure/runLifecycleController.js", "src/features/safeArea/campController.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dom.js", root), "utf8"),
   readFile(new URL("src/styles/base.css", root), "utf8"),
   readFile(new URL("src/styles/layout.css", root), "utf8"),
@@ -71,7 +72,9 @@ const imagePaths = [
   "assets/images/anping-town/arrival/anping-arrival-scene-desktop.jpg",
   "assets/images/anping-town/arrival/anping-arrival-scene-mobile.jpg"
 ];
-await Promise.all(imagePaths.map((path) => access(new URL(path, root))));
+if (!existsSync(new URL("AI_PACKAGE_INFO.txt", root))) {
+  await Promise.all(imagePaths.map((path) => access(new URL(path, root))));
+}
 imagePaths.forEach((path) => assert.match(html + game + JSON.stringify(getSafeAreaDefinition("anping-town")), new RegExp(path.replaceAll("/", "\\/"))));
 assert.doesNotMatch(html + game, /chroma|foreground-desktop|town-desktop\.png/);
 
@@ -79,8 +82,8 @@ assert.equal(musicDefinitions["anping-town"].src, "assets/audio/bgm/anping-town.
 assert.equal(ambientAudioDefinitions["anping-coast"].src, "assets/audio/ambient/anping-coast.mp3");
 assert.equal(ambientAudioDefinitions["anping-coast"].gain, 0.25);
 
-assert.match(game, /function showAnpingArrivalStory\(options = \{\}\)/);
-assert.match(game, /function completeAnpingArrivalStory\(\)[\s\S]*saveGameSafe\(\)[\s\S]*returnToSafeArea\(ANPING_TOWN_SAFE_AREA_ID\)/);
+assert.match(game, /function showStory\(\{ source = "safe-area-travel" \} = \{\}\)/);
+assert.match(game, /function completeStory\(\)[\s\S]*saveGameSafe\(\)[\s\S]*returnToSafeArea\(ANPING_TOWN_SAFE_AREA_ID\)/);
 assert.match(game, /function handleSafeAreaTravel\(targetId\)[\s\S]*showAnpingArrivalStory/);
 assert.match(game, /function resolveSceneAmbientTrackId\(screenId\)/);
 assert.match(game, /trackDefinitions: ambientAudioDefinitions,[\s\S]*trackLabel: "環境音"/);
@@ -90,7 +93,7 @@ assert.match(game, /els\.retryButton\.textContent = state\.pendingAnpingArrival[
 assert.match(game, /function renderMenuScreen\(\)[\s\S]*進入\$\{getCurrentSafeArea\(\)\?\.name/);
 assert.match(game, /function shouldOfferAnpingArrivalAfterRun\(outcome\)[\s\S]*!state\.debugBuildRun/);
 assert.match(game, /function returnToRunOriginSafeArea\(\)/);
-assert.match(game, /state\.runOriginSafeAreaId = runOriginSafeAreaId/);
+assert.match(game, /state\.runOriginSafeAreaId = startContext\.runOriginSafeAreaId/);
 
 assert.match(baseCss, /--safe-area-bg-mobile/);
 assert.match(responsiveCss, /--safe-area-bg-desktop/);

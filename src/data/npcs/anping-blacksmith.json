@@ -1,0 +1,16 @@
+{
+  "id": "anping-blacksmith",
+  "name": "羅根",
+  "title": "安平鎮的鐵匠",
+  "race": "human",
+  "gender": "male",
+  "ageGroup": "older-adult",
+  "portrait": "assets/images/npcs/anping/logan.jpg",
+  "dialogueId": "anping-blacksmith-main",
+  "identity": {
+    "unknownLabel": "安平鎮的鐵匠",
+    "acquaintedLabel": "鐵匠",
+    "metFlag": "metAnpingBlacksmith",
+    "nameKnownFlag": "knowsAnpingBlacksmithName"
+  }
+}

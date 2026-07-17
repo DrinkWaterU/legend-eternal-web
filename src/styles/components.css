@@ -1,3 +1,15 @@
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .blessing-card {
   border: 0;
   border-radius: 8px;
@@ -1732,6 +1744,422 @@
   }
 }
 
+/* v0.2.6.4 鍛造工坊 Demo 對齊 */
+.facility-panel.is-blacksmith-mode {
+  width: min(100%, 1180px);
+  max-width: 1180px;
+  padding: 34px 30px 40px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 28%),
+    var(--panel);
+  box-shadow: var(--shadow), var(--inner-light);
+  text-align: left;
+}
+
+.facility-panel.is-blacksmith-mode > .subview > .facility-location-heading {
+  margin-bottom: 14px;
+}
+
+.facility-panel.is-blacksmith-mode > .subview > .body-text {
+  max-width: 620px;
+  margin-bottom: 18px;
+}
+
+.blacksmith-resource-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 12px;
+  background: rgba(8, 15, 14, 0.78);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+}
+
+.blacksmith-resource-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 125px;
+}
+
+.blacksmith-resource-item > span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.blacksmith-resource-item small {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.blacksmith-resource-item strong {
+  color: #fff4da;
+  font-size: 0.95rem;
+}
+
+.blacksmith-resource-icon {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid rgba(111, 176, 193, 0.35);
+  border-radius: 50%;
+  color: var(--sky);
+  font-weight: 800;
+}
+
+.blacksmith-resource-item--gold .blacksmith-resource-icon {
+  border-color: rgba(241, 211, 134, 0.44);
+  color: var(--gold);
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-layout {
+  grid-template-columns: minmax(360px, 0.88fr) minmax(480px, 1.12fr);
+  gap: 18px;
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-catalog,
+.facility-panel.is-blacksmith-mode .blacksmith-detail-panel {
+  border-radius: 15px;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-catalog {
+  padding: 20px;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-panel {
+  position: sticky;
+  top: 18px;
+  min-height: 620px;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(144, 184, 116, 0.1), transparent 36%),
+    rgba(18, 29, 27, 0.98);
+}
+
+.blacksmith-detail-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.blacksmith-state-badge {
+  padding: 6px 10px;
+  border: 1px solid rgba(127, 218, 160, 0.45);
+  border-radius: 999px;
+  color: var(--grass);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.blacksmith-state-badge[data-state="locked"] {
+  border-color: rgba(224, 111, 98, 0.4);
+  color: var(--clay);
+}
+
+.blacksmith-state-badge[data-state="owned"] {
+  border-color: rgba(111, 176, 193, 0.42);
+  color: var(--sky);
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail {
+  display: grid;
+  gap: 14px;
+  flex: 1 1 auto;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-heading {
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-heading > div:last-child {
+  display: grid;
+  gap: 5px;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-icon {
+  width: 96px;
+  height: 96px;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-heading h3 {
+  margin: 0;
+  color: #fff5df;
+  font-family: Georgia, "Noto Serif TC", serif;
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  letter-spacing: 0.03em;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-heading span {
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-weapon-description {
+  max-width: 580px;
+  min-height: 52px;
+  margin-bottom: 24px;
+  color: #c6d0c6;
+  line-height: 1.8;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-section {
+  padding-top: 18px;
+  border-top: 1px solid rgba(217, 199, 150, 0.17);
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-section h4 {
+  margin: 0 0 12px;
+  color: var(--gold-soft);
+  font-size: 0.98rem;
+}
+
+.blacksmith-effect-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.blacksmith-effect-item {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid rgba(127, 218, 160, 0.25);
+  border-radius: 8px;
+  background: rgba(50, 91, 55, 0.15);
+}
+
+.blacksmith-effect-item small {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.blacksmith-effect-item strong {
+  color: var(--grass);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.blacksmith-recipe-list {
+  display: grid;
+  gap: 8px;
+}
+
+.blacksmith-recipe-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid rgba(217, 199, 150, 0.14);
+  border-radius: 8px;
+  background: rgba(5, 11, 10, 0.44);
+}
+
+.blacksmith-recipe-row.is-missing {
+  border-color: rgba(224, 111, 98, 0.26);
+}
+
+.blacksmith-material-symbol {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 1px solid rgba(111, 176, 193, 0.32);
+  border-radius: 7px;
+  color: var(--sky);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.blacksmith-recipe-row--gold .blacksmith-material-symbol {
+  border-color: rgba(241, 211, 134, 0.4);
+  color: var(--gold);
+}
+
+.blacksmith-recipe-copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.blacksmith-recipe-copy strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blacksmith-recipe-copy span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blacksmith-recipe-amount {
+  color: var(--grass);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.blacksmith-recipe-row.is-missing .blacksmith-recipe-amount {
+  color: var(--clay);
+}
+
+.blacksmith-recipe-progress {
+  grid-column: 2 / -1;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.blacksmith-recipe-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--grass);
+}
+
+.blacksmith-recipe-row.is-missing .blacksmith-recipe-progress span {
+  background: var(--clay);
+}
+
+.blacksmith-detail-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(217, 199, 150, 0.17);
+}
+
+.blacksmith-detail-actions > div {
+  display: grid;
+  gap: 4px;
+}
+
+.blacksmith-detail-actions strong {
+  color: var(--gold-soft);
+  font-size: 0.82rem;
+}
+
+.blacksmith-detail-actions span {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-detail-actions .primary-button {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-weapon-list {
+  max-height: 636px;
+  overflow-y: auto;
+  padding: 2px 5px 2px 1px;
+  scrollbar-color: rgba(241, 211, 134, 0.38) transparent;
+  scrollbar-width: thin;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-weapon-card {
+  grid-template-columns: 62px minmax(0, 1fr) auto;
+  min-height: 86px;
+  padding: 10px;
+  gap: 12px;
+}
+
+.facility-panel.is-blacksmith-mode .blacksmith-card-icon {
+  width: 62px;
+  height: 62px;
+}
+
+@media (max-width: 920px) {
+  .facility-panel.is-blacksmith-mode .blacksmith-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-detail-panel {
+    position: static;
+    min-height: 0;
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-weapon-list {
+    max-height: 480px;
+  }
+}
+
+@media (max-width: 620px) {
+  .facility-panel.is-blacksmith-mode {
+    padding: 20px 15px 30px;
+  }
+
+  .blacksmith-resource-strip {
+    align-items: flex-start;
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-catalog,
+  .facility-panel.is-blacksmith-mode .blacksmith-detail-panel {
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-weapon-card {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-card-icon {
+    width: 54px;
+    height: 54px;
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-card-status {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: -5px;
+  }
+
+  .blacksmith-effect-list {
+    grid-template-columns: 1fr;
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-detail-heading {
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .facility-panel.is-blacksmith-mode .blacksmith-detail-icon {
+    width: 74px;
+    height: 74px;
+  }
+
+  .blacksmith-detail-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .blacksmith-detail-actions .primary-button {
+    width: 100%;
+  }
+}
+
 /* v0.2.5.1 — weapon crafting and character equipment */
 .weapon-icon {
   position: relative;
@@ -1809,10 +2237,157 @@
   padding: 16px;
 }
 
-.blacksmith-catalog > h3,
+.blacksmith-catalog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.blacksmith-catalog-heading h3,
 .blacksmith-detail-section h4 {
   margin: 0 0 12px;
   color: var(--gold);
+}
+
+.blacksmith-catalog-heading h3 {
+  margin-bottom: 0;
+}
+
+.blacksmith-catalog-tools {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.blacksmith-filter-tabs {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px;
+  border: 1px solid rgba(217, 199, 150, 0.16);
+  border-radius: 8px;
+  background: rgba(5, 10, 10, 0.46);
+}
+
+.blacksmith-filter-tab {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.76rem;
+}
+
+.blacksmith-filter-tab:hover,
+.blacksmith-filter-tab:focus-visible,
+.blacksmith-filter-tab.is-active {
+  background: rgba(241, 211, 134, 0.12);
+  color: var(--gold);
+  outline: none;
+}
+
+.blacksmith-category-filter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.blacksmith-category-scroller {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.blacksmith-category-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.blacksmith-category-list {
+  display: flex;
+  width: max-content;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.blacksmith-category-tab {
+  min-height: 31px;
+  padding: 6px 10px;
+  border: 1px solid rgba(111, 176, 193, 0.22);
+  border-radius: 7px;
+  background: rgba(5, 10, 10, 0.46);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.blacksmith-category-tab:hover,
+.blacksmith-category-tab:focus-visible,
+.blacksmith-category-tab.is-active {
+  border-color: rgba(111, 176, 193, 0.56);
+  background: rgba(111, 176, 193, 0.1);
+  color: var(--sky);
+  outline: none;
+}
+
+.blacksmith-category-arrow {
+  display: grid;
+  width: 27px;
+  height: 29px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(111, 176, 193, 0.28);
+  border-radius: 7px;
+  background: rgba(5, 10, 10, 0.48);
+  color: var(--sky);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.blacksmith-category-arrow:hover,
+.blacksmith-category-arrow:focus-visible {
+  border-color: rgba(111, 176, 193, 0.62);
+  background: rgba(111, 176, 193, 0.1);
+  outline: none;
+}
+
+.blacksmith-category-arrow[hidden] {
+  display: none;
+}
+
+.blacksmith-search-field {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid rgba(217, 199, 150, 0.17);
+  border-radius: 7px;
+  background: rgba(5, 10, 10, 0.48);
+  color: var(--muted);
+}
+
+.blacksmith-search-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.76rem;
+}
+
+.blacksmith-search-field:focus-within {
+  border-color: rgba(241, 211, 134, 0.56);
 }
 
 .blacksmith-weapon-list {
@@ -2228,4 +2803,2435 @@
 .blacksmith-detail-icon {
   width: 82px;
   height: 82px;
+}
+
+/* NPC dialogue */
+.facility-panel.is-dialogue-mode {
+  width: min(100%, 960px);
+  max-width: 960px;
+}
+
+.dialogue-page-heading {
+  margin-bottom: 18px;
+}
+
+.dialogue-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.78fr) minmax(0, 1.35fr);
+  gap: 18px;
+  width: min(100%, 900px);
+  height: 615px;
+  text-align: left;
+}
+
+.dialogue-portrait-card,
+.dialogue-content-card {
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.24);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 46%),
+    rgba(12, 18, 18, 0.94);
+  box-shadow: var(--inner-light), 0 18px 38px rgba(0, 0, 0, 0.24);
+}
+
+.dialogue-portrait-card {
+  position: relative;
+  margin: 0;
+  background:
+    radial-gradient(circle at 68% 24%, rgba(224, 179, 93, 0.18), transparent 42%),
+    rgba(9, 14, 14, 0.96);
+}
+
+.dialogue-portrait-card::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 34%;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgba(5, 8, 8, 0.72));
+  content: "";
+}
+
+.dialogue-portrait-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+  object-position: 50% 36%;
+}
+
+.dialogue-portrait-card img[hidden],
+.dialogue-portrait-fallback[hidden] {
+  display: none;
+}
+
+.dialogue-portrait-fallback {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  place-items: center;
+  padding: 28px;
+  color: rgba(241, 211, 134, 0.86);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.dialogue-content-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.dialogue-speaker-heading {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(217, 199, 150, 0.18);
+}
+
+.dialogue-speaker-heading .eyebrow {
+  margin-bottom: 5px;
+}
+
+.dialogue-speaker-heading h3 {
+  margin: 0;
+  color: #fff4d8;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+}
+
+.dialogue-text-region {
+  position: relative;
+  display: flex;
+  min-height: 150px;
+  max-height: 250px;
+  flex: 1 1 auto;
+  align-items: center;
+  margin: 18px 0 12px;
+  padding: 22px 22px 34px;
+  overflow-y: auto;
+  border: 1px solid rgba(111, 176, 193, 0.2);
+  border-radius: 10px;
+  background: rgba(5, 10, 10, 0.5);
+  outline: none;
+}
+
+.dialogue-text-region:focus-visible {
+  border-color: rgba(111, 176, 193, 0.68);
+  box-shadow: 0 0 0 3px rgba(111, 176, 193, 0.12);
+}
+
+.dialogue-text-region p {
+  width: 100%;
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+.dialogue-page-indicator {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.dialogue-skip-button {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  min-width: 0;
+  min-height: 30px;
+  padding: 5px 11px;
+  border: 1px solid rgba(241, 211, 134, 0.3);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), transparent 56%),
+    rgba(12, 19, 19, 0.58);
+  -webkit-backdrop-filter: blur(10px) saturate(115%);
+  backdrop-filter: blur(10px) saturate(115%);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.28);
+  color: rgba(255, 244, 216, 0.88);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.dialogue-skip-button[hidden] {
+  display: none;
+}
+
+.dialogue-skip-button:hover,
+.dialogue-skip-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(241, 211, 134, 0.72);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14), transparent 58%),
+    rgba(26, 34, 33, 0.72);
+  color: #fff4d8;
+  outline: none;
+}
+
+.dialogue-notice {
+  min-height: 1.4em;
+  margin: 0 0 10px;
+}
+
+.dialogue-choice-list {
+  display: grid;
+  min-height: 0;
+  margin-top: auto;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.dialogue-choice-list[hidden] {
+  display: none;
+}
+
+.dialogue-choice-button {
+  min-height: 48px;
+  padding: 11px 15px;
+  border: 1px solid rgba(217, 199, 150, 0.24);
+  border-radius: 9px;
+  background:
+    linear-gradient(135deg, rgba(224, 179, 93, 0.08), transparent 54%),
+    rgba(22, 28, 28, 0.92);
+  color: #fff4d8;
+  cursor: pointer;
+  font-weight: 800;
+  text-align: left;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.dialogue-choice-button:hover,
+.dialogue-choice-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(241, 211, 134, 0.72);
+  background:
+    linear-gradient(135deg, rgba(224, 179, 93, 0.15), transparent 58%),
+    rgba(35, 42, 40, 0.96);
+  outline: none;
+}
+
+.dialogue-advance-button {
+  width: 100%;
+  margin-top: auto;
+}
+
+.dialogue-text-region.is-typing #dialogueText::after {
+  display: inline-block;
+  width: 0.55em;
+  margin-left: 0.12em;
+  border-bottom: 2px solid rgba(241, 211, 134, 0.82);
+  content: "";
+  animation: dialogue-caret 760ms steps(1, end) infinite;
+  transform: translateY(-0.08em);
+}
+
+@keyframes dialogue-caret {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogue-text-region.is-typing #dialogueText::after {
+    animation: none;
+  }
+}
+
+/* v0.2.6.1 — Adventurers' guild */
+.guild-record-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.78fr) minmax(0, 1.55fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.guild-record-celine-card,
+.guild-record-panel,
+.guild-bulk-dialogue-card,
+.guild-bulk-catalog,
+.guild-bulk-summary-card {
+  border: 1px solid rgba(215, 181, 112, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(155deg, rgba(24, 29, 35, 0.97), rgba(12, 16, 21, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 18px 44px rgba(0, 0, 0, 0.18);
+}
+
+.guild-record-celine-card {
+  position: sticky;
+  top: 18px;
+  padding: 18px;
+}
+
+.guild-record-celine-portrait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 22%, rgba(215, 181, 112, 0.16), transparent 48%), #111820;
+}
+
+.guild-record-celine-portrait img {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.guild-record-celine-portrait span {
+  font-size: 2rem;
+  color: var(--text-muted);
+}
+
+.guild-record-celine-card h3 {
+  margin: 4px 0 10px;
+  font-size: 1.55rem;
+}
+
+.guild-record-celine-quote {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.guild-record-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.guild-record-section {
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.guild-record-section h3 {
+  margin: 0 0 13px;
+  color: var(--gold-soft);
+}
+
+.guild-record-identity {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.guild-record-identity > div {
+  display: grid;
+  gap: 3px;
+}
+
+.guild-record-identity strong {
+  font-size: 1.12rem;
+}
+
+.guild-record-identity span,
+.guild-record-identity small {
+  color: var(--text-muted);
+}
+
+.guild-record-emblem,
+.guild-record-character-emblem {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid rgba(215, 181, 112, 0.35);
+  background: rgba(6, 10, 14, 0.75);
+  color: var(--gold-soft);
+}
+
+.guild-record-emblem {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25rem;
+}
+
+.guild-record-character-emblem {
+  width: 42px;
+  height: 42px;
+}
+
+.guild-record-emblem img,
+.guild-record-character-emblem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.guild-record-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.guild-record-summary div,
+.guild-bulk-summary-totals div {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.guild-record-summary dt,
+.guild-bulk-summary-totals dt {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.guild-record-summary dd,
+.guild-bulk-summary-totals dd {
+  margin: 5px 0 0;
+  color: var(--gold-soft);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.guild-record-experience-list,
+.guild-record-character-list,
+.guild-bulk-summary-list,
+.guild-bulk-confirm-list {
+  display: grid;
+  gap: 9px;
+}
+
+.guild-record-experience-list > div,
+.guild-bulk-summary-list > div,
+.guild-bulk-confirm-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 13px;
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.guild-record-experience-list span {
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.guild-record-character-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guild-record-character-list > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.guild-record-character-list > div > span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.guild-record-character-list small {
+  color: var(--text-muted);
+}
+
+.guild-record-empty {
+  margin: 0;
+}
+
+.guild-bulk-dialogue-card {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.4fr) minmax(0, 1.6fr);
+  gap: 18px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.guild-bulk-speaker {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.guild-bulk-speaker h3 {
+  margin: 2px 0 0;
+}
+
+.guild-bulk-speaker-portrait {
+  display: grid;
+  place-items: center;
+  width: 78px;
+  height: 78px;
+  flex: 0 0 78px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 1px solid rgba(215, 181, 112, 0.34);
+  background: #121a22;
+  color: var(--gold-soft);
+}
+
+.guild-bulk-speaker-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+}
+
+.guild-bulk-dialogue-text-region {
+  min-height: 132px;
+  height: 132px;
+  margin: 0;
+}
+
+.guild-bulk-dialogue-text-region p {
+  margin: 0;
+}
+
+.guild-bulk-status-row {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.25fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.guild-bulk-gold-summary {
+  margin: 0;
+}
+
+.guild-bulk-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.7fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.guild-bulk-catalog,
+.guild-bulk-summary-card {
+  padding: 18px;
+}
+
+.guild-bulk-catalog > h3,
+.guild-bulk-summary-card > h3 {
+  margin: 0 0 14px;
+}
+
+.guild-bulk-summary-card {
+  position: sticky;
+  top: 18px;
+}
+
+.guild-bulk-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.guild-bulk-material-card {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(215, 181, 112, 0.45);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.guild-bulk-material-card > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.guild-bulk-material-card > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.guild-bulk-material-card h3 {
+  margin: 0;
+}
+
+.guild-bulk-material-card > header > b {
+  color: var(--text-soft);
+}
+
+.guild-bulk-tier-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.guild-bulk-tier-row strong {
+  color: var(--gold-soft);
+}
+
+.guild-bulk-tier-row strong[data-tier="below-minimum"] {
+  color: var(--ui-warning);
+}
+
+.guild-bulk-quantity-control {
+  display: grid;
+  grid-template-columns: auto auto minmax(76px, 1fr) auto auto auto auto;
+  gap: 7px;
+}
+
+.guild-bulk-quantity-control input {
+  min-width: 0;
+  text-align: center;
+}
+
+.guild-bulk-remove-button {
+  border: 1px solid rgba(228, 129, 114, 0.34);
+  border-radius: 10px;
+  background: rgba(228, 129, 114, 0.08);
+  color: var(--ui-error);
+}
+
+.guild-bulk-price-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.guild-bulk-price-grid div {
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.guild-bulk-price-grid dt {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.guild-bulk-price-grid dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+}
+
+.guild-bulk-summary-empty {
+  display: grid;
+  gap: 7px;
+  padding: 22px 12px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.guild-bulk-summary-empty strong {
+  color: var(--text-soft);
+}
+
+.guild-bulk-summary-totals,
+.guild-bulk-confirm-totals {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.guild-bulk-summary-totals div,
+.guild-bulk-confirm-totals div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.guild-bulk-summary-totals dd,
+.guild-bulk-confirm-totals dd {
+  margin: 0;
+}
+
+.guild-bulk-summary-card .primary-button {
+  width: 100%;
+}
+
+.guild-bulk-confirm-list {
+  max-height: min(42vh, 360px);
+  overflow-y: auto;
+  margin: 14px 0;
+}
+
+.guild-bulk-confirm-dialog {
+  width: min(620px, calc(100vw - 28px));
+}
+
+.guild-record-intro {
+  margin: 0 0 16px;
+  padding: 13px 16px;
+  border-left: 3px solid rgba(215, 181, 112, 0.62);
+  border-radius: 0 12px 12px 0;
+  background: rgba(215, 181, 112, 0.065);
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+/* v0.2.6.1 冒險資歷正式版補強 */
+.guild-record-celine-copy {
+  display: grid;
+  align-content: start;
+}
+
+.guild-record-panel-heading {
+  padding: 2px 2px 4px;
+}
+
+.guild-record-panel-heading h3 {
+  margin: 4px 0 8px;
+  font-size: 1.45rem;
+}
+
+.guild-record-panel-heading > p:last-child {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.guild-record-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.guild-record-section-heading h3 {
+  margin: 0;
+}
+
+.guild-record-experience-list > div {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.guild-record-experience-marker {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 1px solid rgba(215, 181, 112, 0.38);
+  border-radius: 50%;
+  color: var(--gold-soft);
+  background: rgba(215, 181, 112, 0.08);
+}
+
+.guild-record-experience-list > div > span {
+  display: grid;
+  gap: 3px;
+  text-align: left;
+}
+
+.guild-record-experience-list small {
+  color: var(--text-muted);
+}
+
+.guild-record-celine-note {
+  margin: 0;
+  padding: 17px 18px;
+  border-left: 3px solid rgba(215, 181, 112, 0.64);
+  border-radius: 0 13px 13px 0;
+  background: rgba(215, 181, 112, 0.065);
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.guild-bulk-summary-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.guild-bulk-summary-heading h3 {
+  margin: 0;
+}
+
+/* v0.2.6.1 冒險者公會定版 Demo 對齊 */
+.facility-panel.is-guild-record-mode {
+  width: min(100%, 1120px);
+  max-width: 1120px;
+  text-align: left;
+}
+
+.facility-panel.is-guild-sale-mode {
+  width: min(100%, 1160px);
+  max-width: 1160px;
+  text-align: left;
+}
+
+.guild-record-page-heading,
+.guild-sale-page-heading {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(217, 199, 150, 0.16);
+  text-align: left;
+}
+
+.guild-record-page-heading > div,
+.guild-sale-page-heading > div {
+  width: auto;
+}
+
+.guild-record-page-heading .secondary-button,
+.guild-sale-page-heading .secondary-button {
+  align-self: center;
+}
+
+.guild-record-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.72fr) minmax(0, 1.55fr);
+  gap: 18px;
+  width: 100%;
+  text-align: left;
+}
+
+.guild-record-reception-card,
+.guild-record-sheet {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.22);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.028), transparent 48%),
+    rgba(10, 16, 17, 0.94);
+  box-shadow: var(--inner-light), 0 18px 38px rgba(0, 0, 0, 0.24);
+}
+
+.guild-record-reception-card {
+  align-self: start;
+}
+
+.guild-record-portrait-card {
+  position: relative;
+  height: 400px;
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 68% 24%, rgba(224, 179, 93, 0.18), transparent 42%),
+    rgba(9, 14, 14, 0.96);
+}
+
+.guild-record-portrait-card::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 34%;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgba(5, 8, 8, 0.78));
+  content: "";
+}
+
+.guild-record-portrait-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+
+.guild-record-portrait-fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.guild-record-reception-copy {
+  padding: 18px;
+}
+
+.guild-record-reception-copy h3 {
+  margin: 4px 0 8px;
+  color: #fff4d8;
+  font-size: 1.45rem;
+}
+
+.guild-record-reception-copy p:last-child {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.75;
+}
+
+.guild-record-sheet {
+  padding: 20px;
+}
+
+.guild-record-sheet-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(217, 199, 150, 0.16);
+}
+
+.guild-record-sheet-heading h3 {
+  margin: 4px 0 6px;
+  color: #fff4d8;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+}
+
+.guild-record-sheet-heading p:last-child {
+  max-width: 640px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.guild-record-identity-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 15px;
+  border: 1px solid rgba(241, 211, 134, 0.22);
+  border-radius: 10px;
+  background:
+    linear-gradient(120deg, rgba(241, 211, 134, 0.08), transparent 62%),
+    rgba(5, 10, 11, 0.58);
+}
+
+.guild-record-current-emblem,
+.guild-record-character-emblem {
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid rgba(241, 211, 134, 0.28);
+  border-radius: 50%;
+  background: rgba(5, 10, 11, 0.82);
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.guild-record-current-emblem {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25rem;
+}
+
+.guild-record-character-emblem {
+  width: 48px;
+  height: 48px;
+}
+
+.guild-record-current-emblem img,
+.guild-record-character-emblem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.guild-record-identity-card h4 {
+  margin: 3px 0;
+  color: #fff4d8;
+  font-size: 1.2rem;
+}
+
+.guild-record-identity-card p:last-child {
+  margin: 0;
+  color: var(--muted);
+}
+
+.guild-record-status {
+  align-self: center;
+  color: var(--gold);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.guild-record-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin: 12px 0 0;
+}
+
+.guild-record-metrics > div {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid rgba(217, 199, 150, 0.14);
+  border-radius: 8px;
+  background: rgba(6, 11, 12, 0.46);
+}
+
+.guild-record-metrics dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.guild-record-metrics dd {
+  margin: 0;
+  color: var(--gold);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.guild-record-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(217, 199, 150, 0.14);
+}
+
+.guild-record-section .browser-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+}
+
+.guild-record-section h4 {
+  margin: 2px 0 0;
+  color: #fff4d8;
+}
+
+.guild-record-milestone-list,
+.guild-record-character-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 10px;
+}
+
+.guild-record-milestone {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid rgba(127, 218, 160, 0.18);
+  border-radius: 9px;
+  background: rgba(13, 30, 23, 0.38);
+}
+
+.guild-record-milestone-marker {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(127, 218, 160, 0.42);
+  border-radius: 50%;
+  color: #75d59b;
+  font-weight: 900;
+}
+
+.guild-record-milestone > div,
+.guild-record-character-card > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.guild-record-milestone strong,
+.guild-record-character-card strong {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+.guild-record-milestone small,
+.guild-record-character-card small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.guild-record-character-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(217, 199, 150, 0.16);
+  border-radius: 9px;
+  background: rgba(6, 11, 12, 0.52);
+}
+
+.guild-record-celine-note {
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 8px 8px 0;
+  background: rgba(224, 179, 93, 0.07);
+  color: #fff4d8;
+  line-height: 1.75;
+}
+
+.guild-clerk-strip {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 13px 14px;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 11px;
+  background:
+    linear-gradient(120deg, rgba(240, 207, 116, 0.06), transparent 60%),
+    rgba(8, 13, 14, 0.86);
+  box-shadow: var(--inner-light);
+}
+
+.guild-clerk-portrait {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid rgba(240, 207, 116, 0.3);
+  border-radius: 50%;
+  background: rgba(5, 10, 11, 0.82);
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.guild-clerk-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 22%;
+}
+
+.guild-clerk-copy {
+  min-width: 0;
+}
+
+.clerk-dialogue-region {
+  position: relative;
+  height: 118px;
+  margin-top: 5px;
+  padding: 13px 50px 13px 14px;
+  overflow: auto;
+  border: 1px solid rgba(109, 170, 183, 0.28);
+  border-radius: 9px;
+  background: rgba(4, 9, 10, 0.66);
+}
+
+.clerk-dialogue-region p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.94rem;
+  line-height: 1.72;
+  white-space: pre-wrap;
+}
+
+.clerk-dialogue-skip-button {
+  top: 9px;
+  right: 9px;
+}
+
+.wallet-card {
+  display: grid;
+  gap: 2px;
+  min-width: 116px;
+  padding: 10px 13px;
+  border: 1px solid rgba(240, 207, 116, 0.22);
+  border-radius: 8px;
+  background: rgba(4, 9, 10, 0.58);
+  text-align: right;
+}
+
+.wallet-card span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.wallet-card strong {
+  color: var(--gold);
+  font-size: 1.15rem;
+}
+
+.bulk-tier-guide {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.88fr) minmax(0, 1.7fr);
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 13px 14px;
+  border: 1px solid rgba(217, 199, 150, 0.16);
+  border-radius: 10px;
+  background: rgba(7, 12, 13, 0.58);
+}
+
+.tier-guide-heading p:last-child {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.tier-guide-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tier-chip {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border: 1px solid rgba(217, 199, 150, 0.18);
+  border-radius: 8px;
+  background: rgba(5, 10, 11, 0.64);
+  text-align: center;
+}
+
+.tier-chip strong {
+  font-size: 0.76rem;
+}
+
+.tier-chip span {
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.tier-ineligible { color: #aaa59c; }
+.tier-low { border-color: rgba(226, 154, 143, 0.28); color: #dfaca4; }
+.tier-standard { border-color: rgba(117, 213, 155, 0.3); color: #75d59b; }
+.tier-bulk { border-color: rgba(240, 207, 116, 0.36); color: var(--gold); }
+
+.guild-bulk-notice {
+  min-height: 1.45em;
+  margin: 0 0 12px;
+}
+
+.guild-sale-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(290px, 0.72fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.material-browser,
+.sale-summary {
+  min-width: 0;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 11px;
+  background: rgba(8, 13, 14, 0.85);
+  box-shadow: var(--inner-light);
+}
+
+.material-browser {
+  padding: 16px;
+}
+
+.is-guild-sale-mode .material-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 140px 170px;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(217, 199, 150, 0.13);
+}
+
+.is-guild-sale-mode .material-toolbar label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-align: left;
+}
+
+.is-guild-sale-mode .material-toolbar input,
+.is-guild-sale-mode .material-toolbar select {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid rgba(217, 199, 150, 0.23);
+  border-radius: 7px;
+  color: var(--ink);
+  background: #0b1213;
+}
+
+.material-browser-heading,
+.summary-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: end;
+}
+
+.material-browser-heading h3,
+.summary-heading h3 {
+  margin: 3px 0 0;
+  color: #fff4d8;
+}
+
+.guild-material-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.guild-material-card {
+  --rarity-border: rgba(200, 208, 202, 0.27);
+  --rarity-glow: transparent;
+  position: relative;
+  overflow: hidden;
+  padding: 13px;
+  border: 1px solid var(--rarity-border);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 100% 0, var(--rarity-glow), transparent 40%),
+    rgba(10, 16, 17, 0.86);
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.guild-material-card.rarity-uncommon {
+  --rarity-border: rgba(127, 218, 160, 0.36);
+  --rarity-glow: rgba(127, 218, 160, 0.08);
+}
+
+.guild-material-card.rarity-rare {
+  --rarity-border: rgba(241, 211, 134, 0.5);
+  --rarity-glow: rgba(241, 211, 134, 0.11);
+}
+
+.guild-material-card.is-selected {
+  border-color: rgba(240, 207, 116, 0.62);
+  background:
+    linear-gradient(115deg, rgba(240, 207, 116, 0.07), transparent 58%),
+    rgba(10, 16, 17, 0.95);
+}
+
+.guild-material-card.is-ineligible {
+  opacity: 0.76;
+}
+
+.material-card-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.material-title-line {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.material-title-line h4 {
+  margin: 0;
+  color: #fff4d8;
+  font-size: 1rem;
+}
+
+.rarity-label {
+  padding: 3px 7px;
+  border: 1px solid var(--rarity-border);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 900;
+}
+
+.rarity-uncommon .rarity-label { color: #8edeb0; }
+.rarity-rare .rarity-label { color: var(--gold); }
+
+.material-source {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.73rem;
+}
+
+.material-held {
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+
+.material-held span {
+  color: var(--muted);
+  font-size: 0.67rem;
+}
+
+.material-held strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.material-card-body {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.78fr) minmax(0, 1.22fr);
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(217, 199, 150, 0.12);
+}
+
+.material-price-reference {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(4, 9, 10, 0.46);
+}
+
+.reference-row,
+.quote-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.reference-row span,
+.quote-row span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.reference-row strong {
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.quote-row strong {
+  color: var(--gold);
+  font-size: 1rem;
+}
+
+.tier-status {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  padding-top: 7px;
+  border-top: 1px solid rgba(217, 199, 150, 0.1);
+}
+
+.tier-badge {
+  padding: 4px 7px;
+  border: 1px solid rgba(217, 199, 150, 0.3);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+.tier-badge.is-low { border-color: rgba(226, 154, 143, 0.35); color: #dfaca4; }
+.tier-badge.is-standard { border-color: rgba(117, 213, 155, 0.4); color: #75d59b; }
+.tier-badge.is-bulk { border-color: rgba(240, 207, 116, 0.48); color: var(--gold); }
+.tier-badge.is-ineligible { border-color: rgba(226, 154, 143, 0.35); color: #dfaca4; }
+
+.price-difference {
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.price-difference.is-positive { color: #75d59b; }
+.price-difference.is-negative { color: #e29a8f; }
+.price-difference.is-neutral { color: var(--muted); }
+
+.next-tier-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.material-action-area {
+  display: grid;
+  align-content: center;
+}
+
+.add-material-button,
+.remove-material-button {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  font-weight: 900;
+}
+
+.add-material-button {
+  border: 1px solid rgba(109, 170, 183, 0.36);
+  color: #b6d5db;
+  background: rgba(11, 25, 27, 0.76);
+}
+
+.add-material-button:hover {
+  border-color: rgba(240, 207, 116, 0.44);
+  color: var(--gold);
+}
+
+.remove-material-button {
+  border: 1px solid rgba(226, 154, 143, 0.24);
+  color: #d9aaa3;
+  background: rgba(44, 17, 15, 0.4);
+}
+
+.quantity-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.quantity-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.quantity-panel-heading span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.quantity-panel-heading strong {
+  color: var(--gold);
+}
+
+.quantity-control {
+  display: grid;
+  grid-template-columns: 42px 42px minmax(64px, 1fr) 42px 42px;
+  gap: 5px;
+}
+
+.quantity-button {
+  min-height: 38px;
+  padding: 0;
+  border: 1px solid rgba(109, 170, 183, 0.29);
+  border-radius: 6px;
+  color: #b6d5db;
+  background: rgba(11, 25, 27, 0.72);
+  font-weight: 900;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.quantity-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.32;
+}
+
+.quantity-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(240, 207, 116, 0.3);
+  border-radius: 6px;
+  color: #fff4d8;
+  background: rgba(4, 9, 10, 0.72);
+  text-align: center;
+  font-weight: 900;
+  appearance: textfield;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.quantity-secondary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.quantity-secondary-actions button {
+  min-height: 32px;
+  border: 1px solid rgba(217, 199, 150, 0.17);
+  border-radius: 6px;
+  color: var(--muted);
+  background: rgba(5, 10, 11, 0.5);
+  cursor: pointer;
+}
+
+.input-error {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.68rem;
+}
+
+.sale-summary {
+  position: sticky;
+  top: 14px;
+  padding: 16px;
+}
+
+.summary-empty {
+  display: grid;
+  place-items: center;
+  min-height: 210px;
+  margin-top: 12px;
+  padding: 20px;
+  border: 1px dashed rgba(217, 199, 150, 0.18);
+  border-radius: 9px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.summary-empty[hidden],
+#guildBulkSummaryContent[hidden] {
+  display: none !important;
+}
+
+.summary-empty-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid rgba(109, 170, 183, 0.28);
+  border-radius: 50%;
+  color: #b6d5db;
+  font-size: 1.5rem;
+}
+
+.summary-empty p {
+  max-width: 240px;
+  margin: 12px 0 0;
+  line-height: 1.65;
+}
+
+.summary-items {
+  display: grid;
+  gap: 7px;
+  max-height: 285px;
+  margin-top: 12px;
+  overflow: auto;
+}
+
+.summary-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid rgba(217, 199, 150, 0.13);
+  border-radius: 7px;
+  background: rgba(4, 9, 10, 0.48);
+}
+
+.summary-item strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.8rem;
+}
+
+.summary-item small {
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.summary-item b {
+  color: var(--gold);
+  font-size: 0.8rem;
+}
+
+.summary-item.is-invalid {
+  border-color: rgba(226, 154, 143, 0.32);
+}
+
+.summary-item.is-invalid b {
+  color: var(--danger);
+}
+
+.summary-totals {
+  display: grid;
+  gap: 0;
+  margin: 13px 0;
+}
+
+.summary-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(217, 199, 150, 0.11);
+}
+
+.summary-totals dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.summary-totals dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.summary-totals .summary-primary {
+  padding: 11px 0;
+}
+
+.summary-primary dt {
+  color: #fff0c7;
+  font-weight: 900;
+}
+
+.summary-primary dd {
+  color: var(--gold);
+  font-size: 1.22rem;
+}
+
+.summary-totals dd.is-positive { color: #75d59b; }
+.summary-totals dd.is-negative { color: var(--danger); }
+
+.summary-hint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.guild-bulk-confirm-dialog {
+  width: min(100%, 620px);
+}
+
+.guild-bulk-confirm-list .confirm-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 10px 11px;
+  border: 1px solid rgba(217, 199, 150, 0.14);
+  border-radius: 8px;
+  background: rgba(5, 10, 11, 0.54);
+}
+
+.guild-bulk-confirm-list .confirm-item strong,
+.guild-bulk-confirm-list .confirm-item small {
+  display: block;
+}
+
+.guild-bulk-confirm-list .confirm-item small {
+  color: var(--muted);
+}
+
+.guild-bulk-confirm-list .confirm-item > b {
+  color: var(--gold);
+}
+
+/* v0.2.6.3 公會委託與冒險資歷 */
+.facility-panel.is-guild-quest-mode {
+  width: min(100%, 1160px);
+  max-width: 1160px;
+  text-align: left;
+}
+
+.guild-quest-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.guild-quest-history,
+.guild-quest-active-section,
+.guild-quest-board-section {
+  padding: 16px;
+  border: 1px solid rgba(217, 199, 150, 0.18);
+  border-radius: 12px;
+  background: rgba(7, 12, 13, 0.78);
+  box-shadow: var(--inner-light);
+}
+
+.guild-quest-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.guild-quest-section-heading h3 {
+  margin: 3px 0 0;
+  color: #fff4d8;
+}
+
+.guild-quest-history-metrics,
+.guild-record-quest-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin: 0;
+}
+
+.guild-quest-history-metrics > div,
+.guild-record-quest-metrics > div {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid rgba(217, 199, 150, 0.14);
+  border-radius: 8px;
+  background: rgba(6, 11, 12, 0.5);
+}
+
+.guild-quest-history-metrics dt,
+.guild-record-quest-metrics dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.guild-quest-history-metrics dd,
+.guild-record-quest-metrics dd {
+  margin: 0;
+  color: var(--gold);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.guild-quest-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.guild-quest-card,
+.guild-quest-active-card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 11px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 50%),
+    rgba(7, 13, 14, 0.88);
+}
+
+.guild-quest-card::before,
+.guild-quest-active-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: rgba(217, 199, 150, 0.45);
+  content: "";
+}
+
+.guild-quest-card.rarity-advanced::before,
+.guild-quest-active-card.rarity-advanced::before {
+  background: #77bdd6;
+}
+
+.guild-quest-card.rarity-rare::before,
+.guild-quest-active-card.rarity-rare::before {
+  background: #d1a5ec;
+}
+
+.guild-quest-card.is-active {
+  border-color: rgba(240, 207, 116, 0.45);
+  box-shadow: 0 0 0 1px rgba(240, 207, 116, 0.08) inset;
+}
+
+.guild-quest-card-heading h4 {
+  margin: 5px 0 0;
+  color: #fff4d8;
+  font-size: 1.05rem;
+}
+
+.guild-quest-rarity {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px 8px;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 999px;
+  color: var(--gold-soft);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.guild-quest-rarity.rarity-advanced {
+  border-color: rgba(119, 189, 214, 0.42);
+  color: #a7dcf0;
+}
+
+.guild-quest-rarity.rarity-rare {
+  border-color: rgba(209, 165, 236, 0.46);
+  color: #e6c5f8;
+}
+
+.guild-quest-card-details {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+}
+
+.guild-quest-card-details p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.guild-quest-card-details strong {
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.guild-quest-reward {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(217, 199, 150, 0.12);
+}
+
+.guild-quest-reward span,
+.guild-quest-completion-count {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.guild-quest-reward strong {
+  color: var(--gold);
+}
+
+.guild-quest-card > button,
+.guild-quest-active-actions > button {
+  width: 100%;
+}
+
+.guild-quest-active-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.guild-quest-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.guild-quest-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.guild-quest-progress > div:first-child strong {
+  color: var(--gold);
+}
+
+.guild-quest-progress > div:last-child {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.guild-quest-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b6e2c, var(--gold));
+  transition: width 220ms ease;
+}
+
+.guild-quest-progress.is-complete i {
+  background: linear-gradient(90deg, #347957, #75d59b);
+}
+
+.guild-quest-empty {
+  margin: 0;
+}
+
+.guild-record-collapsible {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.16);
+  border-radius: 11px;
+  background: rgba(6, 11, 12, 0.44);
+}
+
+.guild-record-collapse-toggle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 30px;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 13px 15px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.guild-record-collapse-toggle:hover,
+.guild-record-collapse-toggle:focus-visible {
+  background: rgba(240, 207, 116, 0.045);
+}
+
+.guild-record-collapse-toggle:disabled {
+  cursor: wait;
+}
+
+.guild-record-collapse-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.guild-record-collapse-copy strong {
+  color: #fff4d8;
+  font-size: 1rem;
+}
+
+.guild-record-collapse-arrow {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(240, 207, 116, 0.3);
+  border-radius: 50%;
+  color: var(--gold);
+  transition: transform 220ms ease;
+}
+
+.guild-record-collapsible.is-open .guild-record-collapse-arrow {
+  transform: rotate(180deg);
+}
+
+.guild-record-collapse-content {
+  height: 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(217, 199, 150, 0.12);
+  transition: height 280ms ease;
+}
+
+.guild-record-collapse-content > * {
+  margin: 0;
+  padding: 14px 15px 15px;
+}
+
+.guild-record-reveal-item,
+.guild-record-quest-metrics {
+  opacity: 0;
+  transform: translateY(7px);
+}
+
+.guild-record-collapsible.is-revealed .guild-record-reveal-item,
+.guild-record-collapsible.is-revealed .guild-record-quest-metrics {
+  animation: guild-record-reveal 180ms ease forwards;
+}
+
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(2) { animation-delay: 45ms; }
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(3) { animation-delay: 90ms; }
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(4) { animation-delay: 135ms; }
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(5) { animation-delay: 180ms; }
+
+.guild-record-quest-history {
+  display: grid;
+  gap: 12px;
+}
+
+.guild-record-quest-totals {
+  display: grid;
+  gap: 9px;
+}
+
+.guild-record-quest-total {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.guild-record-quest-total > div {
+  display: grid;
+  gap: 3px;
+}
+
+.guild-record-quest-total small {
+  color: var(--muted);
+}
+
+.guild-record-quest-total b {
+  color: var(--gold);
+}
+
+.dialogue-portrait-card {
+  position: relative;
+}
+
+.quest-briefing-progress[hidden],
+.quest-intro-scene[hidden] {
+  display: none !important;
+}
+
+.quest-briefing-progress {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0 0 14px;
+}
+
+.quest-briefing-progress span {
+  position: relative;
+  display: grid;
+  min-height: 40px;
+  place-items: center;
+  padding: 7px 6px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.16);
+  border-radius: 8px;
+  background: rgba(8, 13, 14, 0.72);
+  color: var(--text-muted, var(--muted));
+  font-size: 0.76rem;
+  font-weight: 700;
+  transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms ease;
+}
+
+.quest-briefing-progress span::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--gold);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms ease;
+}
+
+.quest-briefing-progress span.is-complete {
+  color: rgba(241, 211, 134, 0.72);
+}
+
+.quest-briefing-progress span.is-active {
+  border-color: rgba(241, 211, 134, 0.48);
+  background: rgba(85, 65, 28, 0.28);
+  color: #fff4d8;
+  transform: translateY(-1px);
+}
+
+.quest-briefing-progress span.is-active::after,
+.quest-briefing-progress span.is-complete::after {
+  transform: scaleX(1);
+}
+
+.quest-intro-layout {
+  height: 600px;
+}
+
+.quest-intro-portrait-card {
+  isolation: isolate;
+}
+
+.quest-intro-portrait-card img {
+  filter: saturate(0.86) brightness(0.78);
+  transition: filter 420ms ease, transform 520ms ease, object-position 520ms ease;
+}
+
+.quest-intro-portrait-card[data-intro-step="4"] img {
+  filter: saturate(0.74) brightness(0.62);
+  transform: scale(1.035);
+}
+
+.quest-intro-portrait-card[data-intro-step="5"] img {
+  filter: saturate(0.94) brightness(0.84);
+  transform: scale(1.02);
+}
+
+.quest-intro-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.quest-intro-scene::before {
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(to bottom, transparent, rgba(4, 7, 8, 0.94) 82%);
+  content: "";
+}
+
+.quest-desk-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 76%;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(224, 179, 93, 0.23), transparent 68%);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.72);
+  transition: opacity 480ms ease, transform 480ms ease;
+}
+
+.quest-paper-stack {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  width: 220px;
+  height: 122px;
+  opacity: 0;
+  transform: translate(-50%, 72px) rotate(-2deg);
+  transition: opacity 320ms ease, transform 520ms cubic-bezier(.2,.8,.2,1);
+}
+
+.quest-paper-stack span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(87, 57, 25, 0.78);
+  border-radius: 7px;
+  background:
+    linear-gradient(90deg, transparent 0 9%, rgba(101, 67, 32, 0.12) 9% 10%, transparent 10% 100%),
+    linear-gradient(180deg, rgba(255,255,255,.14), transparent 24%),
+    #c8b184;
+  box-shadow: 0 16px 28px rgba(0,0,0,.3);
+}
+
+.quest-paper-stack span:nth-child(1) { transform: rotate(-8deg) translate(-18px, 6px); }
+.quest-paper-stack span:nth-child(2) { transform: rotate(5deg) translate(14px, 3px); }
+.quest-paper-stack span:nth-child(3) { transform: rotate(-2deg) translate(-2px, -4px); }
+.quest-paper-stack span:nth-child(4) { transform: rotate(1deg) translate(4px, -10px); }
+
+.quest-source-stamps,
+.quest-rarity-seals {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  display: flex;
+  gap: 9px;
+  opacity: 0;
+  transform: translate(-50%, 20px);
+  transition: opacity 280ms ease, transform 420ms ease;
+}
+
+.quest-source-stamps span,
+.quest-rarity-seals span {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  border: 2px solid rgba(113, 55, 36, .7);
+  border-radius: 50%;
+  background: rgba(188, 152, 93, .92);
+  color: #5d2f26;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  box-shadow: 0 7px 18px rgba(0,0,0,.32);
+  transform: rotate(-8deg) scale(.72);
+  transition: transform 360ms cubic-bezier(.17,.89,.32,1.35);
+}
+
+.quest-source-stamps span:nth-child(2),
+.quest-rarity-seals span:nth-child(2) { transform: rotate(5deg) scale(.72); }
+.quest-source-stamps span:nth-child(3),
+.quest-rarity-seals span:nth-child(3) { transform: rotate(-2deg) scale(.72); }
+
+.quest-single-slot {
+  position: absolute;
+  left: 50%;
+  bottom: 54px;
+  display: grid;
+  grid-template-columns: 120px auto;
+  gap: 14px;
+  align-items: center;
+  opacity: 0;
+  transform: translate(-50%, 18px);
+  transition: opacity 280ms ease, transform 420ms ease;
+}
+
+.quest-single-slot .slot-card {
+  display: grid;
+  min-height: 88px;
+  place-items: center;
+  border: 1px solid rgba(241, 211, 134, 0.48);
+  border-radius: 9px;
+  background:
+    linear-gradient(145deg, rgba(241,211,134,.12), transparent 50%),
+    rgba(13,18,18,.94);
+  color: #fff4d8;
+  box-shadow: 0 14px 24px rgba(0,0,0,.3);
+}
+
+.quest-single-slot strong {
+  padding: 8px 10px;
+  border: 1px solid rgba(224, 179, 93, .36);
+  border-radius: 999px;
+  background: rgba(51, 38, 19, .84);
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.quest-rarity-seals .common {
+  border-color: rgba(195, 202, 199, .7);
+  background: #a8afac;
+  color: #18201f;
+}
+
+.quest-rarity-seals .advanced {
+  border-color: rgba(111, 190, 143, .8);
+  background: #6fbe8f;
+  color: #10271a;
+}
+
+.quest-rarity-seals .rare {
+  border-color: rgba(241, 211, 134, .9);
+  background: #d9b857;
+  color: #3a260d;
+}
+
+.quest-danger-seal {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  display: grid;
+  width: 142px;
+  height: 142px;
+  place-items: center;
+  border: 4px double rgba(227, 112, 94, .88);
+  border-radius: 50%;
+  background: rgba(69, 19, 15, .8);
+  color: #ffc0b5;
+  font-weight: 900;
+  letter-spacing: .16em;
+  opacity: 0;
+  transform: translate(-50%, 18px) rotate(-13deg) scale(.68);
+  transition: opacity 280ms ease, transform 460ms cubic-bezier(.17,.89,.32,1.35);
+}
+
+.quest-mini-board {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  display: grid;
+  grid-template-columns: repeat(2, 96px);
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid rgba(241, 211, 134, .34);
+  border-radius: 12px;
+  background: rgba(8, 12, 13, .9);
+  box-shadow: 0 20px 38px rgba(0,0,0,.42);
+  opacity: 0;
+  transform: translate(-50%, 42px) scale(.8);
+  transition: opacity 320ms ease, transform 520ms cubic-bezier(.2,.85,.2,1);
+}
+
+.quest-mini-board span {
+  height: 82px;
+  border: 1px solid rgba(217, 199, 150, .26);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), transparent 32%),
+    rgba(32, 30, 23, .95);
+}
+
+.quest-intro-portrait-card[data-intro-step="0"] .quest-desk-glow,
+.quest-intro-portrait-card[data-intro-step="0"] .quest-paper-stack {
+  opacity: 1;
+  transform: translate(-50%, 0) rotate(-2deg);
+}
+
+.quest-intro-portrait-card[data-intro-step="0"] .quest-desk-glow {
+  transform: translateX(-50%) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-paper-stack,
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps,
+.quest-intro-portrait-card[data-intro-step="2"] .quest-single-slot,
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals,
+.quest-intro-portrait-card[data-intro-step="4"] .quest-danger-seal,
+.quest-intro-portrait-card[data-intro-step="5"] .quest-mini-board {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-paper-stack {
+  opacity: .44;
+  transform: translate(-50%, 8px) rotate(-2deg) scale(.94);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps span,
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals span {
+  transform: rotate(-8deg) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps span:nth-child(2),
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals span:nth-child(2) {
+  transform: rotate(5deg) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps span:nth-child(3),
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals span:nth-child(3) {
+  transform: rotate(-2deg) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="4"] .quest-danger-seal {
+  transform: translate(-50%, 0) rotate(-8deg) scale(1);
+  animation: quest-danger-pulse 1.8s ease-in-out infinite;
+}
+
+.quest-intro-portrait-card[data-intro-step="5"] .quest-mini-board {
+  transform: translate(-50%, 0) scale(1);
+}
+
+@keyframes quest-danger-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224,111,98,.12); }
+  50% { box-shadow: 0 0 0 14px rgba(224,111,98,0); }
+}
+
+@keyframes guild-record-reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guild-record-collapse-content,
+  .guild-record-collapse-arrow,
+  .guild-record-reveal-item,
+  .guild-record-quest-metrics,
+  .quest-intro-scene *,
+  .quest-intro-portrait-card img,
+  .quest-briefing-progress span,
+  .quest-briefing-progress span::after {
+    transition: none;
+    animation: none !important;
+  }
+
+  .guild-record-collapsible.is-revealed .guild-record-reveal-item,
+  .guild-record-collapsible.is-revealed .guild-record-quest-metrics {
+    opacity: 1;
+    transform: none;
+  }
 }

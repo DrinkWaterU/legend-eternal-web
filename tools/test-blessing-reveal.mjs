@@ -137,8 +137,8 @@ try {
   globalThis.setTimeout = nativeSetTimeout;
 }
 
-const gameSource = await readFile(new URL("../game.js", import.meta.url), "utf8");
-assert.match(gameSource, /state\.blessingInputLocked = true;[\s\S]*renderBlessingChoices\(/, "showBlessings 應先鎖定祝福輸入");
-assert.match(gameSource, /function chooseBlessing\(blessing\) \{\s*if \(state\.blessingInputLocked\) \{\s*return;\s*\}\s*state\.blessingInputLocked = true;/, "chooseBlessing 應具備 runtime lock guard 與雙擊防護");
+const blessingControllerSource = await readFile(new URL("../src/features/blessing/blessingController.js", import.meta.url), "utf8");
+assert.match(blessingControllerSource, /state\.blessingInputLocked = true;[\s\S]*renderBlessingChoices\(/, "showBlessings 應先鎖定祝福輸入");
+assert.match(blessingControllerSource, /function chooseBlessing\(blessing\) \{\s*if \(state\.blessingInputLocked\) return;\s*state\.blessingInputLocked = true;/, "chooseBlessing 應具備 runtime lock guard 與雙擊防護");
 
 console.log("Blessing reveal and input lock tests passed.");

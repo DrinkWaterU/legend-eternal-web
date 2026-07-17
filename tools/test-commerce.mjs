@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 
 import {
   craftWeapon,
+  createMaterialSalePlan,
+  createMaterialSaleQuote,
   getInventoryCostStatus,
+  MATERIAL_SALE_POLICIES,
   sellMaterial,
   sellMaterials,
   spendGold,
@@ -317,4 +320,70 @@ for (const request of [
   assert.deepEqual(request.inventory, before, "製作驗證失敗不得部分扣款或取得武器");
 }
 
-console.log("Commerce isolation and weapon crafting tests passed.");
+
+{
+  const definition = { id: "gel", name: "凝膠", sellPrice: 2 };
+  assert.deepEqual(
+    [4, 5, 9, 10, 19, 20].map((quantity) => {
+      const quote = createMaterialSaleQuote({
+        materialDefinition: definition,
+        quantity,
+        policyId: MATERIAL_SALE_POLICIES.GUILD_BULK,
+        allowUnaccepted: true
+      });
+      return [quantity, quote.tierId, quote.percent, quote.totalGold];
+    }),
+    [
+      [4, "below-minimum", 0, 0],
+      [5, "small", 90, 9],
+      [9, "small", 90, 16],
+      [10, "large", 110, 22],
+      [19, "large", 110, 41],
+      [20, "bulk", 115, 46]
+    ]
+  );
+}
+
+{
+  const inventory = {
+    gold: 10,
+    materials: {
+      gel: { quantity: 20 },
+      shard: { quantity: 10 }
+    }
+  };
+  const plan = createMaterialSalePlan({
+    inventory,
+    materialDefinitions: {
+      gel: { id: "gel", name: "凝膠", sellPrice: 2 },
+      shard: { id: "shard", name: "碎片", sellPrice: 3 }
+    },
+    sales: [
+      { materialId: "gel", quantity: 20 },
+      { materialId: "shard", quantity: 10 }
+    ],
+    policyId: MATERIAL_SALE_POLICIES.GUILD_BULK
+  });
+  assert.deepEqual(plan.items.map((item) => [item.materialId, item.tierId, item.percent]), [
+    ["gel", "bulk", 115],
+    ["shard", "large", 110]
+  ]);
+  assert.equal(plan.totalReferenceGold, 70);
+  assert.equal(plan.totalGold, 79);
+  assert.equal(plan.totalDifferenceGold, 9);
+  assert.equal(inventory.gold, 10, "建立 plan 不得 mutation");
+}
+
+{
+  const inventory = { gold: 0, materials: { gel: { quantity: 4 } } };
+  const before = structuredClone(inventory);
+  assert.throws(() => sellMaterials({
+    inventory,
+    materialDefinitions: { gel: { id: "gel", name: "凝膠", sellPrice: 2 } },
+    sales: [{ materialId: "gel", quantity: 4 }],
+    policyId: MATERIAL_SALE_POLICIES.GUILD_BULK
+  }), /五件以上/);
+  assert.deepEqual(inventory, before);
+}
+
+console.log("Commerce isolation, guild bulk pricing, and weapon crafting tests passed.");

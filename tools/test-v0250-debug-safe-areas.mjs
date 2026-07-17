@@ -5,9 +5,16 @@ const normalizeNewlines = (source) => source.replace(/\r\n?/g, "\n");
 
 const root = new URL("../", import.meta.url);
 const [debugPanel, runtimeActions, game] = (await Promise.all([
-  readFile(new URL("src/ui/debugPanel.js", root), "utf8"),
-  readFile(new URL("src/debug/runtimeActions.js", root), "utf8"),
-  readFile(new URL("game.js", root), "utf8")
+  Promise.all([
+    "src/ui/debugPanel.js",
+    "src/ui/debugPanelMarkup.js",
+    "src/ui/debugPanelActions.js"
+  ].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
+  Promise.all([
+    "src/debug/runtimeActions.js",
+    "src/debug/safeAreaActions.js"
+  ].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
+  readFile(new URL("src/app/createApplication.js", root), "utf8")
 ])).map(normalizeNewlines);
 
 for (const action of [
@@ -21,17 +28,17 @@ for (const action of [
   assert.match(debugPanel, new RegExp(`data-action="${action}"`));
 }
 
-assert.match(debugPanel, /function populateSafeAreaOptions\(context\)/);
+assert.match(debugPanel, /function populateDebugSafeAreaOptions\(context\)/);
 assert.match(debugPanel, /getSafeAreaOptions/);
-assert.match(runtimeActions, /function prepareDebugSafeArea\(safeAreaId\)/);
-assert.match(runtimeActions, /function visitDebugSafeArea\(safeAreaId\)/);
-assert.match(runtimeActions, /function travelDebugSafeArea\(safeAreaId\)/);
-assert.match(runtimeActions, /function openDebugSafeAreaTravel\(\)/);
-assert.match(runtimeActions, /function resetDebugSafeArea\(safeAreaId\)/);
-assert.match(runtimeActions, /function playDebugAnpingArrival\(\)/);
+assert.match(runtimeActions, /function prepareSafeArea\(safeAreaId\)/);
+assert.match(runtimeActions, /function visitSafeArea\(safeAreaId\)/);
+assert.match(runtimeActions, /function travelSafeArea\(safeAreaId\)/);
+assert.match(runtimeActions, /function openSafeAreaTravel\(\)/);
+assert.match(runtimeActions, /function resetSafeArea\(safeAreaId\)/);
+assert.match(runtimeActions, /function playAnpingArrival\(\)/);
 assert.match(runtimeActions, /showAnpingArrivalStory\(\{ source: "debug" \}\)/);
-assert.match(runtimeActions, /getSafeAreaOptions: getDebugSafeAreaOptions/);
-assert.match(runtimeActions, /openSafeAreaTravel: openDebugSafeAreaTravel/);
-assert.match(game, /returnToSafeArea,\n  showAnpingArrivalStory,\n  showSafeAreaTravelScreen,\n  syncSafeAreaUiFromSave/);
+assert.match(runtimeActions, /getSafeAreaOptions/);
+assert.match(runtimeActions, /openSafeAreaTravel/);
+assert.match(game, /returnToSafeArea: adventure\.returnToSafeArea[\s\S]*showAnpingArrivalStory: adventure\.showAnpingArrivalStory[\s\S]*showSafeAreaTravelScreen: world\.showSafeAreaTravelScreen[\s\S]*syncSafeAreaUiFromSave: world\.syncSafeAreaUiFromSave/);
 
 console.log("v0.2.5.0 safe area debug controls tests passed.");

@@ -8,13 +8,15 @@ const [
   readme,
   html,
   styleIndex,
-  editorSource
+  editorSource,
+  toolsVersionFile
 ] = await Promise.all([
   readFile(new URL("../VERSION", import.meta.url), "utf8"),
   readFile(new URL("../README.md", import.meta.url), "utf8"),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
   readFile(new URL("../styles.css", import.meta.url), "utf8"),
-  readFile(new URL("./content-editor.js", import.meta.url), "utf8")
+  readFile(new URL("./content-editor.js", import.meta.url), "utf8"),
+  readFile(new URL("./VERSION", import.meta.url), "utf8")
 ]);
 
 const officialVersion = versionFile.trim();
@@ -23,7 +25,8 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 assert.match(officialVersion, /^v\d+\.\d+\.\d+(?:\.\d+)?-[a-z0-9.-]+$/i, "VERSION 格式無效");
 assert.equal(GAME_VERSION, officialVersion, "src/config.js 的 GAME_VERSION 必須與 VERSION 一致");
-assert.equal(SAVE_SCHEMA_VERSION, 8, "v0.2.5.2 應維持永久武器與角色裝備 schema");
+assert.equal(toolsVersionFile.trim(), officialVersion, "tools/VERSION 必須與 VERSION 一致");
+assert.equal(SAVE_SCHEMA_VERSION, 9, "v0.2.6.3 應包含永久委託資料與既有角色／公會資料 schema");
 assert.match(readme, new RegExp("目前版本：`" + escapeRegExp(officialVersion) + "`"), "README 目前版本未同步");
 assert.match(html, new RegExp(`<p class="version-label">${escapeRegExp(officialVersion)}</p>`), "主選單版本標籤未同步");
 

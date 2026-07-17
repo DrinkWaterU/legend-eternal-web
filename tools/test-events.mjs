@@ -254,6 +254,23 @@ try {
   const cleanArmorEnemy = { name: "木樁", family: "test", hp: 100, maxHp: 100, defense: 6, dodgeChance: 0, poison: 0 };
   resolveHeroAction({ hero: armorBreakHero, enemy: cleanArmorEnemy, log: logger });
   assert.equal(cleanArmorEnemy.hp, 96, "未中毒敵人不應套用 poisonedTargetDefenseIgnore");
+
+  const bloodboneHero = {
+    name: "血骨測試者", attack: 10, hp: 100, maxHp: 100, lowHpAttackBonus: 4,
+    critChance: 0, critDamageMultiplier: 1.7, hasAttackedThisBattle: true,
+    skills: [], familyDamageBonus: {}, poisonPower: 0
+  };
+  const fullHpEnemy = { name: "木樁", family: "test", hp: 100, maxHp: 100, defense: 0, dodgeChance: 0, poison: 0 };
+  resolveHeroAction({ hero: bloodboneHero, enemy: fullHpEnemy, log: logger });
+  assert.equal(fullHpEnemy.hp, 90, "HP 高於 50% 時不應套用浴血狂暴");
+  bloodboneHero.hp = 50;
+  const middleHpEnemy = { name: "木樁", family: "test", hp: 100, maxHp: 100, defense: 0, dodgeChance: 0, poison: 0 };
+  resolveHeroAction({ hero: bloodboneHero, enemy: middleHpEnemy, log: logger });
+  assert.equal(middleHpEnemy.hp, 88, "剛好 50% 時應套用浴血狂暴中段 +2");
+  bloodboneHero.hp = 25;
+  const lowHpEnemy = { name: "木樁", family: "test", hp: 100, maxHp: 100, defense: 0, dodgeChance: 0, poison: 0 };
+  resolveHeroAction({ hero: bloodboneHero, enemy: lowHpEnemy, log: logger });
+  assert.equal(lowHpEnemy.hp, 86, "剛好 25% 時應套用浴血狂暴低段 +4");
 } finally {
   Math.random = originalRandom;
 }

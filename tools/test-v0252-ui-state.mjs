@@ -22,9 +22,9 @@ assert.ok(filterEquipmentWeapons(weapons, { searchQuery: "短弓" }).every((weap
 assert.ok(filterEquipmentWeapons(weapons, { categoryFilter: "bow" }).every((weapon) => weapon.categoryId === "bow"));
 
 const usageIndex = buildMaterialUsageIndex({ regionDefinitions, weaponDefinitions });
-assert.deepEqual(getMaterialUsageCounts(usageIndex, "spider_silk"), { all: 3, preparation: 1, weapon: 2 });
+assert.deepEqual(getMaterialUsageCounts(usageIndex, "spider_silk"), { all: 5, preparation: 1, weapon: 4 });
 assert.equal(getMaterialUsages(usageIndex, "spider_silk", "preparation")[0].title, "林地繃帶");
-assert.equal(getMaterialUsages(usageIndex, "spider_silk", "weapon").length, 2);
+assert.equal(getMaterialUsages(usageIndex, "spider_silk", "weapon").length, 4);
 
 const outcomes = getOutcomeDistribution({ totalRuns: 10, totalClears: 2, totalRetreats: 3, totalDefeats: 4 });
 assert.equal(outcomes.other, 1, "未結算冒險不得算入敗北");

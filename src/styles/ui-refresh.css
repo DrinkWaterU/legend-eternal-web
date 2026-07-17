@@ -54,7 +54,8 @@ button:disabled {
 
 .app-page-heading .page-heading-description {
   max-width: 650px;
-  margin: 8px 0 0;
+  margin: 8px auto 0;
+  text-align: center;
 }
 
 .browser-panel-heading,

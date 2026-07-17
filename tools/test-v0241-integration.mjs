@@ -12,10 +12,10 @@ const [
   responsiveCss,
   config
 ] = await Promise.all([
-  readFile(new URL("../game.js", import.meta.url), "utf8"),
+  Promise.all(["../src/features/facility/facilityController.js"].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("../index.html", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/dom.js", import.meta.url), "utf8"),
-  readFile(new URL("../src/core/commerce.js", import.meta.url), "utf8"),
+  Promise.all(["../src/core/commerce.js", "../src/core/materialSales.js"].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("../src/ui/merchantView.js", import.meta.url), "utf8"),
   readFile(new URL("../src/ui/merchantController.js", import.meta.url), "utf8"),
   readFile(new URL("../src/styles/components.css", import.meta.url), "utf8"),
@@ -44,9 +44,9 @@ assert.match(html, /id="merchantSaleQuantity"[^>]*type="number"[^>]*inputmode="n
 assert.match(html, /id="merchantSaleDecreaseFiveButton"[^>]*>−5</);
 assert.match(html, /id="merchantSaleIncreaseFiveButton"[^>]*>＋5</);
 
-assert.match(game, /import \{ createMerchantController \} from "\.\/src\/ui\/merchantController\.js"/);
+assert.match(game, /import \{ createMerchantController \} from "\.\.\/\.\.\/ui\/merchantController\.js"/);
 assert.match(game, /const merchantController = createMerchantController\(\{/);
-assert.match(game, /getInventory: \(\) => saveData\.inventory/);
+assert.match(game, /getInventory: \(\) => saveStore\.current\.inventory/);
 assert.match(game, /getSafeArea: getCurrentSafeArea/);
 assert.match(game, /saveInventory: saveGameSafe/);
 assert.match(game, /merchantController\.reset\(\)/);
@@ -104,6 +104,6 @@ const domIds = [...dom.matchAll(/document\.querySelector\("#([^"]+)"\)/g)].map((
 const missingIds = domIds.filter((id) => !htmlIds.has(id));
 assert.deepEqual(missingIds, [], `dom.js 不可引用不存在的 HTML id：${missingIds.join(", ")}`);
 
-assert.match(config, /SAVE_SCHEMA_VERSION = 8/);
+assert.match(config, /SAVE_SCHEMA_VERSION = 9/);
 
 console.log("v0.2.4.1 merchant quantity and atomic batch sale integration tests passed.");

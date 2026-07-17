@@ -2,7 +2,8 @@ import { craftWeapon } from "../core/commerce.js";
 import {
   closeBlacksmithCraftPanel,
   renderBlacksmithCraftPanel,
-  renderBlacksmithView
+  renderBlacksmithView,
+  updateBlacksmithCategoryControls
 } from "./blacksmithView.js";
 
 export function createBlacksmithController({
@@ -31,6 +32,9 @@ export function createBlacksmithController({
   const state = {
     selectedWeaponId: firstWeaponId,
     pendingWeaponId: null,
+    filter: "all",
+    category: "all",
+    query: "",
     notice: "",
     noticeType: "status"
   };
@@ -40,8 +44,14 @@ export function createBlacksmithController({
       state.selectedWeaponId = firstWeaponId;
     }
     state.pendingWeaponId = null;
+    state.filter = "all";
+    state.category = "all";
+    state.query = "";
     state.notice = "";
     state.noticeType = "status";
+    if (els.blacksmithSearchInput) {
+      els.blacksmithSearchInput.value = "";
+    }
     closeBlacksmithCraftPanel(els);
   }
 
@@ -54,11 +64,57 @@ export function createBlacksmithController({
       weaponCategoryDefinitions,
       materialDefinitions,
       selectedWeaponId: state.selectedWeaponId,
+      filter: state.filter,
+      category: state.category,
+      query: state.query,
       notice: state.notice,
       noticeType: state.noticeType,
       onWeaponSelect: selectWeapon,
-      onCraftRequest: requestCraft
+      onCraftRequest: requestCraft,
+      onCategorySelect: setCategory
     });
+  }
+
+  function setFilter(filter) {
+    if (!["all", "available", "owned"].includes(filter)) return;
+    state.filter = filter;
+    render();
+  }
+
+  function setCategory(category) {
+    if (category !== "all" && !weaponCategoryDefinitions[category]) return;
+    state.category = category;
+    render();
+  }
+
+  function setQuery(query) {
+    state.query = String(query || "");
+    render();
+  }
+
+  function scrollCategoryList(direction) {
+    const scroller = els.blacksmithCategoryScroller;
+    if (!scroller) return;
+    const distance = Math.max(120, scroller.clientWidth * 0.7);
+    const maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+    const currentScroll = Number(scroller.scrollLeft) || 0;
+    const targetScroll = Math.min(maxScroll, Math.max(0, currentScroll + direction * distance));
+    if (typeof scroller.scrollTo === "function") {
+      scroller.scrollTo({ left: targetScroll, behavior: "smooth" });
+      if (Math.abs((Number(scroller.scrollLeft) || 0) - targetScroll) <= 1) return;
+    }
+    scroller.scrollLeft = targetScroll;
+  }
+
+  forEachElement(els.blacksmithFilterTabs, (button) => {
+    button.addEventListener("click", () => setFilter(button.dataset.blacksmithFilter));
+  });
+  els.blacksmithSearchInput?.addEventListener("input", () => setQuery(els.blacksmithSearchInput.value));
+  els.blacksmithCategoryPrev?.addEventListener("click", () => scrollCategoryList(-1));
+  els.blacksmithCategoryNext?.addEventListener("click", () => scrollCategoryList(1));
+  els.blacksmithCategoryScroller?.addEventListener("scroll", () => updateBlacksmithCategoryControls(els), { passive: true });
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", () => updateBlacksmithCategoryControls(els));
   }
 
   function selectWeapon(weaponId) {
@@ -130,6 +186,14 @@ export function createBlacksmithController({
   return Object.freeze({
     reset,
     render,
+    setFilter,
+    setCategory,
+    setQuery,
     closeCraftDialog
   });
+}
+
+function forEachElement(elements, callback) {
+  if (!elements) return;
+  Array.from(elements).forEach(callback);
 }

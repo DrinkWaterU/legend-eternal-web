@@ -139,5 +139,166 @@
       ]
     },
     "iconAssetId": "vanguard-hunting-bow"
+  },
+  "verdant-pursuit-bow": {
+    "id": "verdant-pursuit-bow",
+    "name": "翠影追擊弓",
+    "categoryId": "bow",
+    "rarityId": "uncommon",
+    "description": "以翠影鹿王的鹿角強化弓身，專為追上獵物最後一口氣的破綻。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      }
+    ],
+    "specialEffect": {
+      "type": "add",
+      "stat": "woundedTargetCritChance",
+      "amount": 0.08
+    },
+    "recipe": {
+      "goldCost": 220,
+      "materialCosts": [
+        {
+          "materialId": "verdant_antler",
+          "quantity": 1
+        },
+        {
+          "materialId": "spider_silk",
+          "quantity": 3
+        },
+        {
+          "materialId": "bee_wing",
+          "quantity": 2
+        },
+        {
+          "materialId": "vine_fiber",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "verdant-pursuit-bow"
+  },
+  "ancient-wood-eroding-bow": {
+    "id": "ancient-wood-eroding-bow",
+    "name": "古木蝕甲弓",
+    "categoryId": "bow",
+    "rarityId": "uncommon",
+    "description": "古木芯核讓箭鏃更容易沿著毒素侵蝕的縫隙穿入甲殼。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 1
+      }
+    ],
+    "specialEffect": {
+      "type": "add",
+      "stat": "poisonedTargetDefenseIgnore",
+      "amount": 2
+    },
+    "recipe": {
+      "goldCost": 220,
+      "materialCosts": [
+        {
+          "materialId": "ancient_wood_core",
+          "quantity": 1
+        },
+        {
+          "materialId": "venom_sac",
+          "quantity": 2
+        },
+        {
+          "materialId": "bark_shell",
+          "quantity": 1
+        },
+        {
+          "materialId": "vine_fiber",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "ancient-wood-eroding-bow"
+  },
+  "bloodbone-guardian-mace": {
+    "id": "bloodbone-guardian-mace",
+    "name": "血骨衛士鎚",
+    "categoryId": "mace",
+    "rarityId": "uncommon",
+    "description": "以血骨祭符穩住沉重鎚身，受傷越深，揮擊越接近失控。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 1
+      }
+    ],
+    "specialEffect": {
+      "type": "add",
+      "stat": "lowHpAttackBonus",
+      "amount": 4
+    },
+    "recipe": {
+      "goldCost": 200,
+      "materialCosts": [
+        {
+          "materialId": "bloodbone_charm",
+          "quantity": 1
+        },
+        {
+          "materialId": "goblin_scrap",
+          "quantity": 4
+        },
+        {
+          "materialId": "bark_shell",
+          "quantity": 1
+        },
+        {
+          "materialId": "vine_fiber",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "bloodbone-guardian-mace"
+  },
+  "spider-silk-stinger-dagger": {
+    "id": "spider-silk-stinger-dagger",
+    "name": "蛛絲刺匕",
+    "categoryId": "dagger",
+    "rarityId": "uncommon",
+    "description": "以韌蛛絲固定鋒刃與握柄，適合在破綻出現時留下更深的傷口。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 1
+      },
+      {
+        "type": "add",
+        "stat": "critDamageMultiplier",
+        "amount": 0.25
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 180,
+      "materialCosts": [
+        {
+          "materialId": "spider_silk",
+          "quantity": 3
+        },
+        {
+          "materialId": "sharp_fang",
+          "quantity": 2
+        },
+        {
+          "materialId": "soft_hide",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "spider-silk-stinger-dagger"
   }
 }

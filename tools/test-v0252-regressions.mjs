@@ -10,10 +10,10 @@ import { normalizePreparationUiState } from "../src/ui/preparationState.js";
 const normalize = (source) => source.replace(/\r\n?/g, "\n");
 const root = new URL("../", import.meta.url);
 const [game, html, style, statisticsView] = (await Promise.all([
-  readFile(new URL("game.js", root), "utf8"),
+  Promise.all(["src/features/profile/statisticsController.js", "src/features/profile/saveTransferController.js", "src/features/adventure/runLifecycleController.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("index.html", root), "utf8"),
   readFile(new URL("src/styles/ui-refresh.css", root), "utf8"),
-  readFile(new URL("src/ui/statisticsView.js", root), "utf8")
+  Promise.all(["src/ui/statisticsView.js", "src/ui/statisticsOverviewView.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n"))
 ])).map(normalize);
 
 assert.match(style, /\[hidden\]\s*\{\s*display:\s*none\s*!important;/, "hidden 元素不得被作者 display 規則重新顯示");
@@ -23,11 +23,12 @@ assert.match(style, /\.equipment-scroll-list[\s\S]*scrollbar-gutter:\s*stable/);
 assert.match(style, /\.equipment-scroll-list \.equipment-weapon-grid[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/, "裝備武器庫欄數不得因按壓與捲軸寬度跳動");
 assert.match(style, /\.storage-material-card[\s\S]*"meta quantity"/, "素材卡數量與描述必須使用獨立 grid area");
 assert.match(style, /\.statistics-region-progress \+ \.statistics-detail-grid[\s\S]*margin-top:/, "地區進度與下方統計不可互相擠壓");
-assert.match(statisticsView, /function renderOverview\([^)]*\) \{[\s\S]*statisticsKeyMetrics\.replaceChildren\(\)[\s\S]*statisticsCombatMetrics\.replaceChildren\(\)/, "統計總覽重繪前必須清空舊卡片");
+assert.match(statisticsView, /function renderStatisticsOverview\([^)]*\) \{[\s\S]*statisticsKeyMetrics\.replaceChildren\(\)[\s\S]*statisticsCombatMetrics\.replaceChildren\(\)/, "統計總覽重繪前必須清空舊卡片");
 assert.match(game, /function resetStatisticsUiAfterSaveReplacement\(\)[\s\S]*statisticsView = "overview"/);
-assert.match(game, /confirmImportSaveCode\(\)[\s\S]*resetStatisticsUiAfterSaveReplacement\(\)[\s\S]*renderStatistics\(\)/);
-assert.match(game, /function deleteSave\(\)[\s\S]*resetStatisticsUiAfterSaveReplacement\(\)[\s\S]*renderStatistics\(\)/);
-assert.match(game, /spendInventoryCost\(\{[\s\S]*preparationCost[\s\S]*recordRunStarted\(\)[\s\S]*startEncounter\(\)/, "整備成本必須在開始遭遇前一次扣除並留下本輪紀錄");
+assert.match(game, /function confirmImportSaveCode\(\)[\s\S]*resetRuntimeAfterSaveReplacement\(\)/);
+assert.match(game, /function deleteSave\(\)[\s\S]*resetRuntimeAfterSaveReplacement\(\)/);
+assert.match(game, /function resetRuntimeAfterSaveReplacement\(\)[\s\S]*resetStatisticsUiAfterSaveReplacement\(\)[\s\S]*renderStatistics\(\)/);
+assert.match(game, /spendPreparationCost\(startContext\)[\s\S]*recordRunStarted\(\)[\s\S]*startEncounter\(\)/, "整備成本必須在開始遭遇前一次扣除並留下本輪紀錄");
 
 const prepRegion = {
   preparations: [{

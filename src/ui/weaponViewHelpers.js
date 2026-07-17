@@ -4,10 +4,14 @@ const EFFECT_LABELS = Object.freeze({
   attack: "攻擊",
   critChance: "暴擊率",
   shieldStart: "開場護盾",
-  openingCritChance: "首次攻擊暴擊率"
+  openingCritChance: "首次攻擊暴擊率",
+  woundedTargetCritChance: "半血追擊暴擊率",
+  poisonedTargetDefenseIgnore: "中毒目標無視防禦",
+  lowHpAttackBonus: "浴血狂暴",
+  critDamageMultiplier: "暴擊傷害倍率"
 });
 
-const PERCENT_STATS = new Set(["critChance", "openingCritChance"]);
+const PERCENT_STATS = new Set(["critChance", "openingCritChance", "woundedTargetCritChance"]);
 
 export function getWeaponIconPath(weapon) {
   const assetId = String(weapon?.iconAssetId || weapon?.id || "").trim();
@@ -22,7 +26,7 @@ export function createWeaponIcon(weapon, options = {}) {
 
   const fallback = document.createElement("span");
   fallback.className = "weapon-icon-fallback";
-  fallback.textContent = !weapon ? "—" : weapon.categoryId === "bow" ? "弓" : "劍";
+  fallback.textContent = getWeaponCategoryFallbackLabel(weapon);
   wrapper.append(fallback);
 
   const path = getWeaponIconPath(weapon);
@@ -53,6 +57,12 @@ export function getWeaponEffects(weapon) {
 export function formatWeaponEffect(effect) {
   const label = EFFECT_LABELS[effect?.stat] || effect?.stat || "未知效果";
   const amount = Number(effect?.amount) || 0;
+  if (effect?.stat === "lowHpAttackBonus") {
+    return `${label}：HP 26%～50% 時攻擊 +2；HP 25% 以下時攻擊 +${Math.min(amount, 4)}`;
+  }
+  if (effect?.stat === "critDamageMultiplier") {
+    return `${label} +${formatDecimal(amount)}`;
+  }
   if (PERCENT_STATS.has(effect?.stat)) {
     return `${label} +${Math.round(amount * 100)}%`;
   }
@@ -80,4 +90,18 @@ export function getWeaponRarityClass(weapon) {
 
 export function formatWeaponCategory(weapon, categoryDefinitions = {}) {
   return categoryDefinitions[weapon?.categoryId]?.label || weapon?.categoryId || "未知類別";
+}
+
+function getWeaponCategoryFallbackLabel(weapon) {
+  if (!weapon) return "—";
+  return {
+    sword: "劍",
+    bow: "弓",
+    mace: "鎚",
+    dagger: "匕首"
+  }[weapon.categoryId] || "武";
+}
+
+function formatDecimal(value) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 }

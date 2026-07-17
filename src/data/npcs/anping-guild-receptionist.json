@@ -1,0 +1,16 @@
+{
+  "id": "anping-guild-receptionist",
+  "name": "瑟琳",
+  "title": "冒險者公會資深接待員",
+  "race": "foxfolk",
+  "gender": "female",
+  "ageGroup": "adult",
+  "portrait": "assets/images/npcs/anping/celine.png",
+  "dialogueId": "anping-guild-receptionist-main",
+  "identity": {
+    "unknownLabel": "公會接待員",
+    "acquaintedLabel": "接待員小姐",
+    "metFlag": "metAnpingGuildReceptionist",
+    "nameKnownFlag": "knowsAnpingGuildReceptionistName"
+  }
+}

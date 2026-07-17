@@ -4,7 +4,11 @@ const SUPPORTED_WEAPON_EFFECT_STATS = new Set([
   "attack",
   "critChance",
   "shieldStart",
-  "openingCritChance"
+  "openingCritChance",
+  "woundedTargetCritChance",
+  "poisonedTargetDefenseIgnore",
+  "lowHpAttackBonus",
+  "critDamageMultiplier"
 ]);
 
 export const weaponCategoryDefinitions = Object.freeze({
@@ -15,6 +19,14 @@ export const weaponCategoryDefinitions = Object.freeze({
   bow: Object.freeze({
     id: "bow",
     label: "弓"
+  }),
+  mace: Object.freeze({
+    id: "mace",
+    label: "鎚"
+  }),
+  dagger: Object.freeze({
+    id: "dagger",
+    label: "匕首"
   })
 });
 

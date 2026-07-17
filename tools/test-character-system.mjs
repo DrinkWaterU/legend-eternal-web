@@ -76,24 +76,28 @@ function sequenceRandom(values) {
 }
 
 {
-  const gameSource = readFileSync(new URL("../game.js", import.meta.url), "utf8");
+  const runtimeSources = [
+    "../src/features/adventure/routeEndingController.js",
+    "../src/features/character/characterController.js",
+    "../src/app/eventBindings.js"
+  ].map((path) => readFileSync(new URL(path, import.meta.url), "utf8")).join("\n");
   assert.match(
-    gameSource,
+    runtimeSources,
     /archerProgress\.unlocked = true;/,
     "哥布林營地正式完成流程應立即寫入弓箭手 unlocked，不得只依賴 migration"
   );
   assert.match(
-    gameSource,
+    runtimeSources,
     /isCharacterUnlocked\(characterId\)/,
     "runtime 角色選擇應驗證 unlocked 狀態"
   );
   assert.match(
-    gameSource,
+    runtimeSources,
     /selectCharacterButton\.addEventListener\("click", selectCharacterFromDetail\)/,
     "使用角色按鈕應以角色詳情 id 正式切換角色"
   );
   assert.match(
-    gameSource,
+    runtimeSources,
     /closeCharacterLockedButton\.addEventListener\("click", closeLockedCharacterHint\)/,
     "未知角色提示應綁定正式關閉按鈕"
   );

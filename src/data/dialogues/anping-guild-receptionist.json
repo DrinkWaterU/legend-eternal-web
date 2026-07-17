@@ -1,0 +1,543 @@
+{
+  "id": "anping-guild-receptionist-main",
+  "npcId": "anping-guild-receptionist",
+  "entryRules": [
+    {
+      "conditions": [
+        {
+          "type": "storyFlag",
+          "key": "registeredAtAnpingGuild",
+          "operator": "equals",
+          "value": true
+        }
+      ],
+      "nodeId": "default-greeting"
+    },
+    {
+      "conditions": [
+        {
+          "type": "storyFlag",
+          "key": "knowsAnpingGuildReceptionistName",
+          "operator": "equals",
+          "value": true
+        }
+      ],
+      "nodeId": "feature-introduction"
+    },
+    {
+      "conditions": [
+        {
+          "type": "storyFlag",
+          "key": "metAnpingGuildReceptionist",
+          "operator": "equals",
+          "value": true
+        }
+      ],
+      "nodeId": "experience-check"
+    }
+  ],
+  "fallbackNodeId": "first-meeting",
+  "nodes": {
+    "first-meeting": {
+      "pages": [
+        {
+          "text": "大廳裡混雜著皮革氣味與低聲交談的嗡嗡聲。櫃檯後方，一名銀白長髮的狐族女性正低著頭，羽毛筆在厚重的登記冊上沙沙作響。察覺到陌生的腳步聲，她頭上那對豐滿的白狐耳輕輕轉動了一下，隨後抬起視線，琥珀色的眼眸對上你的眼睛，嘴角牽起一抹無懈可擊的溫柔弧度。"
+        },
+        {
+          "text": "「哎呀，歡迎來到安平鎮冒險者公會。」她的嗓音帶著一絲慵懶的柔軟，目光迅速且不露痕跡地掃過你沾著泥土的靴子和裝備的磨損處。"
+        },
+        {
+          "text": "「第一次來這裡，對嗎？看你這身打扮……才剛穿過那片森林不久吧。能平安無事地站在這裡，比什麼都值得慶幸呢。」"
+        },
+        {
+          "text": "「我們這裡負責整理各位的冒險紀錄，收購你們大老遠帶回來的物資，偶爾也賣弄些能救命的情報。」她雙手輕輕交疊在登記冊上，身子微微前傾。"
+        },
+        {
+          "text": "「既然好不容易來到安平鎮了，聽姊姊一句勸，先留個基本紀錄吧。手續很快的，不會耽誤你休息。」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "accept-registration",
+          "label": "那就麻煩妳了。",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "experience-check"
+          }
+        },
+        {
+          "id": "ask-registration-required",
+          "label": "一定要登記嗎？",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "registration-reason"
+          }
+        },
+        {
+          "id": "ask-guild-features-first",
+          "label": "先告訴我這裡能做什麼。",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "first-feature-overview"
+          }
+        }
+      ]
+    },
+    "registration-reason": {
+      "pages": [
+        {
+          "text": "「呵呵，當然不是要限制你的自由。」她身後的蓬鬆尾巴輕輕晃動了一下，笑容依舊溫婉。"
+        },
+        {
+          "text": "「只是讓我們知道，有一位勇敢的冒險者從這裡出發了。也讓這扇門……知道該等誰平安回來。」"
+        }
+      ],
+      "nextNodeId": "experience-check"
+    },
+    "first-feature-overview": {
+      "pages": [
+        {
+          "text": "「當然可以。到了陌生地方懂得先摸清底細，這習慣很好。通常這能讓你比那些只會往前衝的傻瓜活得更久一點呢。」"
+        },
+        {
+          "text": "「公會負責替你們整理經歷、保管行動紀錄，也會收購大家大老遠從旅途中帶回來的物資。」"
+        },
+        {
+          "text": "「我們手上也捏著一些路線和危險情報。雖然不能保證你一路順風，但出發前多聽一句，總比挨了一刀之後才恍然大悟來得好。」"
+        },
+        {
+          "text": "她用指尖輕輕點了點面前厚重的登記冊。「不過，想讓公會替你擔保或調閱紀錄，還是得先委屈你填個基本資料。」「呵呵，放心吧。只是留幾筆紀錄，姊姊還不至於缺人手到把你扣在櫃檯後面打白工喔。」"
+        }
+      ],
+      "nextNodeId": "experience-check"
+    },
+    "experience-check": {
+      "pages": [
+        {
+          "text": "她垂下眼簾，指尖輕輕滑過羊皮紙面。「嗯……平原的行動軌跡，加上成功穿越森林的紀錄。」她抬起眼，目光裡多了一絲隱晦的讚賞，「哎呀，看來我不能把你當成需要人牽著手過馬路的新人了呢。」"
+        },
+        {
+          "text": "「……這裡還有一處哥布林營地的回報紀錄。原來那裡是你處理掉的呀？能應付那種混亂的局面，又一根頭髮都沒少地走到這裡，真的很不容易喔。」",
+          "conditions": [
+            {
+              "type": "regionRouteClear",
+              "regionId": "forest",
+              "routeClearKey": "goblinCamp",
+              "minimumClears": 1
+            }
+          ]
+        },
+        {
+          "text": "「紀錄上說，你在路上還順手拉了一名弓箭手一把。」她輕笑出聲，「看來你的旅程裡，已經不只有那些冷冰冰的魔物和戰鬥了。」",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "archerRescued",
+              "operator": "equals",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "actionsOnComplete": [
+        {
+          "type": "setStoryFlag",
+          "key": "metAnpingGuildReceptionist",
+          "value": true
+        }
+      ],
+      "nextNodeId": "name-reveal"
+    },
+    "name-reveal": {
+      "pages": [
+        {
+          "text": "她俐落地在紙頁底端簽下字，將羽毛筆放回墨水瓶中。「好了，手續辦完了。恭喜你正式成為我們名單上的一員。」她像是突然想起了什麼，輕輕偏著頭看你，「對了，您可以叫我瑟琳。負責這座大廳裡所有瑣碎的麻煩事。」"
+        },
+        {
+          "text": "她嘴角的笑意深了些，但眼神卻安靜地停留在一個絕對安全的距離。「至少在你還會經過安平鎮的這段時間，遇到麻煩都可以來找我。當然……我更希望你不會遇到什麼需要求救的大麻煩。」"
+        }
+      ],
+      "actionsOnComplete": [
+        {
+          "type": "setStoryFlag",
+          "key": "knowsAnpingGuildReceptionistName",
+          "value": true
+        }
+      ],
+      "nextNodeId": "feature-introduction",
+      "speakerLabel": "瑟琳"
+    },
+    "feature-introduction": {
+      "pages": [
+        {
+          "text": "「既然登記好了，跟你說明一下。公會能替你整理資歷，也會用不錯的價格收購你在路上搜刮來的大批物資。」她用戴著銀色護指的手指輕輕敲了敲桌面。"
+        },
+        {
+          "text": "「不過，我們只收購『五件以上』的同種類素材喔。如果是零散的一兩件，拿去外頭找旅行商人會更划算。畢竟對公會來說，太少量的清點和驗收，反而是種負擔呢。」"
+        }
+      ],
+      "nextNodeId": "registration-complete"
+    },
+    "registration-complete": {
+      "pages": [
+        {
+          "text": "「好了，一切搞定。以後想查看自己的紀錄，或是兜售大批物資，直接來這個櫃檯找我就行了。」她輕輕闔上厚重的登記冊，頭上的白耳隨著動作微微抖動。"
+        },
+        {
+          "text": "她收起了剛才那種公事公辦的慵懶，琥珀色的眼睛認真地直視著你。「還有一件事，請你務必記住。在外面無論遇到什麼危險，覺得情況不對就立刻轉身逃跑。活著回來，從來都不是一件丟臉的事。」"
+        },
+        {
+          "text": "她重新換上那抹溫柔的微笑。「這扇門，永遠會等你平安回來。」"
+        }
+      ],
+      "actionsOnComplete": [
+        {
+          "type": "setStoryFlag",
+          "key": "registeredAtAnpingGuild",
+          "value": true
+        }
+      ],
+      "nextNodeId": "default-greeting"
+    },
+    "default-greeting": {
+      "pages": [
+        {
+          "text": "「回來了呀。今天想先看看自己的紀錄，還是帶了什麼物資要交給姊姊？」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "open-adventure-record",
+          "label": "查看冒險資歷",
+          "action": {
+            "type": "openFacility",
+            "facilityId": "guild-adventure-record"
+          }
+        },
+        {
+          "id": "open-guild-quests-introduction",
+          "label": "查看公會委託",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "guildQuestIntroductionSeen",
+              "operator": "equals",
+              "value": false
+            }
+          ],
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "quest-introduction"
+          }
+        },
+        {
+          "id": "open-guild-quests",
+          "label": "查看公會委託",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "guildQuestIntroductionSeen",
+              "operator": "equals",
+              "value": true
+            }
+          ],
+          "action": {
+            "type": "openFacility",
+            "facilityId": "guild-quests"
+          }
+        },
+        {
+          "id": "open-bulk-sale",
+          "label": "交付冒險物資",
+          "action": {
+            "type": "openFacility",
+            "facilityId": "guild-bulk-sale"
+          }
+        },
+        {
+          "id": "ask-about-guild",
+          "label": "詢問冒險者公會",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "about-guild"
+          }
+        },
+        {
+          "id": "chat-with-celine",
+          "label": "和瑟琳聊聊",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "chat-menu"
+          }
+        },
+        {
+          "id": "leave-guild",
+          "label": "離開",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "leave"
+          }
+        }
+      ]
+    },
+    "about-guild": {
+      "pages": [
+        {
+          "text": "「冒險者公會要處理的麻煩事，可不只是把委託單釘在牆上那麼簡單喔。」"
+        },
+        {
+          "text": "「我們會整理每一名冒險者用命換來的紀錄。去過哪裡、幹了什麼，只要你能平安回來交代清楚，這些經歷就會被安安穩穩地存檔。」"
+        },
+        {
+          "text": "「旅途中搜刮到的大批素材，也可以交由公會統一收購。數量越龐大，我們越容易安排去路，給出的價碼自然也會比外頭漂亮一些。」"
+        },
+        {
+          "text": "「至於路線、魔物和其他致命情報，公會也會盡量幫你們盯著。」「有些提醒聽起來嘮叨，但真正遇上死局的時候，往往就是那幾句話能替你留下一條退路。」"
+        },
+        {
+          "text": "「各地送來的委託和需求也歸公會管，只是那部分的規矩又多又雜。」她微微一笑。「等你哪天真的準備好替自己招惹更大的麻煩時，姊姊再慢慢說給你聽吧。」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "return-from-about-guild",
+          "label": "我知道了",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "default-greeting"
+          }
+        }
+      ]
+    },
+    "chat-menu": {
+      "pages": [
+        {
+          "text": "瑟琳將手中的羽毛筆擱到一旁，帶著從容的笑意等你開口。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "chat-work",
+          "label": "關於妳的工作",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "about-work"
+          }
+        },
+        {
+          "id": "chat-anping",
+          "label": "妳一直都在安平鎮嗎？",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "about-anping"
+          }
+        },
+        {
+          "id": "chat-safety",
+          "label": "妳似乎很在意冒險者的安全",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "about-safety"
+          }
+        },
+        {
+          "id": "chat-return",
+          "label": "先聊到這裡",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "default-greeting"
+          }
+        }
+      ]
+    },
+    "about-work": {
+      "pages": [
+        {
+          "text": "「我的工作？說穿了，大部分時候就是和登記冊、物資清單，還有你們帶回來的各種報告打交道。」"
+        },
+        {
+          "text": "「偶爾……也得費盡唇舌，去攔住幾個腦袋發熱、想接下致命委託的年輕人。」「明明連這扇門都還沒走出去，就已經急著把命押在合約上，真是讓人放心不下呢。」"
+        },
+        {
+          "text": "她低下視線，指尖慢慢滑過紙頁上的一列列名字，在其中一行旁短暫停留了一瞬。「對外人來說，這些可能只是紙張和墨水。」「但在我眼裡，這每一筆紀錄背後……都是一個活生生、隨時可能再也回不來的人。」"
+        },
+        {
+          "text": "她重新抬起頭，眼底短暫浮現的情緒，很快又妥帖地藏回那抹從容的微笑後方。「既然我坐在這個位置上，總得替你們多留個心眼。」「所以呀，你只要記得每次都平安回來，就算是替姊姊省下最大的麻煩了，好嗎？」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "return-from-work",
+          "label": "回到其他話題",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "chat-menu"
+          }
+        }
+      ]
+    },
+    "about-anping": {
+      "pages": [
+        {
+          "text": "「一直都在？哎呀，我看起來已經像是和這座木櫃檯一起蓋出來的老古董了嗎？」她掩著嘴輕笑出聲。「不過仔細算算，我留在安平鎮……確實也快十年了呢。」"
+        },
+        {
+          "text": "「十年的時間，足夠讓人記住這大廳裡每一種腳步聲的輕重。也足夠我看著不少人，從連劍都握不穩的菜鳥，慢慢熬成能獨當一面的老手。」"
+        },
+        {
+          "text": "她的目光越過你的肩膀，落向公會敞開的大門，身後那條總是輕輕晃動的狐尾也安靜了下來。「有人會在這裡紮根，也有人只是短暫歇腳。」「但只要還能看著你們一次次推開那扇門，平安走進來……這份枯燥的工作就還算值得。」"
+        },
+        {
+          "text": "「至於來到安平鎮以前的事嘛……」她輕輕眨了眨眼，眼底的溫柔裡多了一絲狐狸特有的狡黠。「那可不是第一次聊天就能免費打聽到的情報喔。」「等你哪天真的成了這座大廳裡拿不掉的熟面孔，再來試著套姊姊的話吧。」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "return-from-anping",
+          "label": "回到其他話題",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "chat-menu"
+          }
+        }
+      ]
+    },
+    "about-safety": {
+      "pages": [
+        {
+          "text": "「因為姊姊看過太多覺得自己『還能再撐一下』的傻孩子呀。」她的語氣依然輕柔，尾巴卻安靜地垂了下來。「這行裡的有些誤判，只要錯過一次……就再也沒有重來的機會了。」"
+        },
+        {
+          "text": "她輕輕吸了一口氣，很快又掛上了那副無懈可擊的溫柔笑容。「哎呀，抱歉，好像不小心說得太沉重了。難得平安回來，我們今天還是聊點輕鬆的話題吧？」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "return-from-safety",
+          "label": "回到其他話題",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "chat-menu"
+          }
+        }
+      ]
+    },
+    "record-entry": {
+      "pages": [
+        {
+          "text": "「當然。來，稍微等姊姊一下，我幫你把紀錄找出來。」"
+        }
+      ]
+    },
+    "record-return": {
+      "pages": [
+        {
+          "text": "「都確認好了嗎？雖然羊皮紙上的數字不能代表你的全部，但它們可是你拼命走過那些路的證明喔。」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "record-return-to-greeting",
+          "label": "繼續交談",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "default-greeting"
+          }
+        }
+      ]
+    },
+    "bulk-sale-entry": {
+      "pages": [
+        {
+          "text": "「哎呀，滿載而歸呢。想交付什麼？把種類和數量告訴我，我先幫你算算公會能給出多漂亮的價格。」"
+        }
+      ]
+    },
+    "bulk-sale-tier-below-minimum": {
+      "pages": [
+        {
+          "text": "「呵呵，這項數量還不夠公會的收購標準喔。先自己留著，或是拿去跟外面的商人換點零花錢吧。等攢夠五件以上再來找我也不遲。」"
+        }
+      ]
+    },
+    "bulk-sale-tier-small": {
+      "pages": [
+        {
+          "text": "「哎呀，剛好踩在門檻上了呢。公會是能幫你處理，但這點數量……給出的價格可能比不上外面的商人喔。確定要交給我嗎？」"
+        }
+      ]
+    },
+    "bulk-sale-tier-large": {
+      "pages": [
+        {
+          "text": "「這份量看起來就順眼多了呢。既然足夠列為大宗交易，姊姊這邊自然能幫你爭取到比外面更漂亮的價格喔。辛苦啦。」"
+        }
+      ]
+    },
+    "bulk-sale-tier-bulk": {
+      "pages": [
+        {
+          "text": "「哎呀……這麼大的數量，已經算是正式的大宗交貨了呢。既然你這麼努力，公會這邊自然也會為你開出更好的收購價，這點權限我還是有的。」"
+        }
+      ]
+    },
+    "bulk-sale-success": {
+      "pages": [
+        {
+          "text": "「數量確認無誤，賞金也結清囉。辛苦了，能把這麼多物資平安帶回來，本身就是一件很了不起的事呢。」"
+        }
+      ]
+    },
+    "leave": {
+      "pages": [
+        {
+          "text": "「路上小心。別讓自己太勉強喔。」"
+        }
+      ],
+      "actionsOnComplete": [
+        {
+          "type": "returnToFacilityList"
+        }
+      ]
+    },
+    "quest-introduction": {
+      "pages": [
+        {
+          "sceneStage": "papers",
+          "text": "瑟琳從櫃檯下方抽出一疊整理妥當的委託單，指尖慢條斯理地撫平紙張翹起的邊角。\n「哎呀，看來你終於對公會的委託榜有興趣了呢。」"
+        },
+        {
+          "sceneStage": "sources",
+          "text": "「這些都是鎮民、商隊，還有公會各處遞來的麻煩事。從清理魔物到回收要命的素材，什麼都有。當然，賞金的厚度也是跟著風險往上疊的。」"
+        },
+        {
+          "sceneStage": "single",
+          "text": "她將幾張羊皮紙推到你面前，琥珀色的眼眸隔著恰到好處的距離觀察著你。\n「公會幫你篩選了幾項合適的工作。不過貪多嚼不爛，一次只能接一件喔。挑定離手，先把手上的麻煩解決了再說。」"
+        },
+        {
+          "sceneStage": "rarities",
+          "text": "「委託也有分三六九等。要求越古怪罕見的，通常越要命……當然，給出的金幣也會耀眼得多。」"
+        },
+        {
+          "sceneStage": "warning",
+          "text": "她嘴角的笑意微微收斂，語氣依舊柔軟，卻透著不容反駁的重量。\n「但聽姊姊一句勸，別只盯著賞金看。公會把委託發給你，是希望麻煩被解決，可不是要你拿自己的命去填那幾個錢窟窿。」"
+        },
+        {
+          "sceneStage": "board",
+          "text": "瑟琳重新掛上那抹無懈可擊的溫柔微笑，將四張單子整齊排開。\n「好了，慢慢挑吧。選一件你真有把握活著做完的事——這才是聰明人該有的判斷喔。」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "enter-guild-quest-board",
+          "label": "查看委託榜",
+          "action": {
+            "type": "openFacility",
+            "facilityId": "guild-quests"
+          }
+        }
+      ],
+      "speakerLabel": "瑟琳"
+    }
+  }
+}
