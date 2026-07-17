@@ -14,7 +14,8 @@ export function createCombatRenderer({
   getAdventureEncounterIndex,
   getAdventureSourceName,
   hasPendingThreat,
-  selectEnemyTarget
+  selectEnemyTarget,
+  questRuntime
 }) {
   function setCombatActionState() {
     const livingEnemies = getLivingEnemies(state.enemies);
@@ -68,7 +69,8 @@ export function createCombatRenderer({
         enemies: state.enemies
       }),
       characterStatusEntries: getCharacterCombatStatusEntries(hero),
-      onTargetSelect: selectEnemyTarget
+      onTargetSelect: selectEnemyTarget,
+      questSnapshot: questRuntime?.getSnapshot()
     });
     if (els.abilityInfoPanel.classList.contains("is-visible")) {
       renderCurrentAbilityView(els.abilityInfoList, hero);

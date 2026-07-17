@@ -242,6 +242,8 @@ function createEventActions({ foundation, world, profile, battle, adventure, scr
     closeAbilityInfoPanel: profile.closeAbilityInfoPanel,
     openBlessingInfoPanel: profile.openBlessingInfoPanel,
     closeBlessingInfoPanel: profile.closeBlessingInfoPanel,
+    openQuestInfoPanel: profile.openQuestInfoPanel,
+    closeQuestInfoPanel: profile.closeQuestInfoPanel,
     openExportSaveCodeDialog: profile.openExportSaveCodeDialog,
     openImportSaveCodeDialog: profile.openImportSaveCodeDialog,
     copySaveCode: profile.copySaveCode,

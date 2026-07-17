@@ -48,6 +48,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     closeAbilityInfoPanel,
     openBlessingInfoPanel,
     closeBlessingInfoPanel,
+    openQuestInfoPanel,
+    closeQuestInfoPanel,
     openExportSaveCodeDialog,
     openImportSaveCodeDialog,
     copySaveCode,
@@ -139,6 +141,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.closeAbilityInfoButton.addEventListener("click", closeAbilityInfoPanel);
   els.viewBlessingsButton.addEventListener("click", openBlessingInfoPanel);
   els.closeBlessingInfoButton.addEventListener("click", closeBlessingInfoPanel);
+  els.questCombatToggle.addEventListener("click", openQuestInfoPanel);
+  els.questInfoPanel.querySelector("#closeQuestInfoButton").addEventListener("click", closeQuestInfoPanel);
   els.exportSaveCodeButton.addEventListener("click", openExportSaveCodeDialog);
   els.importSaveCodeButton.addEventListener("click", openImportSaveCodeDialog);
   els.copySaveCodeButton.addEventListener("click", copySaveCode);
@@ -164,6 +168,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     [els.blacksmithCraftPanel, facilityController.closeBlacksmithCraft],
     [els.abilityInfoPanel, closeAbilityInfoPanel],
     [els.blessingInfoPanel, closeBlessingInfoPanel],
+    [els.questInfoPanel, closeQuestInfoPanel],
     [els.exportSaveCodePanel, closeExportSaveCodeDialog],
     [els.importSaveCodePanel, closeImportSaveCodeDialog]
   ].forEach(([panel, closePanel]) => bindBackdropClose(panel, closePanel));

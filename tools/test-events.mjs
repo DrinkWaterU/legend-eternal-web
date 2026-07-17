@@ -87,12 +87,12 @@ Object.values(eventDefinitions).forEach((event) => {
   });
 });
 
-const scheduled = scheduleRegionEvent(forestRegion, sequenceRandom([0.29, 0, 0]));
+const scheduled = scheduleRegionEvent(forestRegion, sequenceRandom([0.44, 0, 0]));
 assert.deepEqual(scheduled, {
   eventId: "forest-campfire",
   triggerBeforeEncounter: 6
 });
-assert.equal(scheduleRegionEvent(forestRegion, sequenceRandom([0.3])), null, "30% 邊界不應被重複解讀");
+assert.equal(scheduleRegionEvent(forestRegion, sequenceRandom([0.45])), null, "45% 邊界不應被重複解讀");
 assert.equal(shouldTriggerScheduledEvent(scheduled, 5), true, "encounterIndex 5 應代表第 6 場前");
 assert.equal(shouldTriggerScheduledEvent(scheduled, 4), false);
 assert.equal(shouldTriggerScheduledEvent(scheduled, 6), false);
