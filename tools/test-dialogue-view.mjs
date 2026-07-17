@@ -11,14 +11,24 @@ import { TestNode, installTestDocument } from "./dom-test-stub.mjs";
 installTestDocument();
 
 function createElements() {
+  const dialogueBriefingProgress = new TestNode();
+  ["papers", "sources", "single", "rarities", "warning", "board"].forEach((sceneStep) => {
+    const step = new TestNode("span");
+    step.dataset.sceneStep = sceneStep;
+    dialogueBriefingProgress.append(step);
+  });
   return {
     dialogueNpcName: new TestNode(),
     dialogueNpcTitle: new TestNode(),
     dialogueText: new TestNode(),
     dialoguePageIndicator: new TestNode(),
     dialogueNotice: new TestNode(),
+    dialogueBriefingProgress,
+    dialogueLayout: new TestNode(),
+    dialoguePortraitCard: new TestNode("figure"),
     dialoguePortraitImage: new TestNode("img"),
     dialoguePortraitFallback: new TestNode(),
+    dialogueSceneOverlay: new TestNode(),
     dialogueChoices: new TestNode(),
     dialogueSkipButton: new TestNode("button"),
     dialogueAdvanceButton: new TestNode("button"),
@@ -182,5 +192,62 @@ renderDialogueView({
 assert.equal(cancelDialogueTextAnimation(els), true);
 assert.equal(els.dialogueSkipButton.hidden, true);
 assert.equal(isDialogueTextAnimating(els), false);
+
+
+const questEls = createElements();
+renderDialogueView({
+  els: questEls,
+  npc,
+  displayName: "瑟琳",
+  node: { pages: [{ text: "第一頁", sceneStage: "papers" }, { text: "第二頁", sceneStage: "sources" }] },
+  pageIndex: 0,
+  visibleChoices: [],
+  onAdvance: () => {},
+  onChoice: () => {},
+  animateText: false,
+  pageKey: "celine:quest-intro:0"
+});
+assert.equal(questEls.dialogueSceneOverlay.hidden, false);
+assert.equal(questEls.dialogueSceneOverlay.dataset.sceneStage, "papers");
+assert.equal(questEls.dialoguePortraitCard.dataset.introStep, "0");
+assert.equal(questEls.dialogueLayout.classList.contains("quest-intro-layout"), true);
+assert.equal(questEls.dialoguePortraitCard.classList.contains("quest-intro-portrait-card"), true);
+assert.equal(questEls.dialogueBriefingProgress.hidden, false);
+assert.equal(questEls.dialogueBriefingProgress.children[0].classList.contains("is-active"), true);
+assert.equal(questEls.dialogueBriefingProgress.children[1].classList.contains("is-complete"), false);
+
+renderDialogueView({
+  els: questEls,
+  npc,
+  displayName: "瑟琳",
+  node: { pages: [{ text: "第一頁", sceneStage: "papers" }, { text: "第二頁", sceneStage: "sources" }] },
+  pageIndex: 1,
+  visibleChoices: [],
+  onAdvance: () => {},
+  onChoice: () => {},
+  animateText: false,
+  pageKey: "celine:quest-intro:1"
+});
+assert.equal(questEls.dialogueSceneOverlay.dataset.sceneStage, "sources");
+assert.equal(questEls.dialoguePortraitCard.dataset.introStep, "1");
+assert.equal(questEls.dialogueBriefingProgress.children[0].classList.contains("is-complete"), true);
+assert.equal(questEls.dialogueBriefingProgress.children[1].classList.contains("is-active"), true);
+
+renderDialogueView({
+  els: questEls,
+  npc,
+  displayName: "羅根",
+  node: { pages: [{ text: "一般對話" }] },
+  pageIndex: 0,
+  visibleChoices: [],
+  onAdvance: () => {},
+  onChoice: () => {},
+  animateText: false,
+  pageKey: "logan:normal:0"
+});
+assert.equal(questEls.dialogueSceneOverlay.hidden, true);
+assert.equal(questEls.dialogueBriefingProgress.hidden, true);
+assert.equal(questEls.dialogueLayout.classList.contains("quest-intro-layout"), false);
+assert.equal(questEls.dialoguePortraitCard.classList.contains("quest-intro-portrait-card"), false);
 
 console.log("Dialogue typewriter animation, skip, reduced-motion, rerender, and cleanup tests passed.");

@@ -68,6 +68,27 @@ export function createDebugPanelElement(documentRef = document) {
         </div>
       </section>
 
+      <section class="debug-section" aria-labelledby="debugQuestTitle">
+        <div class="debug-section-heading">
+          <strong id="debugQuestTitle">公會委託測試</strong>
+          <small>會修改正式存檔</small>
+        </div>
+        <label>
+          測試委託
+          <select class="debug-quest-select"></select>
+        </label>
+        <small class="debug-quest-note"></small>
+        <div class="debug-grid">
+          <button type="button" data-action="replay-guild-quest-intro">重播首次導覽</button>
+          <button type="button" data-action="open-guild-quests">開啟委託欄</button>
+          <button type="button" data-action="prepare-selected-quest">建立選定委託</button>
+          <button type="button" data-action="set-selected-quest-half">設為半程</button>
+          <button type="button" data-action="set-selected-quest-ready">設為可回報</button>
+          <button type="button" data-action="clear-active-quest">清除目前委託</button>
+          <button type="button" data-action="reset-quest-data">重設委託資料</button>
+        </div>
+      </section>
+
       <section class="debug-section debug-scenario-section" aria-labelledby="debugScenarioTitle">
         <div class="debug-section-heading">
           <strong id="debugScenarioTitle">冒險場景測試</strong>

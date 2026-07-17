@@ -3965,3 +3965,698 @@
 .guild-bulk-confirm-list .confirm-item > b {
   color: var(--gold);
 }
+
+/* v0.2.6.3 公會委託與冒險資歷 */
+.facility-panel.is-guild-quest-mode {
+  width: min(100%, 1160px);
+  max-width: 1160px;
+  text-align: left;
+}
+
+.guild-quest-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.guild-quest-history,
+.guild-quest-active-section,
+.guild-quest-board-section {
+  padding: 16px;
+  border: 1px solid rgba(217, 199, 150, 0.18);
+  border-radius: 12px;
+  background: rgba(7, 12, 13, 0.78);
+  box-shadow: var(--inner-light);
+}
+
+.guild-quest-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.guild-quest-section-heading h3 {
+  margin: 3px 0 0;
+  color: #fff4d8;
+}
+
+.guild-quest-history-metrics,
+.guild-record-quest-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin: 0;
+}
+
+.guild-quest-history-metrics > div,
+.guild-record-quest-metrics > div {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid rgba(217, 199, 150, 0.14);
+  border-radius: 8px;
+  background: rgba(6, 11, 12, 0.5);
+}
+
+.guild-quest-history-metrics dt,
+.guild-record-quest-metrics dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.guild-quest-history-metrics dd,
+.guild-record-quest-metrics dd {
+  margin: 0;
+  color: var(--gold);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.guild-quest-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.guild-quest-card,
+.guild-quest-active-card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 11px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 50%),
+    rgba(7, 13, 14, 0.88);
+}
+
+.guild-quest-card::before,
+.guild-quest-active-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: rgba(217, 199, 150, 0.45);
+  content: "";
+}
+
+.guild-quest-card.rarity-advanced::before,
+.guild-quest-active-card.rarity-advanced::before {
+  background: #77bdd6;
+}
+
+.guild-quest-card.rarity-rare::before,
+.guild-quest-active-card.rarity-rare::before {
+  background: #d1a5ec;
+}
+
+.guild-quest-card.is-active {
+  border-color: rgba(240, 207, 116, 0.45);
+  box-shadow: 0 0 0 1px rgba(240, 207, 116, 0.08) inset;
+}
+
+.guild-quest-card-heading h4 {
+  margin: 5px 0 0;
+  color: #fff4d8;
+  font-size: 1.05rem;
+}
+
+.guild-quest-rarity {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px 8px;
+  border: 1px solid rgba(217, 199, 150, 0.2);
+  border-radius: 999px;
+  color: var(--gold-soft);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.guild-quest-rarity.rarity-advanced {
+  border-color: rgba(119, 189, 214, 0.42);
+  color: #a7dcf0;
+}
+
+.guild-quest-rarity.rarity-rare {
+  border-color: rgba(209, 165, 236, 0.46);
+  color: #e6c5f8;
+}
+
+.guild-quest-card-details {
+  display: grid;
+  gap: 8px;
+  min-height: 92px;
+}
+
+.guild-quest-card-details p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.guild-quest-card-details strong {
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.guild-quest-reward {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(217, 199, 150, 0.12);
+}
+
+.guild-quest-reward span,
+.guild-quest-completion-count {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.guild-quest-reward strong {
+  color: var(--gold);
+}
+
+.guild-quest-card > button,
+.guild-quest-active-actions > button {
+  width: 100%;
+}
+
+.guild-quest-active-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.guild-quest-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.guild-quest-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.guild-quest-progress > div:first-child strong {
+  color: var(--gold);
+}
+
+.guild-quest-progress > div:last-child {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.guild-quest-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b6e2c, var(--gold));
+  transition: width 220ms ease;
+}
+
+.guild-quest-progress.is-complete i {
+  background: linear-gradient(90deg, #347957, #75d59b);
+}
+
+.guild-quest-empty {
+  margin: 0;
+}
+
+.guild-record-collapsible {
+  padding-top: 0;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.16);
+  border-radius: 11px;
+  background: rgba(6, 11, 12, 0.44);
+}
+
+.guild-record-collapse-toggle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 30px;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 13px 15px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.guild-record-collapse-toggle:hover,
+.guild-record-collapse-toggle:focus-visible {
+  background: rgba(240, 207, 116, 0.045);
+}
+
+.guild-record-collapse-toggle:disabled {
+  cursor: wait;
+}
+
+.guild-record-collapse-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.guild-record-collapse-copy strong {
+  color: #fff4d8;
+  font-size: 1rem;
+}
+
+.guild-record-collapse-arrow {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(240, 207, 116, 0.3);
+  border-radius: 50%;
+  color: var(--gold);
+  transition: transform 220ms ease;
+}
+
+.guild-record-collapsible.is-open .guild-record-collapse-arrow {
+  transform: rotate(180deg);
+}
+
+.guild-record-collapse-content {
+  height: 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(217, 199, 150, 0.12);
+  transition: height 280ms ease;
+}
+
+.guild-record-collapse-content > * {
+  margin: 0;
+  padding: 14px 15px 15px;
+}
+
+.guild-record-reveal-item,
+.guild-record-quest-metrics {
+  opacity: 0;
+  transform: translateY(7px);
+}
+
+.guild-record-collapsible.is-revealed .guild-record-reveal-item,
+.guild-record-collapsible.is-revealed .guild-record-quest-metrics {
+  animation: guild-record-reveal 180ms ease forwards;
+}
+
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(2) { animation-delay: 45ms; }
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(3) { animation-delay: 90ms; }
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(4) { animation-delay: 135ms; }
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(5) { animation-delay: 180ms; }
+
+.guild-record-quest-history {
+  display: grid;
+  gap: 12px;
+}
+
+.guild-record-quest-totals {
+  display: grid;
+  gap: 9px;
+}
+
+.guild-record-quest-total {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.guild-record-quest-total > div {
+  display: grid;
+  gap: 3px;
+}
+
+.guild-record-quest-total small {
+  color: var(--muted);
+}
+
+.guild-record-quest-total b {
+  color: var(--gold);
+}
+
+.dialogue-portrait-card {
+  position: relative;
+}
+
+.quest-briefing-progress[hidden],
+.quest-intro-scene[hidden] {
+  display: none !important;
+}
+
+.quest-briefing-progress {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0 0 14px;
+}
+
+.quest-briefing-progress span {
+  position: relative;
+  display: grid;
+  min-height: 40px;
+  place-items: center;
+  padding: 7px 6px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 199, 150, 0.16);
+  border-radius: 8px;
+  background: rgba(8, 13, 14, 0.72);
+  color: var(--text-muted, var(--muted));
+  font-size: 0.76rem;
+  font-weight: 700;
+  transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms ease;
+}
+
+.quest-briefing-progress span::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--gold);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms ease;
+}
+
+.quest-briefing-progress span.is-complete {
+  color: rgba(241, 211, 134, 0.72);
+}
+
+.quest-briefing-progress span.is-active {
+  border-color: rgba(241, 211, 134, 0.48);
+  background: rgba(85, 65, 28, 0.28);
+  color: #fff4d8;
+  transform: translateY(-1px);
+}
+
+.quest-briefing-progress span.is-active::after,
+.quest-briefing-progress span.is-complete::after {
+  transform: scaleX(1);
+}
+
+.quest-intro-layout {
+  height: 600px;
+}
+
+.quest-intro-portrait-card {
+  isolation: isolate;
+}
+
+.quest-intro-portrait-card img {
+  filter: saturate(0.86) brightness(0.78);
+  transition: filter 420ms ease, transform 520ms ease, object-position 520ms ease;
+}
+
+.quest-intro-portrait-card[data-intro-step="4"] img {
+  filter: saturate(0.74) brightness(0.62);
+  transform: scale(1.035);
+}
+
+.quest-intro-portrait-card[data-intro-step="5"] img {
+  filter: saturate(0.94) brightness(0.84);
+  transform: scale(1.02);
+}
+
+.quest-intro-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.quest-intro-scene::before {
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(to bottom, transparent, rgba(4, 7, 8, 0.94) 82%);
+  content: "";
+}
+
+.quest-desk-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 76%;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(224, 179, 93, 0.23), transparent 68%);
+  opacity: 0;
+  transform: translateX(-50%) scale(0.72);
+  transition: opacity 480ms ease, transform 480ms ease;
+}
+
+.quest-paper-stack {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  width: 220px;
+  height: 122px;
+  opacity: 0;
+  transform: translate(-50%, 72px) rotate(-2deg);
+  transition: opacity 320ms ease, transform 520ms cubic-bezier(.2,.8,.2,1);
+}
+
+.quest-paper-stack span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(87, 57, 25, 0.78);
+  border-radius: 7px;
+  background:
+    linear-gradient(90deg, transparent 0 9%, rgba(101, 67, 32, 0.12) 9% 10%, transparent 10% 100%),
+    linear-gradient(180deg, rgba(255,255,255,.14), transparent 24%),
+    #c8b184;
+  box-shadow: 0 16px 28px rgba(0,0,0,.3);
+}
+
+.quest-paper-stack span:nth-child(1) { transform: rotate(-8deg) translate(-18px, 6px); }
+.quest-paper-stack span:nth-child(2) { transform: rotate(5deg) translate(14px, 3px); }
+.quest-paper-stack span:nth-child(3) { transform: rotate(-2deg) translate(-2px, -4px); }
+.quest-paper-stack span:nth-child(4) { transform: rotate(1deg) translate(4px, -10px); }
+
+.quest-source-stamps,
+.quest-rarity-seals {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  display: flex;
+  gap: 9px;
+  opacity: 0;
+  transform: translate(-50%, 20px);
+  transition: opacity 280ms ease, transform 420ms ease;
+}
+
+.quest-source-stamps span,
+.quest-rarity-seals span {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  border: 2px solid rgba(113, 55, 36, .7);
+  border-radius: 50%;
+  background: rgba(188, 152, 93, .92);
+  color: #5d2f26;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  box-shadow: 0 7px 18px rgba(0,0,0,.32);
+  transform: rotate(-8deg) scale(.72);
+  transition: transform 360ms cubic-bezier(.17,.89,.32,1.35);
+}
+
+.quest-source-stamps span:nth-child(2),
+.quest-rarity-seals span:nth-child(2) { transform: rotate(5deg) scale(.72); }
+.quest-source-stamps span:nth-child(3),
+.quest-rarity-seals span:nth-child(3) { transform: rotate(-2deg) scale(.72); }
+
+.quest-single-slot {
+  position: absolute;
+  left: 50%;
+  bottom: 54px;
+  display: grid;
+  grid-template-columns: 120px auto;
+  gap: 14px;
+  align-items: center;
+  opacity: 0;
+  transform: translate(-50%, 18px);
+  transition: opacity 280ms ease, transform 420ms ease;
+}
+
+.quest-single-slot .slot-card {
+  display: grid;
+  min-height: 88px;
+  place-items: center;
+  border: 1px solid rgba(241, 211, 134, 0.48);
+  border-radius: 9px;
+  background:
+    linear-gradient(145deg, rgba(241,211,134,.12), transparent 50%),
+    rgba(13,18,18,.94);
+  color: #fff4d8;
+  box-shadow: 0 14px 24px rgba(0,0,0,.3);
+}
+
+.quest-single-slot strong {
+  padding: 8px 10px;
+  border: 1px solid rgba(224, 179, 93, .36);
+  border-radius: 999px;
+  background: rgba(51, 38, 19, .84);
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.quest-rarity-seals .common {
+  border-color: rgba(195, 202, 199, .7);
+  background: #a8afac;
+  color: #18201f;
+}
+
+.quest-rarity-seals .advanced {
+  border-color: rgba(111, 190, 143, .8);
+  background: #6fbe8f;
+  color: #10271a;
+}
+
+.quest-rarity-seals .rare {
+  border-color: rgba(241, 211, 134, .9);
+  background: #d9b857;
+  color: #3a260d;
+}
+
+.quest-danger-seal {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  display: grid;
+  width: 142px;
+  height: 142px;
+  place-items: center;
+  border: 4px double rgba(227, 112, 94, .88);
+  border-radius: 50%;
+  background: rgba(69, 19, 15, .8);
+  color: #ffc0b5;
+  font-weight: 900;
+  letter-spacing: .16em;
+  opacity: 0;
+  transform: translate(-50%, 18px) rotate(-13deg) scale(.68);
+  transition: opacity 280ms ease, transform 460ms cubic-bezier(.17,.89,.32,1.35);
+}
+
+.quest-mini-board {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  display: grid;
+  grid-template-columns: repeat(2, 96px);
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid rgba(241, 211, 134, .34);
+  border-radius: 12px;
+  background: rgba(8, 12, 13, .9);
+  box-shadow: 0 20px 38px rgba(0,0,0,.42);
+  opacity: 0;
+  transform: translate(-50%, 42px) scale(.8);
+  transition: opacity 320ms ease, transform 520ms cubic-bezier(.2,.85,.2,1);
+}
+
+.quest-mini-board span {
+  height: 82px;
+  border: 1px solid rgba(217, 199, 150, .26);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), transparent 32%),
+    rgba(32, 30, 23, .95);
+}
+
+.quest-intro-portrait-card[data-intro-step="0"] .quest-desk-glow,
+.quest-intro-portrait-card[data-intro-step="0"] .quest-paper-stack {
+  opacity: 1;
+  transform: translate(-50%, 0) rotate(-2deg);
+}
+
+.quest-intro-portrait-card[data-intro-step="0"] .quest-desk-glow {
+  transform: translateX(-50%) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-paper-stack,
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps,
+.quest-intro-portrait-card[data-intro-step="2"] .quest-single-slot,
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals,
+.quest-intro-portrait-card[data-intro-step="4"] .quest-danger-seal,
+.quest-intro-portrait-card[data-intro-step="5"] .quest-mini-board {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-paper-stack {
+  opacity: .44;
+  transform: translate(-50%, 8px) rotate(-2deg) scale(.94);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps span,
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals span {
+  transform: rotate(-8deg) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps span:nth-child(2),
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals span:nth-child(2) {
+  transform: rotate(5deg) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="1"] .quest-source-stamps span:nth-child(3),
+.quest-intro-portrait-card[data-intro-step="3"] .quest-rarity-seals span:nth-child(3) {
+  transform: rotate(-2deg) scale(1);
+}
+
+.quest-intro-portrait-card[data-intro-step="4"] .quest-danger-seal {
+  transform: translate(-50%, 0) rotate(-8deg) scale(1);
+  animation: quest-danger-pulse 1.8s ease-in-out infinite;
+}
+
+.quest-intro-portrait-card[data-intro-step="5"] .quest-mini-board {
+  transform: translate(-50%, 0) scale(1);
+}
+
+@keyframes quest-danger-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224,111,98,.12); }
+  50% { box-shadow: 0 0 0 14px rgba(224,111,98,0); }
+}
+
+@keyframes guild-record-reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guild-record-collapse-content,
+  .guild-record-collapse-arrow,
+  .guild-record-reveal-item,
+  .guild-record-quest-metrics,
+  .quest-intro-scene *,
+  .quest-intro-portrait-card img,
+  .quest-briefing-progress span,
+  .quest-briefing-progress span::after {
+    transition: none;
+    animation: none !important;
+  }
+
+  .guild-record-collapsible.is-revealed .guild-record-reveal-item,
+  .guild-record-collapsible.is-revealed .guild-record-quest-metrics {
+    opacity: 1;
+    transform: none;
+  }
+}

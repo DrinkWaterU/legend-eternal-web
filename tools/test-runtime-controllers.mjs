@@ -194,6 +194,8 @@ const debugActions = createDebugRuntimeActions({
   returnToCamp: () => {},
   returnToSafeArea: () => {},
   showAnpingArrivalStory: () => true,
+  showGuildQuestIntroduction: () => {},
+  showGuildQuestFacility: () => {},
   syncSafeAreaUiFromSave: () => {},
   syncSelectionFromSave: () => {},
   restart: () => {},
@@ -223,6 +225,13 @@ assert.equal(typeof debugActions.playAnpingArrival, "function");
 assert.equal(typeof debugActions.giveBlacksmithResources, "function");
 assert.equal(typeof debugActions.giveAllWeapons, "function");
 assert.equal(typeof debugActions.clearAllWeapons, "function");
+assert.equal(typeof debugActions.getQuestOptions, "function");
+assert.equal(typeof debugActions.getQuestDebugSnapshot, "function");
+assert.equal(typeof debugActions.replayGuildQuestIntroduction, "function");
+assert.equal(typeof debugActions.openGuildQuestBoard, "function");
+assert.equal(typeof debugActions.prepareSelectedQuest, "function");
+assert.equal(typeof debugActions.clearActiveQuest, "function");
+assert.equal(typeof debugActions.resetQuestData, "function");
 
 const blacksmithResourcesMessage = debugActions.giveBlacksmithResources();
 assert.match(blacksmithResourcesMessage, /1000 金幣/);

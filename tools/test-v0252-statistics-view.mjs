@@ -6,7 +6,8 @@ installTestDocument();
 const els = createElementMap([
   "statisticsOverviewView", "statisticsCharacterListView", "statisticsRegionListView", "statisticsSaveView",
   "statisticsJourneySummary", "statisticsKeyMetrics", "statisticsResolvedRuns", "statisticsOutcomeList",
-  "statisticsCombatMetrics", "statisticsEscapeRate", "statisticsEscapeMetrics", "statisticsCharacterList",
+  "statisticsCombatMetrics", "statisticsEscapeRate", "statisticsEscapeMetrics", "statisticsQuestCompleted",
+  "statisticsQuestMetrics", "statisticsCharacterList",
   "statisticsCharacterDetail", "statisticsRegionList", "statisticsRegionDetail"
 ]);
 els.statisticsTabs = ["overview", "characters", "regions", "save"].map((view) => {
@@ -22,6 +23,14 @@ const saveData = {
     characters: { adventurer: { runs: 10, clears: 2, retreats: 3, highestRunLevel: 19 } },
     regions: { plains: { runs: 10, clears: 2, retreats: 3, bestEncounter: 8 } }
   },
+  quests: {
+    statistics: {
+      completedTotal: 12,
+      completedByRarity: { common: 7, advanced: 4, rare: 1 },
+      abandonedTotal: 2,
+      rewardGoldTotal: 255
+    }
+  },
   progression: { characters: { adventurer: { unlocked: true, level: 15, exp: 20, learnedSkills: ["a", "b"] } } }
 };
 const characters = { adventurer: { name: "冒險者", role: "全能" } };
@@ -32,6 +41,8 @@ assert.match(els.statisticsJourneySummary.textContent, /單次冒險最高曾達
 assert.equal(els.statisticsOutcomeList.children.length, 4);
 assert.equal(els.statisticsEscapeRate.textContent, "75%");
 assert.doesNotMatch(els.statisticsJourneySummary.textContent, /NaN|Infinity/);
+assert.equal(els.statisticsQuestCompleted.textContent, "12 件");
+assert.equal(els.statisticsQuestMetrics.children.length, 5);
 saveData.statistics.totalRuns = 0;
 saveData.statistics.totalClears = 0;
 saveData.statistics.totalRetreats = 0;

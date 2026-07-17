@@ -51,6 +51,7 @@ export function createApplication({ documentRef = document, windowRef = window }
 
   battle = createBattleFeatures({
     foundation,
+    world,
     els,
     showBlessings: (...args) => adventure.showBlessings(...args),
     winEncounter: (...args) => adventure.winEncounter(...args),
@@ -185,6 +186,8 @@ function createDebugDependencies({ foundation, world, profile, battle, adventure
     returnToSafeArea: adventure.returnToSafeArea,
     showAnpingArrivalStory: adventure.showAnpingArrivalStory,
     showSafeAreaTravelScreen: world.showSafeAreaTravelScreen,
+    showGuildQuestIntroduction: world.showGuildQuestIntroduction,
+    showGuildQuestFacility: world.showGuildQuestFacility,
     syncSafeAreaUiFromSave: world.syncSafeAreaUiFromSave,
     syncSelectionFromSave: world.syncSelectionFromSave,
     restart: adventure.restart,
@@ -214,6 +217,7 @@ function createEventActions({ foundation, world, profile, battle, adventure, scr
     getNavigationReturnTarget: foundation.getNavigationReturnTarget,
     handleBlacksmithBack: world.handleBlacksmithBack,
     handleGuildRecordBack: world.handleGuildRecordBack,
+    handleGuildQuestBack: world.handleGuildQuestBack,
     handleGuildBulkBack: world.handleGuildBulkBack,
     showCharacterDetail: world.showCharacterDetail,
     showCharacterEquipment: world.showCharacterEquipment,

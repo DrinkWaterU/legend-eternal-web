@@ -16,6 +16,7 @@ import {
 } from "./safeAreaProgression.js";
 import { createDefaultSave } from "./saveDefaults.js";
 import { toSafeInteger } from "../utils.js";
+import { normalizeQuestState } from "./questRules.js";
 
 export function migrateSaveData(rawSave) {
   const save = createDefaultSave();
@@ -37,6 +38,7 @@ export function migrateSaveData(rawSave) {
   migrateStoryFlags(save, rawSave);
   migrateAchievements(save, rawSave);
   migrateStatistics(save, rawSave, { rawSchemaVersion });
+  save.quests = normalizeQuestState(rawSave.quests);
   migrateProgression(save, rawSave, { rawSchemaVersion });
   migrateCharacterUnlocks(save);
   migrateCharacterEquipment(save);

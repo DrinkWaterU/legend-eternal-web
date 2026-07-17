@@ -1,8 +1,10 @@
 import { parseDebugBlessingList } from "./debugBlessingParser.js";
 import {
   populateDebugSafeAreaOptions,
+  populateDebugQuestOptions,
   runDebugPanelAction,
   runDebugPanelActionSafely,
+  syncDebugQuestNote,
   syncDebugSafeAreaNote
 } from "./debugPanelActions.js";
 import { createDebugPanelElement } from "./debugPanelMarkup.js";
@@ -21,6 +23,7 @@ export function initDebugPanel({ enabled, actions }) {
   bindDebugPanelEvents(context);
   populateMaterialGroups(context);
   populateDebugSafeAreaOptions(context);
+  populateDebugQuestOptions(context);
   initializeDebugScenarioPanel(context);
 }
 
@@ -37,6 +40,8 @@ function createDebugContext(panel, actions) {
     materialGiveButton: panel.querySelector(".debug-material-give"),
     safeAreaSelect: panel.querySelector(".debug-safe-area-select"),
     safeAreaNote: panel.querySelector(".debug-safe-area-note"),
+    questSelect: panel.querySelector(".debug-quest-select"),
+    questNote: panel.querySelector(".debug-quest-note"),
     scenarioSelect: panel.querySelector(".debug-scenario-select"),
     characterSelect: panel.querySelector(".debug-character-select"),
     scenarioNote: panel.querySelector(".debug-scenario-note"),
@@ -72,6 +77,7 @@ function bindDebugPanelEvents(context) {
     runDebugPanelActionSafely(context, () => context.actions.giveMaterials(context.materialGroupSelect.value));
   });
   context.safeAreaSelect.addEventListener("change", () => syncDebugSafeAreaNote(context));
+  context.questSelect.addEventListener("change", () => syncDebugQuestNote(context));
 }
 
 function populateMaterialGroups(context) {

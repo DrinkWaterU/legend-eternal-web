@@ -9,6 +9,7 @@ import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { DEFAULT_SAFE_AREA_ID } from "../data/safeAreas.js";
 import { createDefaultSafeAreaProgression } from "./safeAreaProgression.js";
+import { createDefaultQuestState } from "./questRules.js";
 
 export function createDefaultSave() {
   const now = new Date().toISOString();
@@ -29,6 +30,7 @@ export function createDefaultSave() {
     inventory: { gold: 0, materials: {}, weapons: {} },
     storyFlags: createDefaultStoryFlags(),
     achievements: createDefaultAchievements(),
+    quests: createDefaultQuestState(),
     statistics: {
       totalRuns: 0,
       totalDefeats: 0,
@@ -88,7 +90,8 @@ function createDefaultStoryFlags() {
     knowsAnpingBlacksmithName: false,
     metAnpingGuildReceptionist: false,
     knowsAnpingGuildReceptionistName: false,
-    registeredAtAnpingGuild: false
+    registeredAtAnpingGuild: false,
+    guildQuestIntroductionSeen: false
   };
 }
 

@@ -873,7 +873,8 @@
 .debug-build-heading small,
 .debug-build-note,
 .debug-scenario-note,
-.debug-safe-area-note {
+.debug-safe-area-note,
+.debug-quest-note {
   color: var(--muted);
 }
 
@@ -976,7 +977,8 @@
 }
 
 .debug-scenario-note,
-.debug-safe-area-note {
+.debug-safe-area-note,
+.debug-quest-note {
   display: block;
   min-height: 1.4em;
   line-height: 1.5;

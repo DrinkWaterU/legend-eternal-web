@@ -42,6 +42,8 @@ export function buildGuildAdventureRecordModel({
       };
     });
 
+  const questStats = save?.quests?.statistics || {};
+
   return {
     selectedCharacter: character ? {
       id: selectedCharacterId,
@@ -60,6 +62,16 @@ export function buildGuildAdventureRecordModel({
       bossesDefeated: safeCount(statistics.bossesDefeated)
     },
     experiences,
+    questHistory: {
+      completedTotal: safeCount(questStats.completedTotal),
+      completedByRarity: {
+        common: safeCount(questStats.completedByRarity?.common),
+        advanced: safeCount(questStats.completedByRarity?.advanced),
+        rare: safeCount(questStats.completedByRarity?.rare)
+      },
+      rewardGoldTotal: safeCount(questStats.rewardGoldTotal),
+      abandonedTotal: safeCount(questStats.abandonedTotal)
+    },
     unlockedCharacters,
     celineComment: resolveCelineComment({ forestRouteClears })
   };

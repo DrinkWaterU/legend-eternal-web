@@ -32,7 +32,7 @@ export function renderStatisticsView({
   });
 
   if (activeView === "overview") {
-    renderStatisticsOverview(els, saveData.statistics || {});
+    renderStatisticsOverview(els, saveData.statistics || {}, saveData.quests?.statistics || {});
   } else if (activeView === "characters") {
     renderStatisticsCharacterBrowser({
       els,

@@ -6,6 +6,7 @@ export function createRunRecords({
   saveStore,
   currentRegion,
   currentRoute,
+  questRuntime,
   saveGameSafe
 }) {
   function recordRunStarted() {
@@ -46,12 +47,20 @@ export function createRunRecords({
     saveStore.current.progression.characters[snapshot.characterId].runs = snapshot.characterProgressRuns;
   }
 
-  function recordEnemyDefeated(isBoss) {
+  function recordEnemyDefeated(isBoss, enemy = null) {
     if (state.debugBuildRun) return;
     saveStore.current.statistics.totalEnemiesDefeated += 1;
     if (isBoss) {
       saveStore.current.statistics.bossesDefeated += 1;
     }
+    questRuntime?.recordEnemyDefeated({
+      enemyId: enemy?.id || null,
+      enemyKind: enemy?.kind || (isBoss ? "首領" : null),
+      enemyFamily: enemy?.family || null,
+      regionId: state.selectedRegionId,
+      routeId: state.activeRouteId || null,
+      debugBuildRun: false
+    });
     saveGameSafe();
   }
 
@@ -80,6 +89,14 @@ export function createRunRecords({
     stats.evacuationEscapes += state.runStats?.evacuationEscapes || 0;
 
     applyOutcomeCounters({ cleared, retreated, evacuated, stats, regionStats, characterStats, regionProgress, characterProgress });
+    if (cleared) {
+      questRuntime?.recordRunCleared({
+        regionId: state.selectedRegionId,
+        routeId: state.activeRouteId || null,
+        clearSourceId: currentRoute()?.clearSourceId || "main",
+        debugBuildRun: false
+      });
+    }
     syncSafeAreaUnlocks(saveStore.current);
     state.runResultRecorded = true;
     saveGameSafe();

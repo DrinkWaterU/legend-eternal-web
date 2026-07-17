@@ -71,7 +71,7 @@ assert.deepEqual(
 
 {
   const save = createDefaultSave();
-  assert.equal(SAVE_SCHEMA_VERSION, 8);
+  assert.equal(SAVE_SCHEMA_VERSION, 9);
   assert.deepEqual(save.inventory.weapons, {});
   assert.deepEqual(save.progression.characters.adventurer.equipment, { weaponId: null });
   assert.deepEqual(save.progression.characters.archer.equipment, { weaponId: null });
@@ -89,7 +89,7 @@ assert.deepEqual(
   raw.progression.characters.archer.equipment.weaponId = "hunter-shortbow";
 
   const migrated = migrateSave(raw);
-  assert.equal(migrated.schemaVersion, 8);
+  assert.equal(migrated.schemaVersion, 9);
   assert.deepEqual(migrated.inventory.weapons, {
     "iron-longsword": true,
     "hunter-shortbow": true

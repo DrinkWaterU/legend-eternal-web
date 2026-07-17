@@ -42,7 +42,7 @@ export function renderDialogueView({
     : "";
   els.dialogueNotice.textContent = notice;
   els.dialogueNotice.dataset.type = noticeType;
-  renderPortrait({ els, npc, displayName });
+  renderPortrait({ els, npc, displayName, page });
   renderChoices({ els, visibleChoices, onChoice });
 
   const finalAdvanceLabel = isLastPage
@@ -129,7 +129,8 @@ function renderChoices({ els, visibleChoices, onChoice }) {
   });
 }
 
-function renderPortrait({ els, npc, displayName }) {
+function renderPortrait({ els, npc, displayName, page }) {
+  renderSceneOverlay(els, page?.sceneStage);
   const portrait = String(npc?.portrait || "").trim();
   const fallback = () => {
     els.dialoguePortraitImage.hidden = true;
@@ -189,4 +190,54 @@ function focusWithoutScroll(element) {
   } catch {
     element?.focus?.();
   }
+}
+
+const QUEST_BRIEFING_STAGES = Object.freeze([
+  "papers",
+  "sources",
+  "single",
+  "rarities",
+  "warning",
+  "board"
+]);
+
+function renderSceneOverlay(els, sceneStage) {
+  const overlay = els.dialogueSceneOverlay;
+  const portraitCard = els.dialoguePortraitCard;
+  const layout = els.dialogueLayout;
+  const progress = els.dialogueBriefingProgress;
+  if (!overlay) return;
+
+  const stage = String(sceneStage || "").trim();
+  const stepIndex = QUEST_BRIEFING_STAGES.indexOf(stage);
+  const isQuestBriefing = stepIndex >= 0;
+
+  overlay.hidden = !isQuestBriefing;
+  progress && (progress.hidden = !isQuestBriefing);
+  layout?.classList.toggle("quest-intro-layout", isQuestBriefing);
+  portraitCard?.classList.toggle("quest-intro-portrait-card", isQuestBriefing);
+
+  if (!isQuestBriefing) {
+    overlay.removeAttribute?.("data-scene-stage");
+    portraitCard?.removeAttribute?.("data-intro-step");
+    progress?.querySelectorAll?.("[data-scene-step]").forEach((item) => {
+      item.classList.remove("is-active", "is-complete");
+    });
+    return;
+  }
+
+  progress?.querySelectorAll?.("[data-scene-step]").forEach((item, index) => {
+    item.classList.toggle("is-active", index === stepIndex);
+    item.classList.toggle("is-complete", index < stepIndex);
+  });
+
+  const previousStage = overlay.dataset.sceneStage || "";
+  if (!previousStage) {
+    portraitCard?.removeAttribute?.("data-intro-step");
+    overlay.removeAttribute?.("data-scene-stage");
+    void overlay.offsetWidth;
+  }
+
+  overlay.dataset.sceneStage = stage;
+  portraitCard && (portraitCard.dataset.introStep = String(stepIndex));
 }

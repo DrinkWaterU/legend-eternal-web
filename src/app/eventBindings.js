@@ -23,6 +23,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     getNavigationReturnTarget,
     handleBlacksmithBack,
     handleGuildRecordBack,
+    handleGuildQuestBack,
     handleGuildBulkBack,
     showCharacterDetail,
     showCharacterEquipment,
@@ -94,6 +95,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.dialogueBackButton.addEventListener("click", () => showFacilityList(uiState.safeAreaId, uiState.navigationContext));
   els.blacksmithBackButton.addEventListener("click", handleBlacksmithBack);
   els.guildRecordBackButton.addEventListener("click", handleGuildRecordBack);
+  els.guildQuestBackButton.addEventListener("click", handleGuildQuestBack);
   els.guildBulkBackButton.addEventListener("click", handleGuildBulkBack);
   els.backToRegionListButton.addEventListener("click", () => showRegionList());
   els.backToCharacterListButton.addEventListener("click", () => showCharacterList());
@@ -151,10 +153,13 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.achievementDetailBackdrop.addEventListener("click", closeAchievementDetailPanel);
   els.closeAchievementUnlockToastButton.addEventListener("click", () => closeAchievementUnlockToast());
   els.closeMerchantSaleButton.addEventListener("click", facilityController.closeMerchantSale);
+  els.confirmGuildQuestAbandonButton.addEventListener("click", facilityController.confirmGuildQuestAbandon);
+  els.closeGuildQuestAbandonButton.addEventListener("click", facilityController.closeGuildQuestAbandon);
   els.closeGuildBulkConfirmButton.addEventListener("click", facilityController.closeGuildBulkConfirm);
   els.closeBlacksmithCraftButton.addEventListener("click", facilityController.closeBlacksmithCraft);
   [
     [els.merchantSalePanel, facilityController.closeMerchantSale],
+    [els.guildQuestAbandonPanel, facilityController.closeGuildQuestAbandon],
     [els.guildBulkConfirmPanel, facilityController.closeGuildBulkConfirm],
     [els.blacksmithCraftPanel, facilityController.closeBlacksmithCraft],
     [els.abilityInfoPanel, closeAbilityInfoPanel],

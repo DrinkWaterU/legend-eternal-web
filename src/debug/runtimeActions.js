@@ -3,6 +3,7 @@ import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { createDebugCharacterActions } from "./characterActions.js";
 import { createDebugInventoryActions } from "./inventoryActions.js";
+import { createDebugQuestActions } from "./questActions.js";
 import { createDebugSafeAreaActions } from "./safeAreaActions.js";
 import { createDebugScenarioActions } from "./scenarioActions.js";
 import {
@@ -38,6 +39,7 @@ export function createDebugRuntimeActions(host) {
     clampInteger
   });
   const safeAreaActions = createDebugSafeAreaActions(host);
+  const questActions = createDebugQuestActions(host);
 
   return {
     ...characterActions,
@@ -49,7 +51,8 @@ export function createDebugRuntimeActions(host) {
     getScenarioBuildSlots: getDebugScenarioBuildSlots,
     createBuildProfile: createDebugBuildProfile,
     ...scenarioActions,
-    ...safeAreaActions
+    ...safeAreaActions,
+    ...questActions
   };
 }
 

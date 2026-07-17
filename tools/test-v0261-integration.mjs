@@ -21,7 +21,7 @@ const [html, game, dom, componentsCss, responsiveCss, storage, commerce, dialogu
 ]);
 
 assert.match(GAME_VERSION, /^v0\.2\.6\.\d+-alpha$/);
-assert.equal(SAVE_SCHEMA_VERSION, 8);
+assert.equal(SAVE_SCHEMA_VERSION, 9);
 assert.deepEqual(safeAreaDefinitions["anping-town"].facilityIds, ["blacksmith", "adventurers-guild"]);
 assert.equal(facilityDefinitions["adventurers-guild"].npcId, "anping-guild-receptionist");
 assert.equal(facilityDefinitions["guild-adventure-record"].hiddenFromList, true);

@@ -6,6 +6,7 @@ import { createDialogueController } from "../../ui/dialogueController.js";
 import { renderFacilityListView } from "../../ui/facilityView.js";
 import { createGuildAdventureRecordController } from "../../ui/guildAdventureRecordController.js";
 import { createGuildBulkSaleController } from "../../ui/guildBulkSaleController.js";
+import { createGuildQuestController } from "../../ui/guildQuestController.js";
 import { createMerchantController } from "../../ui/merchantController.js";
 
 const GUILD_RECEPTIONIST_ID = "anping-guild-receptionist";
@@ -20,6 +21,8 @@ export function createFacilityController({
   weaponCategoryDefinitions,
   npcDefinitions,
   dialogueDefinitions,
+  questDefinitions,
+  questRuntime,
   getCurrentSafeArea,
   getSafeAreaDefinition,
   getAvailableFacilities,
@@ -54,6 +57,15 @@ export function createFacilityController({
     getSave: () => saveStore.current
   });
 
+  const guildQuestController = createGuildQuestController({
+    els,
+    questRuntime,
+    questDefinitions,
+    materialDefinitions,
+    npcDefinition: npcDefinitions[GUILD_RECEPTIONIST_ID],
+    getSave: () => saveStore.current
+  });
+
   const guildBulkSaleController = createGuildBulkSaleController({
     els,
     materialDefinitions,
@@ -80,6 +92,7 @@ export function createFacilityController({
     blacksmith: showBlacksmithFacility,
     guild: showGuildFacility,
     "guild-adventure-record": showGuildAdventureRecordFacility,
+    "guild-quests": showGuildQuestFacility,
     "guild-bulk-sale": showGuildBulkSaleFacility
   });
 
@@ -91,6 +104,7 @@ export function createFacilityController({
     if (uiState.facilityView === "merchant") return "旅行商人";
     if (uiState.facilityView === "blacksmith") return "鐵匠鋪";
     if (uiState.facilityView === "guild-record") return "冒險資歷";
+    if (uiState.facilityView === "guild-quests") return "公會委託";
     if (uiState.facilityView === "guild-bulk") return "交付冒險物資";
     if (uiState.facilityView === "dialogue") {
       const dialogueNpc = getNpcDefinition(dialogueController.getState().npcId);
@@ -117,6 +131,7 @@ export function createFacilityController({
     resetFacilityUiState();
     merchantController.reset();
     blacksmithController.reset();
+    guildQuestController.reset();
     guildBulkSaleController.reset();
     showScreen("facilityScreen");
   }
@@ -149,6 +164,23 @@ export function createFacilityController({
     uiState.facilityView = "guild-record";
     els.guildRecordAreaLabel.textContent = getCurrentSafeArea()?.name || "安平鎮";
     showScreen("facilityScreen");
+  }
+
+  function showGuildQuestFacility() {
+    if (!saveStore.current.storyFlags.guildQuestIntroductionSeen) {
+      setDialogueStoryFlag("guildQuestIntroductionSeen", true);
+    }
+    uiState.facilityView = "guild-quests";
+    els.guildQuestAreaLabel.textContent = getCurrentSafeArea()?.name || "安平鎮";
+    guildQuestController.reset();
+    questRuntime.ensureBoard();
+    showScreen("facilityScreen");
+  }
+
+  function showGuildQuestIntroduction() {
+    uiState.guildReturnNpcId = GUILD_RECEPTIONIST_ID;
+    showNpcDialogue(GUILD_RECEPTIONIST_ID, { animateText: false });
+    dialogueController.gotoNode("quest-introduction");
   }
 
   function showGuildBulkSaleFacility() {
@@ -191,7 +223,7 @@ export function createFacilityController({
       uiState.blacksmithReturnView = options.returnView === "dialogue" ? "dialogue" : "list";
       uiState.blacksmithReturnNpcId = options.returnNpcId || null;
     }
-    if (facility.actionId === "guild-adventure-record" || facility.actionId === "guild-bulk-sale") {
+    if (["guild-adventure-record", "guild-quests", "guild-bulk-sale"].includes(facility.actionId)) {
       uiState.guildReturnNpcId = options.returnNpcId || GUILD_RECEPTIONIST_ID;
     }
     handler();
@@ -234,6 +266,11 @@ export function createFacilityController({
     returnToGuildDialogue("record-return");
   }
 
+  function handleGuildQuestBack() {
+    guildQuestController.reset();
+    returnToGuildDialogue("default-greeting");
+  }
+
   function handleGuildBulkBack() {
     guildBulkSaleController.reset();
     returnToGuildDialogue("default-greeting");
@@ -251,6 +288,7 @@ export function createFacilityController({
     if (uiState.facilityView === "merchant") return merchantController.render();
     if (uiState.facilityView === "dialogue") return dialogueController.render();
     if (uiState.facilityView === "guild-record") return guildAdventureRecordController.render();
+    if (uiState.facilityView === "guild-quests") return guildQuestController.render();
     if (uiState.facilityView === "guild-bulk") return guildBulkSaleController.render();
     blacksmithController.render();
   }
@@ -260,10 +298,12 @@ export function createFacilityController({
     els.merchantView.classList.toggle("is-active", uiState.facilityView === "merchant");
     els.dialogueView.classList.toggle("is-active", uiState.facilityView === "dialogue");
     els.guildRecordView.classList.toggle("is-active", uiState.facilityView === "guild-record");
+    els.guildQuestView.classList.toggle("is-active", uiState.facilityView === "guild-quests");
     els.guildBulkView.classList.toggle("is-active", uiState.facilityView === "guild-bulk");
     els.blacksmithView.classList.toggle("is-active", uiState.facilityView === "blacksmith");
     els.facilityPanel.classList.toggle("is-dialogue-mode", uiState.facilityView === "dialogue");
     els.facilityPanel.classList.toggle("is-guild-record-mode", uiState.facilityView === "guild-record");
+    els.facilityPanel.classList.toggle("is-guild-quest-mode", uiState.facilityView === "guild-quests");
     els.facilityPanel.classList.toggle("is-guild-sale-mode", uiState.facilityView === "guild-bulk");
   }
 
@@ -276,15 +316,20 @@ export function createFacilityController({
     showBlacksmithFacility,
     showGuildFacility,
     showGuildAdventureRecordFacility,
+    showGuildQuestFacility,
+    showGuildQuestIntroduction,
     showGuildBulkSaleFacility,
     showNpcDialogue,
     openFacility,
     openFacilityFromDialogue,
     handleBlacksmithBack,
     handleGuildRecordBack,
+    handleGuildQuestBack,
     handleGuildBulkBack,
     renderFacilityScreen,
     closeMerchantSale: merchantController.closeSaleDialog,
+    confirmGuildQuestAbandon: guildQuestController.confirmAbandon,
+    closeGuildQuestAbandon: guildQuestController.closeAbandonConfirm,
     closeGuildBulkConfirm: guildBulkSaleController.closeConfirm,
     closeBlacksmithCraft: blacksmithController.closeCraftDialog
   });

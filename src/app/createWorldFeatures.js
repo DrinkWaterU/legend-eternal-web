@@ -15,6 +15,8 @@ import { dialogueDefinitions } from "../data/dialogues.js";
 import { getNpcDefinition, npcDefinitions } from "../data/npcs.js";
 import { getSafeAreaDefinition } from "../data/safeAreas.js";
 import { buildMaterialUsageIndex } from "../ui/materialUsage.js";
+import { questDefinitions } from "../data/quests.js";
+import { createQuestRuntime } from "../features/quest/questRuntime.js";
 
 export function createWorldFeatures({
   foundation,
@@ -135,6 +137,13 @@ export function createWorldFeatures({
     renderCampTravelButton: safeAreaController.renderCampTravelButton
   });
 
+  const questRuntime = createQuestRuntime({
+    saveStore,
+    questDefinitions,
+    materialDefinitions,
+    saveGameSafe
+  });
+
   const facilityController = createFacilityController({
     uiState,
     saveStore,
@@ -145,6 +154,8 @@ export function createWorldFeatures({
     weaponCategoryDefinitions,
     npcDefinitions,
     dialogueDefinitions,
+    questDefinitions,
+    questRuntime,
     getCurrentSafeArea: safeAreaController.getCurrentSafeArea,
     getSafeAreaDefinition,
     getAvailableFacilities: safeAreaController.getAvailableFacilities,
@@ -172,6 +183,7 @@ export function createWorldFeatures({
     safeAreaController,
     campController,
     facilityController,
+    questRuntime,
     setReturnButton,
     ...characterController,
     ...audioSettingsController,

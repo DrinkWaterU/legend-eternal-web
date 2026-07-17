@@ -18,6 +18,7 @@ import { templates } from "../data/templates.js";
 
 export function createBattleFeatures({
   foundation,
+  world,
   els,
   showBlessings,
   winEncounter,
@@ -40,7 +41,14 @@ export function createBattleFeatures({
     applySceneContext
   } = foundation;
 
-  const runRecords = createRunRecords({ state, saveStore, currentRegion, currentRoute, saveGameSafe });
+  const runRecords = createRunRecords({
+    state,
+    saveStore,
+    currentRegion,
+    currentRoute,
+    questRuntime: world?.questRuntime,
+    saveGameSafe
+  });
   const bossSelection = createBossSelection({ state });
   let battleState;
 

@@ -1,3 +1,5 @@
+let guildRecordSectionCounter = 0;
+
 export function renderGuildAdventureRecordView({ els, model, npc = null }) {
   els.guildRecordContent.replaceChildren();
 
@@ -49,22 +51,19 @@ function createRecordSheet(model) {
 
   const heading = document.createElement("header");
   heading.className = "guild-record-sheet-heading";
-  const copy = document.createElement("div");
   const eyebrow = document.createElement("p");
   eyebrow.className = "eyebrow";
   eyebrow.textContent = "安平鎮分會紀錄";
   const title = document.createElement("h3");
   title.textContent = "冒險者資歷摘要";
-  const description = document.createElement("p");
-  description.textContent = "本頁只整理公會能從既有紀錄確認的內容，不會覆蓋原本的統計資料。";
-  copy.append(eyebrow, title, description);
-  heading.append(copy);
+  heading.append(eyebrow, title);
 
   sheet.append(
     heading,
     createIdentityCard(model.selectedCharacter),
     createMetrics(model.summary),
     createExperienceSection(model.experiences),
+    createQuestHistorySection(model.questHistory),
     createCharactersSection(model.unlockedCharacters),
     createCelineNote(model.celineComment)
   );
@@ -84,7 +83,6 @@ function createIdentityCard(character) {
     path: character.emblemPath,
     name: character.name
   });
-
   const copy = document.createElement("div");
   const eyebrow = document.createElement("p");
   eyebrow.className = "eyebrow";
@@ -123,7 +121,6 @@ function createMetrics(summary) {
 }
 
 function createExperienceSection(experiences) {
-  const section = createSection("公會確認", "主要經歷", `${experiences.length} 項`);
   const list = document.createElement("div");
   list.className = "guild-record-milestone-list";
   if (experiences.length === 0) {
@@ -131,7 +128,7 @@ function createExperienceSection(experiences) {
   } else {
     experiences.forEach((experience) => {
       const row = document.createElement("article");
-      row.className = "guild-record-milestone";
+      row.className = "guild-record-milestone guild-record-reveal-item";
       const marker = document.createElement("span");
       marker.className = "guild-record-milestone-marker";
       marker.textContent = "✓";
@@ -145,12 +142,55 @@ function createExperienceSection(experiences) {
       list.append(row);
     });
   }
-  section.append(list);
-  return section;
+  return createCollapsibleSection("公會確認", "主要經歷", `${experiences.length} 項`, list);
+}
+
+function createQuestHistorySection(history) {
+  const content = document.createElement("div");
+  content.className = "guild-record-quest-history";
+  const metrics = document.createElement("dl");
+  metrics.className = "guild-record-quest-metrics guild-record-reveal-item";
+  [
+    ["普通委託", history.completedByRarity.common],
+    ["進階委託", history.completedByRarity.advanced],
+    ["稀有委託", history.completedByRarity.rare],
+    ["累積賞金", `${history.rewardGoldTotal} G`]
+  ].forEach(([label, value]) => {
+    const item = document.createElement("div");
+    const dt = document.createElement("dt");
+    const dd = document.createElement("dd");
+    dt.textContent = label;
+    dd.textContent = String(value);
+    item.append(dt, dd);
+    metrics.append(item);
+  });
+  const totals = document.createElement("div");
+  totals.className = "guild-record-quest-totals";
+  totals.append(
+    createQuestTotal("委託完成總數", "完成回報並結案後才列入", history.completedTotal),
+    createQuestTotal("放棄委託", "進度歸零且不刷新原看板", history.abandonedTotal)
+  );
+  [...totals.children].forEach?.((item) => item.classList.add("guild-record-reveal-item"));
+  content.append(metrics, totals);
+  return createCollapsibleSection("公會正式紀錄", "委託履歷", `${history.completedTotal} 件`, content);
+}
+
+function createQuestTotal(labelText, descriptionText, valueText) {
+  const row = document.createElement("article");
+  row.className = "guild-record-quest-total";
+  const copy = document.createElement("div");
+  const label = document.createElement("strong");
+  const description = document.createElement("small");
+  label.textContent = labelText;
+  description.textContent = descriptionText;
+  copy.append(label, description);
+  const value = document.createElement("b");
+  value.textContent = String(valueText);
+  row.append(copy, value);
+  return row;
 }
 
 function createCharactersSection(characters) {
-  const section = createSection("已登記身分", "可使用角色");
   const list = document.createElement("div");
   list.className = "guild-record-character-list";
   if (characters.length === 0) {
@@ -158,7 +198,7 @@ function createCharactersSection(characters) {
   } else {
     characters.forEach((character) => {
       const card = document.createElement("article");
-      card.className = "guild-record-character-card";
+      card.className = "guild-record-character-card guild-record-reveal-item";
       const emblem = createEmblem({
         className: "guild-record-character-emblem",
         path: `./assets/images/characters/${character.id}/emblem.png`,
@@ -174,8 +214,93 @@ function createCharactersSection(characters) {
       list.append(card);
     });
   }
-  section.append(list);
+  return createCollapsibleSection("已登記身分", "可用角色", `${characters.length} 名`, list);
+}
+
+function createCollapsibleSection(eyebrowText, titleText, badgeText, content) {
+  const section = document.createElement("section");
+  section.className = "guild-record-section guild-record-collapsible";
+  const contentId = `guildRecordSection-${++guildRecordSectionCounter}`;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "guild-record-collapse-toggle";
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-controls", contentId);
+  const copy = document.createElement("span");
+  copy.className = "guild-record-collapse-copy";
+  const eyebrow = document.createElement("span");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = eyebrowText;
+  const title = document.createElement("strong");
+  title.textContent = titleText;
+  copy.append(eyebrow, title);
+  const badge = document.createElement("span");
+  badge.className = "result-count-badge";
+  badge.textContent = badgeText;
+  const arrow = document.createElement("span");
+  arrow.className = "guild-record-collapse-arrow";
+  arrow.textContent = "⌄";
+  button.append(copy, badge, arrow);
+
+  const wrapper = document.createElement("div");
+  wrapper.id = contentId;
+  wrapper.className = "guild-record-collapse-content";
+  wrapper.hidden = true;
+  wrapper.setAttribute("aria-hidden", "true");
+  wrapper.append(content);
+  button.addEventListener("click", () => toggleCollapsibleSection({ section, button, wrapper }));
+  section.append(button, wrapper);
   return section;
+}
+
+function toggleCollapsibleSection({ section, button, wrapper }) {
+  if (section.classList.contains("is-animating")) return;
+  const open = button.getAttribute("aria-expanded") === "true";
+  const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  section.classList.add("is-animating");
+  button.disabled = true;
+  if (open) {
+    section.classList.remove("is-revealed");
+    wrapper.style.height = `${wrapper.scrollHeight || 0}px`;
+    requestFrame(() => { wrapper.style.height = "0px"; });
+    finishAfter(wrapper, reducedMotion ? 0 : 280, () => {
+      wrapper.hidden = true;
+      wrapper.setAttribute("aria-hidden", "true");
+      section.classList.remove("is-open", "is-animating");
+      button.setAttribute("aria-expanded", "false");
+      button.disabled = false;
+      wrapper.style.height = "";
+    });
+    return;
+  }
+  wrapper.hidden = false;
+  wrapper.setAttribute("aria-hidden", "false");
+  wrapper.style.height = "0px";
+  section.classList.add("is-open");
+  requestFrame(() => { wrapper.style.height = `${wrapper.scrollHeight || 0}px`; });
+  finishAfter(wrapper, reducedMotion ? 0 : 300, () => {
+    wrapper.style.height = "auto";
+    section.classList.add("is-revealed");
+    section.classList.remove("is-animating");
+    button.setAttribute("aria-expanded", "true");
+    button.disabled = false;
+  });
+}
+
+function finishAfter(element, duration, callback) {
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    callback();
+  };
+  element.addEventListener?.("transitionend", finish, { once: true });
+  setTimeout(finish, duration + 40);
+}
+
+function requestFrame(callback) {
+  if (typeof requestAnimationFrame === "function") requestAnimationFrame(callback);
+  else callback();
 }
 
 function createCelineNote(text) {
@@ -183,29 +308,6 @@ function createCelineNote(text) {
   note.className = "guild-record-celine-note";
   note.textContent = `「${String(text || "").replace(/^「|」$/gu, "")}」`;
   return note;
-}
-
-function createSection(eyebrowText, titleText, badgeText = "") {
-  const section = document.createElement("section");
-  section.className = "guild-record-section";
-  const heading = document.createElement("div");
-  heading.className = "browser-panel-heading";
-  const copy = document.createElement("div");
-  const eyebrow = document.createElement("p");
-  eyebrow.className = "eyebrow";
-  eyebrow.textContent = eyebrowText;
-  const title = document.createElement("h4");
-  title.textContent = titleText;
-  copy.append(eyebrow, title);
-  heading.append(copy);
-  if (badgeText) {
-    const badge = document.createElement("strong");
-    badge.className = "result-count-badge";
-    badge.textContent = badgeText;
-    heading.append(badge);
-  }
-  section.append(heading);
-  return section;
 }
 
 function createEmblem({ className, path, name }) {
@@ -224,7 +326,7 @@ function createEmblem({ className, path, name }) {
 
 function createEmpty(text) {
   const empty = document.createElement("p");
-  empty.className = "empty-state";
+  empty.className = "empty-state guild-record-reveal-item";
   empty.textContent = text;
   return empty;
 }

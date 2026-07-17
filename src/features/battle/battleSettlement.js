@@ -73,7 +73,7 @@ export function createBattleSettlement({
     addLog("system", "enemyDefeated", { target: getEnemyDisplayName(enemy) });
     gainCharacterExp(getEnemyExpReward(enemy));
     awardEnemyRewards(enemy);
-    recordEnemyDefeated(defeatedBoss);
+    recordEnemyDefeated(defeatedBoss, enemy);
     state.defeatedEnemies += 1;
     state.defeatedBoss = state.defeatedBoss || defeatedBoss;
     applyLivingEnemyDefeatReactions(enemy);

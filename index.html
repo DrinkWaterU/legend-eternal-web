@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.6.2-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.6.3-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.6.2-alpha</p>
+            <p class="version-label">v0.2.6.3-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -271,10 +271,40 @@
               </div>
               <button id="dialogueBackButton" class="secondary-button" type="button">返回鎮內去處</button>
             </div>
-            <div class="dialogue-layout">
-              <figure class="dialogue-portrait-card" aria-label="交談人物插圖">
+            <div id="dialogueBriefingProgress" class="quest-briefing-progress" aria-label="委託說明進度" hidden>
+              <span data-scene-step="papers">委託單</span>
+              <span data-scene-step="sources">來源</span>
+              <span data-scene-step="single">承接</span>
+              <span data-scene-step="rarities">稀有度</span>
+              <span data-scene-step="warning">風險</span>
+              <span data-scene-step="board">看板</span>
+            </div>
+            <div id="dialogueLayout" class="dialogue-layout">
+              <figure id="dialoguePortraitCard" class="dialogue-portrait-card" aria-label="交談人物插圖">
                 <img id="dialoguePortraitImage" alt="" hidden />
                 <div id="dialoguePortraitFallback" class="dialogue-portrait-fallback">安平鎮的鐵匠</div>
+                <div id="dialogueSceneOverlay" class="dialogue-scene-overlay quest-intro-scene" aria-hidden="true" hidden>
+                  <div class="quest-desk-glow"></div>
+                  <div class="quest-paper-stack">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="quest-source-stamps">
+                    <span>鎮民</span><span>商隊</span><span>公會</span>
+                  </div>
+                  <div class="quest-single-slot">
+                    <span class="slot-card">目前委託</span>
+                    <strong>一次一件</strong>
+                  </div>
+                  <div class="quest-rarity-seals">
+                    <span class="common">普通</span>
+                    <span class="advanced">進階</span>
+                    <span class="rare">稀有</span>
+                  </div>
+                  <div class="quest-danger-seal">量力而為</div>
+                  <div class="quest-mini-board">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
               </figure>
               <section class="dialogue-content-card" aria-label="對話內容">
                 <header class="dialogue-speaker-heading">
@@ -303,6 +333,36 @@
               <button id="guildRecordBackButton" class="secondary-button" type="button">返回公會櫃檯</button>
             </div>
             <div id="guildRecordContent"></div>
+          </div>
+
+          <div id="guildQuestView" class="subview">
+            <div class="section-heading app-page-heading facility-location-heading guild-sale-page-heading">
+              <div>
+                <p id="guildQuestAreaLabel" class="eyebrow">安平鎮冒險者公會</p>
+                <h2>公會委託</h2>
+              </div>
+              <button id="guildQuestBackButton" class="secondary-button" type="button">返回公會櫃檯</button>
+            </div>
+
+            <section class="guild-clerk-strip" aria-label="接待員瑟琳與目前金幣">
+              <div class="guild-clerk-portrait">
+                <img id="guildQuestSpeakerPortraitImage" alt="" hidden />
+                <span id="guildQuestSpeakerPortraitFallback">瑟琳</span>
+              </div>
+              <div class="guild-clerk-copy">
+                <p class="eyebrow"><span id="guildQuestSpeakerTitle">冒險者公會資深接待員</span>・<span id="guildQuestSpeakerName">瑟琳</span></p>
+                <div id="guildQuestDialogueTextRegion" class="dialogue-text-region clerk-dialogue-region" tabindex="0" aria-live="polite" aria-atomic="true">
+                  <button id="guildQuestDialogueSkipButton" class="dialogue-skip-button clerk-dialogue-skip-button" type="button" aria-label="跳過文字動畫並顯示完整對話" aria-controls="guildQuestDialogueText" hidden>跳過</button>
+                  <p id="guildQuestDialogueText">……</p>
+                </div>
+              </div>
+              <div class="wallet-card">
+                <span>目前持有</span>
+                <strong><b id="guildQuestGold">0</b> G</strong>
+              </div>
+            </section>
+            <p id="guildQuestNotice" class="save-notice guild-bulk-notice" aria-live="polite"></p>
+            <div id="guildQuestContent"></div>
           </div>
 
           <div id="guildBulkView" class="subview">
@@ -672,6 +732,7 @@
               <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">已結算結果</p><h3>冒險結果</h3></div><strong id="statisticsResolvedRuns" class="result-count-badge">0 次</strong></div><div id="statisticsOutcomeList" class="statistics-outcome-list"></div></section>
               <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">戰鬥累積</p><h3>戰鬥足跡</h3></div></div><dl id="statisticsCombatMetrics" class="statistics-compact-list"></dl></section>
               <section class="statistics-card statistics-escape-card"><div class="browser-panel-heading"><div><p class="eyebrow">撤離方式</p><h3>成功脫離</h3></div><strong id="statisticsEscapeRate" class="result-count-badge">0%</strong></div><div id="statisticsEscapeMetrics"></div></section>
+              <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">公會紀錄</p><h3>委託履歷</h3></div><strong id="statisticsQuestCompleted" class="result-count-badge">0 件</strong></div><dl id="statisticsQuestMetrics" class="statistics-compact-list"></dl></section>
             </div>
           </div>
           <div id="statisticsCharacterListView" class="statistics-view">
@@ -1019,6 +1080,20 @@
         </div>
       </section>
 
+      <section id="guildQuestAbandonPanel" class="end-panel guild-quest-abandon-panel" aria-label="放棄委託確認" aria-modal="true">
+        <div class="end-dialog guild-quest-abandon-dialog">
+          <div>
+            <p class="eyebrow">公會委託</p>
+            <h2 id="guildQuestAbandonTitle">目前委託</h2>
+            <p id="guildQuestAbandonMeta" class="body-text"></p>
+          </div>
+          <div class="end-actions">
+            <button id="confirmGuildQuestAbandonButton" class="danger-button" type="button">確認放棄</button>
+            <button id="closeGuildQuestAbandonButton" class="secondary-button" type="button">返回委託榜</button>
+          </div>
+        </div>
+      </section>
+
       <section id="blacksmithCraftPanel" class="end-panel blacksmith-craft-panel" aria-label="確認製作武器" aria-modal="true">
         <div class="end-dialog blacksmith-craft-dialog">
           <div>
@@ -1040,6 +1115,6 @@
       </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.6.2-alpha"></script>
+    <script type="module" src="game.js?v=0.2.6.3-alpha"></script>
   </body>
 </html>

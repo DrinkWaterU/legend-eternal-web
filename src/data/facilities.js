@@ -26,6 +26,13 @@ export const facilityDefinitions = Object.freeze({
     actionId: "guild-adventure-record",
     hiddenFromList: true
   }),
+  "guild-quests": Object.freeze({
+    id: "guild-quests",
+    name: "公會委託",
+    description: "查看並承接冒險者公會目前整理出的委託。",
+    actionId: "guild-quests",
+    hiddenFromList: true
+  }),
   "guild-bulk-sale": Object.freeze({
     id: "guild-bulk-sale",
     name: "交付冒險物資",

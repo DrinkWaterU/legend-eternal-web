@@ -215,6 +215,38 @@
           }
         },
         {
+          "id": "open-guild-quests-introduction",
+          "label": "查看公會委託",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "guildQuestIntroductionSeen",
+              "operator": "equals",
+              "value": false
+            }
+          ],
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "quest-introduction"
+          }
+        },
+        {
+          "id": "open-guild-quests",
+          "label": "查看公會委託",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "guildQuestIntroductionSeen",
+              "operator": "equals",
+              "value": true
+            }
+          ],
+          "action": {
+            "type": "openFacility",
+            "facilityId": "guild-quests"
+          }
+        },
+        {
           "id": "open-bulk-sale",
           "label": "交付冒險物資",
           "action": {
@@ -467,6 +499,45 @@
           "type": "returnToFacilityList"
         }
       ]
+    },
+    "quest-introduction": {
+      "pages": [
+        {
+          "sceneStage": "papers",
+          "text": "瑟琳從櫃檯下方抽出一疊整理妥當的委託單，指尖慢條斯理地撫平紙張翹起的邊角。\n「哎呀，看來你終於對公會的委託榜有興趣了呢。」"
+        },
+        {
+          "sceneStage": "sources",
+          "text": "「這些都是鎮民、商隊，還有公會各處遞來的麻煩事。從清理魔物到回收要命的素材，什麼都有。當然，賞金的厚度也是跟著風險往上疊的。」"
+        },
+        {
+          "sceneStage": "single",
+          "text": "她將幾張羊皮紙推到你面前，琥珀色的眼眸隔著恰到好處的距離觀察著你。\n「公會幫你篩選了幾項合適的工作。不過貪多嚼不爛，一次只能接一件喔。挑定離手，先把手上的麻煩解決了再說。」"
+        },
+        {
+          "sceneStage": "rarities",
+          "text": "「委託也有分三六九等。要求越古怪罕見的，通常越要命……當然，給出的金幣也會耀眼得多。」"
+        },
+        {
+          "sceneStage": "warning",
+          "text": "她嘴角的笑意微微收斂，語氣依舊柔軟，卻透著不容反駁的重量。\n「但聽姊姊一句勸，別只盯著賞金看。公會把委託發給你，是希望麻煩被解決，可不是要你拿自己的命去填那幾個錢窟窿。」"
+        },
+        {
+          "sceneStage": "board",
+          "text": "瑟琳重新掛上那抹無懈可擊的溫柔微笑，將四張單子整齊排開。\n「好了，慢慢挑吧。選一件你真有把握活著做完的事——這才是聰明人該有的判斷喔。」"
+        }
+      ],
+      "choices": [
+        {
+          "id": "enter-guild-quest-board",
+          "label": "查看委託榜",
+          "action": {
+            "type": "openFacility",
+            "facilityId": "guild-quests"
+          }
+        }
+      ],
+      "speakerLabel": "瑟琳"
     }
   }
 }

@@ -20,7 +20,7 @@ const [html, game, dom, componentsCss, responsiveCss, storage, dialogueView, dia
 ]);
 
 assert.match(GAME_VERSION, /^v0\.2\.6\.\d+-alpha$/, "v0.2.6.x 應維持同一版本線");
-assert.equal(SAVE_SCHEMA_VERSION, 8);
+assert.equal(SAVE_SCHEMA_VERSION, 9);
 assert.equal(getFacilityDefinition("blacksmith").npcId, "anping-blacksmith");
 assert.equal(npcDefinitions["anping-blacksmith"].name, "羅根");
 assert.equal(dialogueDefinitions["anping-blacksmith-main"].fallbackNodeId, "default-greeting");

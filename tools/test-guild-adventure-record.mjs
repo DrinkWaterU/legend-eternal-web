@@ -21,6 +21,12 @@ save.storyFlags.archerRescued = true;
 save.progression.characters.archer.unlocked = true;
 save.progression.characters.archer.level = 12;
 save.progression.safeAreas["anping-town"].visitedAt = new Date().toISOString();
+save.quests.statistics.completedTotal = 12;
+save.quests.statistics.completedByRarity.common = 7;
+save.quests.statistics.completedByRarity.advanced = 4;
+save.quests.statistics.completedByRarity.rare = 1;
+save.quests.statistics.abandonedTotal = 2;
+save.quests.statistics.rewardGoldTotal = 255;
 
 const model = buildGuildAdventureRecordModel({ save, characterDefinitions });
 assert.equal(model.selectedCharacter.id, "adventurer");
@@ -43,6 +49,12 @@ assert.deepEqual(model.unlockedCharacters.map((item) => item.id), ["adventurer",
 assert.deepEqual(model.unlockedCharacters.map((item) => item.level), [25, 12]);
 assert.equal(model.unlockedCharacters.some((item) => item.level === undefined), false);
 assert.match(model.celineComment, /哥布林營地/);
+assert.deepEqual(model.questHistory, {
+  completedTotal: 12,
+  completedByRarity: { common: 7, advanced: 4, rare: 1 },
+  abandonedTotal: 2,
+  rewardGoldTotal: 255
+});
 
 
 installTestDocument();
@@ -58,6 +70,17 @@ const renderedText = collectNodeText(content);
 assert.match(renderedText, /Lv\. 25/);
 assert.match(renderedText, /Lv\. 12/);
 assert.doesNotMatch(renderedText, /undefined/);
+assert.match(renderedText, /委託履歷/);
+assert.match(renderedText, /255 G/);
+const collapsedSections = findNodesByClass(content, "guild-record-collapsible");
+assert.equal(collapsedSections.length, 3, "主要經歷、委託履歷與可用角色應各自收合");
+collapsedSections.forEach((section) => {
+  const toggle = section.children[0];
+  const wrapper = section.children[1];
+  assert.equal(toggle.attributes["aria-expanded"], "false");
+  assert.equal(wrapper.hidden, true);
+  assert.equal(wrapper.attributes["aria-hidden"], "true");
+});
 
 const emptySave = createDefaultSave();
 const emptyModel = buildGuildAdventureRecordModel({ save: emptySave, characterDefinitions });
@@ -65,6 +88,14 @@ assert.deepEqual(emptyModel.experiences, []);
 assert.deepEqual(emptyModel.unlockedCharacters.map((item) => item.id), ["adventurer"]);
 assert.deepEqual(emptyModel.unlockedCharacters.map((item) => item.level), [1]);
 assert.match(emptyModel.celineComment, /紀錄還不算多/);
+
+function findNodesByClass(node, className) {
+  const matches = String(node?.className || "").split(/\s+/u).includes(className) ? [node] : [];
+  return [
+    ...matches,
+    ...(Array.isArray(node?.children) ? node.children.flatMap((child) => findNodesByClass(child, className)) : [])
+  ];
+}
 
 function collectNodeText(node) {
   return [

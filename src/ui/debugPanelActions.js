@@ -39,6 +39,43 @@ export function syncDebugSafeAreaNote(context, options = null) {
   context.safeAreaNote.textContent = `${selected.name}：${status}${selected.current ? "，目前所在據點" : ""}。`;
 }
 
+export function populateDebugQuestOptions(context) {
+  const options = typeof context.actions.getQuestOptions === "function"
+    ? context.actions.getQuestOptions()
+    : [];
+  const previousValue = context.questSelect.value;
+  context.questSelect.replaceChildren();
+  options.forEach((quest) => {
+    const option = document.createElement("option");
+    option.value = quest.id;
+    option.textContent = `${quest.rarityLabel}｜${quest.name}`;
+    context.questSelect.append(option);
+  });
+  if ([...context.questSelect.options].some((option) => option.value === previousValue)) {
+    context.questSelect.value = previousValue;
+  }
+  context.questSelect.disabled = options.length === 0;
+  syncDebugQuestNote(context, options);
+}
+
+export function syncDebugQuestNote(context, options = null) {
+  const quests = options || (typeof context.actions.getQuestOptions === "function"
+    ? context.actions.getQuestOptions()
+    : []);
+  const selected = quests.find((quest) => quest.id === context.questSelect.value);
+  if (!selected) {
+    context.questNote.textContent = "沒有可用的委託資料。";
+    return;
+  }
+  const snapshot = typeof context.actions.getQuestDebugSnapshot === "function"
+    ? context.actions.getQuestDebugSnapshot()
+    : null;
+  const activeText = snapshot?.activeQuestId
+    ? `目前：${snapshot.activeQuestName} ${snapshot.activeProgress}/${snapshot.activeTarget}`
+    : "目前沒有進行中的委託";
+  context.questNote.textContent = `${selected.objective}｜${selected.rewardGold} G｜${activeText}。`;
+}
+
 export function runDebugPanelAction(action, context) {
   const actionMap = {
     "set-level": () => context.actions.setLevel(Number(context.levelInput.value)),
@@ -58,6 +95,20 @@ export function runDebugPanelAction(action, context) {
     "reset-safe-area": () => confirmDanger("要重設這個據點的解鎖與造訪狀態嗎？")
       && runSafeAreaAction(context, () => context.actions.resetSafeArea(context.safeAreaSelect.value)),
     "play-anping-arrival": () => runSafeAreaAction(context, () => context.actions.playAnpingArrival()),
+    "replay-guild-quest-intro": () => runQuestAction(context, () => context.actions.replayGuildQuestIntroduction()),
+    "open-guild-quests": () => runQuestAction(context, () => context.actions.openGuildQuestBoard()),
+    "prepare-selected-quest": () => runQuestAction(context, () => (
+      context.actions.prepareSelectedQuest(context.questSelect.value, "start")
+    )),
+    "set-selected-quest-half": () => runQuestAction(context, () => (
+      context.actions.prepareSelectedQuest(context.questSelect.value, "half")
+    )),
+    "set-selected-quest-ready": () => runQuestAction(context, () => (
+      context.actions.prepareSelectedQuest(context.questSelect.value, "ready")
+    )),
+    "clear-active-quest": () => runQuestAction(context, () => context.actions.clearActiveQuest()),
+    "reset-quest-data": () => confirmDanger("要重設委託看板、進度、完成紀錄與委託統計嗎？")
+      && runQuestAction(context, () => context.actions.resetQuestData()),
     camp: () => context.actions.returnToCamp(),
     "delete-save": () => confirmDanger("要刪除目前存檔嗎？這個動作無法復原。") && context.actions.deleteSave()
   };
@@ -90,6 +141,12 @@ export function setDebugPanelStatus(element, message, type) {
 function runSafeAreaAction(context, action) {
   const result = action();
   populateDebugSafeAreaOptions(context);
+  return result;
+}
+
+function runQuestAction(context, action) {
+  const result = action();
+  syncDebugQuestNote(context);
   return result;
 }
 

@@ -1,0 +1,111 @@
+[
+  {
+    "id": "broad-monster-control",
+    "name": "魔物數量控制",
+    "rarity": "common",
+    "description": "降低各地道路與聚落周邊的魔物數量。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 30,
+      "regionIds": [],
+      "routeIds": [],
+      "enemyIds": [],
+      "enemyKinds": [],
+      "enemyFamilies": []
+    },
+    "rewards": { "gold": 20, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "route-patrol",
+    "name": "冒險路線巡查",
+    "rarity": "common",
+    "description": "完成公會指定的例行巡查，確認既有路線仍可通行。",
+    "objective": {
+      "type": "clearAdventure",
+      "target": 2,
+      "regionIds": [],
+      "routeIds": [],
+      "clearSourceIds": []
+    },
+    "rewards": { "gold": 20, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "elite-suppression",
+    "name": "危險個體清剿",
+    "rarity": "common",
+    "description": "清除足以威脅一般商旅的精英魔物。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 5,
+      "regionIds": [],
+      "routeIds": [],
+      "enemyIds": [],
+      "enemyKinds": ["精英"],
+      "enemyFamilies": []
+    },
+    "rewards": { "gold": 25, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "forest-insect-control",
+    "name": "森林蟲害壓制",
+    "rarity": "advanced",
+    "description": "壓制森林中的大型蟲類，避免牠們逼近道路。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 18,
+      "regionIds": ["forest"],
+      "routeIds": [],
+      "enemyIds": [],
+      "enemyKinds": [],
+      "enemyFamilies": ["insect"]
+    },
+    "rewards": { "gold": 35, "materials": [] },
+    "weight": 70,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "boss-threat-removal",
+    "name": "首領威脅排除",
+    "rarity": "advanced",
+    "description": "討伐盤踞各處的首領，降低路線再度失控的可能。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 3,
+      "regionIds": [],
+      "routeIds": [],
+      "enemyIds": [],
+      "enemyKinds": ["首領"],
+      "enemyFamilies": []
+    },
+    "rewards": { "gold": 30, "materials": [] },
+    "weight": 70,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "plains-boss-trophy",
+    "name": "平原霸主戰利品",
+    "rarity": "rare",
+    "description": "公會需要魔化野豬王留下的素材，以供後續研究與加工。",
+    "objective": {
+      "type": "deliverMaterials",
+      "materials": [
+        { "id": "tainted_tusk", "quantity": 3 }
+      ]
+    },
+    "rewards": { "gold": 55, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  }
+]

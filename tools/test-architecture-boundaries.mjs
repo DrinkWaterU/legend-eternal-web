@@ -7,8 +7,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceRoot = path.join(root, "src");
 const reviewedWarningFiles = new Set([
   "src/audio/musicManager.js", // 單一 BGM 狀態機；切割會分散 transition token 與 Audio lifecycle。
+  "src/features/facility/facilityController.js", // 安全區設施總協調器；只負責既有子控制器 routing 與返回脈絡。
   "src/ui/debugScenarioPanel.js", // 單一 Debug 情境編輯器；接近 300 行目標且無玩家 Runtime 責任。
   "src/ui/dom.js", // 純 DOM selector registry；集中維持 HTML 對照比拆散更容易查找。
+  "src/ui/guildAdventureRecordView.js", // 單一公會資歷視圖；含同一頁的無障礙收合動畫與內容渲染。
   "src/ui/merchantController.js" // 單一旅行商人交易流程，單筆與批次共享同一交易視窗狀態。
 ]);
 

@@ -77,7 +77,7 @@ const migratedSchema6 = migrateSave({
     currentSafeAreaId: ANPING_TOWN_SAFE_AREA_ID
   }
 });
-assert.equal(migratedSchema6.schemaVersion, 8);
+assert.equal(migratedSchema6.schemaVersion, 9);
 assert.equal(isSafeAreaUnlocked(migratedSchema6, ANPING_TOWN_SAFE_AREA_ID), true, "舊存檔已完成森林主線時應補解鎖安平鎮");
 assert.equal(isSafeAreaVisited(migratedSchema6, ANPING_TOWN_SAFE_AREA_ID), false, "migration 不得跳過首次抵達演出");
 assert.equal(getCurrentSafeAreaId(migratedSchema6), DEFAULT_SAFE_AREA_ID, "未造訪安平鎮時位置應回退營地");

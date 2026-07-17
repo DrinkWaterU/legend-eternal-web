@@ -6,11 +6,12 @@ import {
 } from "./statisticsMetrics.js";
 import { renderDefinitionList } from "./statisticsViewHelpers.js";
 
-export function renderStatisticsOverview(els, stats) {
+export function renderStatisticsOverview(els, stats, questStats = {}) {
   els.statisticsKeyMetrics.replaceChildren();
   els.statisticsCombatMetrics.replaceChildren();
   els.statisticsOutcomeList.replaceChildren();
   els.statisticsEscapeMetrics.replaceChildren();
+  els.statisticsQuestMetrics?.replaceChildren();
 
   const outcomes = getOutcomeDistribution(stats);
   const escape = getEscapeSummary(stats);
@@ -65,4 +66,17 @@ export function renderStatisticsOverview(els, stats) {
     ["撤離逃跑", escape.evacuationEscapes]
   ], "statistics-compact-row");
   els.statisticsEscapeMetrics.append(summary, breakdown);
+
+  if (els.statisticsQuestMetrics && els.statisticsQuestCompleted) {
+    const completedByRarity = questStats.completedByRarity || {};
+    const completedTotal = safeStatisticCount(questStats.completedTotal);
+    els.statisticsQuestCompleted.textContent = `${completedTotal} 件`;
+    renderDefinitionList(els.statisticsQuestMetrics, [
+      ["普通委託", safeStatisticCount(completedByRarity.common)],
+      ["進階委託", safeStatisticCount(completedByRarity.advanced)],
+      ["稀有委託", safeStatisticCount(completedByRarity.rare)],
+      ["累積賞金", `${safeStatisticCount(questStats.rewardGoldTotal)} G`],
+      ["放棄委託", safeStatisticCount(questStats.abandonedTotal)]
+    ], "statistics-compact-row");
+  }
 }
