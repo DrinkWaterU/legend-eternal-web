@@ -60,7 +60,8 @@ export function createBattleFeatures({
     getAdventureEncounterIndex,
     getAdventureSourceName,
     hasPendingThreat: (...args) => battleState.hasPendingThreat(...args),
-    selectEnemyTarget: (...args) => battleState.selectEnemyTarget(...args)
+    selectEnemyTarget: (...args) => battleState.selectEnemyTarget(...args),
+    questRuntime: world?.questRuntime
   });
 
   const battleLog = createBattleLog({ state, templates, renderLog: combatRenderer.renderLog });

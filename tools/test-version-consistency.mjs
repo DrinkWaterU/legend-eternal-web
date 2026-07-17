@@ -23,7 +23,7 @@ const officialVersion = versionFile.trim();
 const cacheVersion = officialVersion.replace(/^v/, "");
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-assert.match(officialVersion, /^v\d+\.\d+\.\d+(?:\.\d+)?-[a-z0-9.-]+$/i, "VERSION 格式無效");
+assert.match(officialVersion, /^v\d+\.\d+\.\d+(?:\.\d+){0,2}-[a-z0-9.-]+$/i, "VERSION 格式無效");
 assert.equal(GAME_VERSION, officialVersion, "src/config.js 的 GAME_VERSION 必須與 VERSION 一致");
 assert.equal(toolsVersionFile.trim(), officialVersion, "tools/VERSION 必須與 VERSION 一致");
 assert.equal(SAVE_SCHEMA_VERSION, 9, "v0.2.6.3 應包含永久委託資料與既有角色／公會資料 schema");

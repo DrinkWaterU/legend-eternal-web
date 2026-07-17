@@ -76,6 +76,7 @@ export function createProfileFeatures({
     state,
     els,
     currentRegion,
+    questRuntime: world.questRuntime,
     closeLockedCharacterHint: world.closeLockedCharacterHint,
     closeAchievementDetailPanel: achievementController.closeAchievementDetailPanel,
     facilityController: world.facilityController,

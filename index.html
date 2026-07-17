@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.6.4-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.6.4.1-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.6.4-alpha</p>
+            <p class="version-label">v0.2.6.4.1-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -865,6 +865,22 @@
                 <button id="retreatButton" class="secondary-button action-retreat" type="button">撤退</button>
               </div>
             </div>
+            <button
+              id="questCombatToggle"
+              class="quest-combat-toggle"
+              type="button"
+              aria-controls="questInfoPanel"
+              aria-expanded="false"
+              hidden
+            >
+              <span class="quest-combat-toggle-mark" aria-hidden="true">✦</span>
+              <span class="quest-combat-toggle-copy">
+                <span class="eyebrow">目前委託</span>
+                <strong id="questCombatSummaryName">目前委託</strong>
+              </span>
+              <span id="questCombatSummaryProgress" class="quest-combat-toggle-progress">0 / 0</span>
+              <span class="quest-combat-toggle-chevron" aria-hidden="true">↗</span>
+            </button>
             <ol id="battleLog" class="battle-log"></ol>
           </section>
 
@@ -942,6 +958,19 @@
             </div>
             <div class="end-actions">
               <button id="closeBlessingInfoButton" class="primary-button" type="button">關閉</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="questInfoPanel" class="end-panel quest-info-panel" aria-label="目前委託詳情" aria-modal="true">
+          <div class="end-dialog combat-info-dialog quest-info-dialog">
+            <div class="combat-info-header">
+              <p class="eyebrow">戰鬥中的委託詳情</p>
+              <h2 id="questInfoTitle">目前委託</h2>
+            </div>
+            <div id="questInfoContent" class="combat-info-body quest-info-body" aria-live="polite"></div>
+            <div class="end-actions">
+              <button id="closeQuestInfoButton" class="primary-button" type="button">關閉</button>
             </div>
           </div>
         </section>
@@ -1156,6 +1185,6 @@
       </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.6.4-alpha"></script>
+    <script type="module" src="game.js?v=0.2.6.4.1-alpha"></script>
   </body>
 </html>

@@ -12,7 +12,7 @@ import { questDefinitions } from "../src/data/quests.js";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
 
-assert.equal(GAME_VERSION, "v0.2.6.4-alpha");
+assert.equal(GAME_VERSION, "v0.2.6.4.1-alpha");
 assert.equal(SAVE_SCHEMA_VERSION, 9);
 assert.equal(Object.keys(questDefinitions).length, 12);
 assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) => [quest.id, [quest.rarity, quest.rewards.gold]])), {
@@ -91,10 +91,10 @@ for (const id of [
   "guildQuestAbandonPanel",
   "statisticsQuestMetrics"
 ]) assert.match(html, new RegExp(`id="${id}"`));
-assert.match(html, /styles\.css\?v=0\.2\.6\.4-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.6\.4-alpha/);
+assert.match(html, /styles\.css\?v=0\.2\.6\.4\.1-alpha/);
+assert.match(html, /game\.js\?v=0\.2\.6\.4\.1-alpha/);
 assert.doesNotMatch(html, /目前登記身分維持展開|其餘紀錄可按標題查看/);
-assert.equal([...styles.matchAll(/0\.2\.6\.4-alpha/g)].length, 7);
+assert.equal([...styles.matchAll(/0\.2\.6\.4\.1-alpha/g)].length, 7);
 assert.match(components, /\.guild-quest-board\s*\{/);
 assert.match(components, /grid-template-columns:\s*repeat\(2/);
 assert.match(responsive, /\.guild-quest-board\s*\{\s*grid-template-columns:\s*1fr/);

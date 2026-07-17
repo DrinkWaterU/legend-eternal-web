@@ -522,6 +522,88 @@
   min-width: 112px;
 }
 
+.quest-combat-toggle {
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  margin: -2px 0 12px;
+  padding: 9px 11px;
+  border: 1px solid rgba(220, 188, 103, 0.36);
+  border-radius: 10px;
+  color: var(--text);
+  text-align: left;
+  background:
+    linear-gradient(105deg, rgba(139, 107, 48, 0.17), rgba(24, 29, 28, 0.84) 58%),
+    rgba(16, 20, 20, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 204, 0.06);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.quest-combat-toggle:hover,
+.quest-combat-toggle:focus-visible {
+  border-color: rgba(238, 201, 112, 0.78);
+  background:
+    linear-gradient(105deg, rgba(163, 124, 55, 0.25), rgba(24, 29, 28, 0.88) 58%),
+    rgba(16, 20, 20, 0.92);
+}
+
+.quest-combat-toggle:active {
+  transform: translateY(1px);
+}
+
+.quest-combat-toggle.is-complete {
+  border-color: rgba(126, 205, 145, 0.56);
+  background:
+    linear-gradient(105deg, rgba(60, 125, 83, 0.2), rgba(24, 29, 28, 0.86) 58%),
+    rgba(16, 20, 20, 0.9);
+}
+
+.quest-combat-toggle-mark,
+.quest-info-mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(232, 197, 112, 0.42);
+  border-radius: 9px;
+  color: var(--gold);
+  background: rgba(238, 201, 112, 0.09);
+}
+
+.quest-combat-toggle-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.quest-combat-toggle-copy strong {
+  overflow: hidden;
+  color: #fff4d8;
+  font-size: 0.83rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quest-combat-toggle-progress {
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.quest-combat-toggle.is-complete .quest-combat-toggle-progress {
+  color: #8ddd9e;
+}
+
+.quest-combat-toggle-chevron {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
 .battle-log {
   min-height: 0;
   flex: 1 1 auto;
@@ -572,6 +654,94 @@
 
 .blessing-info-dialog .combat-info-body {
   padding-right: 4px;
+}
+
+.quest-info-body {
+  padding: 18px 4px 4px;
+}
+
+.quest-info-card {
+  padding: 16px;
+  border: 1px solid rgba(220, 188, 103, 0.4);
+  border-radius: 12px;
+  background:
+    linear-gradient(105deg, rgba(139, 107, 48, 0.2), rgba(24, 29, 28, 0.88) 58%),
+    rgba(16, 20, 20, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 204, 0.07);
+}
+
+.quest-info-card.is-complete {
+  border-color: rgba(126, 205, 145, 0.58);
+  background:
+    linear-gradient(105deg, rgba(60, 125, 83, 0.22), rgba(24, 29, 28, 0.88) 58%),
+    rgba(16, 20, 20, 0.9);
+}
+
+.quest-info-card-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.quest-info-title-group {
+  min-width: 0;
+}
+
+.quest-info-title-group h3 {
+  overflow: hidden;
+  margin: 3px 0 0;
+  color: #fff4d8;
+  font-size: 1.05rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quest-info-progress-value {
+  color: var(--gold);
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.quest-info-progress-value.is-complete {
+  color: #8ddd9e;
+}
+
+.quest-info-objective {
+  margin: 14px 0 11px;
+  color: #cfc8b5;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.quest-info-progress-track {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.46);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.quest-info-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #b0844d, #e9c778);
+  transition: width 220ms ease;
+}
+
+.quest-info-card.is-complete .quest-info-progress-track span {
+  background: linear-gradient(90deg, #5ea778, #a7df9a);
+}
+
+.quest-info-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 0.75rem;
 }
 
 @media (max-width: 820px) {
@@ -724,6 +894,24 @@
   .combat-info-dialog,
   .blessing-info-dialog {
     max-height: calc(100dvh - 20px);
+  }
+
+  .quest-combat-toggle {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .quest-combat-toggle-chevron {
+    display: none;
+  }
+
+  .quest-info-body {
+    padding-top: 14px;
+  }
+
+  .quest-info-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
   }
 }
 

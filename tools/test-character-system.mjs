@@ -69,9 +69,9 @@ function sequenceRandom(values) {
     "50% 邊界不應被重複解讀"
   );
   assert.equal(
-    scheduleRegionEvent(forestRegion, sequenceRandom([0.3])),
+    scheduleRegionEvent(forestRegion, sequenceRandom([0.45])),
     null,
-    "救援後仍應沿用森林正式 30% 排程邊界"
+    "救援後仍應沿用森林正式 45% 排程邊界"
   );
 }
 
