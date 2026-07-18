@@ -11,7 +11,8 @@ import {
   consumePreparationEnhancementReveal,
   normalizePreparationUiState
 } from "../../ui/preparationState.js";
-import { renderChoiceList, renderStatList } from "../../ui/renderHelpers.js";
+import { renderRegionChoiceList } from "../../ui/regionChoiceView.js";
+import { renderStatList } from "../../ui/renderHelpers.js";
 
 export function createRegionController({
   state,
@@ -58,13 +59,12 @@ export function createRegionController({
     els.regionDetailView.classList.toggle("is-active", uiState.regionView === "detail");
     setReturnButton(els.regionListView.querySelector(".back-button"), getNavigationReturnTarget());
 
-    renderChoiceList(els.regionChoiceList, Object.entries(regionDefinitions).map(([regionId, region]) => ({
-      title: region.name,
-      meta: region.recommendedLevel ? `${region.difficulty}｜${region.recommendedLevel}` : region.difficulty,
-      description: `${region.encounterCount} 場遭遇，首領：${region.bossName}`,
-      action: "查看地區",
-      onClick: () => showRegionDetail(regionId)
-    })));
+    renderRegionChoiceList({
+      element: els.regionChoiceList,
+      regions: regionDefinitions,
+      documentRef,
+      onSelect: showRegionDetail
+    });
 
     if (uiState.regionView !== "detail") {
       return;

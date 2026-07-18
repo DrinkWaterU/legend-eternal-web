@@ -27,6 +27,11 @@
 }
 
 @media (max-width: 820px) {
+  .choice-button.region-choice-card {
+    --region-choice-background-current:
+      var(--region-choice-background-mobile, var(--region-choice-background-desktop, none));
+  }
+
   .app-shell {
     width: min(100% - 20px, 720px);
     padding-top: 18px;

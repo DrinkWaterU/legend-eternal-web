@@ -60,6 +60,7 @@ export function createProfileFeatures({
   const saveTransferController = createSaveTransferController({
     saveStore,
     els,
+    windowRef,
     saveGameSafe,
     syncSafeAreaUiFromSave: world.syncSafeAreaUiFromSave,
     syncSelectionFromSave: world.syncSelectionFromSave,

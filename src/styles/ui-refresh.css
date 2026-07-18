@@ -1184,6 +1184,66 @@ button:disabled {
   background-size: cover;
 }
 
+.region-choice-card {
+  --region-choice-background-current: var(--region-choice-background-desktop, none);
+
+  min-height: 140px;
+  background-color: #111718;
+  background-image:
+    linear-gradient(90deg, rgba(6, 11, 12, 0.94) 0%, rgba(6, 11, 12, 0.78) 48%, rgba(6, 11, 12, 0.42) 100%),
+    var(--region-choice-background-current);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: inset 0 0 32px rgba(0, 0, 0, 0.18);
+}
+
+.region-choice-card:hover,
+.region-choice-card:focus-visible {
+  background-image:
+    linear-gradient(90deg, rgba(14, 18, 17, 0.9) 0%, rgba(20, 21, 17, 0.7) 48%, rgba(20, 18, 12, 0.34) 100%),
+    var(--region-choice-background-current);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.region-choice-card:hover {
+  transform: scale(0.99);
+}
+
+.region-choice-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.region-choice-card strong {
+  color: #fff4d8;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.82);
+}
+
+.region-choice-card small,
+.region-choice-card em {
+  color: rgba(239, 234, 218, 0.82);
+  text-shadow: 0 1px 7px rgba(0, 0, 0, 0.9);
+}
+
+.statistics-region-detail-heading > div:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.statistics-region-detail-heading > div:first-child > * {
+  min-width: 0;
+}
+
+.statistics-region-detail-heading p {
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .statistics-detail-heading {
   display: flex;
   align-items: center;

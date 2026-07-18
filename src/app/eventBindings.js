@@ -53,7 +53,10 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     openExportSaveCodeDialog,
     openImportSaveCodeDialog,
     copySaveCode,
+    downloadSaveFile,
     closeExportSaveCodeDialog,
+    chooseSaveFile,
+    handleSaveFileSelected,
     checkImportSaveCode,
     confirmImportSaveCode,
     closeImportSaveCodeDialog,
@@ -146,7 +149,10 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.exportSaveCodeButton.addEventListener("click", openExportSaveCodeDialog);
   els.importSaveCodeButton.addEventListener("click", openImportSaveCodeDialog);
   els.copySaveCodeButton.addEventListener("click", copySaveCode);
+  els.downloadSaveFileButton.addEventListener("click", downloadSaveFile);
   els.closeExportSaveCodeButton.addEventListener("click", closeExportSaveCodeDialog);
+  els.chooseSaveFileButton.addEventListener("click", chooseSaveFile);
+  els.importSaveFileInput.addEventListener("change", handleSaveFileSelected);
   els.checkSaveCodeButton.addEventListener("click", checkImportSaveCode);
   els.confirmImportSaveCodeButton.addEventListener("click", confirmImportSaveCode);
   els.closeImportSaveCodeButton.addEventListener("click", closeImportSaveCodeDialog);
