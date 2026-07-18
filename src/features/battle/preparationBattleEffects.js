@@ -11,6 +11,7 @@ import {
   modifyCharacterIncomingDirectDamage,
   resolveCharacterPlayerAction
 } from "../../characters/skills/index.js";
+import { getHeroBattleHealingMultiplier } from "../../core/combatStatusEffects.js";
 
 export function createPreparationBattleEffects({ state, addFixedLog }) {
   function runHeroPlayerAction({ target, log }) {
@@ -83,7 +84,8 @@ export function createPreparationBattleEffects({ state, addFixedLog }) {
     const result = resolvePostEncounterPreparation({
       preparation: state.runPreparation,
       hero: state.hero,
-      isFinalEncounter
+      isFinalEncounter,
+      healingMultiplier: getHeroBattleHealingMultiplier(state.hero)
     });
     if (result.triggered) {
       const preparationName = state.runPreparation?.name || "冒險整備";

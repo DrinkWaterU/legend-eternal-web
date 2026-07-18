@@ -5,6 +5,7 @@ import {
   mergeRewards,
   rollEnemyRewards
 } from "../../core/rewards.js";
+import { getHeroBattleHealingAmount } from "../../core/combatStatusEffects.js";
 
 export function createBattleSettlement({
   state,
@@ -45,7 +46,8 @@ export function createBattleSettlement({
 
   function healHeroFromEnemyDefeat(amount) {
     const before = state.hero.hp;
-    state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + Math.max(0, Number(amount) || 0));
+    const effectiveAmount = getHeroBattleHealingAmount(state.hero, amount);
+    state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + effectiveAmount);
     const healed = state.hero.hp - before;
     if (healed > 0) addLog("heal", "heal", { target: state.hero.name, amount: healed });
   }

@@ -75,6 +75,24 @@ try {
   }
 
   {
+    const hero = createArcher(6);
+    const enemy = createEnemy({ attack: 50, poisonPower: 6 });
+    const log = createLogger();
+    Math.random = () => 0.99;
+    const hpBefore = hero.hp;
+    resolveEnemyAction({
+      hero,
+      enemy,
+      turn: 1,
+      log,
+      modifyDirectDamage: modifyCharacterIncomingDirectDamage
+    });
+    assert.equal(hero.hp, hpBefore - 1, "保持距離應將敵人直接攻擊傷害降至 1 點");
+    assert.equal(hero.poison, 6, "保持距離不是閃避，敵人附帶中毒仍應正常生效");
+    assert.equal(hero.skillState.archer.keepDistanceCharges, 1, "保持距離應從 2 次中消耗 1 次");
+  }
+
+  {
     const hero = createArcher(10);
     hero.critChance = 0;
     const enemies = createRuntimeEnemyGroup([
@@ -88,6 +106,50 @@ try {
     }
     assert.ok(enemies[0].hp < 100, "第 4 次被閃避射擊仍應讓箭雨命中原目標");
     assert.ok(enemies[1].hp < 100, "第 4 次被閃避射擊仍應讓箭雨命中其他存活敵人");
+  }
+
+  {
+    const hero = createArcher(10);
+    hero.critChance = 0;
+    const enemies = createRuntimeEnemyGroup([
+      createEnemy({ hp: 1000, maxHp: 1000 })
+    ]);
+    const log = createLogger();
+    Math.random = () => 0.99;
+    modifyCharacterIncomingDirectDamage({ hero, damage: 20, log });
+    assert.equal(hero.skillState.archer.keepDistanceCharges, 1, "測試前應先消耗 1 次保持距離");
+    for (let index = 0; index < 4; index += 1) {
+      fire(hero, enemies, enemies[0].runtimeId, log);
+    }
+    assert.equal(hero.skillState.archer.keepDistanceCharges, 2, "箭雨應恢復 1 次保持距離，且最多保留 2 次");
+  }
+
+  {
+    const earlyHero = createArcher(12);
+    earlyHero.critChance = 0;
+    const earlyEnemies = createRuntimeEnemyGroup([
+      createEnemy({ hp: 1000, maxHp: 1000, poison: 3 })
+    ]);
+    const earlyLog = createLogger();
+    Math.random = () => 0.15;
+    fire(earlyHero, earlyEnemies, earlyEnemies[0].runtimeId, earlyLog);
+    assert.equal(
+      earlyLog.entries.filter((entry) => entry.templateId === "critical").length,
+      0,
+      "Lv.12 毒素破綻應只提供 10% 暴擊率"
+    );
+
+    const enhancedHero = createArcher(18);
+    enhancedHero.critChance = 0;
+    const enhancedEnemies = createRuntimeEnemyGroup([
+      createEnemy({ hp: 1000, maxHp: 1000, poison: 6 })
+    ]);
+    const enhancedLog = createLogger();
+    fire(enhancedHero, enhancedEnemies, enhancedEnemies[0].runtimeId, enhancedLog);
+    assert.ok(
+      enhancedLog.entries.some((entry) => entry.templateId === "critical"),
+      "劇毒箭頭應把毒素破綻的暴擊率加成提高至 20%"
+    );
   }
 
   {
@@ -137,6 +199,14 @@ try {
     assert.equal(hero.hp, hpBefore - 1, "距離掌控應將敵人直接攻擊傷害降至 1 點");
     assert.equal(hero.poison, 6, "距離掌控不是閃避，敵人附帶中毒仍應正常生效");
     assert.equal(hero.skillState.archer.keepDistanceCharges, 2, "距離掌控應從 3 次保持距離中消耗 1 次");
+
+    const enemies = createRuntimeEnemyGroup([
+      createEnemy({ hp: 1000, maxHp: 1000 })
+    ]);
+    for (let index = 0; index < 4; index += 1) {
+      fire(hero, enemies, enemies[0].runtimeId, log);
+    }
+    assert.equal(hero.skillState.archer.keepDistanceCharges, 3, "距離掌控應讓箭雨恢復 1 次，且最多保留 3 次");
   }
 
   console.log("Archer combat isolation tests passed.");

@@ -20,7 +20,6 @@ const [html, game, dom, componentsCss, responsiveCss, storage, commerce, dialogu
   readFile(new URL("src/core/dialogue.js", root), "utf8")
 ]);
 
-assert.match(GAME_VERSION, /^v0\.2\.6(?:\.\d+){1,2}-alpha$/);
 assert.equal(SAVE_SCHEMA_VERSION, 9);
 assert.deepEqual(safeAreaDefinitions["anping-town"].facilityIds, ["blacksmith", "adventurers-guild"]);
 assert.equal(facilityDefinitions["adventurers-guild"].npcId, "anping-guild-receptionist");

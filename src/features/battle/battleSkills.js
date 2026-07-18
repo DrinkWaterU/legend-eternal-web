@@ -1,4 +1,5 @@
 import { getBlessingFlowDefinitions } from "../../data/blessingFlows.js";
+import { getHeroBattleHealingAmount } from "../../core/combatStatusEffects.js";
 import { weightedRandomItem } from "../../utils.js";
 
 const VERSATILE_SATCHEL_EFFECT_HANDLERS = Object.freeze({
@@ -55,7 +56,7 @@ export function createBattleSkills({
 
   function applyBattleStartSkills() {
     if (hasHeroSkill("status-familiarity") && !hasBlessingFlow("debuff")) {
-      state.hero.battleAttackBonus = (state.hero.battleAttackBonus || 0) + 1;
+      state.hero.battleAttackBonus = (state.hero.battleAttackBonus || 0) + 2;
       addFixedLog("skill", `${state.hero.name} 沒有可判讀的負面狀態，改以經驗調整攻勢，攻擊提升。`);
     }
 
@@ -73,7 +74,7 @@ export function createBattleSkills({
   function applyEmergencyBandage() {
     if (!hasHeroSkill("emergency-bandage") || state.hero.skillState.emergencyBandageUsed || state.hero.hp <= 0) return;
     if (state.hero.hp > state.hero.maxHp * 0.4) return;
-    const amount = Math.max(1, Math.round(state.hero.maxHp * 0.18));
+    const amount = getHeroBattleHealingAmount(state.hero, state.hero.maxHp * 0.18, { minimum: 1 });
     state.hero.skillState.emergencyBandageUsed = true;
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
     addLog("heal", "emergencyBandage", { actor: state.hero.name, amount });
@@ -88,13 +89,24 @@ export function createBattleSkills({
     if (state.hero.entangle) {
       state.hero.entangle = null;
       addLog("status", "cleanse", { actor: state.hero.name, effect: "纏繞" });
+      return;
+    }
+    if (state.hero.saltErosion) {
+      state.hero.saltErosion = null;
+      addLog("status", "cleanse", { actor: state.hero.name, effect: "鹽蝕" });
+      return;
+    }
+    if (state.hero.paralysis) {
+      state.hero.paralysis = null;
+      addLog("status", "cleanse", { actor: state.hero.name, effect: "麻痺" });
     }
   }
 
   function tryLastStand() {
     if (!hasHeroSkill("last-stand") || state.hero.skillState.lastStandUsed) return false;
     state.hero.skillState.lastStandUsed = true;
-    const amount = Math.max(1, Math.round(state.hero.maxHp * 0.15));
+    const recoveryRatio = hasHeroSkill("expedition-pace") ? 0.25 : 0.15;
+    const amount = getHeroBattleHealingAmount(state.hero, state.hero.maxHp * recoveryRatio, { minimum: 1 });
     state.hero.hp = Math.min(state.hero.maxHp, 1 + amount);
     addLog("heal", "lastStand", { actor: state.hero.name, amount });
     cleanseOneNegativeEffect();
@@ -103,8 +115,12 @@ export function createBattleSkills({
 
   function applyVictorySkills() {
     if (!hasHeroSkill("adventurer-pace")) return;
-    const baseRatio = hasHeroSkill("expedition-pace") ? 0.15 : 0.1;
-    const amount = Math.max(1, Math.round(state.hero.maxHp * (baseRatio + (state.hero.victoryHealBonusRatio || 0))));
+    const baseRatio = hasHeroSkill("expedition-pace") ? 0.2 : 0.1;
+    const amount = getHeroBattleHealingAmount(
+      state.hero,
+      state.hero.maxHp * (baseRatio + (state.hero.victoryHealBonusRatio || 0)),
+      { minimum: 1 }
+    );
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + amount);
     addLog("heal", "adventurerPace", { amount });
   }

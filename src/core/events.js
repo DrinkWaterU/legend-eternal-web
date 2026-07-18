@@ -22,9 +22,12 @@ export function scheduleRegionEvent(region, randomFn = Math.random, options = {}
   }
 
   const event = weightedPick(candidates, (candidate) => candidate.weight ?? 100, randomFn);
-  const triggerBeforeEncounter = triggerBeforeEncounters[
-    Math.floor(randomFn() * triggerBeforeEncounters.length)
-  ];
+  const fixedTrigger = Number(event.triggerBeforeEncounter);
+  const triggerBeforeEncounter = Number.isInteger(fixedTrigger) && fixedTrigger > 0
+    ? fixedTrigger
+    : triggerBeforeEncounters[
+      Math.floor(randomFn() * triggerBeforeEncounters.length)
+    ];
 
   return {
     eventId: event.id,

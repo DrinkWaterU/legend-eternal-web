@@ -3,15 +3,19 @@ export function createAdventureAchievements({
   saveStore,
   queueAchievementUnlock,
   forestTrialAchievementId,
-  goblinCampClearAchievementId
+  goblinCampClearAchievementId,
+  beachTrialAchievementId
 }) {
   function unlockAdventureClearAchievements({
     regionId = state.selectedRegionId,
     routeId = state.activeRouteId
   } = {}) {
-    if (state.debugBuildRun || regionId !== "forest") return;
-    queueAchievementUnlock(forestTrialAchievementId);
-    if (routeId === "goblin-camp") queueAchievementUnlock(goblinCampClearAchievementId);
+    if (state.debugBuildRun) return;
+    if (regionId === "forest") {
+      queueAchievementUnlock(forestTrialAchievementId);
+      if (routeId === "goblin-camp") queueAchievementUnlock(goblinCampClearAchievementId);
+    }
+    if (regionId === "beach") queueAchievementUnlock(beachTrialAchievementId);
     saveStore.current.storyFlags.achievementSystemUnlocked = true;
   }
 

@@ -64,6 +64,7 @@ function simulateForestRuns(rounds) {
       resetBattleState(hero);
       const enemy = buildEnemy(forestRegion, encounterIndex, hero, { boss: selectedBoss });
       enemy.poison = 0;
+      applyEnemyAmbush(hero, enemy);
       const won = simulateEncounter(hero, enemy);
       if (!won) {
         cleared = false;
@@ -155,6 +156,14 @@ function resetBattleState(hero) {
   hero.shield = hero.shieldStart;
   hero.skillState = createSkillState();
   initializeCharacterBattleState(hero);
+}
+
+function applyEnemyAmbush(hero, enemy) {
+  const amount = Number(enemy.ambushDamage) || 0;
+  if (amount <= 0 || hero.hp <= 1) {
+    return;
+  }
+  hero.hp -= Math.min(amount, hero.hp - 1);
 }
 
 function applyKillRecovery(hero) {

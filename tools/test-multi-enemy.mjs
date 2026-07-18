@@ -66,6 +66,15 @@ assert.equal(restored[1].maxHp, 50, "restore 不可重複套用 statScale");
 assert.equal(restored[1].attack, 10, "restore 不可重複縮放 attack");
 assert.equal(restored[1].displayName, "測試哥布林 B", "restore 應保留 runtime 顯示名稱");
 
+const independentAttackScaleGroup = createRuntimeEnemyGroup([
+  { enemy: baseEnemy, statScale: 0.5, attackScale: 0.8, rewardScale: 0.5 }
+]);
+assert.equal(independentAttackScaleGroup[0].maxHp, 50, "statScale 應獨立縮放 maxHp");
+assert.equal(independentAttackScaleGroup[0].attack, 16, "attackScale 應獨立縮放 attack");
+assert.equal(independentAttackScaleGroup[0].attackScale, 0.8);
+const restoredIndependentScaleGroup = restoreRuntimeEnemyGroup(independentAttackScaleGroup);
+assert.equal(restoredIndependentScaleGroup[0].attack, 16, "restore 不可重複套用 attackScale");
+
 assert.equal(resolveTargetEnemyId(group, null), group[0].runtimeId, "沒有目標時應選第一名存活敵人");
 assert.equal(resolveTargetEnemy(group, group[1].runtimeId), group[1]);
 group[1].hp = 0;

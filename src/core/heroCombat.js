@@ -5,6 +5,8 @@ const HEAVY_STRIKE_CHANCE = 0.2;
 const HEAVY_STRIKE_MULTIPLIER = 1.4;
 const FOLLOW_UP_CHANCE = 0.25;
 const FOLLOW_UP_ATTACK_RATIO = 0.5;
+const FOLLOW_UP_PLUS_CHANCE = 0.4;
+const FOLLOW_UP_PLUS_ATTACK_RATIO = 0.7;
 const ENTANGLE_ESCAPE_CHANCES = [0.45, 0.7, 0.9, 1];
 const STATUS_FAMILIARITY_MAX_STACKS = 3;
 
@@ -47,8 +49,14 @@ export function resolveHeroAction({ hero, enemy, log }) {
   }
 
   const enemyName = getEnemyDisplayName(enemy);
-  if (enemy.hp > 0 && hasSkill(hero, "skilled-follow-up") && roll(FOLLOW_UP_CHANCE)) {
-    const followUpDamage = Math.max(1, Math.round(getHeroEffectiveAttack(hero) * FOLLOW_UP_ATTACK_RATIO));
+  const followUpChance = hasSkill(hero, "exploit-weakness-plus")
+    ? FOLLOW_UP_PLUS_CHANCE
+    : FOLLOW_UP_CHANCE;
+  const followUpAttackRatio = hasSkill(hero, "exploit-weakness-plus")
+    ? FOLLOW_UP_PLUS_ATTACK_RATIO
+    : FOLLOW_UP_ATTACK_RATIO;
+  if (enemy.hp > 0 && hasSkill(hero, "skilled-follow-up") && roll(followUpChance)) {
+    const followUpDamage = Math.max(1, Math.round(getHeroEffectiveAttack(hero) * followUpAttackRatio));
     enemy.hp = Math.max(0, enemy.hp - followUpDamage);
     log.template("hero-damage", "skilledFollowUp", {
       actor: hero.name,
@@ -70,7 +78,8 @@ export function resolveHeroStrike({ hero, enemy, log, options = {} }) {
     return { dodged: true, critical: false, damage: 0 };
   }
 
-  let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier });
+  const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
+  let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier, attackMultiplier });
   if (allowHeavyStrike && hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
     damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
     log.template("skill", "heavyStrike", { actor: hero.name });
@@ -99,15 +108,30 @@ export function resolveHeroStrike({ hero, enemy, log, options = {} }) {
   return { dodged: false, critical, damage };
 }
 
-export function getHeroDirectAttackDamage({ hero, enemy, damageMultiplier = 1 }) {
+export function getHeroDirectAttackDamage({ hero, enemy, damageMultiplier = 1, attackMultiplier = 1 }) {
   const poisonedDefenseIgnore = enemy.poison > 0 ? Math.max(0, Number(hero.poisonedTargetDefenseIgnore) || 0) : 0;
   const effectiveDefense = Math.max(0, (Number(enemy.defense) || 0) - poisonedDefenseIgnore);
-  let damage = Math.max(1, getHeroEffectiveAttack(hero) - effectiveDefense);
+  const multiEnemyDamageBonus = Number(hero?.activeEnemyCount) >= 2
+    ? Math.max(0, Number(hero?.multiEnemyDamageBonus) || 0)
+    : 0;
+  const effectiveAttack = getHeroEffectiveAttack(hero)
+    * (1 + multiEnemyDamageBonus)
+    * Math.max(0, Number(attackMultiplier) || 0);
+  let damage = Math.max(1, effectiveAttack - effectiveDefense);
   const familyBonus = getFamilyDamageBonus(hero, enemy.family);
   if (familyBonus > 0) {
     damage = Math.round(damage * (1 + familyBonus));
   }
   return Math.max(1, Math.round(damage * Math.max(0, Number(damageMultiplier) || 0)));
+}
+
+export function getHeroAttackDamageMultiplier(hero, log) {
+  const remainingTurns = Number(hero?.paralysis?.remainingTurns) || 0;
+  if (remainingTurns <= 0 || Math.random() >= 0.5) {
+    return 1;
+  }
+  log?.fixed?.("status", `${hero.name} 受到麻痺影響，這次攻擊力降低 20%。`);
+  return 0.8;
 }
 
 function hasSkill(hero, skillId) {

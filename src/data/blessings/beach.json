@@ -1,0 +1,160 @@
+{
+  "id": "beach",
+  "name": "海灘",
+  "blessings": [
+    {
+      "id": "beach-tide-whetstone",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "attack",
+      "name": "礪鹽淬鋒",
+      "eventTitle": "礁石磨痕",
+      "eventText": "你在潮線附近找到一塊粗糙礁石，順手重新整理武器刃口。",
+      "flavorText": "鹽粒磨過鋒面，留下不算漂亮卻足夠可靠的銳利。",
+      "effectText": "攻擊力 +4。",
+      "effects": [
+        { "type": "add", "stat": "attack", "amount": 4 }
+      ]
+    },
+    {
+      "id": "beach-reef-shell",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "name": "藤壺硬皮",
+      "eventTitle": "藤壺護片",
+      "eventText": "你把附著在礁石上的硬藤壺剝下，固定在護具較容易受擊的位置。",
+      "flavorText": "海水不斷拍打，硬殼卻在一次次衝擊中留下形狀。",
+      "effectText": "防禦 +3，每場戰鬥開始獲得 10 點護盾。",
+      "effects": [
+        { "type": "add", "stat": "defense", "amount": 3 },
+        { "type": "add", "stat": "shieldStart", "amount": 10 }
+      ]
+    },
+    {
+      "id": "beach-tide-rest",
+      "category": "healing",
+      "rarity": "common",
+      "primaryFlow": "healing",
+      "name": "淺灘退潮",
+      "eventTitle": "退潮水窪",
+      "eventText": "退潮後留下的水窪乾淨得出乎意料，你趁著短暫空檔清理傷口。",
+      "flavorText": "海水退去後，礁縫裡還留著一點能讓人喘息的安靜。",
+      "effectText": "立即恢復 28 點生命；接下來 3 場戰鬥中，每 3 回合恢復最大生命 4%。",
+      "effects": [
+        { "type": "recoverHp", "amount": 28 },
+        { "type": "addTimedRegen", "id": "beach-tide-rest", "durationEncounters": 3, "everyTurns": 3, "maxHpRatio": 0.04 }
+      ]
+    },
+    {
+      "id": "beach-crosscurrent-guard",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "name": "背水迎潮",
+      "eventTitle": "逆流站姿",
+      "eventText": "你觀察海浪撞上礁壁的角度，調整站姿，準備在敵群逼近時借力承受衝擊。",
+      "flavorText": "浪頭越多，越不能把腳步交給慌亂。",
+      "effectText": "面對 2 名以上敵人時，戰鬥開始獲得 6 點額外護盾。",
+      "effects": [
+        { "type": "add", "stat": "multiEnemyShieldStart", "amount": 6 }
+      ]
+    },
+    {
+      "id": "beach-tide-scavenger",
+      "category": "healing",
+      "rarity": "uncommon",
+      "primaryFlow": "healing",
+      "name": "趕海拾遺",
+      "eventTitle": "潮線拾取",
+      "eventText": "你在潮線上找出幾種仍保有活性的海岸生物組織，研究它們恢復傷口的方式。",
+      "flavorText": "海岸把東西帶來，也把東西帶走；能留下的都得好好利用。",
+      "effectText": "擊敗敵人恢復 14 點生命；每 4 回合恢復 6 點生命。",
+      "effects": [
+        { "type": "add", "stat": "killHeal", "amount": 14 },
+        { "type": "set", "stat": "regenEvery", "value": 4 },
+        { "type": "add", "stat": "regenAmount", "amount": 6 }
+      ]
+    },
+    {
+      "id": "beach-saltbound-shell",
+      "category": "defense",
+      "rarity": "uncommon",
+      "primaryFlow": "defense",
+      "name": "鹽晶鑄甲",
+      "eventTitle": "鹽晶補強",
+      "eventText": "你把結晶化的鹽粒壓入護具縫隙，讓原本鬆動的結構重新咬合。",
+      "flavorText": "鹽晶不柔軟，卻能在潮濕與撞擊之間維持形狀。",
+      "effectText": "最大生命 +14，每場戰鬥開始獲得 9 點護盾。",
+      "effects": [
+        { "type": "add", "stat": "maxHp", "amount": 14 },
+        { "type": "add", "stat": "shieldStart", "amount": 9 }
+      ]
+    },
+    {
+      "id": "beach-fishman-tideeye",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "crit",
+      "name": "潮視之瞳",
+      "eventTitle": "潮痕辨識",
+      "eventText": "你從潮痕與足印的方向辨認出敵人的移動節奏，視線變得更加銳利。",
+      "flavorText": "看懂浪花退去後留下的痕跡，也就更容易看懂敵人的破綻。",
+      "effectText": "暴擊率 +9%，對魚人類敵人的傷害 +8%。",
+      "effects": [
+        { "type": "add", "stat": "critChance", "amount": 0.09 },
+        { "type": "addFamilyDamageBonus", "family": "fishman", "amount": 0.08 }
+      ]
+    },
+    {
+      "id": "beach-saltward",
+      "category": "defense",
+      "rarity": "uncommon",
+      "primaryFlow": "defense",
+      "name": "淬鹽傲骨",
+      "eventTitle": "鹽痕護符",
+      "eventText": "你把處理過的鹽晶貼近胸口，讓刺入身體的潮氣不再那麼容易拖慢恢復。",
+      "flavorText": "鹽蝕仍會留下痕跡，但不必每一次都讓它帶走同樣多的力氣。",
+      "effectText": "鹽蝕期間的治療效果固定為原本的 80%；重複取得不會再降低。",
+      "effects": [
+        { "type": "set", "stat": "saltHealingReduction", "value": 0.2 }
+      ]
+    },
+    {
+      "id": "beach-fishman-hunt",
+      "category": "attack",
+      "rarity": "rare",
+      "primaryFlow": "attack",
+      "name": "鰔落之刑",
+      "eventTitle": "魚人獵痕",
+      "eventText": "你記下魚人留下的刃痕與腳印，準備在下一次遭遇中更快抓住牠們的破綻。",
+      "flavorText": "獵人不需要每次都追上獵物，但必須知道獵物會往哪裡逃。",
+      "effectText": "攻擊力 +5；對魚人類敵人的傷害 +8%；短時間內略微提高遇到魚人的機率。",
+      "effects": [
+        { "type": "add", "stat": "attack", "amount": 5 },
+        { "type": "addFamilyDamageBonus", "family": "fishman", "amount": 0.08 }
+      ],
+      "encounterBias": {
+        "families": ["fishman"],
+        "normal": { "bonusWeight": 80, "duration": 3 },
+        "elite": { "bonusWeight": 60, "duration": 2 }
+      }
+    },
+    {
+      "id": "beach-tide-counter",
+      "category": "defense",
+      "rarity": "rare",
+      "primaryFlow": "defense",
+      "name": "怒濤反噬",
+      "eventTitle": "借浪反擊",
+      "eventText": "你在敵群的包圍中借著浪勢轉身，把同一股衝力送回牠們身上。",
+      "flavorText": "浪不會因為敵人變多就停止；你也不必。",
+      "effectText": "防禦力 +2，每場戰鬥開始獲得 8 點護盾。\n面對 2 名敵人以上時，造成的傷害固定提高 10%（唯一，不可疊加）。",
+      "effects": [
+        { "type": "add", "stat": "defense", "amount": 2 },
+        { "type": "add", "stat": "shieldStart", "amount": 8 },
+        { "type": "set", "stat": "multiEnemyDamageBonus", "value": 0.1 }
+      ]
+    }
+  ]
+}

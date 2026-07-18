@@ -1,11 +1,12 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
+import { applyParalysis, applySaltErosion } from "./combatStatusEffects.js";
 import { roll } from "../utils.js";
 
 const DEFAULT_CHARGE_MULTIPLIER = 1.6;
 const STEADY_STANCE_CHANCE = 0.25;
 const STEADY_STANCE_REDUCTION = 0.3;
-const STEADY_STANCE_PLUS_CHANCE = 0.3;
-const STEADY_STANCE_PLUS_REDUCTION = 0.35;
+const STEADY_STANCE_PLUS_CHANCE = 0.35;
+const STEADY_STANCE_PLUS_REDUCTION = 0.4;
 
 export function resolveEnemyAction({ hero, enemy, turn, log, modifyDirectDamage = null }) {
   const enemyName = getEnemyDisplayName(enemy);
@@ -64,6 +65,14 @@ export function resolveEnemyAction({ hero, enemy, turn, log, modifyDirectDamage 
   if (enemy.entangleChance && hero.hp > 0 && !hero.entangle && roll(enemy.entangleChance)) {
     hero.entangle = { attempts: 0 };
     log.template("status", "entangleApply", { target: hero.name });
+  }
+
+  if (enemy.saltErosionChance && hero.hp > 0 && roll(enemy.saltErosionChance)) {
+    applySaltErosion(hero, log);
+  }
+
+  if (enemy.paralysisChance && hero.hp > 0 && roll(enemy.paralysisChance)) {
+    applyParalysis(hero, log);
   }
 
   return damageSource;

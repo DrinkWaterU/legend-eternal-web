@@ -165,6 +165,12 @@ function renderHeroStatus(els, hero, characterStatusEntries) {
     statuses.push({ label: `中毒 ${hero.poison} · 預計 -${getHeroPendingHpLoss(hero)}`, className: "is-negative" });
   }
   if (hero.entangle) statuses.push({ label: "纏繞", className: "is-negative" });
+  if (hero.saltErosion?.remainingTurns > 0) {
+    statuses.push({ label: `鹽蝕 ${hero.saltErosion.remainingTurns}`, className: "is-negative" });
+  }
+  if (hero.paralysis?.remainingTurns > 0) {
+    statuses.push({ label: `麻痺 ${hero.paralysis.remainingTurns}`, className: "is-negative" });
+  }
   statuses.push(...characterStatusEntries);
   renderStatusChips(els.heroStatusList, statuses, "狀態正常");
 }

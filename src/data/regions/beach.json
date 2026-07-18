@@ -1,0 +1,272 @@
+{
+  "id": "beach",
+  "name": "海灘",
+  "description": "穿過森林的盡頭，迎面而來的是無邊的開闊海岸。乾涸鹽痕、噬人礁岩與莫測的漲退潮線交織成網，使每一步前行都充滿未知的變數。",
+  "difficulty": "進階",
+  "traits": [
+    "多敵人戰鬥",
+    "鹽蝕威脅",
+    "潮汐生物"
+  ],
+  "recommendedLevel": "Lv.20+",
+  "audio": {
+    "bgmId": "coast-beach"
+  },
+  "visual": {
+    "background": {
+      "desktop": "assets/images/regions/coast/coast-beach.jpg",
+      "mobile": "assets/images/regions/coast/coast-beach-mobile.jpg",
+      "tone": "coast-beach"
+    }
+  },
+  "encounterPlan": [
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    { "type": "elite", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    {
+      "type": "normal",
+      "groupOptions": [
+        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
+        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
+        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
+        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
+        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
+        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
+        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+      ]
+    },
+    { "type": "elite", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
+    {
+      "type": "normal",
+      "groupOptions": [
+        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
+        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
+        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
+        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
+        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+      ]
+    },
+    { "type": "boss" }
+  ],
+  "scaling": {
+    "hpPerEncounter": 0.006,
+    "attackPerEncounter": 0.0045
+  },
+  "enemies": [
+    {
+      "id": "reef-crab",
+      "name": "礁甲蟹",
+      "kind": "普通",
+      "family": "beast",
+      "weight": 100,
+      "maxHp": 194,
+      "attack": 24,
+      "defense": 8,
+      "critChance": 0,
+      "expReward": 62,
+      "rewards": {
+        "gold": { "min": 0, "max": 1 },
+        "materials": [{ "id": "reef_shell", "chance": 0.36, "min": 1, "max": 1 }]
+      },
+      "intro": "礁甲蟹從濕滑的岩縫裡爬出，硬殼在潮光下泛著冷色。"
+    },
+    {
+      "id": "salt-jellyfish",
+      "name": "鹽霧水母",
+      "kind": "普通",
+      "family": "slime",
+      "weight": 70,
+      "maxHp": 142,
+      "attack": 26,
+      "defense": 3,
+      "critChance": 0,
+      "saltErosionChance": 0.18,
+      "paralysisChance": 0.2,
+      "expReward": 64,
+      "rewards": {
+        "gold": { "min": 0, "max": 1 },
+        "materials": [
+          { "id": "jelly_membrane", "chance": 0.38, "min": 1, "max": 1 },
+          { "id": "salt_crystal", "chance": 0.15, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "半透明的水母在浪沫間漂浮，鹽霧隨著牠的觸手一同散開。"
+    },
+    {
+      "id": "sand-stalker",
+      "name": "沙痕獵獸",
+      "kind": "普通",
+      "family": "beast",
+      "weight": 75,
+      "maxHp": 158,
+      "attack": 31,
+      "defense": 4,
+      "critChance": 0.14,
+      "expReward": 68,
+      "rewards": {
+        "gold": { "min": 0, "max": 1 },
+        "materials": [{ "id": "shore_hide", "chance": 0.34, "min": 1, "max": 1 }]
+      },
+      "intro": "沙痕獵獸伏低身體，牠的腳印在下一道浪打來前便幾乎消失。"
+    },
+    {
+      "id": "tidewing-predator",
+      "name": "潮翼掠食者",
+      "kind": "普通",
+      "family": "beast",
+      "weight": 65,
+      "maxHp": 126,
+      "attack": 32,
+      "defense": 2,
+      "critChance": 0.18,
+      "expReward": 70,
+      "rewards": {
+        "gold": { "min": 0, "max": 1 },
+        "materials": [{ "id": "tidewing_membrane", "chance": 0.32, "min": 1, "max": 1 }]
+      },
+      "intro": "潮翼掠食者貼著海面掠過，尖銳的鳴聲在礁石間來回折返。"
+    },
+    {
+      "id": "fishman-scout",
+      "name": "魚人斥候",
+      "kind": "普通",
+      "family": "fishman",
+      "weight": 10,
+      "minEncounter": 10,
+      "maxHp": 168,
+      "attack": 30,
+      "defense": 5,
+      "critChance": 0.1,
+      "expReward": 72,
+      "rewards": {
+        "gold": { "min": 0, "max": 1 },
+        "materials": [{ "id": "fishman_scale", "chance": 0.34, "min": 1, "max": 1 }]
+      },
+      "intro": "魚人斥候從礁柱後探出身影，手中的短刃先一步指向你的退路。"
+    },
+    {
+      "id": "fishman-salt-spearman",
+      "name": "魚人鹽矛手",
+      "kind": "普通",
+      "family": "fishman",
+      "weight": 8,
+      "minEncounter": 10,
+      "maxHp": 152,
+      "attack": 28,
+      "defense": 3,
+      "critChance": 0.06,
+      "saltErosionChance": 0.2,
+      "expReward": 70,
+      "rewards": {
+        "gold": { "min": 0, "max": 1 },
+        "materials": [
+          { "id": "fishman_scale", "chance": 0.36, "min": 1, "max": 1 },
+          { "id": "salt_crystal", "chance": 0.12, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "魚人鹽矛手把沾滿鹽霜的長矛拖過沙地，矛尖在潮光裡微微顫動。"
+    }
+  ],
+  "elites": [
+    {
+      "id": "giant-reef-crab",
+      "name": "巨鉗礁甲蟹",
+      "kind": "精英",
+      "family": "beast",
+      "weight": 100,
+      "maxHp": 378,
+      "attack": 36,
+      "defense": 10,
+      "critChance": 0,
+      "expReward": 140,
+      "rewards": {
+        "gold": { "min": 4, "max": 6 },
+        "materials": [
+          { "id": "reef_claw_core", "chance": 0.7, "min": 1, "max": 2 },
+          { "id": "reef_shell", "chance": 0.38, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "巨鉗礁甲蟹撞開礁石，兩支巨鉗像閘門一樣在身前合攏。"
+    },
+    {
+      "id": "corrupted-tide-jellyfish",
+      "name": "腐潮水母",
+      "kind": "精英",
+      "family": "slime",
+      "weight": 100,
+      "maxHp": 394,
+      "attack": 38,
+      "defense": 8,
+      "critChance": 0.05,
+      "saltErosionChance": 0.25,
+      "paralysisChance": 0.3,
+      "expReward": 148,
+      "rewards": {
+        "gold": { "min": 4, "max": 6 },
+        "materials": [
+          { "id": "brine_core", "chance": 0.7, "min": 1, "max": 2 },
+          { "id": "jelly_membrane", "chance": 0.4, "min": 1, "max": 1 },
+          { "id": "salt_crystal", "chance": 0.35, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "腐潮水母從黑色浪沫裡升起，發亮的傘面下流動著不自然的暗色。"
+    }
+  ],
+  "bosses": [
+    {
+      "id": "tidal-giant-crab",
+      "name": "潮汐巨蟹",
+      "kind": "首領",
+      "family": "beast",
+      "weight": 100,
+      "maxHp": 713,
+      "attack": 49,
+      "defense": 13,
+      "critChance": 0.05,
+      "saltErosionChance": 0.3,
+      "expReward": 270,
+      "rewards": {
+        "gold": { "min": 15, "max": 20 },
+        "materials": [
+          { "id": "tidal_claw_core", "chance": 1, "min": 1, "max": 1 },
+          { "id": "reef_claw_core", "chance": 0.6, "min": 1, "max": 1 },
+          { "id": "reef_shell", "chance": 0.55, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "潮汐巨蟹從退潮後的深坑裡升起，巨大的甲殼遮住半片潮線。"
+    }
+  ],
+  "events": {
+    "scheduleChance": 0.6,
+    "triggerBeforeEncounters": [5, 9, 13],
+    "pool": [
+      "beach-stranded-ship",
+      "beach-jelly-pool",
+      "beach-storm-watchtower"
+    ]
+  }
+}

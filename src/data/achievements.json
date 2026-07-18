@@ -27,5 +27,14 @@
     "routeId": "goblin-camp",
     "hiddenUntilUnlocked": true,
     "order": 30
+  },
+  "beach_trial": {
+    "id": "beach_trial",
+    "title": "潮線的試煉",
+    "conditionText": "擊敗海灘首領",
+    "description": "你穿過長而不穩定的潮線，證明自己已經能面對更高等級地區的冒險。",
+    "category": "region",
+    "regionId": "beach",
+    "order": 40
   }
 }
