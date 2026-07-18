@@ -85,6 +85,7 @@ export function createDebugPanelElement(documentRef = document) {
           <button type="button" data-action="set-selected-quest-half">設為半程</button>
           <button type="button" data-action="set-selected-quest-ready">設為可回報</button>
           <button type="button" data-action="clear-active-quest">清除目前委託</button>
+          <button type="button" data-action="refresh-quest-board">重抽委託看板</button>
           <button type="button" data-action="reset-quest-data">重設委託資料</button>
         </div>
       </section>

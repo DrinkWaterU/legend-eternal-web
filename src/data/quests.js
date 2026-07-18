@@ -2,7 +2,7 @@ import questData from "./quests.json" with { type: "json" };
 import { QUEST_RARITIES } from "./questRarities.js";
 
 const OBJECTIVE_TYPES = new Set(["defeatEnemies", "clearAdventure", "deliverMaterials"]);
-const EXPECTED_QUEST_DEFINITION_COUNT = 12;
+const EXPECTED_QUEST_DEFINITION_COUNT = 15;
 
 function deepFreeze(value) {
   if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
@@ -37,7 +37,7 @@ export function assertQuestDefinitions(quests = questDefinitions, references = {
     assertRewards(questId, quest.rewards, references.materialDefinitions || {});
   });
   if (ids.size !== EXPECTED_QUEST_DEFINITION_COUNT) {
-    throw new Error(`v0.2.6.4 Quest definition 必須正好 ${EXPECTED_QUEST_DEFINITION_COUNT} 項，目前為 ${ids.size} 項。`);
+    throw new Error(`Quest definition 必須正好 ${EXPECTED_QUEST_DEFINITION_COUNT} 項，目前為 ${ids.size} 項。`);
   }
   return true;
 }

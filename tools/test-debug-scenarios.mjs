@@ -5,6 +5,8 @@ import {
   getDebugScenarioBuildSlots,
   getDebugScenarioCatalog
 } from "../src/debug/scenarios.js";
+import { createDebugScenarioActions } from "../src/debug/scenarioActions.js";
+import { regionDefinitions } from "../src/data/regions/index.js";
 
 const catalog = getDebugScenarioCatalog();
 const goblinBoss = catalog.find((scenario) => scenario.id === "goblin-boss");
@@ -12,6 +14,19 @@ assert.ok(goblinBoss, "Debug catalog 應包含血骨薩滿場景");
 assert.equal(goblinBoss.supportsBuild, true, "血骨薩滿場景應支援 Build");
 assert.equal(goblinBoss.supportsRouteEntry, true, "血骨薩滿場景應支援 Route 進入時機");
 assert.equal(goblinBoss.supportsMidChoice, true, "血骨薩滿場景應支援中段選擇");
+
+const beachScenarios = [
+  "beach-boss",
+  "beach-salt-dressing",
+  "beach-paralysis-gloves",
+  "beach-multi-tether"
+].map((scenarioId) => catalog.find((scenario) => scenario.id === scenarioId));
+assert.ok(beachScenarios.every(Boolean), "Debug catalog 應包含四個海灘測試場景");
+assert.equal(getDebugScenarioBuildSlots("beach-boss").length, 15, "海灘 Boss 場景應有 15 個戰前 Blessing");
+assert.equal(getDebugScenarioBuildSlots("beach-multi-tether").length, 9, "海灘敵群場景應使用第 10 場前的 9 個 Blessing");
+assert.equal(beachScenarios[1].preparationId, "freshwater-dressing");
+assert.equal(beachScenarios[2].preparationId, "insulated-gloves");
+assert.equal(beachScenarios[3].preparationId, "reef-anchor-tether");
 
 const bossEntry6Heal = getDebugScenarioBuildSlots("goblin-boss", {
   routeEntryEncounter: 6,
@@ -98,5 +113,64 @@ const critSelections = createDebugBuildProfile(bossEntry6Loot, "crit");
 const campfireSlot = bossEntry6Loot.find((slot) => slot.label === "林間營火");
 const campfireCrit = campfireSlot.blessings.find((blessing) => blessing.id === critSelections[campfireSlot.id]);
 assert.equal(campfireCrit.primaryFlow, "crit", "Crit profile 的林間營火格應優先選 uncommon Crit Blessing");
+
+{
+  const state = {
+    selectedHeroId: "adventurer",
+    selectedRegionId: "beach",
+    hero: null,
+    runPreparation: null,
+    encounterIndex: 0
+  };
+  let battleOptions = null;
+  const actions = createDebugScenarioActions({
+    state,
+    isDebugModeEnabled: () => true,
+    prepareRunForRegion: (regionId, encounterIndex, options) => {
+      state.selectedRegionId = regionId;
+      state.encounterIndex = encounterIndex;
+      state.hero = options.hero;
+    },
+    currentRegion: () => regionDefinitions[state.selectedRegionId],
+    beginBattleRuntime: (options) => {
+      battleOptions = options;
+    },
+    addFixedLog() {},
+    logCurrentEnemyGroupEncounter() {},
+    addLog() {},
+    render() {},
+    enterSafeState() {},
+    startEncounter() {},
+    showPlainsStory() {},
+    showRouteEnding() {},
+    getRouteBossDefinition() { return null; },
+    recordSelectedBossInRunStats() {},
+    applySceneContext() {},
+    consumeBattleLimitedEffects() {},
+    clampInteger: (value, min, max) => Math.max(min, Math.min(max, Math.floor(value)))
+  });
+
+  const message = actions.startScenario({
+    scenarioId: "beach-multi-tether",
+    characterId: "adventurer",
+    hpPercent: 80,
+    selections: []
+  });
+  assert.match(message, /敵群・礁釘繫索/);
+  assert.equal(state.runPreparation.id, "reef-anchor-tether");
+  assert.equal(battleOptions.enemies.length, 2);
+  assert.ok(battleOptions.enemies.every((entry) => entry.attackScale === 1.55));
+  assert.ok(battleOptions.enemies.every((entry) => entry.enemy.saltErosionChance === 0));
+
+  actions.startScenario({
+    scenarioId: "beach-salt-dressing",
+    characterId: "adventurer",
+    hpPercent: 80,
+    selections: []
+  });
+  assert.equal(state.runPreparation.id, "freshwater-dressing");
+  assert.equal(battleOptions.enemies[0].enemy.saltErosionChance, 1);
+  assert.equal(battleOptions.enemies[0].enemy.paralysisChance, 0);
+}
 
 console.log("Debug scenario isolation tests passed.");

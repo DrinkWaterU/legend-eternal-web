@@ -5,11 +5,13 @@ import { assertRegionPreparations } from "./preparationValidation.js";
 export { assertRegionPreparations } from "./preparationValidation.js";
 export {
   beginPreparationBattle,
+  consumePreparationParalysisPenaltyPrevention,
   consumePreparationEntangleRetry,
   recordPreparationEntangleRetryResult,
   resolvePostEncounterPreparation,
   resolvePreparationIncomingDirectDamage,
   resolvePreparationPoisonDamage,
+  resolvePreparationSaltErosionInitialTurns,
   runPreparationOpeningAction
 } from "./preparationEffects.js";
 export { getPreparationCombatStatus, getPreparationSummary } from "./preparationStatus.js";

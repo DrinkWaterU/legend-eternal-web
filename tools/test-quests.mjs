@@ -15,7 +15,7 @@ import { questDefinitions } from "../src/data/quests.js";
 import { createQuestRuntime } from "../src/features/quest/questRuntime.js";
 
 validateGameDefinitions();
-assert.equal(Object.keys(questDefinitions).length, 12);
+assert.equal(Object.keys(questDefinitions).length, 15);
 
 assert.equal(
   formatQuestObjective(questDefinitions["plains-slime-suppression"]),
@@ -28,6 +28,18 @@ assert.equal(
 assert.equal(
   formatQuestObjective(questDefinitions["goblin-camp-patrol"]),
   "完成哥布林營地正式冒險 1 次"
+);
+assert.equal(
+  formatQuestObjective(questDefinitions["beach-threat-control"]),
+  "在海灘擊敗敵人 20 隻"
+);
+assert.equal(
+  formatQuestObjective(questDefinitions["beach-route-survey"]),
+  "完成海灘正式冒險 1 次"
+);
+assert.equal(
+  formatQuestObjective(questDefinitions["tidal-claw-core-research"], materialDefinitions),
+  "潮汐巨鉗核 ×1"
 );
 
 const noRareBoard = generateQuestBoard(questDefinitions, { random: sequenceRandom([0.99, 0, 0.2, 0.4, 0.6]) });
@@ -112,6 +124,21 @@ assert.equal(matchClearObjective(questDefinitions["goblin-camp-patrol"].objectiv
   regionId: "forest",
   routeId: "goblin-camp",
   clearSourceId: "main",
+  debugBuildRun: false
+}), false);
+assert.equal(matchEnemyObjective(questDefinitions["beach-threat-control"].objective, {
+  regionId: "beach",
+  enemyFamily: "beast",
+  debugBuildRun: false
+}), true);
+assert.equal(matchClearObjective(questDefinitions["beach-route-survey"].objective, {
+  regionId: "beach",
+  clearSourceId: "main",
+  debugBuildRun: false
+}), true);
+assert.equal(matchClearObjective(questDefinitions["beach-route-survey"].objective, {
+  regionId: "beach",
+  clearSourceId: "event",
   debugBuildRun: false
 }), false);
 

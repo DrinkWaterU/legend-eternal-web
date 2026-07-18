@@ -42,6 +42,39 @@ export const DEBUG_SCENARIOS = Object.freeze([
     kind: "regionBoss", regionId: "forest", bossId: "verdant-stag-king", supportsBuild: true
   }),
   Object.freeze({
+    id: "beach-boss", category: "海灘", name: "潮汐巨蟹",
+    description: "使用海灘正式首領場次與海灘 Blessing 取得時序。",
+    kind: "regionBoss", regionId: "beach", supportsBuild: true
+  }),
+  Object.freeze({
+    id: "beach-salt-dressing", category: "海灘", name: "鹽蝕・淡水藥布",
+    description: "鹽霧水母固定施加鹽蝕，並自動裝備淡水藥布。",
+    kind: "regionEnemy", regionId: "beach", encounterIndex: 9,
+    enemyId: "salt-jellyfish", preparationId: "freshwater-dressing",
+    enemyOverrides: Object.freeze({ saltErosionChance: 1, paralysisChance: 0 }),
+    supportsBuild: true
+  }),
+  Object.freeze({
+    id: "beach-paralysis-gloves", category: "海灘", name: "麻痺・絕緣皮套",
+    description: "鹽霧水母固定施加麻痺，並自動裝備絕緣皮套。",
+    kind: "regionEnemy", regionId: "beach", encounterIndex: 9,
+    enemyId: "salt-jellyfish", preparationId: "insulated-gloves",
+    enemyOverrides: Object.freeze({ saltErosionChance: 0, paralysisChance: 1 }),
+    supportsBuild: true
+  }),
+  Object.freeze({
+    id: "beach-multi-tether", category: "海灘", name: "敵群・礁釘繫索",
+    description: "建立礁甲蟹與鹽霧水母雙敵人，並自動裝備礁釘繫索。",
+    kind: "regionEnemyGroup", regionId: "beach", encounterIndex: 9,
+    preparationId: "reef-anchor-tether",
+    enemyEntries: Object.freeze([
+      Object.freeze({ enemyId: "reef-crab", statScale: 0.9, attackScale: 1.55, rewardScale: 0.55 }),
+      Object.freeze({ enemyId: "salt-jellyfish", statScale: 0.9, attackScale: 1.55, rewardScale: 0.55 })
+    ]),
+    enemyOverrides: Object.freeze({ saltErosionChance: 0, paralysisChance: 0 }),
+    supportsBuild: true
+  }),
+  Object.freeze({
     id: "core-multi-enemy", category: "核心測試", name: "多敵人基礎",
     description: "哥布林戰士 ×2；第二名套用 statScale 0.75 / rewardScale 0.5。",
     kind: "multiEnemy", regionId: "forest", supportsBuild: false

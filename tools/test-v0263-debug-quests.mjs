@@ -24,7 +24,7 @@ const actions = createDebugQuestActions({
   random: () => 0
 });
 
-assert.equal(actions.getQuestOptions().length, 12);
+assert.equal(actions.getQuestOptions().length, 15);
 assert.equal(actions.getQuestOptions()[0].id, "broad-monster-control");
 assert.equal(typeof actions.getQuestDebugSnapshot, "function");
 
@@ -54,6 +54,18 @@ const readySnapshot = actions.getQuestDebugSnapshot();
 assert.equal(readySnapshot.activeProgress, 3);
 assert.equal(readySnapshot.activeTarget, 3);
 
+saveData.inventory.materials.tidal_claw_core = {
+  id: "tidal_claw_core",
+  name: "潮汐巨鉗核",
+  quantity: 11
+};
+actions.prepareSelectedQuest("tidal-claw-core-research", "start");
+assert.equal(saveData.inventory.materials.tidal_claw_core.quantity, 11);
+actions.prepareSelectedQuest("tidal-claw-core-research", "half");
+assert.equal(saveData.inventory.materials.tidal_claw_core.quantity, 11);
+actions.prepareSelectedQuest("tidal-claw-core-research", "ready");
+assert.equal(saveData.inventory.materials.tidal_claw_core.quantity, 11);
+
 assert.match(actions.clearActiveQuest(), /清除/);
 assert.equal(saveData.quests.active, null);
 
@@ -69,6 +81,10 @@ assert.equal(saveData.storyFlags.guildQuestIntroductionSeen, true);
 assert.equal(saveData.quests.board.questIds.length, 4);
 assert.ok(boardCalls >= 4);
 assert.ok(syncCalls >= 3);
+
+assert.match(actions.refreshQuestBoard(), /重新抽選/);
+assert.equal(saveData.quests.active, null);
+assert.equal(saveData.quests.board.questIds.length, 4);
 
 const root = new URL("../", import.meta.url);
 const [markup, panel, panelActions, runtimeActions, application, facility] = await Promise.all([
@@ -87,6 +103,7 @@ for (const actionId of [
   "set-selected-quest-half",
   "set-selected-quest-ready",
   "clear-active-quest",
+  "refresh-quest-board",
   "reset-quest-data"
 ]) {
   assert.match(markup, new RegExp(`data-action="${actionId}"`));

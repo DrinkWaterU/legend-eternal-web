@@ -73,7 +73,7 @@ export function createGuildQuestController({
     const quest = questDefinitions[questId];
     els.guildQuestAbandonTitle.textContent = quest?.name || "目前委託";
     els.guildQuestAbandonMeta.textContent = "放棄後，本次累積進度會全部作廢；公會委託榜不會因此刷新。";
-    els.guildQuestAbandonPanel.classList.add("is-open");
+    els.guildQuestAbandonPanel.classList.add("is-visible");
   }
 
   function confirmAbandon() {
@@ -87,7 +87,7 @@ export function createGuildQuestController({
 
   function closeAbandonConfirm() {
     pendingAbandonQuestId = null;
-    els.guildQuestAbandonPanel.classList.remove("is-open");
+    els.guildQuestAbandonPanel.classList.remove("is-visible");
   }
 
   function renderSpeech(snapshot) {

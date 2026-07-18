@@ -5,6 +5,7 @@ import { applyHeroEndOfTurnNegativeEffects, resolveHeroEntangle } from "../src/c
 import {
   assertRegionPreparations,
   beginPreparationBattle,
+  consumePreparationParalysisPenaltyPrevention,
   consumePreparationEntangleRetry,
   createRunPreparation,
   getPreparationCombatStatus,
@@ -13,14 +14,17 @@ import {
   resolvePostEncounterPreparation,
   resolvePreparationIncomingDirectDamage,
   resolvePreparationPoisonDamage,
+  resolvePreparationSaltErosionInitialTurns,
   runPreparationOpeningAction
 } from "../src/core/preparations.js";
+import { beachRegion } from "../src/data/regions/beach.js";
 import { forestRegion } from "../src/data/regions/forest.js";
 import { plainsRegion } from "../src/data/regions/plains.js";
 
 assert.equal(assertRegionPreparations(plainsRegion), true);
 assert.equal(assertRegionPreparations(forestRegion), true);
-for (const region of [plainsRegion, forestRegion]) {
+assert.equal(assertRegionPreparations(beachRegion), true);
+for (const region of [plainsRegion, forestRegion, beachRegion]) {
   region.preparations.forEach((preparation) => {
     assert.ok(preparation.summary.trim(), `${preparation.id} 應提供玩家短文案 summary`);
     assert.equal("summary" in createRunPreparation(region, preparation.id), false, "Run Preparation 不應保存 UI summary");
@@ -36,9 +40,14 @@ assert.deepEqual(forestRegion.preparations.map((entry) => entry.id), [
   "forest-bandage",
   "web-cutting-knife"
 ]);
+assert.deepEqual(beachRegion.preparations.map((entry) => entry.id), [
+  "freshwater-dressing",
+  "insulated-gloves",
+  "reef-anchor-tether"
+]);
 
-// v0.2.4.2：六項整備都必須提供一階素材強化，並建立獨立的強化 runtime。
-for (const region of [plainsRegion, forestRegion]) {
+// 所有正式整備都必須提供一階素材強化，並建立獨立的強化 runtime。
+for (const region of [plainsRegion, forestRegion, beachRegion]) {
   region.preparations.forEach((definition) => {
     assert.ok(definition.enhancement, `${definition.id} 應提供 enhancement`);
     assert.ok(definition.enhancement.title.trim());
@@ -555,12 +564,87 @@ assert.throws(() => createRunPreparation({
   }]
 }, "x", { enhanced: true }), /沒有素材強化/);
 
+{
+  const dressing = createRunPreparation(beachRegion, "freshwater-dressing");
+  assert.deepEqual(resolvePreparationSaltErosionInitialTurns({ preparation: dressing, turns: 5 }), {
+    triggered: true,
+    turns: 3,
+    turnsReduced: 2
+  });
+  assert.equal(getPreparationCombatStatus({ preparation: dressing }).label, "持續生效");
+  assert.deepEqual(getPreparationSummary(dressing), {
+    id: "freshwater-dressing",
+    name: "淡水藥布",
+    triggerCount: 1,
+    turnsReduced: 2
+  });
+
+  const enhanced = createRunPreparation(beachRegion, "freshwater-dressing", { enhanced: true });
+  assert.equal(resolvePreparationSaltErosionInitialTurns({ preparation: enhanced, turns: 5 }).turns, 2);
+}
+
+{
+  const gloves = createRunPreparation(beachRegion, "insulated-gloves");
+  assert.equal(getPreparationCombatStatus({ preparation: gloves }).label, "剩餘 3 次");
+  assert.equal(consumePreparationParalysisPenaltyPrevention(gloves), true);
+  assert.equal(consumePreparationParalysisPenaltyPrevention(gloves), true);
+  assert.equal(consumePreparationParalysisPenaltyPrevention(gloves), true);
+  assert.equal(consumePreparationParalysisPenaltyPrevention(gloves), false);
+  assert.equal(getPreparationCombatStatus({ preparation: gloves }).label, "已耗盡");
+  assert.equal(getPreparationSummary(gloves).penaltiesPrevented, 3);
+}
+
+{
+  const tether = createRunPreparation(beachRegion, "reef-anchor-tether");
+  const firstEnemy = { family: "beast" };
+  const secondEnemy = { family: "slime" };
+  beginPreparationBattle(tether, { enemyCount: 1 });
+  assert.equal(resolvePreparationIncomingDirectDamage({
+    preparation: tether,
+    enemy: firstEnemy,
+    damage: 20
+  }).triggered, false);
+
+  beginPreparationBattle(tether, { enemyCount: 2 });
+  assert.equal(getPreparationCombatStatus({ preparation: tether }).label, "本場可用");
+  assert.deepEqual(resolvePreparationIncomingDirectDamage({
+    preparation: tether,
+    enemy: firstEnemy,
+    damage: 20
+  }), {
+    triggered: true,
+    damage: 15,
+    preventedDamage: 5
+  });
+  assert.equal(resolvePreparationIncomingDirectDamage({
+    preparation: tether,
+    enemy: firstEnemy,
+    damage: 20
+  }).triggered, false, "同一名敵人僅能抵擋第一次實際直接傷害");
+  assert.equal(getPreparationCombatStatus({ preparation: tether }).label, "已抵擋 1 名");
+  assert.equal(resolvePreparationIncomingDirectDamage({
+    preparation: tether,
+    enemy: secondEnemy,
+    damage: 20
+  }).triggered, true, "不同敵人應各自提供一次減傷");
+  assert.equal(getPreparationCombatStatus({ preparation: tether }).label, "已抵擋 2 名");
+  assert.equal(getPreparationSummary(tether).damagePrevented, 10);
+
+  const enhanced = createRunPreparation(beachRegion, "reef-anchor-tether", { enhanced: true });
+  beginPreparationBattle(enhanced, { enemyCount: 3 });
+  assert.equal(resolvePreparationIncomingDirectDamage({
+    preparation: enhanced,
+    enemy: { family: "slime" },
+    damage: 20
+  }).damage, 13);
+}
+
 const combatSource = await readFile(new URL("../src/core/combat.js", import.meta.url), "utf8");
 const preparationSource = await readFile(new URL("../src/core/preparations.js", import.meta.url), "utf8");
 assert.doesNotMatch(combatSource, /from ["']\.\/preparations\.js["']/, "Combat core 不得 import preparations.js");
 assert.doesNotMatch(preparationSource, /ENTANGLE_ESCAPE_CHANCES|\broll\(/, "Preparation core 不得複製正式纏繞機率或自行 roll");
 
-console.log("Six-preparation runtime, combat modifier, milestone, and retry isolation tests passed.");
+console.log("Nine-preparation runtime, combat modifier, milestone, and retry isolation tests passed.");
 
 function withRandomSequence(values, action) {
   const originalRandom = Math.random;

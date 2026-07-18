@@ -207,7 +207,7 @@ const debugActions = createDebugRuntimeActions({
 
 assert.deepEqual(
   debugActions.getMaterialGroups().map((group) => group.id),
-  ["plains", "forest-main", "goblin"]
+  ["plains", "forest-main", "goblin", "beach"]
 );
 assert.ok(debugActions.getScenarioCatalog().length > 0);
 assert.deepEqual(

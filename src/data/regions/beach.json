@@ -19,6 +19,80 @@
       "tone": "coast-beach"
     }
   },
+  "preparations": [
+    {
+      "id": "freshwater-dressing",
+      "name": "淡水藥布",
+      "summary": "縮短首次鹽蝕",
+      "description": "鹽蝕首次附著時，初始持續時間縮短 2 回合。",
+      "cost": 10,
+      "effect": {
+        "type": "saltErosionInitialTurnReduction",
+        "turnReduction": 2
+      },
+      "enhancement": {
+        "title": "多層淡水封布",
+        "description": "鹽蝕首次附著時，初始持續時間縮短 3 回合。",
+        "changedFragments": ["3 回合"],
+        "materialCosts": [
+          { "materialId": "jelly_membrane", "quantity": 2 },
+          { "materialId": "shore_hide", "quantity": 1 }
+        ],
+        "effect": {
+          "type": "saltErosionInitialTurnReduction",
+          "turnReduction": 3
+        }
+      }
+    },
+    {
+      "id": "insulated-gloves",
+      "name": "絕緣皮套",
+      "summary": "阻擋麻痺弱化",
+      "description": "前 3 次因麻痺觸發攻擊下降時，使該次弱化失效。",
+      "cost": 9,
+      "effect": {
+        "type": "paralysisPenaltyPrevention",
+        "charges": 3
+      },
+      "enhancement": {
+        "title": "加厚絕緣內襯",
+        "description": "前 5 次因麻痺觸發攻擊下降時，使該次弱化失效。",
+        "changedFragments": ["5 次"],
+        "materialCosts": [
+          { "materialId": "jelly_membrane", "quantity": 1 },
+          { "materialId": "tidewing_membrane", "quantity": 1 }
+        ],
+        "effect": {
+          "type": "paralysisPenaltyPrevention",
+          "charges": 5
+        }
+      }
+    },
+    {
+      "id": "reef-anchor-tether",
+      "name": "礁釘繫索",
+      "summary": "抵擋敵群首擊",
+      "description": "面對 2 名以上敵人時，每名敵人的第一次直接攻擊傷害降低 25%。",
+      "cost": 11,
+      "effect": {
+        "type": "firstMultiEnemyDirectDamageReduction",
+        "reductionRatio": 0.25
+      },
+      "enhancement": {
+        "title": "雙股礁釘繫索",
+        "description": "面對 2 名以上敵人時，每名敵人的第一次直接攻擊傷害降低 35%。",
+        "changedFragments": ["35%"],
+        "materialCosts": [
+          { "materialId": "reef_shell", "quantity": 2 },
+          { "materialId": "shore_hide", "quantity": 1 }
+        ],
+        "effect": {
+          "type": "firstMultiEnemyDirectDamageReduction",
+          "reductionRatio": 0.35
+        }
+      }
+    }
+  ],
   "encounterPlan": [
     { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
     { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },

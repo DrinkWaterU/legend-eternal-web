@@ -15,8 +15,14 @@ import {
 } from "../src/core/combat.js";
 import { createRuntimeEnemyGroup, getLivingEnemies } from "../src/core/enemyGroups.js";
 import { canCharacterEquipWeapon } from "../src/core/equipment.js";
+import {
+  beginPreparationBattle,
+  createRunPreparation,
+  resolvePreparationIncomingDirectDamage
+} from "../src/core/preparations.js";
 import { buildHeroFromProgression, createSkillState } from "../src/core/progression.js";
 import { characterDefinitions } from "../src/data/characters/index.js";
+import { beachRegion as formalBeachRegion } from "../src/data/regions/beach.js";
 import { forestRegion } from "../src/data/regions/forest.js";
 import { getBlessingRarity } from "../src/data/rarities.js";
 import { weaponDefinitions } from "../src/data/weapons.js";
@@ -57,7 +63,9 @@ const MULTI_ENEMY_ATTACK_SCALES = {
 };
 const PLAYER_BUILD_MODE = process.argv[16] === "player-builds";
 const FISHMAN_HUNT_ATTACK = parsePositiveNumber(process.argv[17], 5);
-const PLAYER_BUILD_FILTER = process.argv[18] || "";
+const PLAYER_BUILD_FILTER = process.argv[18] === "all" ? "" : (process.argv[18] || "");
+const PREPARATION_ID = process.argv[19] || "";
+const PREPARATION_ENHANCED = process.argv[20] === "enhanced";
 const MAX_TURNS = 500;
 const logger = { template() {}, fixed() {} };
 const encounterPlan = [
@@ -325,7 +333,8 @@ console.log(
   + `elite=${ENEMY_GROUP_SCALES.elite} boss=${ENEMY_GROUP_SCALES.boss} `
   + `multiHp=${MULTI_ENEMY_STAT_SCALES.double}/${MULTI_ENEMY_STAT_SCALES.triple} `
   + `multiAttack=${MULTI_ENEMY_ATTACK_SCALES.double}/${MULTI_ENEMY_ATTACK_SCALES.triple} `
-  + `bossBypassDistance=${BOSS_DISTANCE_BYPASS_CHANCE} blessings=${BLESSING_MODE}`
+  + `bossBypassDistance=${BOSS_DISTANCE_BYPASS_CHANCE} blessings=${BLESSING_MODE} `
+  + `preparation=${PREPARATION_ID || "none"}${PREPARATION_ENHANCED ? ":enhanced" : ""}`
 );
 
 if (BLESSING_MODE === "beach") {
@@ -378,6 +387,7 @@ function printResult(profileLabel, weaponLabel, result) {
     `平均抵達 ${result.averageReached.toFixed(2)}/16`,
     `通關平均剩餘生命 ${result.averageClearHpRatio === null ? "-" : formatPercent(result.averageClearHpRatio)}`,
     `平均鹽蝕觸發 ${result.averageSaltApplications.toFixed(2)}`,
+    `平均整備觸發 ${result.averagePreparationTriggers.toFixed(2)}`,
     `主要敗北 ${formatDefeats(result.defeatsByEncounter)}`
   ].join(" | "));
 }
@@ -431,6 +441,7 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
   let reachedTotal = 0;
   let clearHpRatioTotal = 0;
   let saltApplications = 0;
+  let preparationTriggers = 0;
   const defeatsByEncounter = new Map();
 
   for (let run = 0; run < ROUNDS; run += 1) {
@@ -443,6 +454,10 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
       inventory: { weapons: weaponId ? { [weaponId]: true } : {} },
       weaponDefinitions
     });
+    const preparation = PREPARATION_ID
+      ? createRunPreparation(formalBeachRegion, PREPARATION_ID, { enhanced: PREPARATION_ENHANCED })
+      : null;
+    hero.activePreparation = preparation;
     let reached = 0;
     let cleared = true;
 
@@ -452,8 +467,9 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
       const battleSkills = createModelBattleSkills(hero);
       battleSkills.applyBattleStartSkills();
       const enemies = buildBeachEnemyGroup(encounterIndex, hero);
+      beginPreparationBattle(preparation, { enemyCount: enemies.length });
       applyBeachBattleStartEffects(hero, enemies);
-      const encounterResult = simulateEncounter({ hero, enemies, battleSkills });
+      const encounterResult = simulateEncounter({ hero, enemies, battleSkills, preparation });
       saltApplications += encounterResult.saltApplications;
 
       if (!encounterResult.won) {
@@ -477,6 +493,7 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
       wins += 1;
       clearHpRatioTotal += hero.maxHp > 0 ? hero.hp / hero.maxHp : 0;
     }
+    preparationTriggers += preparation?.triggerCount || 0;
   }
 
   return {
@@ -484,6 +501,7 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
     averageReached: reachedTotal / ROUNDS,
     averageClearHpRatio: wins > 0 ? clearHpRatioTotal / wins : null,
     averageSaltApplications: saltApplications / ROUNDS,
+    averagePreparationTriggers: preparationTriggers / ROUNDS,
     defeatsByEncounter
   };
 }
@@ -632,7 +650,7 @@ function applyBeachBattleStartEffects(hero, enemies) {
   if (extraShield > 0) hero.shield += extraShield;
 }
 
-function simulateEncounter({ hero, enemies, battleSkills }) {
+function simulateEncounter({ hero, enemies, battleSkills, preparation }) {
   let saltApplications = 0;
   const originalAttack = hero.attack;
   hero.activeEnemyCount = enemies.length;
@@ -670,7 +688,7 @@ function simulateEncounter({ hero, enemies, battleSkills }) {
           enemy,
           turn,
           log: logger,
-          modifyDirectDamage: modifyBeachIncomingDamage
+          modifyDirectDamage: (context) => modifyBeachIncomingDamage(context, preparation)
         });
         const saltTurnsAfter = Number(hero.saltErosion?.remainingTurns) || 0;
         if (saltTurnsAfter > saltTurnsBefore) saltApplications += 1;
@@ -698,14 +716,23 @@ function simulateEncounter({ hero, enemies, battleSkills }) {
   }
 }
 
-function modifyBeachIncomingDamage(context) {
+function modifyBeachIncomingDamage(context, preparation) {
   if (
     context.enemy?.distanceBypassChance > 0
     && Math.random() < context.enemy.distanceBypassChance
   ) {
-    return context.damage;
+    return resolvePreparationIncomingDirectDamage({
+      preparation,
+      enemy: context.enemy,
+      damage: context.damage
+    }).damage;
   }
-  return modifyCharacterIncomingDirectDamage(context);
+  const characterAdjustedDamage = modifyCharacterIncomingDirectDamage(context);
+  return resolvePreparationIncomingDirectDamage({
+    preparation,
+    enemy: context.enemy,
+    damage: characterAdjustedDamage
+  }).damage;
 }
 
 function settleDefeatedEnemies(hero, enemies) {

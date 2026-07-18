@@ -45,6 +45,14 @@ export function getDebugScenarioBuildSlots(scenarioId, options = {}) {
     return finalizeTimeline(buildRegionAcquisitions("forest", 5, 0));
   }
 
+  if (["regionEnemy", "regionEnemyGroup"].includes(scenario.kind)) {
+    return finalizeTimeline(buildRegionAcquisitions(
+      scenario.regionId,
+      Math.max(0, Number(scenario.encounterIndex) || 0),
+      0
+    ));
+  }
+
   if (scenario.routeId === GOBLIN_ROUTE_ID) {
     return buildGoblinRouteTimeline(scenario, options);
   }

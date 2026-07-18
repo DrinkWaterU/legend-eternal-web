@@ -7,6 +7,7 @@ import { regionDefinitions } from "../src/data/regions/index.js";
 import { getRegionEncounterGroupOption } from "../src/data/regions/regionDefinition.js";
 import { createRuntimeEnemyGroup } from "../src/core/enemyGroups.js";
 import { scheduleRegionEvent, shouldTriggerScheduledEvent } from "../src/core/events.js";
+import { createRunPreparation } from "../src/core/preparations.js";
 import {
   applyParalysis,
   applySaltErosion,
@@ -31,6 +32,11 @@ assert.equal(
   "穿過森林的盡頭，迎面而來的是無邊的開闊海岸。乾涸鹽痕、噬人礁岩與莫測的漲退潮線交織成網，使每一步前行都充滿未知的變數。"
 );
 assert.equal(beach.note, undefined, "玩家地區描述不可暴露內部施工資訊");
+assert.deepEqual(beach.preparations.map((preparation) => preparation.id), [
+  "freshwater-dressing",
+  "insulated-gloves",
+  "reef-anchor-tether"
+]);
 
 const beachBlessings = getBlessingPool("beach");
 assert.ok(beachBlessings, "應註冊海灘 Blessing 池");
@@ -134,7 +140,34 @@ advanceHeroCombatStatuses(statusHero);
 advanceHeroCombatStatuses(statusHero);
 assert.equal(statusHero.paralysis, null);
 
-console.log("v0.2.7.0 海灘資料、事件、敵群與狀態驗證：全部通過");
+const dressingHero = {
+  name: "測試冒險者",
+  hp: 50,
+  maxHp: 100,
+  activePreparation: createRunPreparation(beach, "freshwater-dressing")
+};
+applySaltErosion(dressingHero, silentLog);
+assert.equal(dressingHero.saltErosion.remainingTurns, 3, "淡水藥布應將首次鹽蝕由 5 回合縮短為 3 回合");
+applySaltErosion(dressingHero, silentLog);
+assert.equal(dressingHero.saltErosion.remainingTurns, 4, "鹽蝕再次附著仍應只增加 1 回合");
+
+const insulatedHero = {
+  name: "測試冒險者",
+  hp: 50,
+  maxHp: 100,
+  activePreparation: createRunPreparation(beach, "insulated-gloves")
+};
+applyParalysis(insulatedHero, silentLog);
+const insulatedOriginalRandom = Math.random;
+Math.random = () => 0.1;
+try {
+  assert.equal(getHeroAttackDamageMultiplier(insulatedHero, silentLog), 1);
+  assert.equal(insulatedHero.activePreparation.remainingCharges, 2);
+} finally {
+  Math.random = insulatedOriginalRandom;
+}
+
+console.log("v0.2.7.0.1 海灘資料、整備、事件、敵群與狀態驗證：全部通過");
 
 function sequenceRandom(...values) {
   let index = 0;

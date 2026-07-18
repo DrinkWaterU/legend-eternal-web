@@ -1,4 +1,5 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
+import { resolvePreparationSaltErosionInitialTurns } from "./preparationEffects.js";
 
 const SALT_EROSION_INITIAL_TURNS = 5;
 const SALT_EROSION_MAX_TURNS = 7;
@@ -23,11 +24,21 @@ export function getEnemyPendingHpLoss(enemy) {
 export function applySaltErosion(hero, log) {
   if (!hero) return 0;
   const currentTurns = Math.max(0, Number(hero.saltErosion?.remainingTurns) || 0);
+  const initialTurnsResult = currentTurns > 0
+    ? { triggered: false, turns: SALT_EROSION_INITIAL_TURNS }
+    : resolvePreparationSaltErosionInitialTurns({
+      preparation: hero.activePreparation,
+      turns: SALT_EROSION_INITIAL_TURNS
+    });
   const remainingTurns = Math.min(
     SALT_EROSION_MAX_TURNS,
-    currentTurns > 0 ? currentTurns + 1 : SALT_EROSION_INITIAL_TURNS
+    currentTurns > 0 ? currentTurns + 1 : initialTurnsResult.turns
   );
   hero.saltErosion = { remainingTurns };
+  if (initialTurnsResult.triggered) {
+    const preparationName = hero.activePreparation?.name || "冒險整備";
+    log?.fixed?.("status", `整備｜${preparationName}減緩鹽蝕，使初始持續時間縮短 ${initialTurnsResult.turnsReduced} 回合。`);
+  }
   log?.fixed?.("status", `${hero.name} 受到鹽蝕，戰鬥中的治療效果降低。`);
   return remainingTurns;
 }

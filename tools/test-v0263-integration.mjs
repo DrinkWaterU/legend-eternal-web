@@ -13,7 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
 
 assert.equal(SAVE_SCHEMA_VERSION, 9);
-assert.equal(Object.keys(questDefinitions).length, 12);
+assert.equal(Object.keys(questDefinitions).length, 15);
 assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) => [quest.id, [quest.rarity, quest.rewards.gold]])), {
   "broad-monster-control": ["common", 20],
   "route-patrol": ["common", 20],
@@ -26,7 +26,10 @@ assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) 
   "goblin-camp-patrol": ["advanced", 35],
   "ancient-wood-core-research": ["rare", 45],
   "verdant-antler-procurement": ["rare", 45],
-  "bloodbone-charm-ritual": ["rare", 45]
+  "bloodbone-charm-ritual": ["rare", 45],
+  "beach-threat-control": ["common", 30],
+  "beach-route-survey": ["advanced", 40],
+  "tidal-claw-core-research": ["rare", 55]
 });
 assert.equal(questDefinitions["broad-monster-control"].objective.target, 30);
 assert.equal(questDefinitions["route-patrol"].objective.target, 2);
@@ -43,6 +46,10 @@ assert.deepEqual(questDefinitions["goblin-camp-patrol"].objective.clearSourceIds
 assert.deepEqual(questDefinitions["ancient-wood-core-research"].objective.materials, [{ id: "ancient_wood_core", quantity: 1 }]);
 assert.deepEqual(questDefinitions["verdant-antler-procurement"].objective.materials, [{ id: "verdant_antler", quantity: 1 }]);
 assert.deepEqual(questDefinitions["bloodbone-charm-ritual"].objective.materials, [{ id: "bloodbone_charm", quantity: 1 }]);
+assert.equal(questDefinitions["beach-threat-control"].objective.target, 20);
+assert.equal(questDefinitions["beach-route-survey"].objective.target, 1);
+assert.deepEqual(questDefinitions["beach-route-survey"].objective.clearSourceIds, ["main"]);
+assert.deepEqual(questDefinitions["tidal-claw-core-research"].objective.materials, [{ id: "tidal_claw_core", quantity: 1 }]);
 
 assert.equal(facilityDefinitions["guild-quests"].hiddenFromList, true);
 assert.equal(facilityDefinitions["guild-quests"].actionId, "guild-quests");

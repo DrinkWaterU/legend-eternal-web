@@ -105,11 +105,11 @@ assert.equal(els.guildQuestNotice.textContent, "委託已承接。");
 assert.match(els.guildQuestDialogueText.textContent, /委託已經登記好了/);
 
 controller.openAbandonConfirm("broad-monster-control");
-assert.equal(els.guildQuestAbandonPanel.classList.contains("is-open"), true);
+assert.equal(els.guildQuestAbandonPanel.classList.contains("is-visible"), true);
 assert.equal(els.guildQuestAbandonTitle.textContent, "魔物數量控制");
 assert.match(els.guildQuestAbandonMeta.textContent, /進度會全部作廢/);
 controller.closeAbandonConfirm();
-assert.equal(els.guildQuestAbandonPanel.classList.contains("is-open"), false);
+assert.equal(els.guildQuestAbandonPanel.classList.contains("is-visible"), false);
 
 controller.openAbandonConfirm("broad-monster-control");
 controller.confirmAbandon();
@@ -129,6 +129,6 @@ assert.equal(els.guildQuestGold.textContent, "110");
 assert.match(els.guildQuestDialogueText.textContent, /這單正式結案/);
 
 controller.reset();
-assert.equal(els.guildQuestAbandonPanel.classList.contains("is-open"), false);
+assert.equal(els.guildQuestAbandonPanel.classList.contains("is-visible"), false);
 
 console.log("Guild quest controller state, dialogue and confirmation tests passed.");

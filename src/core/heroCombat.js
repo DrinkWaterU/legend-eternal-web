@@ -1,4 +1,5 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
+import { consumePreparationParalysisPenaltyPrevention } from "./preparationEffects.js";
 import { roll } from "../utils.js";
 
 const HEAVY_STRIKE_CHANCE = 0.2;
@@ -128,6 +129,11 @@ export function getHeroDirectAttackDamage({ hero, enemy, damageMultiplier = 1, a
 export function getHeroAttackDamageMultiplier(hero, log) {
   const remainingTurns = Number(hero?.paralysis?.remainingTurns) || 0;
   if (remainingTurns <= 0 || Math.random() >= 0.5) {
+    return 1;
+  }
+  if (consumePreparationParalysisPenaltyPrevention(hero?.activePreparation)) {
+    const preparationName = hero.activePreparation?.name || "冒險整備";
+    log?.fixed?.("status", `整備｜${preparationName}隔開電流，避免了這次麻痺弱化。`);
     return 1;
   }
   log?.fixed?.("status", `${hero.name} 受到麻痺影響，這次攻擊力降低 20%。`);

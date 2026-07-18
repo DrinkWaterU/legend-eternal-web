@@ -116,6 +116,21 @@ export function createDebugQuestActions({
     return "已清除目前進行中的委託，看板與統計保持不變。";
   }
 
+  function refreshQuestBoard() {
+    mutateQuestSave((saveData) => {
+      prepareGuildContext(saveData, { introductionSeen: true });
+      const quests = normalizeQuestState(saveData.quests, questDefinitions);
+      quests.active = null;
+      quests.board.excludedQuestId = null;
+      quests.board.questIds = generateQuestBoard(questDefinitions, { random });
+      quests.board.generatedAtCompletionCount = quests.statistics.completedTotal;
+      saveData.quests = quests;
+    });
+    syncSafeAreaUiFromSave();
+    if (typeof showGuildQuestFacility === "function") showGuildQuestFacility();
+    return "已清除目前委託並重新抽選四項委託看板。";
+  }
+
   function resetQuestData() {
     mutateQuestSave((saveData) => {
       prepareGuildContext(saveData, { introductionSeen: true });
@@ -179,19 +194,19 @@ export function createDebugQuestActions({
     if (quest.objective.type !== "deliverMaterials") return;
     saveData.inventory.materials ||= {};
     quest.objective.materials.forEach((entry) => {
-      const quantity = progressMode === "ready"
+      const targetQuantity = progressMode === "ready"
         ? entry.quantity
         : progressMode === "half"
           ? Math.floor(entry.quantity / 2)
           : 0;
-      if (quantity <= 0) {
-        delete saveData.inventory.materials[entry.id];
-        return;
-      }
+      const current = saveData.inventory.materials[entry.id];
+      const currentQuantity = Math.max(0, Math.floor(Number(current?.quantity) || 0));
+      if (targetQuantity <= currentQuantity) return;
+
       saveData.inventory.materials[entry.id] = {
         id: entry.id,
-        name: materialDefinitions[entry.id]?.name || entry.id,
-        quantity
+        name: current?.name || materialDefinitions[entry.id]?.name || entry.id,
+        quantity: targetQuantity
       };
     });
   }
@@ -223,6 +238,7 @@ export function createDebugQuestActions({
     openGuildQuestBoard,
     prepareSelectedQuest,
     clearActiveQuest,
+    refreshQuestBoard,
     resetQuestData
   });
 }

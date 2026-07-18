@@ -25,28 +25,54 @@ export function initializePreparationRuntime(preparation) {
       preparation.remainingCharges = preparation.effect.charges;
       preparation.retrySuccessCount = 0;
       break;
+    case "saltErosionInitialTurnReduction":
+      preparation.turnsReduced = 0;
+      break;
+    case "paralysisPenaltyPrevention":
+      preparation.remainingCharges = preparation.effect.charges;
+      preparation.penaltiesPrevented = 0;
+      break;
+    case "firstMultiEnemyDirectDamageReduction":
+      preparation.eligibleThisBattle = false;
+      preparation.reducedEnemiesThisBattle = new Set();
+      preparation.damagePrevented = 0;
+      break;
     default:
       break;
   }
 }
 
-export function beginPreparationBattle(preparation) {
+export function beginPreparationBattle(preparation, { enemyCount = 0 } = {}) {
   if (!preparation) {
     return preparation;
   }
-  if (["firstFamilyDirectDamageReduction", "openingActionAttackBonus"].includes(preparation.effect?.type)) {
+  if ([
+    "firstFamilyDirectDamageReduction",
+    "openingActionAttackBonus"
+  ].includes(preparation.effect?.type)) {
     preparation.usedThisBattle = false;
+  }
+  if (preparation.effect?.type === "firstMultiEnemyDirectDamageReduction") {
+    preparation.eligibleThisBattle = Math.max(0, Number(enemyCount) || 0) >= 2;
+    preparation.reducedEnemiesThisBattle = new Set();
   }
   return preparation;
 }
 
 export function resolvePreparationIncomingDirectDamage({ preparation, enemy, damage }) {
   const normalizedDamage = normalizeDamage(damage);
+  const effectType = preparation?.effect?.type;
+  const isEligibleFamilyEffect = effectType === "firstFamilyDirectDamageReduction"
+    && enemy?.family === preparation.effect.targetFamily;
+  const isEligibleMultiEnemyEffect = effectType === "firstMultiEnemyDirectDamageReduction"
+    && preparation.eligibleThisBattle;
+  const hasReducedThisEnemy = isEligibleMultiEnemyEffect
+    && preparation.reducedEnemiesThisBattle?.has(enemy);
   if (
     !preparation
-    || preparation.effect?.type !== "firstFamilyDirectDamageReduction"
-    || preparation.usedThisBattle
-    || enemy?.family !== preparation.effect.targetFamily
+    || (!isEligibleFamilyEffect && !isEligibleMultiEnemyEffect)
+    || (isEligibleFamilyEffect && preparation.usedThisBattle)
+    || hasReducedThisEnemy
     || normalizedDamage <= 0
   ) {
     return { triggered: false, damage: normalizedDamage, preventedDamage: 0 };
@@ -58,10 +84,46 @@ export function resolvePreparationIncomingDirectDamage({ preparation, enemy, dam
     return { triggered: false, damage: normalizedDamage, preventedDamage: 0 };
   }
 
-  preparation.usedThisBattle = true;
+  if (isEligibleFamilyEffect) {
+    preparation.usedThisBattle = true;
+  } else {
+    preparation.reducedEnemiesThisBattle.add(enemy);
+  }
   preparation.triggerCount += 1;
   preparation.damagePrevented += preventedDamage;
   return { triggered: true, damage: reducedDamage, preventedDamage };
+}
+
+export function resolvePreparationSaltErosionInitialTurns({ preparation, turns }) {
+  const normalizedTurns = Math.max(1, Math.round(Number(turns) || 1));
+  if (!preparation || preparation.effect?.type !== "saltErosionInitialTurnReduction") {
+    return { triggered: false, turns: normalizedTurns, turnsReduced: 0 };
+  }
+
+  const reduction = Math.max(0, Math.round(Number(preparation.effect.turnReduction) || 0));
+  const reducedTurns = Math.max(1, normalizedTurns - reduction);
+  const turnsReduced = normalizedTurns - reducedTurns;
+  if (turnsReduced < 1) {
+    return { triggered: false, turns: normalizedTurns, turnsReduced: 0 };
+  }
+
+  preparation.triggerCount += 1;
+  preparation.turnsReduced += turnsReduced;
+  return { triggered: true, turns: reducedTurns, turnsReduced };
+}
+
+export function consumePreparationParalysisPenaltyPrevention(preparation) {
+  if (
+    !preparation
+    || preparation.effect?.type !== "paralysisPenaltyPrevention"
+    || preparation.remainingCharges <= 0
+  ) {
+    return false;
+  }
+  preparation.remainingCharges -= 1;
+  preparation.triggerCount += 1;
+  preparation.penaltiesPrevented += 1;
+  return true;
 }
 
 export function runPreparationOpeningAction({ preparation, hero, encounterType, action, onTrigger = null }) {
