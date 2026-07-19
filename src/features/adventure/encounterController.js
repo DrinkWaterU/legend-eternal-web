@@ -1,7 +1,8 @@
-import { buildEnemy, buildScaledEnemy } from "../../core/combat.js";
+import { buildEnemy, buildEnemyGroup, buildScaledEnemy } from "../../core/combat.js";
 import { createRuntimeEnemyGroup, getEnemyDisplayName, getLivingEnemies } from "../../core/enemyGroups.js";
 import { getEnemyDefinition } from "../../data/enemies/index.js";
 import { getRouteGroup } from "../../data/routes/index.js";
+import { getRegionEncounterGroupOption } from "../../data/regions/regionDefinition.js";
 import { showCombatLayout } from "../../ui/eventView.js";
 
 export function createEncounterController({
@@ -53,9 +54,20 @@ export function createEncounterController({
       battleEnemies = createRuntimeEnemyGroup(entries);
       restoreEnemies = true;
     } else {
-      const enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
-      enemy.poison = 0;
-      battleEnemies = [enemy];
+      const groupOption = getRegionEncounterGroupOption(encounterEntry);
+      if (groupOption) {
+        battleEnemies = createRuntimeEnemyGroup(buildEnemyGroup(
+          region,
+          state.encounterIndex,
+          state.hero,
+          groupOption
+        ));
+        restoreEnemies = true;
+      } else {
+        const enemy = buildEnemy(region, state.encounterIndex, state.hero, { boss: state.selectedBoss });
+        enemy.poison = 0;
+        battleEnemies = [enemy];
+      }
     }
 
     beginBattleRuntime({ enemies: battleEnemies, restoreEnemies, source: "main", encounterType });

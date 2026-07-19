@@ -4,7 +4,10 @@ const SUPPORTED_EFFECT_TYPES = new Set([
   "firstFamilyDirectDamageReduction",
   "openingActionAttackBonus",
   "victoryMilestoneHeal",
-  "entangleRetry"
+  "entangleRetry",
+  "saltErosionInitialTurnReduction",
+  "paralysisPenaltyPrevention",
+  "firstMultiEnemyDirectDamageReduction"
 ]);
 
 export function assertRegionPreparations(region) {
@@ -115,6 +118,19 @@ function validateEffect(effect, preparationId) {
       break;
     case "entangleRetry":
       validateCharges(effect.charges, preparationId);
+      break;
+    case "saltErosionInitialTurnReduction":
+      if (!Number.isSafeInteger(effect.turnReduction) || effect.turnReduction <= 0) {
+        throw new Error(`整備 ${preparationId} 的鹽蝕回合縮減參數無效。`);
+      }
+      break;
+    case "paralysisPenaltyPrevention":
+      validateCharges(effect.charges, preparationId);
+      break;
+    case "firstMultiEnemyDirectDamageReduction":
+      if (!isPositiveRatio(effect.reductionRatio)) {
+        throw new Error(`整備 ${preparationId} 的多敵人減傷參數無效。`);
+      }
       break;
     default:
       break;

@@ -4,12 +4,43 @@ const DEFAULT_ENEMY_WEIGHT = 100;
 
 export function buildEnemy(region, encounterIndex, hero, options = {}) {
   const encounterType = region.encounterPlan[encounterIndex];
-  const base = encounterType === "boss"
+  const normalizedType = typeof encounterType === "string" ? encounterType : encounterType?.type;
+  const base = normalizedType === "boss"
     ? options.boss || region.boss
-    : encounterType === "elite"
-      ? pickEnemy(region.elites, hero, "elite")
-      : pickEnemy(region.enemies, hero, "normal");
+    : normalizedType === "elite"
+      ? pickEnemy(region.elites, hero, "elite", encounterIndex)
+      : pickEnemy(region.enemies, hero, "normal", encounterIndex);
   return buildScaledEnemy(base, region, encounterIndex);
+}
+
+export function buildEnemyGroup(region, encounterIndex, hero, options = {}) {
+  const encounterEntry = region?.encounterPlan?.[encounterIndex];
+  const encounterType = typeof encounterEntry === "string" ? encounterEntry : encounterEntry?.type;
+  const count = Math.max(1, Math.floor(Number(options.count) || 1));
+  const statScale = Number(options.statScale) > 0 ? Number(options.statScale) : 1;
+  const attackScale = Number(options.attackScale) > 0 ? Number(options.attackScale) : statScale;
+  const rewardScale = Number(options.rewardScale) >= 0 ? Number(options.rewardScale) : statScale;
+  const entries = [];
+  const selectedFamilies = new Set();
+
+  for (let index = 0; index < count; index += 1) {
+    const sourcePool = encounterType === "elite" ? region.elites : region.enemies;
+    const availablePool = selectedFamilies.has("fishman")
+      ? sourcePool.filter((enemy) => enemy.family !== "fishman")
+      : sourcePool;
+    const base = pickEnemy(
+      availablePool.length > 0 ? availablePool : sourcePool,
+      hero,
+      encounterType === "elite" ? "elite" : "normal",
+      encounterIndex
+    );
+    selectedFamilies.add(base.family);
+    const enemy = buildScaledEnemy(base, region, encounterIndex);
+    enemy.poison = 0;
+    entries.push({ enemy, statScale, attackScale, rewardScale });
+  }
+
+  return entries;
 }
 
 export function buildScaledEnemy(baseEnemy, region, encounterIndex) {
@@ -27,15 +58,26 @@ export function buildScaledEnemy(baseEnemy, region, encounterIndex) {
   return enemy;
 }
 
-function pickEnemy(enemies, hero, encounterType) {
+function pickEnemy(enemies, hero, encounterType, encounterIndex = 0) {
+  const eligibleEnemies = getEligibleEnemies(enemies, encounterIndex);
+  const candidateEnemies = eligibleEnemies.length > 0 ? eligibleEnemies : enemies;
   const activeBiases = getActiveEncounterBiases(hero, encounterType);
-  const guaranteeBias = activeBiases.find((bias) => shouldGuaranteeFamily(enemies, bias, encounterType));
+  const guaranteeBias = activeBiases.find((bias) => shouldGuaranteeFamily(candidateEnemies, bias, encounterType));
   const selected = guaranteeBias
-    ? randomItem(enemies.filter((enemy) => hasBiasedFamily(enemy, guaranteeBias)))
-    : weightedRandomItem(enemies, (enemy) => getBiasedEnemyWeight(enemy, activeBiases, encounterType));
+    ? randomItem(candidateEnemies.filter((enemy) => hasBiasedFamily(enemy, guaranteeBias)))
+    : weightedRandomItem(candidateEnemies, (enemy) => getBiasedEnemyWeight(enemy, activeBiases, encounterType));
 
   updateEncounterBiases(hero, encounterType, selected);
   return selected;
+}
+
+function getEligibleEnemies(enemies, encounterIndex) {
+  return enemies.filter((enemy) => {
+    const minEncounter = Number(enemy.minEncounter);
+    const maxEncounter = Number(enemy.maxEncounter);
+    return (!Number.isFinite(minEncounter) || encounterIndex + 1 >= minEncounter)
+      && (!Number.isFinite(maxEncounter) || encounterIndex + 1 <= maxEncounter);
+  });
 }
 
 function getActiveEncounterBiases(hero, encounterType) {

@@ -88,11 +88,14 @@ export function createBattleState({
   function resetHeroBattleState() {
     state.hero.poison = 0;
     state.hero.entangle = null;
+    state.hero.saltErosion = null;
+    state.hero.paralysis = null;
     state.hero.battleAttackBonus = 0;
     state.hero.battleCritBonus = 0;
     state.hero.hasAttackedThisBattle = false;
     state.hero.statusFamiliarityLimitBonus = 0;
     state.hero.victoryHealBonusRatio = 0;
+    state.hero.activePreparation = state.runPreparation;
     state.hero.shield = state.hero.shieldStart;
     state.hero.skillState = createSkillState();
     initializeCharacterBattleState(state.hero);
@@ -109,9 +112,14 @@ export function createBattleState({
 
     resetBattleEntryState(state, { source, encounterType, ambushAdvantage });
     setEnemyGroup(enemies, { restore: restoreEnemies });
+    state.hero.activeEnemyCount = getLivingEnemies(state.enemies).length;
     resetHeroBattleState();
-    beginPreparationBattle(state.runPreparation);
+    beginPreparationBattle(state.runPreparation, { enemyCount: state.hero.activeEnemyCount });
     applyBattleStartSkills();
+    if (state.hero.activeEnemyCount >= 2 && state.hero.multiEnemyShieldStart > 0) {
+      state.hero.shield += state.hero.multiEnemyShieldStart;
+      addFixedLog("status", `敵群逼近，${state.hero.name}獲得額外 ${state.hero.multiEnemyShieldStart} 點護盾。`);
+    }
   }
 
   function healThreatEnemies(enemies, ratio) {

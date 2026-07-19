@@ -323,7 +323,7 @@
       "level": 5,
       "type": "milestone",
       "name": "保持距離",
-      "description": "每場戰鬥第一次受到敵人直接攻擊時，降低本次受到的傷害 50%。"
+      "description": "開戰獲得 2 次保持距離；受到敵人直接攻擊時消耗 1 次，使本次傷害降至 1 點。"
     },
     {
       "id": "precision-shot",
@@ -344,14 +344,14 @@
       "level": 10,
       "type": "milestone",
       "name": "箭雨",
-      "description": "每累積 4 次玩家攻擊，自動對所有存活敵人造成正常攻擊 50% 的傷害。"
+      "description": "每累積 4 次玩家攻擊，自動對所有存活敵人造成正常攻擊 50% 的傷害，並恢復 1 次保持距離，最多保留 2 次。"
     },
     {
       "id": "toxic-opening",
       "level": 12,
       "type": "minor",
       "name": "毒素破綻",
-      "description": "攻擊在本次射擊開始前已處於中毒狀態的敵人時，暴擊率 +20%。"
+      "description": "攻擊在本次射擊開始前已處於中毒狀態的敵人時，暴擊率 +10%。"
     },
     {
       "id": "deadly-rhythm",
@@ -366,7 +366,7 @@
       "type": "minor",
       "targetSkillId": "poison-arrow",
       "name": "劇毒箭頭",
-      "description": "強化淬毒箭：上毒率提高至 50%，中毒傷害提高至 6。"
+      "description": "強化淬毒箭：上毒率提高至 50%，中毒傷害提高至 6；毒素破綻的暴擊率加成提高至 20%。"
     },
     {
       "id": "distance-control",
@@ -390,7 +390,7 @@
       "type": "minor",
       "targetSkillId": "arrow-rain",
       "name": "密集箭雨",
-      "description": "強化箭雨：傷害由正常攻擊 50% 提高至 85%，觸發門檻仍為 4 次玩家攻擊。"
+      "description": "強化箭雨：傷害由正常攻擊 50% 提高至 85%，觸發門檻仍為 4 次玩家攻擊，並保留原有的保持距離恢復。"
     },
     {
       "id": "hundred-step-shot",

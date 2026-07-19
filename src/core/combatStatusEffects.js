@@ -1,4 +1,11 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
+import { resolvePreparationSaltErosionInitialTurns } from "./preparationEffects.js";
+
+const SALT_EROSION_INITIAL_TURNS = 5;
+const SALT_EROSION_MAX_TURNS = 7;
+const PARALYSIS_INITIAL_TURNS = 2;
+const PARALYSIS_MAX_TURNS = 3;
+const DEFAULT_SALT_HEALING_REDUCTION = 0.3;
 
 export function getHeroPendingHpLoss(hero) {
   if (!hero || hero.poison <= 0) {
@@ -12,6 +19,74 @@ export function getEnemyPendingHpLoss(enemy) {
     return 0;
   }
   return Math.max(0, Number(enemy.poison) || 0);
+}
+
+export function applySaltErosion(hero, log) {
+  if (!hero) return 0;
+  const currentTurns = Math.max(0, Number(hero.saltErosion?.remainingTurns) || 0);
+  const initialTurnsResult = currentTurns > 0
+    ? { triggered: false, turns: SALT_EROSION_INITIAL_TURNS }
+    : resolvePreparationSaltErosionInitialTurns({
+      preparation: hero.activePreparation,
+      turns: SALT_EROSION_INITIAL_TURNS
+    });
+  const remainingTurns = Math.min(
+    SALT_EROSION_MAX_TURNS,
+    currentTurns > 0 ? currentTurns + 1 : initialTurnsResult.turns
+  );
+  hero.saltErosion = { remainingTurns };
+  if (initialTurnsResult.triggered) {
+    const preparationName = hero.activePreparation?.name || "冒險整備";
+    log?.fixed?.("status", `整備｜${preparationName}減緩鹽蝕，使初始持續時間縮短 ${initialTurnsResult.turnsReduced} 回合。`);
+  }
+  log?.fixed?.("status", `${hero.name} 受到鹽蝕，戰鬥中的治療效果降低。`);
+  return remainingTurns;
+}
+
+export function applyParalysis(hero, log) {
+  if (!hero) return 0;
+  const currentTurns = Math.max(0, Number(hero.paralysis?.remainingTurns) || 0);
+  const remainingTurns = Math.min(
+    PARALYSIS_MAX_TURNS,
+    currentTurns > 0 ? currentTurns + 1 : PARALYSIS_INITIAL_TURNS
+  );
+  hero.paralysis = { remainingTurns };
+  log?.fixed?.("status", `${hero.name} 陷入麻痺，接下來的攻擊可能變弱。`);
+  return remainingTurns;
+}
+
+export function advanceHeroCombatStatuses(hero) {
+  if (!hero) return;
+  ["saltErosion", "paralysis"].forEach((statusId) => {
+    const status = hero[statusId];
+    if (!status) return;
+    status.remainingTurns = Math.max(0, (Number(status.remainingTurns) || 0) - 1);
+    if (status.remainingTurns <= 0) hero[statusId] = null;
+  });
+}
+
+export function getHeroBattleHealingMultiplier(hero) {
+  const remainingTurns = Number(hero?.saltErosion?.remainingTurns) || 0;
+  if (remainingTurns <= 0) {
+    return 1;
+  }
+  const reduction = Number.isFinite(Number(hero?.saltHealingReduction))
+    ? Math.max(0, Math.min(1, Number(hero.saltHealingReduction)))
+    : DEFAULT_SALT_HEALING_REDUCTION;
+  return 1 - reduction;
+}
+
+export function getHeroBattleHealingAmount(hero, amount, { minimum = 0 } = {}) {
+  const requested = Math.max(0, Math.round(Number(amount) || 0));
+  return Math.max(minimum, Math.round(requested * getHeroBattleHealingMultiplier(hero)));
+}
+
+export function applyHeroBattleHealing(hero, amount) {
+  if (!hero || hero.hp <= 0) return 0;
+  const effectiveAmount = getHeroBattleHealingAmount(hero, amount);
+  const before = hero.hp;
+  hero.hp = Math.min(hero.maxHp, hero.hp + effectiveAmount);
+  return hero.hp - before;
 }
 
 export function applyHeroEndOfTurnNegativeEffects({ hero, log, modifyPoisonDamage = null }) {
@@ -47,8 +122,8 @@ export function applyEnemyEndOfTurnNegativeEffects({ enemy, log }) {
 
 export function applyHeroEndOfTurnRecoveryEffects({ hero, turn, log }) {
   if (hero.regenEvery > 0 && turn % hero.regenEvery === 0 && hero.hp > 0) {
-    hero.hp = Math.min(hero.maxHp, hero.hp + hero.regenAmount);
-    log.template("heal", "heal", { target: hero.name, amount: hero.regenAmount });
+    const amount = applyHeroBattleHealing(hero, hero.regenAmount);
+    if (amount > 0) log.template("heal", "heal", { target: hero.name, amount });
   }
   applyTimedRegens(hero, turn, log);
 }
@@ -77,12 +152,13 @@ function applyTimedRegens(hero, turn, log) {
     if (effect.remainingEncounters <= 0 || effect.everyTurns <= 0 || turn % effect.everyTurns !== 0) {
       return;
     }
-    const amount = Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio));
-    hero.hp = Math.min(hero.maxHp, hero.hp + amount);
-    log.template("heal", "timedRegen", {
-      source: effect.source,
-      target: hero.name,
-      amount
-    });
+    const amount = applyHeroBattleHealing(hero, Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio)));
+    if (amount > 0) {
+      log.template("heal", "timedRegen", {
+        source: effect.source,
+        target: hero.name,
+        amount
+      });
+    }
   });
 }

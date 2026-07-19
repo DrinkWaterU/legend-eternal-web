@@ -1,0 +1,162 @@
+{
+  "id": "beach",
+  "events": [
+    {
+      "id": "beach-stranded-ship",
+      "weight": 100,
+      "triggerBeforeEncounter": 5,
+      "eyebrow": "海灘事件",
+      "title": "擱淺的廢船",
+      "transitionText": [
+        "你沿著潮線繼續前進……",
+        "前方的沙地上，躺著一艘擱淺的廢船。"
+      ],
+      "narrative": [
+        "船身斜卡在礁石與沙丘之間，破裂的桅杆指向陰沉的海面。",
+        "潮水還沒完全退去，船艙裡不時傳出木板互相撞擊的聲音。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "search-ship-cabin",
+          "meta": "冒險搜索",
+          "title": "搜索船艙",
+          "description": "冒險爬入傾斜的船艙，尋找還能使用的物品。",
+          "action": "損失 12 點生命｜取得額外 Blessing 三選一",
+          "result": {
+            "narrative": [
+              "你踩過積水與碎木，從船艙深處找到一個被油布包住的小盒子。",
+              "盒中沒有完整的裝備，卻留下了足以整理戰鬥方式的線索。"
+            ],
+            "effects": [{ "type": "loseHp", "amount": 12 }],
+            "defaultTarget": { "type": "chooseBlessing", "poolId": "beach", "count": 3 },
+            "resultIds": ["beach-ship-searched"],
+            "continueLabel": "選擇額外祝福"
+          }
+        },
+        {
+          "id": "take-deck-supplies",
+          "meta": "穩妥取用",
+          "title": "拿取甲板補給",
+          "description": "不進船艙，只拿走甲板上仍未被海水浸透的補給。",
+          "action": "恢復最大生命 12%｜安全離開",
+          "result": {
+            "narrative": [
+              "你從甲板邊緣取下幾包尚未完全受潮的乾糧與布條。",
+              "廢船在浪聲裡再次晃動，你沒有再靠近船艙。"
+            ],
+            "effects": [{ "type": "recoverHp", "maxHpRatio": 0.12 }],
+            "defaultTarget": { "type": "returnAdventure" },
+            "resultIds": ["beach-ship-supplies"],
+            "continueLabel": "離開廢船"
+          }
+        }
+      ]
+    },
+    {
+      "id": "beach-jelly-pool",
+      "weight": 100,
+      "triggerBeforeEncounter": 9,
+      "eyebrow": "海灘事件",
+      "title": "水母礁池",
+      "transitionText": [
+        "潮線在礁石間突然斷開……",
+        "一座被海水包圍的礁池裡，漂著幾團微光。"
+      ],
+      "narrative": [
+        "礁池裡的水面沒有隨浪起伏，半透明的生物在其中緩慢收縮。",
+        "那是水母留下的薄膜，或許能成為有用的材料；但池水看起來並不安全。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "bypass-jelly-pool",
+          "meta": "保持距離",
+          "title": "繞過礁池",
+          "description": "貼著外圍礁石通過，不碰池中的微光。",
+          "action": "不取得額外素材｜安全通過",
+          "result": {
+            "narrative": [
+              "你沿著較高的礁脊繞行，水母的微光在身後逐漸被潮霧遮住。"
+            ],
+            "defaultTarget": { "type": "returnAdventure" },
+            "resultIds": ["beach-jelly-pool-bypassed"],
+            "continueLabel": "繼續前進"
+          }
+        },
+        {
+          "id": "gather-jelly-membrane",
+          "meta": "冒險採集",
+          "title": "採集水母薄膜",
+          "description": "用工具從礁池邊緣取下一小片薄膜，承受短暫的刺麻感。",
+          "action": "損失 8 點生命｜取得水母薄膜 ×1",
+          "result": {
+            "narrative": [
+              "你用布條固定住手腕，快速從池邊取下一片完整薄膜。",
+              "刺麻沿著手臂竄過，但你在下一道浪打來前已經退回乾燥礁面。"
+            ],
+            "effects": [
+              { "type": "loseHp", "amount": 8 },
+              { "type": "grantMaterials", "materials": [{ "id": "jelly_membrane", "quantity": 1 }] }
+            ],
+            "defaultTarget": { "type": "returnAdventure" },
+            "resultIds": ["beach-jelly-membrane-gathered"],
+            "continueLabel": "收好薄膜，繼續前進"
+          }
+        }
+      ]
+    },
+    {
+      "id": "beach-storm-watchtower",
+      "weight": 100,
+      "triggerBeforeEncounter": 13,
+      "eyebrow": "海灘事件",
+      "title": "暴潮前的瞭望台",
+      "transitionText": [
+        "遠處的浪聲開始變得低沉……",
+        "一座半塌的瞭望台立在風口，還沒有完全倒下。"
+      ],
+      "narrative": [
+        "天色在海面上迅速變暗，遠方的浪脊一層疊過一層。",
+        "瞭望台下有一處背風的凹地，台上則可能看見前方潮線的變化。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "rest-behind-watchtower",
+          "meta": "短暫休息",
+          "title": "在背風處休息",
+          "description": "抓緊暴潮抵達前的空檔，整理傷口與呼吸。",
+          "action": "恢復最大生命 15%｜安全離開",
+          "result": {
+            "narrative": [
+              "你縮進瞭望台殘骸後方，讓風把身上的鹽霧帶走一部分。",
+              "休息時間不長，但足以讓下一段路不至於從失衡開始。"
+            ],
+            "effects": [{ "type": "recoverHp", "maxHpRatio": 0.15 }],
+            "defaultTarget": { "type": "returnAdventure" },
+            "resultIds": ["beach-watchtower-rested"],
+            "continueLabel": "離開瞭望台"
+          }
+        },
+        {
+          "id": "search-watchtower",
+          "meta": "高處搜索",
+          "title": "攀上瞭望台",
+          "description": "冒險爬上殘破的平台，搜尋前人留下的航行與潮汐記錄。",
+          "action": "損失 12 點生命｜取得額外 Blessing 三選一",
+          "result": {
+            "narrative": [
+              "木梯在你腳下發出不安的呻吟，卻沒有立刻斷裂。",
+              "你在平台邊緣找到一張被鹽霜封住的圖，從上面讀出幾個值得記住的落腳點。"
+            ],
+            "effects": [{ "type": "loseHp", "amount": 12 }],
+            "defaultTarget": { "type": "chooseBlessing", "poolId": "beach", "count": 3 },
+            "resultIds": ["beach-watchtower-searched"],
+            "continueLabel": "選擇額外祝福"
+          }
+        }
+      ]
+    }
+  ]
+}

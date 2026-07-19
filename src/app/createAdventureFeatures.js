@@ -1,6 +1,7 @@
 import {
   COUNTER_ESCAPE_ENEMY_HEAL_RATIO,
   ELITE_FLEE_CHANCE,
+  BEACH_TRIAL_ACHIEVEMENT_ID,
   FOREST_TRIAL_ACHIEVEMENT_ID,
   GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID,
   NORMAL_FLEE_CHANCE,
@@ -111,7 +112,8 @@ export function createAdventureFeatures({
     saveStore,
     queueAchievementUnlock: profile.queueAchievementUnlock,
     forestTrialAchievementId: FOREST_TRIAL_ACHIEVEMENT_ID,
-    goblinCampClearAchievementId: GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID
+    goblinCampClearAchievementId: GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID,
+    beachTrialAchievementId: BEACH_TRIAL_ACHIEVEMENT_ID
   });
 
   const routeEndingController = createRouteEndingController({

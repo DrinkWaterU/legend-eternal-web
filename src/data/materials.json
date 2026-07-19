@@ -274,5 +274,113 @@
     "sellPrice": 14,
     "sortOrder": 730,
     "tags": ["forest", "goblin", "boss", "ritual"]
+  },
+  "reef_shell": {
+    "id": "reef_shell",
+    "name": "礁甲碎片",
+    "rarity": "common",
+    "category": "material",
+    "description": "礁甲蟹脫落的硬殼碎片，邊緣帶著潮水磨出的細痕。",
+    "usage": "可用於護具補強、盾牌外層與耐衝擊零件。",
+    "source": "海灘 / 礁甲蟹、潮汐巨蟹",
+    "sellPrice": 3,
+    "sortOrder": 800,
+    "tags": ["beach", "beast", "shell"]
+  },
+  "jelly_membrane": {
+    "id": "jelly_membrane",
+    "name": "水母薄膜",
+    "rarity": "common",
+    "category": "material",
+    "description": "水母留下的半透明薄膜，表面仍殘留微弱刺麻感。",
+    "usage": "可用於狀態材料、柔韌護具與水性調和。",
+    "source": "海灘 / 鹽霧水母、腐潮水母",
+    "sellPrice": 3,
+    "sortOrder": 810,
+    "tags": ["beach", "slime", "jellyfish"]
+  },
+  "salt_crystal": {
+    "id": "salt_crystal",
+    "name": "鹽晶",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "在潮線與水母活動範圍內凝結出的鹽晶，硬度高且帶有微弱魔力。",
+    "usage": "可用於防禦材料、抗鹽蝕處理與海岸祝福研究。",
+    "source": "海灘 / 鹽霧水母、魚人鹽矛手、腐潮水母",
+    "sellPrice": 7,
+    "sortOrder": 820,
+    "tags": ["beach", "salt", "defense"]
+  },
+  "shore_hide": {
+    "id": "shore_hide",
+    "name": "潮砂獸皮",
+    "rarity": "common",
+    "category": "material",
+    "description": "潮砂獸身上的粗韌獸皮，纖維間卡著洗不乾淨的細沙。",
+    "usage": "可用於耐潮皮革、護具內襯與長途行動裝備。",
+    "source": "海灘 / 沙痕獵獸",
+    "sellPrice": 3,
+    "sortOrder": 830,
+    "tags": ["beach", "beast", "hide"]
+  },
+  "tidewing_membrane": {
+    "id": "tidewing_membrane",
+    "name": "潮翼薄膜",
+    "rarity": "common",
+    "category": "material",
+    "description": "潮翼掠食者翅膜上的細密紋理，輕薄卻能承受快速轉向。",
+    "usage": "可用於輕裝、弓具與需要保持彈性的材料。",
+    "source": "海灘 / 潮翼掠食者",
+    "sellPrice": 3,
+    "sortOrder": 840,
+    "tags": ["beach", "beast", "membrane"]
+  },
+  "fishman_scale": {
+    "id": "fishman_scale",
+    "name": "魚人鱗片",
+    "rarity": "common",
+    "category": "material",
+    "description": "魚人身上剝落的鱗片，表面附著鹽霜，排列方向仍相當整齊。",
+    "usage": "可用於潮濕環境的護具、鱗片鑲嵌與魚人相關裝備研究。",
+    "source": "海灘 / 魚人斥候、魚人鹽矛手",
+    "sellPrice": 3,
+    "sortOrder": 850,
+    "tags": ["beach", "fishman", "scale"]
+  },
+  "reef_claw_core": {
+    "id": "reef_claw_core",
+    "name": "巨礁鉗核",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "巨鉗礁甲蟹鉗節內部的硬質核心，敲擊時會傳出沉重回音。",
+    "usage": "可用於重型武器、護手與承受撞擊的裝備核心。",
+    "source": "海灘 / 巨鉗礁甲蟹、潮汐巨蟹",
+    "sellPrice": 7,
+    "sortOrder": 860,
+    "tags": ["beach", "beast", "elite", "core"]
+  },
+  "brine_core": {
+    "id": "brine_core",
+    "name": "腐潮凝核",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "腐潮水母體內凝結的鹽潮核心，靠近時仍能感覺到細微電麻。",
+    "usage": "可用於狀態材料、抗性調和與海岸魔力研究。",
+    "source": "海灘 / 腐潮水母",
+    "sellPrice": 7,
+    "sortOrder": 870,
+    "tags": ["beach", "slime", "elite", "core"]
+  },
+  "tidal_claw_core": {
+    "id": "tidal_claw_core",
+    "name": "潮汐巨鉗核",
+    "rarity": "rare",
+    "category": "material",
+    "description": "潮汐巨蟹留下的巨大鉗核，內部凝聚著反覆潮汐的力量。",
+    "usage": "海岸 Boss 素材，可用於製作高階武器與重型裝備。",
+    "source": "海灘 / 潮汐巨蟹",
+    "sellPrice": 18,
+    "sortOrder": 880,
+    "tags": ["beach", "beast", "boss", "core"]
   }
 }

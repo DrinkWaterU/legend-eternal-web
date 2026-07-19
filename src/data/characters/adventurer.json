@@ -380,17 +380,17 @@
       "type": "minor",
       "targetSkillId": "exploit-weakness",
       "name": "破綻判斷強化",
-      "description": "強化破綻判斷：暴擊率額外 +3%，暴擊傷害倍率再提升 10%。",
+      "description": "強化破綻判斷：暴擊率額外 +6%，暴擊傷害倍率再提升 20%；熟練追擊機率提高至 40%，追加傷害提高至攻擊的 70%。",
       "effects": [
         {
           "type": "add",
           "stat": "critChance",
-          "amount": 0.03
+          "amount": 0.06
         },
         {
           "type": "add",
           "stat": "critDamageMultiplier",
-          "amount": 0.1
+          "amount": 0.2
         }
       ]
     },
@@ -399,7 +399,7 @@
       "level": 20,
       "type": "milestone",
       "name": "遠征步調",
-      "description": "強化冒險者步調：每場勝利後恢復最大生命 15%。",
+      "description": "強化冒險者步調：每場勝利後恢復最大生命 20%；死地求生的恢復量提高至最大生命 25%。",
       "targetSkillId": "adventurer-pace"
     },
     {
@@ -408,14 +408,14 @@
       "type": "minor",
       "targetSkillId": "steady-stance",
       "name": "穩定架勢強化",
-      "description": "強化穩定架勢：受到敵人直接攻擊時有 30% 機率降低本次傷害 35%。"
+      "description": "強化穩定架勢：受到敵人直接攻擊時有 35% 機率降低本次傷害 40%。"
     },
     {
       "id": "status-familiarity",
       "level": 24,
       "type": "minor",
       "name": "狀態熟悉",
-      "description": "當你施加負面狀態時，獲得 1 層判讀，每層攻擊 +1，最多 3 層，持續到本場戰鬥結束；若本輪沒有可施加負面狀態的祝福，攻擊 +1。"
+      "description": "當你施加負面狀態時，獲得 1 層判讀，每層攻擊 +1，最多 3 層，持續到本場戰鬥結束；若本輪沒有可施加負面狀態的祝福，攻擊 +2。"
     },
     {
       "id": "versatile-satchel",

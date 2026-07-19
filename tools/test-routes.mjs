@@ -211,8 +211,8 @@ const schema6 = migrateSave({
 assert.deepEqual(schema6.statistics.regions.forest.routeClears, { main: 1, goblinCamp: 2 });
 assert.equal(schema6.storyFlags.archerRescued, true);
 
-const saveCode = createSaveTransferCode(schema6, "v0.2.3.3-alpha");
-const parsedSchema6 = parseSaveTransferCode(saveCode).save;
+const saveCode = await createSaveTransferCode(schema6, "v0.2.3.3-alpha");
+const parsedSchema6 = (await parseSaveTransferCode(saveCode)).save;
 const roundTrip = migrateSave(parsedSchema6);
 assert.deepEqual(roundTrip.statistics.regions.forest.routeClears, { main: 1, goblinCamp: 2 }, "schema6 export/import roundtrip 應保留 Route 分布");
 assert.equal(roundTrip.storyFlags.archerRescued, true, "schema6 export/import roundtrip 應保留 archerRescued");

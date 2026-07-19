@@ -210,5 +210,57 @@
     "weight": 100,
     "repeatable": true,
     "enabled": true
+  },
+  {
+    "id": "beach-threat-control",
+    "name": "海灘威脅清理",
+    "rarity": "common",
+    "description": "清除盤踞海灘的魔物，降低潮線與礁岩周邊的行動風險。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 20,
+      "regionIds": ["beach"],
+      "routeIds": [],
+      "enemyIds": [],
+      "enemyKinds": [],
+      "enemyFamilies": []
+    },
+    "rewards": { "gold": 30, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "beach-route-survey",
+    "name": "海岸路線勘查",
+    "rarity": "advanced",
+    "description": "完成海灘路線勘查，確認漲退潮後的通行狀況。",
+    "objective": {
+      "type": "clearAdventure",
+      "target": 1,
+      "regionIds": ["beach"],
+      "routeIds": [],
+      "clearSourceIds": ["main"]
+    },
+    "rewards": { "gold": 40, "materials": [] },
+    "weight": 70,
+    "repeatable": true,
+    "enabled": true
+  },
+  {
+    "id": "tidal-claw-core-research",
+    "name": "潮汐巨鉗核研究",
+    "rarity": "rare",
+    "description": "公會需要潮汐巨蟹留下的鉗核，以研究其中反覆積蓄的潮汐力量。",
+    "objective": {
+      "type": "deliverMaterials",
+      "materials": [
+        { "id": "tidal_claw_core", "quantity": 1 }
+      ]
+    },
+    "rewards": { "gold": 55, "materials": [] },
+    "weight": 100,
+    "repeatable": true,
+    "enabled": true
   }
 ]

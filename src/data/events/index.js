@@ -1,9 +1,11 @@
 import { getEnemyDefinition, sharedEnemyDefinitions } from "../enemies/index.js";
 import { routeDefinitions } from "../routes/index.js";
+import beachEventData from "./beach.json" with { type: "json" };
 import forestEventData from "./forest.json" with { type: "json" };
 
 const eventDataFiles = [
   forestEventData,
+  beachEventData,
   ...Object.values(routeDefinitions).map((route) => ({
     id: route.id,
     events: route.eventDefinitions || []

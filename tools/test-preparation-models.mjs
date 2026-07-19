@@ -31,6 +31,7 @@ import {
   modifyCharacterIncomingDirectDamage,
   resolveCharacterPlayerAction
 } from "../src/characters/skills/index.js";
+import { createBattleSkills } from "../src/features/battle/battleSkills.js";
 
 const ROUNDS = Math.max(1, Number(process.argv[2]) || 5000);
 const SCOPE = ["all", "plains", "forest"].includes(process.argv[3]) ? process.argv[3] : "all";
@@ -112,9 +113,9 @@ if (ROUNDS >= 5000 && plainsResults.length > 0) {
 if (ROUNDS >= 5000 && forestResults.length > 0) {
   const forestBaseline = getWinRatio(forestResults[0].result);
   if (ROUNDS >= 20000) {
-    assert.ok(Math.abs(forestBaseline - 0.75495) <= 0.002, "森林 baseline 不應因 B 階段 API 延伸漂移");
+    assert.ok(Math.abs(forestBaseline - 0.71165) <= 0.002, "森林 baseline 不應偏離納入伏擊後的正式模型基準");
   } else {
-    assert.ok(forestBaseline >= 0.72 && forestBaseline <= 0.79, "森林快速模型 baseline 應維持正式模型合理區間");
+    assert.ok(forestBaseline >= 0.68 && forestBaseline <= 0.75, "森林快速模型 baseline 應維持正式模型合理區間");
   }
   const forestRanges = new Map([
     ["驅蟲藥粉", [0.002, 0.03]],
@@ -160,10 +161,13 @@ function simulateRegionRuns({ rounds, region, characterId, level, preparationId,
       reached = encounterIndex + 1;
       resetBattleState(hero);
       beginPreparationBattle(preparation);
+      const battleSkills = createModelBattleSkills(hero);
+      battleSkills.applyBattleStartSkills();
       const encounterType = getEncounterType(region.encounterPlan[encounterIndex]);
       const enemy = buildEnemy(region, encounterIndex, hero, { boss: selectedBoss });
       enemy.poison = 0;
-      const won = simulateEncounter({ hero, enemy, preparation, encounterType });
+      applyEnemyAmbush(hero, enemy);
+      const won = simulateEncounter({ hero, enemy, preparation, encounterType, battleSkills });
       if (!won) {
         cleared = false;
         defeatsByEncounter.set(reached, (defeatsByEncounter.get(reached) || 0) + 1);
@@ -171,7 +175,7 @@ function simulateRegionRuns({ rounds, region, characterId, level, preparationId,
       }
 
       applyKillRecovery(hero);
-      applyVictorySkills(hero);
+      battleSkills.applyVictorySkills();
       consumeBattleLimitedEffects(hero);
       const isFinalEncounter = encounterIndex >= region.encounterPlan.length - 1;
       resolvePostEncounterPreparation({ preparation, hero, isFinalEncounter });
@@ -205,7 +209,7 @@ function simulateRegionRuns({ rounds, region, characterId, level, preparationId,
   };
 }
 
-function simulateEncounter({ hero, enemy, preparation, encounterType }) {
+function simulateEncounter({ hero, enemy, preparation, encounterType, battleSkills }) {
   const runtimeEnemy = {
     ...enemy,
     runtimeId: "enemy-1",
@@ -258,7 +262,7 @@ function simulateEncounter({ hero, enemy, preparation, encounterType }) {
     });
     void enemyAction;
     applyEmergencyBandage(hero);
-    if (hero.hp <= 0 && !tryLastStand(hero)) {
+    if (hero.hp <= 0 && !battleSkills.tryLastStand()) {
       return false;
     }
 
@@ -272,7 +276,7 @@ function simulateEncounter({ hero, enemy, preparation, encounterType }) {
     applyEnemyEndOfTurnRecoveryEffects({ enemy: runtimeEnemy, turn, log: logger });
     if (hero.hp <= 0) {
       void endOfTurn;
-      if (!tryLastStand(hero)) {
+      if (!battleSkills.tryLastStand()) {
         return false;
       }
     }
@@ -296,6 +300,26 @@ function resetBattleState(hero) {
   initializeCharacterBattleState(hero);
 }
 
+function createModelBattleSkills(hero) {
+  return createBattleSkills({
+    state: { hero },
+    hasHeroSkill(skillId) {
+      return hasSkill(hero, skillId);
+    },
+    addLog() {},
+    addFixedLog() {},
+    lastBagFlowWeightMultiplier: 0.6
+  });
+}
+
+function applyEnemyAmbush(hero, enemy) {
+  const amount = Number(enemy.ambushDamage) || 0;
+  if (amount <= 0 || hero.hp <= 1) {
+    return;
+  }
+  hero.hp -= Math.min(amount, hero.hp - 1);
+}
+
 function applyEmergencyBandage(hero) {
   if (!hasSkill(hero, "emergency-bandage") || hero.skillState.emergencyBandageUsed || hero.hp <= 0) {
     return;
@@ -305,30 +329,6 @@ function applyEmergencyBandage(hero) {
   }
   const amount = Math.max(1, Math.round(hero.maxHp * 0.18));
   hero.skillState.emergencyBandageUsed = true;
-  hero.hp = Math.min(hero.maxHp, hero.hp + amount);
-}
-
-function tryLastStand(hero) {
-  if (!hasSkill(hero, "last-stand") || hero.skillState.lastStandUsed) {
-    return false;
-  }
-  hero.skillState.lastStandUsed = true;
-  const amount = Math.max(1, Math.round(hero.maxHp * 0.15));
-  hero.hp = Math.min(hero.maxHp, 1 + amount);
-  if (hero.poison > 0) {
-    hero.poison = 0;
-  } else if (hero.entangle) {
-    hero.entangle = null;
-  }
-  return hero.hp > 0;
-}
-
-function applyVictorySkills(hero) {
-  if (!hasSkill(hero, "adventurer-pace")) {
-    return;
-  }
-  const baseRatio = hasSkill(hero, "expedition-pace") ? 0.15 : 0.1;
-  const amount = Math.max(1, Math.round(hero.maxHp * (baseRatio + (hero.victoryHealBonusRatio || 0))));
   hero.hp = Math.min(hero.maxHp, hero.hp + amount);
 }
 

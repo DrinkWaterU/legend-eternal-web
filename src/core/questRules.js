@@ -8,7 +8,8 @@ export const QUEST_RARE_BOARD_CHANCE = 0.35;
 
 const REGION_LABELS = Object.freeze({
   plains: "平原",
-  forest: "森林"
+  forest: "森林",
+  beach: "海灘"
 });
 
 const ENEMY_FAMILY_LABELS = Object.freeze({
@@ -198,6 +199,8 @@ export function formatQuestObjective(quest, materialDefinitions = {}) {
     const regionLabel = getRegionLabel(objective);
     return `${regionLabel ? `在${regionLabel}` : ""}擊敗${familyLabel}敵人 ${objective.target} 隻`;
   }
+  const regionLabel = getRegionLabel(objective);
+  if (regionLabel) return `在${regionLabel}擊敗敵人 ${objective.target} 隻`;
   return `擊敗任意正式敵人 ${objective.target} 隻`;
 }
 

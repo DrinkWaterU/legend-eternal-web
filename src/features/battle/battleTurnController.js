@@ -1,4 +1,5 @@
 import {
+  advanceHeroCombatStatuses,
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
   applyHeroEndOfTurnNegativeEffects,
@@ -30,6 +31,8 @@ export function createBattleTurnController({
     const log = createCombatLogger();
     state.phase = "combat";
     state.turn += 1;
+    advanceHeroCombatStatuses(state.hero);
+    state.hero.activeEnemyCount = getLivingEnemies(state.enemies).length;
     const heroEntangled = resolveHeroEntangle({
       hero: state.hero,
       log,

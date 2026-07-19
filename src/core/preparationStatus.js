@@ -37,6 +37,27 @@ export function getPreparationCombatStatus({ preparation, encounterType = null, 
     };
   }
 
+  if (effectType === "firstMultiEnemyDirectDamageReduction") {
+    const reducedEnemyCount = preparation.reducedEnemiesThisBattle?.size || 0;
+    return {
+      name: preparation.name,
+      label: !preparation.eligibleThisBattle
+        ? "等待敵群"
+        : reducedEnemyCount > 0
+          ? `已抵擋 ${reducedEnemyCount} 名`
+          : "本場可用",
+      isDepleted: false
+    };
+  }
+
+  if (effectType === "saltErosionInitialTurnReduction") {
+    return {
+      name: preparation.name,
+      label: "持續生效",
+      isDepleted: false
+    };
+  }
+
   const remainingCharges = Number.isSafeInteger(preparation.remainingCharges)
     ? Math.max(0, preparation.remainingCharges)
     : 0;
@@ -66,6 +87,12 @@ export function getPreparationSummary(preparation) {
   }
   if (Number.isFinite(preparation.retrySuccessCount)) {
     summary.retrySuccessCount = preparation.retrySuccessCount;
+  }
+  if (Number.isFinite(preparation.turnsReduced)) {
+    summary.turnsReduced = preparation.turnsReduced;
+  }
+  if (Number.isFinite(preparation.penaltiesPrevented)) {
+    summary.penaltiesPrevented = preparation.penaltiesPrevented;
   }
   return summary;
 }

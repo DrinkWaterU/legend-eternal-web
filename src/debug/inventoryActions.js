@@ -9,7 +9,8 @@ import { weaponDefinitions } from "../data/weapons.js";
 const MATERIAL_GROUPS = Object.freeze([
   { id: "plains", name: "平原" },
   { id: "forest-main", name: "森林主路線" },
-  { id: "goblin", name: "哥布林" }
+  { id: "goblin", name: "哥布林" },
+  { id: "beach", name: "海灘" }
 ]);
 
 export function createDebugInventoryActions({ getSaveData, saveGameSafe, refresh }) {
@@ -107,5 +108,6 @@ function matchesMaterialGroup(material, groupId) {
   if (groupId === "plains") return tags.includes("plains");
   if (groupId === "forest-main") return tags.includes("forest") && !tags.includes("goblin");
   if (groupId === "goblin") return tags.includes("goblin");
+  if (groupId === "beach") return tags.includes("beach");
   return false;
 }

@@ -134,7 +134,7 @@ assert.match(game, /function returnToRunOriginSafeArea\(\)[\s\S]*returnToSafeAre
 assert.match(game, /preparation: state\.runPreparation/);
 assert.match(game, /function modifyPoisonDamage\(damage\)/);
 assert.match(game, /retryOnFailure: \(\) => consumeEntangleRetry\(log\)/);
-assert.match(game, /beginPreparationBattle\(state\.runPreparation\)/);
+assert.match(game, /beginPreparationBattle\(state\.runPreparation, \{ enemyCount: state\.hero\.activeEnemyCount \}\)/);
 assert.match(game, /preparationName = state\.runPreparation\?\.name \|\| "冒險整備"/);
 assert.doesNotMatch(game, /整備｜驅蟲藥粉|整備｜簡易繃帶/, "協調層不應寫死個別整備名稱");
 assert.match(game, /facility\.id !== "traveling-merchant" \|\| hasPhoenixBlessing\(\)/);
@@ -156,7 +156,7 @@ const battleRuntimeOrder = [
   "resetBattleEntryState(state, { source, encounterType, ambushAdvantage })",
   "setEnemyGroup(enemies, { restore: restoreEnemies })",
   "resetHeroBattleState()",
-  "beginPreparationBattle(state.runPreparation)",
+  "beginPreparationBattle(state.runPreparation, { enemyCount: state.hero.activeEnemyCount })",
   "applyBattleStartSkills()"
 ].map((requiredCall) => {
   const index = battleRuntimeCoordinator.indexOf(requiredCall);

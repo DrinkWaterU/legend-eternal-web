@@ -107,6 +107,8 @@ export function runDebugPanelAction(action, context) {
       context.actions.prepareSelectedQuest(context.questSelect.value, "ready")
     )),
     "clear-active-quest": () => runQuestAction(context, () => context.actions.clearActiveQuest()),
+    "refresh-quest-board": () => confirmDanger("要清除目前委託並重新抽選四項委託看板嗎？")
+      && runQuestAction(context, () => context.actions.refreshQuestBoard()),
     "reset-quest-data": () => confirmDanger("要重設委託看板、進度、完成紀錄與委託統計嗎？")
       && runQuestAction(context, () => context.actions.resetQuestData()),
     camp: () => context.actions.returnToCamp(),

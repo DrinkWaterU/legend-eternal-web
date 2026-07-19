@@ -10,6 +10,7 @@ import { characterDefinitions } from "../data/characters/index.js";
 import { getEventEnemyDefinition } from "../data/events/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { getRouteDefinition } from "../data/routes/index.js";
+import { createDebugRegionScenarioActions } from "./regionScenarioActions.js";
 import {
   getDebugScenarioBuildSlots,
   getDebugScenarioDefinition
@@ -37,6 +38,17 @@ export function createDebugScenarioActions(host) {
     consumeBattleLimitedEffects,
     clampInteger
   } = host;
+  const { startRegionEnemyScenario } = createDebugRegionScenarioActions({
+    state,
+    prepareRunForRegion,
+    applyScenarioBuild,
+    setScenarioHp,
+    beginBattleRuntime,
+    addFixedLog,
+    logCurrentEnemyGroupEncounter,
+    addLog,
+    render
+  });
 
   function startScenario(options = {}) {
     if (!isDebugModeEnabled()) {
@@ -64,6 +76,9 @@ export function createDebugScenarioActions(host) {
       case "multiEnemy":
         prepareMultiEnemyScenario(debugHero, options.hpPercent);
         return "已進入多敵人基礎測試；正式存檔不會記錄本次結果。";
+      case "regionEnemy":
+      case "regionEnemyGroup":
+        return startRegionEnemyScenario({ scenario, options, buildSlots, selections, debugHero });
       case "goblinRouteEncounter":
       case "goblinMidEvent":
         return startGoblinScenario({ scenario, scenarioOptions, options, buildSlots, selections, debugHero });

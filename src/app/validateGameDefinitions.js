@@ -9,6 +9,7 @@ import { sharedEnemyDefinitions } from "../data/enemies/index.js";
 import { routeDefinitions } from "../data/routes/index.js";
 import { materialDefinitions } from "../data/materials.js";
 import { regionDefinitions } from "../data/regions/index.js";
+import { assertRegionEncounterDefinitions } from "../data/regions/regionDefinition.js";
 import { assertSafeAreaDefinitions, safeAreaDefinitions } from "../data/safeAreas.js";
 import { assertWeaponDefinitions, weaponDefinitions } from "../data/weapons.js";
 
@@ -29,7 +30,10 @@ export function validateGameDefinitions() {
   });
   assertWeaponDefinitions(weaponDefinitions, { materialDefinitions });
   assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
-  Object.values(regionDefinitions).forEach(assertRegionPreparations);
+  Object.values(regionDefinitions).forEach((region) => {
+    assertRegionPreparations(region);
+    assertRegionEncounterDefinitions(region);
+  });
 }
 
 function buildEnemyRegistry() {

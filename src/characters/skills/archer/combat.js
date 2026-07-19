@@ -1,10 +1,11 @@
-import { getHeroDirectAttackDamage, resolveHeroStrike } from "../../../core/combat.js";
+import { getHeroAttackDamageMultiplier, getHeroDirectAttackDamage, resolveHeroStrike } from "../../../core/combat.js";
 import { getEnemyDisplayName, getLivingEnemies, resolveTargetEnemy } from "../../../core/enemyGroups.js";
 import { roll } from "../../../utils.js";
 
 const PRECISION_ATTACK_INTERVAL = 3;
 const PRECISION_CRIT_BONUS = 0.4;
-const TOXIC_OPENING_CRIT_BONUS = 0.2;
+const TOXIC_OPENING_CRIT_BONUS = 0.1;
+const VENOMOUS_TOXIC_OPENING_CRIT_BONUS = 0.2;
 const FOLLOW_UP_DAMAGE_RATIO = 0.7;
 const FOLLOW_UP_CHANCE = 0.35;
 const FOLLOW_UP_PLUS_CHANCE = 0.55;
@@ -16,7 +17,7 @@ const POISON_ARROW_CHANCE = 0.25;
 const POISON_ARROW_POWER = 3;
 const VENOMOUS_ARROW_CHANCE = 0.5;
 const VENOMOUS_ARROW_POWER = 6;
-const KEEP_DISTANCE_REDUCTION = 0.5;
+const KEEP_DISTANCE_MAX_CHARGES = 2;
 const DISTANCE_CONTROL_MAX_CHARGES = 3;
 
 export function initializeBattleState({ hero }) {
@@ -25,7 +26,7 @@ export function initializeBattleState({ hero }) {
   runtime.keepDistanceCharges = hasSkill(hero, "distance-control")
     ? DISTANCE_CONTROL_MAX_CHARGES
     : hasSkill(hero, "keep-distance")
-      ? 1
+      ? KEEP_DISTANCE_MAX_CHARGES
       : 0;
 }
 
@@ -70,13 +71,11 @@ export function modifyIncomingDirectDamage({ hero, damage, log }) {
   }
 
   runtime.keepDistanceCharges -= 1;
-  if (hasSkill(hero, "distance-control")) {
-    log.fixed("skill", `${hero.name} 掌控距離，讓攻擊只擦身而過。`);
-    return 1;
-  }
-
-  log.fixed("skill", `${hero.name} 保持距離，減輕了這次攻擊。`);
-  return Math.max(1, Math.round(damage * (1 - KEEP_DISTANCE_REDUCTION)));
+  const message = hasSkill(hero, "distance-control")
+    ? `${hero.name} 掌控距離，讓攻擊只擦身而過。`
+    : `${hero.name} 保持距離，讓攻擊只擦身而過。`;
+  log.fixed("skill", message);
+  return 1;
 }
 
 export function getStatusEntries(hero) {
@@ -93,7 +92,13 @@ function resolveShot({ hero, enemies, target, log, kind }) {
     && runtime.playerAttackCount % PRECISION_ATTACK_INTERVAL === 0;
   const poisonedAtShotStart = target.poison > 0;
   const critChanceBonus = (precision ? PRECISION_CRIT_BONUS : 0)
-    + (poisonedAtShotStart && hasSkill(hero, "toxic-opening") ? TOXIC_OPENING_CRIT_BONUS : 0);
+    + (
+      poisonedAtShotStart && hasSkill(hero, "toxic-opening")
+        ? hasSkill(hero, "venomous-arrowhead")
+          ? VENOMOUS_TOXIC_OPENING_CRIT_BONUS
+          : TOXIC_OPENING_CRIT_BONUS
+        : 0
+    );
   if (precision) {
     log.fixed("skill", `${hero.name} 校準呼吸，射出精準一箭。`);
   }
@@ -147,21 +152,30 @@ function resolveArrowRain({ hero, enemies, log }) {
   const damageRatio = hasSkill(hero, "dense-arrow-rain")
     ? DENSE_ARROW_RAIN_DAMAGE_RATIO
     : ARROW_RAIN_DAMAGE_RATIO;
+  const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
   log.fixed("skill", `${hero.name} 射出箭雨。`);
   livingEnemies.forEach((enemy) => {
-    const damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier: damageRatio });
+    const damage = getHeroDirectAttackDamage({
+      hero,
+      enemy,
+      damageMultiplier: damageRatio,
+      attackMultiplier
+    });
     enemy.hp = Math.max(0, enemy.hp - damage);
     log.fixed("hero-damage", `箭雨命中${getEnemyDisplayName(enemy)}，造成 ${damage} 點傷害。`);
   });
 }
 
 function restoreDistanceChargeAfterArrowRain(hero) {
-  if (!hasSkill(hero, "distance-control")) {
+  if (!hasSkill(hero, "keep-distance")) {
     return;
   }
   const runtime = getRuntime(hero);
+  const maxCharges = hasSkill(hero, "distance-control")
+    ? DISTANCE_CONTROL_MAX_CHARGES
+    : KEEP_DISTANCE_MAX_CHARGES;
   runtime.keepDistanceCharges = Math.min(
-    DISTANCE_CONTROL_MAX_CHARGES,
+    maxCharges,
     runtime.keepDistanceCharges + 1
   );
 }

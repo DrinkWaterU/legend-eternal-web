@@ -79,17 +79,22 @@ function normalizeEnemyEntry(entry, index, { applyStatScale }) {
 
   const enemy = clone(descriptor.enemy);
   const statScale = normalizePositiveScale(descriptor.statScale ?? enemy.statScale, 1);
+  const attackScale = normalizePositiveScale(
+    descriptor.attackScale ?? enemy.attackScale,
+    statScale
+  );
   const rewardScale = normalizeNonNegativeScale(
     descriptor.rewardScale ?? enemy.rewardScale,
     statScale
   );
 
   if (applyStatScale) {
-    applyEnemyStatScale(enemy, statScale);
+    applyEnemyStatScale(enemy, statScale, attackScale);
   }
 
   enemy.poison = normalizeNonNegativeNumber(enemy.poison);
   enemy.statScale = statScale;
+  enemy.attackScale = attackScale;
   enemy.rewardScale = rewardScale;
   enemy.runtimeId = String(descriptor.runtimeId || enemy.runtimeId || `enemy-${index + 1}`);
   if (descriptor.displayName) {
@@ -98,13 +103,13 @@ function normalizeEnemyEntry(entry, index, { applyStatScale }) {
   return enemy;
 }
 
-function applyEnemyStatScale(enemy, statScale) {
+function applyEnemyStatScale(enemy, statScale, attackScale) {
   const originalMaxHp = Math.max(1, Number(enemy.maxHp) || 1);
   const originalHp = Math.max(0, Math.min(originalMaxHp, Number(enemy.hp ?? originalMaxHp) || 0));
   const hpRatio = originalHp / originalMaxHp;
   enemy.maxHp = Math.max(1, Math.round(originalMaxHp * statScale));
   enemy.hp = Math.max(0, Math.min(enemy.maxHp, Math.round(enemy.maxHp * hpRatio)));
-  enemy.attack = Math.max(1, Math.round((Number(enemy.attack) || 0) * statScale));
+  enemy.attack = Math.max(1, Math.round((Number(enemy.attack) || 0) * attackScale));
 }
 
 function assignDisplayNames(enemies, { preserveExisting }) {

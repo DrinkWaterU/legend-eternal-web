@@ -57,6 +57,13 @@ function sequenceRandom(values) {
 }
 
 {
+  const adventurer = characterDefinitions.adventurer;
+  const hero = buildHeroFromProgression(adventurer, { level: 25, exp: 0, learnedSkills: [] });
+  assert.equal(hero.critChance, 0.22, "Lv.25 冒險者應套用強化後的破綻判斷暴擊率");
+  assert.equal(hero.critDamageMultiplier, 2.05, "Lv.25 冒險者應套用強化後的暴擊傷害倍率");
+}
+
+{
   const scheduled = scheduleRegionEvent(
     forestRegion,
     sequenceRandom([0.49, 0, 0]),

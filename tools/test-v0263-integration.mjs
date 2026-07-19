@@ -12,9 +12,8 @@ import { questDefinitions } from "../src/data/quests.js";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
 
-assert.equal(GAME_VERSION, "v0.2.6.4.1-alpha");
 assert.equal(SAVE_SCHEMA_VERSION, 9);
-assert.equal(Object.keys(questDefinitions).length, 12);
+assert.equal(Object.keys(questDefinitions).length, 15);
 assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) => [quest.id, [quest.rarity, quest.rewards.gold]])), {
   "broad-monster-control": ["common", 20],
   "route-patrol": ["common", 20],
@@ -27,7 +26,10 @@ assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) 
   "goblin-camp-patrol": ["advanced", 35],
   "ancient-wood-core-research": ["rare", 45],
   "verdant-antler-procurement": ["rare", 45],
-  "bloodbone-charm-ritual": ["rare", 45]
+  "bloodbone-charm-ritual": ["rare", 45],
+  "beach-threat-control": ["common", 30],
+  "beach-route-survey": ["advanced", 40],
+  "tidal-claw-core-research": ["rare", 55]
 });
 assert.equal(questDefinitions["broad-monster-control"].objective.target, 30);
 assert.equal(questDefinitions["route-patrol"].objective.target, 2);
@@ -44,6 +46,10 @@ assert.deepEqual(questDefinitions["goblin-camp-patrol"].objective.clearSourceIds
 assert.deepEqual(questDefinitions["ancient-wood-core-research"].objective.materials, [{ id: "ancient_wood_core", quantity: 1 }]);
 assert.deepEqual(questDefinitions["verdant-antler-procurement"].objective.materials, [{ id: "verdant_antler", quantity: 1 }]);
 assert.deepEqual(questDefinitions["bloodbone-charm-ritual"].objective.materials, [{ id: "bloodbone_charm", quantity: 1 }]);
+assert.equal(questDefinitions["beach-threat-control"].objective.target, 20);
+assert.equal(questDefinitions["beach-route-survey"].objective.target, 1);
+assert.deepEqual(questDefinitions["beach-route-survey"].objective.clearSourceIds, ["main"]);
+assert.deepEqual(questDefinitions["tidal-claw-core-research"].objective.materials, [{ id: "tidal_claw_core", quantity: 1 }]);
 
 assert.equal(facilityDefinitions["guild-quests"].hiddenFromList, true);
 assert.equal(facilityDefinitions["guild-quests"].actionId, "guild-quests");
@@ -91,10 +97,11 @@ for (const id of [
   "guildQuestAbandonPanel",
   "statisticsQuestMetrics"
 ]) assert.match(html, new RegExp(`id="${id}"`));
-assert.match(html, /styles\.css\?v=0\.2\.6\.4\.1-alpha/);
-assert.match(html, /game\.js\?v=0\.2\.6\.4\.1-alpha/);
+const cacheVersion = GAME_VERSION.slice(1);
+assert.match(html, new RegExp(`styles\\.css\\?v=${escapeRegExp(cacheVersion)}`));
+assert.match(html, new RegExp(`game\\.js\\?v=${escapeRegExp(cacheVersion)}`));
 assert.doesNotMatch(html, /目前登記身分維持展開|其餘紀錄可按標題查看/);
-assert.equal([...styles.matchAll(/0\.2\.6\.4\.1-alpha/g)].length, 7);
+assert.equal([...styles.matchAll(new RegExp(escapeRegExp(cacheVersion), "g"))].length, 7);
 assert.match(components, /\.guild-quest-board\s*\{/);
 assert.match(components, /grid-template-columns:\s*repeat\(2/);
 assert.match(responsive, /\.guild-quest-board\s*\{\s*grid-template-columns:\s*1fr/);
