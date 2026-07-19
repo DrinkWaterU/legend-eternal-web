@@ -21,7 +21,7 @@ export function createRouteEndingController({
     const endingKey = route?.[requestedEndingKey]?.pages?.length ? requestedEndingKey : "ending";
     const ending = route?.[endingKey];
     if (!ending?.pages?.length) {
-      finishRun("clear");
+      finishRun("clear", getRunCompletionOptions(route));
       return;
     }
     state.ended = true;
@@ -77,7 +77,7 @@ export function createRouteEndingController({
     const pageIndex = state.routeEndingContext?.pageIndex || 0;
     const page = ending?.pages?.[pageIndex];
     if (!page) {
-      finishRun("clear");
+      finishRun("clear", getRunCompletionOptions(getRouteDefinition(state.activeRouteId)));
       return;
     }
     renderRouteEndingView({
@@ -98,10 +98,16 @@ export function createRouteEndingController({
     if (!ending || state.routeEndingContext.pageIndex >= ending.pages.length) {
       state.routeEndingContext = null;
       showCombatLayout(els);
-      finishRun("clear");
+      finishRun("clear", getRunCompletionOptions(getRouteDefinition(state.activeRouteId)));
       return;
     }
     renderRouteEndingPage();
+  }
+
+  function getRunCompletionOptions(route) {
+    return route?.regionId === "beach"
+      ? { completedEncounterCount: state.encounterIndex }
+      : {};
   }
 
   function handleEventContinueButton() {

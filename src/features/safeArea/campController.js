@@ -2,6 +2,7 @@ import { getExpToNextLevel } from "../../core/progression.js";
 import { formatInventorySummary } from "../../core/rewards.js";
 import { DEFAULT_SAFE_AREA_ID } from "../../data/safeAreas.js";
 import { renderStatList } from "../../ui/renderHelpers.js";
+import { getRegionDisplayName } from "../../data/regions/regionDefinition.js";
 
 export function createCampController({
   state,
@@ -41,9 +42,10 @@ export function createCampController({
     const safeArea = getCurrentSafeArea();
     const facilities = getAvailableFacilities(safeArea);
     const phoenixUnlocked = hasPhoenixBlessing();
+    const regionName = getRegionDisplayName(region);
     const campStats = [
       ["目前角色", `${character.name} Lv.${progress.level}`],
-      ["目前地區", region.name],
+      ["目前地區", regionName],
       ["經驗", `${progress.exp} / ${expToNext}`],
       phoenixUnlocked ? ["目前金幣", inventorySummary.gold] : ["最近冒險", lastResult]
     ];
@@ -55,9 +57,9 @@ export function createCampController({
     els.campFeatureTitle.closest("section")?.setAttribute("aria-label", safeArea.featureTitle || "安全區功能");
     renderStatList(els.campStatusList, campStats);
     els.campStartHint.textContent = phoenixUnlocked
-      ? `前往${region.name}，確認本輪準備並繼續旅程`
-      : `前往${region.name}開始旅程`;
-    els.campRegionHint.textContent = `目前：${region.name}`;
+      ? `前往${regionName}，確認本輪準備並繼續旅程`
+      : `前往${regionName}開始旅程`;
+    els.campRegionHint.textContent = `目前：${regionName}`;
     els.campCharacterHint.textContent = `${character.name} Lv.${progress.level}`;
     els.campStorageHint.textContent = "整理帶回的素材";
     els.campPlacesHint.textContent = facilities.length > 0

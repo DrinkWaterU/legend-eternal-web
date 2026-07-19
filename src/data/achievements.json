@@ -35,6 +35,17 @@
     "description": "你穿過長而不穩定的潮線，證明自己已經能面對更高等級地區的冒險。",
     "category": "region",
     "regionId": "beach",
+    "displayRegionName": "海灘",
     "order": 40
+  },
+  "coast_trial": {
+    "id": "coast_trial",
+    "title": "海岸的試煉",
+    "conditionText": "擊敗海岸洞穴首領",
+    "description": "你穿越海灘與洞穴，完成了第三地區海岸的完整冒險。",
+    "category": "region",
+    "regionId": "beach",
+    "displayRegionName": "海岸",
+    "order": 50
   }
 }

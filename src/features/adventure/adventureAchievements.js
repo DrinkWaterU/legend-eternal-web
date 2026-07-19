@@ -4,8 +4,29 @@ export function createAdventureAchievements({
   queueAchievementUnlock,
   forestTrialAchievementId,
   goblinCampClearAchievementId,
-  beachTrialAchievementId
+  beachTrialAchievementId,
+  coastTrialAchievementId,
+  saveGameSafe = null
 }) {
+  function markAchievementSystemUnlocked() {
+    saveStore.current.storyFlags.achievementSystemUnlocked = true;
+    saveGameSafe?.();
+  }
+
+  function unlockBeachSegmentAchievement() {
+    if (state.debugBuildRun) return false;
+    queueAchievementUnlock(beachTrialAchievementId);
+    markAchievementSystemUnlocked();
+    return true;
+  }
+
+  function unlockCoastClearAchievement() {
+    if (state.debugBuildRun) return false;
+    queueAchievementUnlock(coastTrialAchievementId);
+    markAchievementSystemUnlocked();
+    return true;
+  }
+
   function unlockAdventureClearAchievements({
     regionId = state.selectedRegionId,
     routeId = state.activeRouteId
@@ -15,9 +36,13 @@ export function createAdventureAchievements({
       queueAchievementUnlock(forestTrialAchievementId);
       if (routeId === "goblin-camp") queueAchievementUnlock(goblinCampClearAchievementId);
     }
-    if (regionId === "beach") queueAchievementUnlock(beachTrialAchievementId);
-    saveStore.current.storyFlags.achievementSystemUnlocked = true;
+    if (regionId === "beach") unlockBeachSegmentAchievement();
+    markAchievementSystemUnlocked();
   }
 
-  return Object.freeze({ unlockAdventureClearAchievements });
+  return Object.freeze({
+    unlockAdventureClearAchievements,
+    unlockBeachSegmentAchievement,
+    unlockCoastClearAchievement
+  });
 }

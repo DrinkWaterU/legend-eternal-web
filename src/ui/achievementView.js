@@ -227,7 +227,9 @@ function renderAchievementDetail({ element, entry, regionDefinitions, getRouteNa
   const labels = document.createElement("div");
   labels.className = "achievement-detail-labels";
   labels.append(createLabel(meta.label, "achievement-category-label"));
-  const regionName = regionDefinitions[definition.regionId]?.name;
+  const regionName = definition.displayRegionName
+    || regionDefinitions[definition.regionId]?.regionName
+    || regionDefinitions[definition.regionId]?.name;
   if (regionName) {
     labels.append(createLabel(regionName, "achievement-region-label"));
   }

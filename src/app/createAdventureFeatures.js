@@ -1,5 +1,6 @@
 import {
   COUNTER_ESCAPE_ENEMY_HEAL_RATIO,
+  COAST_TRIAL_ACHIEVEMENT_ID,
   ELITE_FLEE_CHANCE,
   BEACH_TRIAL_ACHIEVEMENT_ID,
   FOREST_TRIAL_ACHIEVEMENT_ID,
@@ -113,7 +114,9 @@ export function createAdventureFeatures({
     queueAchievementUnlock: profile.queueAchievementUnlock,
     forestTrialAchievementId: FOREST_TRIAL_ACHIEVEMENT_ID,
     goblinCampClearAchievementId: GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID,
-    beachTrialAchievementId: BEACH_TRIAL_ACHIEVEMENT_ID
+    beachTrialAchievementId: BEACH_TRIAL_ACHIEVEMENT_ID,
+    coastTrialAchievementId: COAST_TRIAL_ACHIEVEMENT_ID,
+    saveGameSafe: foundation.saveGameSafe
   });
 
   const routeEndingController = createRouteEndingController({
@@ -229,6 +232,7 @@ export function createAdventureFeatures({
     addLog: battle.addLog,
     getAdventureSourceName: foundation.getAdventureSourceName,
     completeGoblinCampRoute: routeEndingController.completeGoblinCampRoute,
+    unlockCoastClearAchievement: adventureAchievements.unlockCoastClearAchievement,
     shouldTriggerPlainsStory: plainsStoryController.shouldTriggerStory,
     showPlainsStory: plainsStoryController.showStory,
     unlockAdventureClearAchievements: adventureAchievements.unlockAdventureClearAchievements,

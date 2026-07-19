@@ -12,6 +12,7 @@ export function createEncounterVictoryController({
   addLog,
   getAdventureSourceName,
   completeGoblinCampRoute,
+  unlockCoastClearAchievement,
   shouldTriggerPlainsStory,
   showPlainsStory,
   unlockAdventureClearAchievements,
@@ -37,6 +38,16 @@ export function createEncounterVictoryController({
       addLog("system", "clear", { region: getAdventureSourceName() });
       if (currentRoute()?.id === "goblin-camp") {
         completeGoblinCampRoute();
+        return;
+      }
+      if (state.selectedRegionId === "beach" && !currentRoute()) {
+        unlockAdventureClearAchievements({ regionId: "beach", routeId: null });
+        finishRun("segmentClear");
+        return;
+      }
+      if (currentRoute()?.regionId === "beach") {
+        unlockCoastClearAchievement();
+        finishRun("clear", { completedEncounterCount: state.encounterIndex });
         return;
       }
       if (shouldTriggerPlainsStory()) {

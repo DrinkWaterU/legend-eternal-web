@@ -1,6 +1,8 @@
 {
   "id": "beach",
   "name": "海灘",
+  "regionName": "海岸",
+  "segmentName": "海灘",
   "description": "穿過森林的盡頭，迎面而來的是無邊的開闊海岸。乾涸鹽痕、噬人礁岩與莫測的漲退潮線交織成網，使每一步前行都充滿未知的變數。",
   "difficulty": "進階",
   "traits": [

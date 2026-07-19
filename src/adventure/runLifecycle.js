@@ -11,6 +11,7 @@ const RUN_STATE_DEFAULTS = Object.freeze({
   deathCause: null,
   runStats: null,
   runPreparation: null,
+  beachSegmentCompleted: false,
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
