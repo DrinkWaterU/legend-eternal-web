@@ -6,6 +6,7 @@ import {
   rollEnemyRewards
 } from "../../core/rewards.js";
 import { getHeroBattleHealingAmount } from "../../core/combatStatusEffects.js";
+import { registerFrontlineDefeat } from "../../core/caveBlessingEffects.js";
 
 export function createBattleSettlement({
   state,
@@ -79,6 +80,9 @@ export function createBattleSettlement({
     state.defeatedEnemies += 1;
     state.defeatedBoss = state.defeatedBoss || defeatedBoss;
     applyLivingEnemyDefeatReactions(enemy);
+    if (registerFrontlineDefeat(state.hero, enemy)) {
+      addFixedLog("status", `${state.hero.name}擊破前衛，本場攻擊提高 ${state.hero.frontlineBreakAttack}。`);
+    }
 
     if (state.hero.killAttackGain > 0) {
       state.hero.battleAttackBonus = (state.hero.battleAttackBonus || 0) + state.hero.killAttackGain;

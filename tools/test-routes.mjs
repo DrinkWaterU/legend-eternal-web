@@ -10,12 +10,12 @@ import { getEnemyDefinition } from "../src/data/enemies/index.js";
 import { getEventDefinition } from "../src/data/events/index.js";
 import { materialDefinitions } from "../src/data/materials.js";
 import { musicDefinitions } from "../src/data/music.js";
-import { getRouteDefinition, getRouteGroup, routeDefinitions } from "../src/data/routes/index.js";
+import { assertValidRouteDefinition, getRouteDefinition, getRouteGroup, routeDefinitions } from "../src/data/routes/index.js";
 import { createSaveTransferCode, parseSaveTransferCode } from "../src/ui/saveTools.js";
 
 const route = getRouteDefinition("goblin-camp");
 assert.ok(route, "哥布林營地 Route 應存在");
-assert.equal(Object.keys(routeDefinitions).length, 1, "第一版應只有一條獨立 Route definition");
+assert.equal(Object.keys(routeDefinitions).length, 2, "海岸洞穴啟用後應有兩條獨立 Route definition");
 assert.equal(route.regionId, "forest");
 assert.equal(route.clearSourceId, "goblinCamp");
 assert.equal(route.blessingPoolId, "goblin");
@@ -89,6 +89,30 @@ assert.equal(materialDefinitions.crude_venom.sellPrice, 5);
 assert.equal(materialDefinitions.bloodbone_charm.sellPrice, 14);
 assert.equal(musicDefinitions["goblin-camp"].src, "assets/audio/bgm/goblin-camp.mp3");
 assert.equal(musicDefinitions["goblin-camp"].gain, 1);
+
+const coastCaveRoute = getRouteDefinition("coast-cave");
+assert.ok(coastCaveRoute, "海岸洞穴 Route 應存在");
+assert.equal(coastCaveRoute.audio.bgmId, "coast-cave", "海岸洞穴應指定專用 BGM");
+assert.equal(musicDefinitions["coast-cave"].src, "assets/audio/bgm/coast-cave.mp3");
+assert.equal(musicDefinitions["coast-cave"].gain, 1);
+
+const invalidEncounterTypeRoute = structuredClone(coastCaveRoute);
+invalidEncounterTypeRoute.id = "invalid-encounter-type";
+invalidEncounterTypeRoute.encounterPlan[0].type = "special";
+assert.throws(
+  () => assertValidRouteDefinition(invalidEncounterTypeRoute),
+  /encounter type 無效/,
+  "所有 Route 都應由共用 registry 阻擋未知 encounter type"
+);
+
+const invalidFleeChanceRoute = structuredClone(coastCaveRoute);
+invalidFleeChanceRoute.id = "invalid-flee-chance";
+invalidFleeChanceRoute.fleeChance.boss = 0.1;
+assert.throws(
+  () => assertValidRouteDefinition(invalidFleeChanceRoute),
+  /fleeChance\.boss 必須為 0/,
+  "所有 Route 的 Boss 逃跑覆寫都應由共用 registry 阻擋"
+);
 
 const shamanDefinition = structuredClone(getEnemyDefinition("goblin-bloodbone-shaman"));
 const warriorDefinition = structuredClone(getEnemyDefinition("goblin-warrior"));

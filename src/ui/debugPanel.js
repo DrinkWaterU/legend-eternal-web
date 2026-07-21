@@ -55,6 +55,8 @@ function createDebugContext(panel, actions) {
     buildProfiles: panel.querySelector(".debug-build-profiles"),
     buildList: panel.querySelector(".debug-build-list"),
     buildCount: panel.querySelector(".debug-build-count"),
+    buildNote: panel.querySelector(".debug-build-note"),
+    buildSummary: panel.querySelector(".debug-build-summary"),
     buildPaste: panel.querySelector(".debug-build-paste"),
     buildParseButton: panel.querySelector(".debug-build-parse"),
     scenarioStartButton: panel.querySelector(".debug-scenario-start"),

@@ -12,6 +12,7 @@ export function createRouteEndingController({
   closeAbilityInfoPanel,
   closeBlessingInfoPanel,
   unlockAdventureClearAchievements,
+  unlockCoastClearAchievement,
   recordRunFinished,
   finishRun,
   render,
@@ -40,29 +41,45 @@ export function createRouteEndingController({
     render();
   }
 
-  function completeGoblinCampRoute() {
+  function completeRoute() {
     const route = currentRoute();
-    if (route?.id !== "goblin-camp" || !canCompleteRouteEncounter({
+    if (!canCompleteRouteEncounter({
       route,
       routeEncounterIndex: state.routeEncounterIndex,
       battleEncounterType: state.battleEncounterType,
       enemies: state.enemies
     })) {
-      throw new Error("哥布林營地 Route completion 條件尚未成立。");
+      throw new Error(`${route?.name || "Route"} completion 條件尚未成立。`);
     }
+
     let endingKey = "ending";
     if (!state.debugBuildRun) {
+      endingKey = applyRouteCompletionPolicy(route);
+    }
+    showRouteEnding(route, { endingKey });
+  }
+
+  function applyRouteCompletionPolicy(route) {
+    if (route.clearSourceId === "goblinCamp") {
       const archerProgress = saveStore.current.progression.characters.archer;
       const alreadyRescued = Boolean(saveStore.current.storyFlags.archerRescued || archerProgress?.unlocked);
       const unlockedArcher = Boolean(archerProgress && !archerProgress.unlocked);
-      endingKey = alreadyRescued ? "repeatEnding" : "ending";
+      const endingKey = alreadyRescued ? "repeatEnding" : "ending";
       saveStore.current.storyFlags.archerRescued = true;
       if (archerProgress) archerProgress.unlocked = true;
       if (unlockedArcher) state.runStats.unlockedCharacters.push(characterDefinitions.archer.name);
       unlockAdventureClearAchievements({ regionId: "forest", routeId: route.id });
       recordRunFinished("clear");
+      return endingKey;
     }
-    showRouteEnding(route, { endingKey });
+
+    if (route.clearSourceId === "coastCave") {
+      unlockCoastClearAchievement();
+      return "ending";
+    }
+
+    unlockAdventureClearAchievements({ regionId: route.regionId, routeId: route.id });
+    return "ending";
   }
 
   function getActiveRouteEnding() {
@@ -118,5 +135,5 @@ export function createRouteEndingController({
     getEventRuntime()?.continueEventResult();
   }
 
-  return Object.freeze({ completeGoblinCampRoute, showRouteEnding, handleEventContinueButton });
+  return Object.freeze({ completeRoute, showRouteEnding, handleEventContinueButton });
 }

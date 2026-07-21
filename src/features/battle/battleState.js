@@ -13,6 +13,7 @@ import {
 import { buildScaledEnemy } from "../../core/combat.js";
 import { getEnemyDefinition } from "../../data/enemies/index.js";
 import { clone, weightedRandomItem } from "../../utils.js";
+import { resetBlessingBattleState } from "../../core/caveBlessingEffects.js";
 
 export function createBattleState({
   state,
@@ -76,6 +77,7 @@ export function createBattleState({
       activeRouteId: state.activeRouteId,
       battleEncounterType: state.battleEncounterType,
       turn: state.turn,
+      blessingBattleState: clone(state.hero.blessingBattleState || {}),
       source,
       battleSource: state.battleSource
     };
@@ -98,6 +100,7 @@ export function createBattleState({
     state.hero.activePreparation = state.runPreparation;
     state.hero.shield = state.hero.shieldStart;
     state.hero.skillState = createSkillState();
+    resetBlessingBattleState(state.hero);
     initializeCharacterBattleState(state.hero);
   }
 
@@ -152,6 +155,7 @@ export function createBattleState({
       source: threat.battleSource || "main",
       encounterType: threat.battleEncounterType || getAdventureEncounterType()
     });
+    state.hero.blessingBattleState = clone(threat.blessingBattleState || threat.caveBlessingBattle || {});
 
     if (introText) addFixedLog("system", introText);
     logCurrentEnemyGroupEncounter();

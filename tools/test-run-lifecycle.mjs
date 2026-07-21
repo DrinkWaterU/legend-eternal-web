@@ -47,6 +47,8 @@ const expectedDefaults = {
   deathCause: null,
   runStats: null,
   runPreparation: null,
+  beachSegmentCompleted: false,
+  coastSegmentCheckpoint: null,
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,

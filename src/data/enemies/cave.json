@@ -1,0 +1,144 @@
+{
+  "id": "coast-cave",
+  "enemies": [
+    {
+      "id": "cave-fishman-frontline",
+      "name": "魚人礁衛",
+      "kind": "普通",
+      "family": "fishman",
+      "combatRole": "frontline",
+      "contentStatus": "draft",
+      "maxHp": 210,
+      "attack": 29,
+      "defense": 9,
+      "critChance": 0.04,
+      "expReward": 76,
+      "rewards": {
+        "gold": { "min": 1, "max": 2 },
+        "materials": [
+          { "id": "cave_shell_fragment", "chance": 0.44, "min": 1, "max": 1 },
+          { "id": "tidebone_fragment", "chance": 0.18, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "魚人礁衛把沉重的礁片架在身前，先一步堵住了狹窄的潮穴。"
+    },
+    {
+      "id": "cave-fishman-output",
+      "name": "魚人潮刃手",
+      "kind": "普通",
+      "family": "fishman",
+      "combatRole": "output",
+      "contentStatus": "draft",
+      "maxHp": 154,
+      "attack": 34,
+      "defense": 4,
+      "critChance": 0.12,
+      "expReward": 80,
+      "rewards": {
+        "gold": { "min": 1, "max": 2 },
+        "materials": [
+          { "id": "tidebone_fragment", "chance": 0.44, "min": 1, "max": 1 },
+          { "id": "cave_shell_fragment", "chance": 0.18, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "魚人潮刃手貼著潮濕岩壁游移，手中的薄刃總在礁衛身後尋找角度。"
+    },
+    {
+      "id": "cave-fishman-support",
+      "name": "魚人潮祭司",
+      "kind": "普通",
+      "family": "fishman",
+      "combatRole": "support",
+      "contentStatus": "draft",
+      "maxHp": 140,
+      "attack": 23,
+      "defense": 5,
+      "critChance": 0,
+      "supportAction": {
+        "everyTurns": 3,
+        "maxUses": 2,
+        "targetCombatRole": "frontline",
+        "attackGain": 0,
+        "defenseGain": 3
+      },
+      "expReward": 74,
+      "rewards": {
+        "gold": { "min": 1, "max": 2 },
+        "materials": [
+          { "id": "tide_mark_shard", "chance": 0.38, "min": 1, "max": 1 },
+          { "id": "cave_shell_fragment", "chance": 0.18, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "魚人潮祭司低聲敲擊骨片，潮光沿著礁衛的甲片一圈圈亮起。"
+    },
+    {
+      "id": "cave-fishman-control",
+      "name": "魚人潮咒師",
+      "kind": "普通",
+      "family": "fishman",
+      "combatRole": "control",
+      "contentStatus": "draft",
+      "maxHp": 150,
+      "attack": 28,
+      "defense": 4,
+      "critChance": 0,
+      "paralysisChance": 0.15,
+      "expReward": 80,
+      "rewards": {
+        "gold": { "min": 1, "max": 2 },
+        "materials": [
+          { "id": "tide_mark_shard", "chance": 0.42, "min": 1, "max": 1 },
+          { "id": "tidebone_fragment", "chance": 0.18, "min": 1, "max": 1 }
+        ]
+      },
+      "intro": "魚人潮咒師把帶電的潮痕抹上矛尖，細碎的麻意隨著水氣逼近。"
+    },
+    {
+      "id": "cave-fishman-elite-frontline",
+      "name": "精英魚人礁衛",
+      "kind": "精英",
+      "family": "fishman",
+      "combatRole": "frontline",
+      "contentStatus": "draft",
+      "maxHp": 356,
+      "attack": 39,
+      "defense": 12,
+      "critChance": 0.05,
+      "expReward": 160,
+      "rewards": {
+        "gold": { "min": 6, "max": 8 },
+        "materials": [
+          { "id": "tidebone_fragment", "chance": 0.78, "min": 1, "max": 2 },
+          { "id": "tide_mark_shard", "chance": 0.48, "min": 1, "max": 1 },
+          { "id": "cave_shell_fragment", "chance": 0.5, "min": 1, "max": 2 }
+        ]
+      },
+      "intro": "精英魚人礁衛從深水中踏出，厚重礁甲幾乎封死了身後所有退路。"
+    },
+    {
+      "id": "cave-fishman-boss",
+      "name": "深潮魚人首領",
+      "kind": "首領",
+      "family": "fishman",
+      "contentStatus": "draft",
+      "maxHp": 730,
+      "attack": 50,
+      "defense": 14,
+      "critChance": 0.08,
+      "chargeEvery": 4,
+      "chargeMultiplier": 1.45,
+      "paralysisChance": 0.2,
+      "expReward": 292,
+      "rewards": {
+        "gold": { "min": 22, "max": 28 },
+        "materials": [
+          { "id": "deep_tide_core", "chance": 1, "min": 1, "max": 1 },
+          { "id": "tide_mark_shard", "chance": 0.7, "min": 1, "max": 1 },
+          { "id": "tidebone_fragment", "chance": 0.7, "min": 1, "max": 2 },
+          { "id": "cave_shell_fragment", "chance": 0.65, "min": 1, "max": 2 }
+        ]
+      },
+      "intro": "深潮魚人首領從洞窟最深處現身，蓄積的潮聲像沉重鼓點壓過四周。"
+    }
+  ]
+}

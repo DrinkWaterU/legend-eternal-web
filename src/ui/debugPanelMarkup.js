@@ -128,6 +128,7 @@ export function createDebugPanelElement(documentRef = document) {
             <small class="debug-build-count">0 / 0</small>
           </div>
           <small class="debug-build-note">場景測試固定使用目前角色的滿等能力；Blessing 依正式取得位置與限場效果時序套用。</small>
+          <small class="debug-build-summary" aria-live="polite"></small>
           <div class="debug-build-profiles" aria-label="快速 Build"></div>
           <div class="debug-build-list" role="list"></div>
           <label>
@@ -137,7 +138,7 @@ export function createDebugPanelElement(documentRef = document) {
           <button class="debug-build-parse" type="button">解析 Blessing 列表</button>
         </section>
 
-        <button class="debug-scenario-start" type="button">開始場景測試</button>
+        <button class="debug-scenario-start" type="button">啟動 Sandbox（不寫入正式進度）</button>
       </section>
 
       <p class="debug-status" role="status">待命中。</p>

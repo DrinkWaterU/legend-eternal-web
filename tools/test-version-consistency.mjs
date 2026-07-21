@@ -30,9 +30,10 @@ assert.equal(SAVE_SCHEMA_VERSION, 9, "v0.2.6.3 應包含永久委託資料與既
 assert.match(readme, new RegExp("目前版本：`" + escapeRegExp(officialVersion) + "`"), "README 目前版本未同步");
 assert.match(html, new RegExp(`<p class="version-label">${escapeRegExp(officialVersion)}</p>`), "主選單版本標籤未同步");
 
-const htmlCacheVersions = [...html.matchAll(/(?:styles\.css|game\.js)\?v=([^"']+)/g)].map((match) => match[1]);
+const htmlCacheVersions = [...html.matchAll(/(?:styles\.css|game\.js)\?v=([^"'&]+)/g)].map((match) => match[1]);
 assert.equal(htmlCacheVersions.length, 2, "index.html 應有 styles.css 與 game.js 兩個 cache version");
 assert.deepEqual([...new Set(htmlCacheVersions)], [cacheVersion], "index.html cache version 未同步");
+assert.match(html, /game\.js\?v=[^"']+&amp;build=v0271-release-1/, "v0.2.7.1 封版入口應提供獨立 build cache-buster");
 
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
 assert.equal(styleCacheVersions.length, 7, "styles.css 應維持 7 個內部樣式 import");

@@ -1,10 +1,12 @@
 import {
   advanceHeroCombatStatuses,
+  advanceParalysis,
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
   applyHeroEndOfTurnNegativeEffects,
   applyHeroEndOfTurnRecoveryEffects,
   resolveEnemyAction,
+  resolveEnemySupportAction,
   resolveHeroEntangle
 } from "../../core/combat.js";
 import { getLivingEnemies } from "../../core/enemyGroups.js";
@@ -53,6 +55,17 @@ export function createBattleTurnController({
     const actingEnemies = [...getLivingEnemies(state.enemies)];
     for (const enemy of actingEnemies) {
       if (enemy.hp <= 0 || state.ended) continue;
+      const supportActed = resolveEnemySupportAction({
+        enemies: state.enemies,
+        actor: enemy,
+        turn: state.turn,
+        log,
+        hero: state.hero
+      });
+      if (supportActed) {
+        advanceParalysis(enemy);
+        continue;
+      }
       const enemyAction = resolveEnemyAction({
         hero: state.hero,
         enemy,
@@ -60,6 +73,7 @@ export function createBattleTurnController({
         log,
         modifyDirectDamage: modifyIncomingDirectDamage
       });
+      advanceParalysis(enemy);
       applyEmergencyBandage();
       if (state.hero.hp <= 0) {
         state.deathCause = enemyAction;
@@ -75,7 +89,11 @@ export function createBattleTurnController({
       log,
       modifyPoisonDamage: ({ damage }) => modifyPoisonDamage(damage)
     });
-    getLivingEnemies(state.enemies).forEach((enemy) => applyEnemyEndOfTurnNegativeEffects({ enemy, log }));
+    getLivingEnemies(state.enemies).forEach((enemy) => applyEnemyEndOfTurnNegativeEffects({
+      enemy,
+      enemies: state.enemies,
+      log
+    }));
     applyHeroEndOfTurnRecoveryEffects({ hero: state.hero, turn: state.turn, log });
     state.enemies.forEach((enemy) => applyEnemyEndOfTurnRecoveryEffects({ enemy, turn: state.turn, log }));
 

@@ -175,6 +175,16 @@
   color: #d895a4;
 }
 
+.combat-status.is-positive {
+  border-color: rgba(117, 213, 155, 0.45);
+  color: #8ee4ad;
+}
+
+.combat-status.is-protected {
+  border-color: rgba(241, 211, 134, 0.52);
+  color: #f1d386;
+}
+
 .combat-preparation-status {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -362,7 +372,7 @@
 }
 
 .enemy-card.is-target .enemy-card-detail {
-  max-height: 260px;
+  max-height: 320px;
   opacity: 1;
 }
 
@@ -431,6 +441,14 @@
   display: block;
   margin-top: 8px;
   color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.enemy-protection-detail {
+  display: block;
+  margin-top: 8px;
+  color: #f1d386;
   font-size: 0.74rem;
   line-height: 1.5;
 }

@@ -30,6 +30,7 @@ export function createEscapeController({
   enterSafeState,
   buildCounterEnemy,
   currentRegion,
+  currentRoute = () => null,
   currentTargetEnemy,
   beginBattleRuntime,
   finishRun,
@@ -120,7 +121,8 @@ export function createEscapeController({
       encounterType: state.battleEncounterType,
       threatKind,
       normalChance: normalFleeChance,
-      eliteChance: eliteFleeChance
+      eliteChance: eliteFleeChance,
+      routeFleeChance: currentRoute()?.fleeChance
     });
     if (!roll(fleeChance)) {
       resolveFleeFailure();

@@ -127,6 +127,41 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
   }, revealCompleteDelay);
 }
 
+export function renderCampBlessingChoices(element, instances, selectedIds, onToggle) {
+  const selected = new Set(selectedIds);
+  element.replaceChildren();
+  (Array.isArray(instances) ? instances : []).forEach((instance) => {
+    const blessing = instance.definition || instance;
+    const rarityId = blessing.rarity || DEFAULT_BLESSING_RARITY;
+    const rarity = getBlessingRarity(rarityId);
+    const button = document.createElement("button");
+    const isSelected = selected.has(instance.instanceId);
+    button.className = `blessing-card camp-blessing-card rarity-${rarity.id}${isSelected ? " is-retained" : ""}`;
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(isSelected));
+    button.setAttribute("aria-label", `${blessing.name}，來源：${instance.sourceLabel || "冒險途中"}`);
+
+    const meta = document.createElement("small");
+    const source = document.createElement("span");
+    const rarityLabel = document.createElement("i");
+    source.textContent = instance.sourceLabel || "冒險途中";
+    rarityLabel.textContent = rarity.label;
+    meta.append(source, rarityLabel);
+
+    const name = document.createElement("strong");
+    const eventText = document.createElement("span");
+    const flavor = document.createElement("em");
+    const effect = document.createElement("b");
+    name.textContent = blessing.name || "未命名祝福";
+    eventText.textContent = blessing.eventText || "";
+    flavor.textContent = blessing.flavorText || "";
+    effect.textContent = blessing.effectText || "";
+    button.append(meta, name, eventText, flavor, effect);
+    button.addEventListener("click", () => onToggle(instance.instanceId));
+    element.append(button);
+  });
+}
+
 export function renderBattleLog(element, log) {
   element.innerHTML = "";
   log.slice(-80).reverse().forEach((entry) => {

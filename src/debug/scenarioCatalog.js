@@ -1,4 +1,5 @@
 export const GOBLIN_ROUTE_ID = "goblin-camp";
+export const COAST_CAVE_ROUTE_ID = "coast-cave";
 export const GOBLIN_ROUTE_ENTRY_OPTIONS = Object.freeze([6, 7, 8]);
 export const GOBLIN_MID_CHOICES = Object.freeze([
   Object.freeze({ id: "heal", label: "恢復 35% HP" }),
@@ -75,6 +76,11 @@ export const DEBUG_SCENARIOS = Object.freeze([
     supportsBuild: true
   }),
   Object.freeze({
+    id: "beach-camp-transition", category: "海灘", name: "Boss 後扎營・強化礁釘繫索",
+    description: "建立海灘 16 場完整 Blessing，固定攜帶強化礁釘繫索，直接開啟正式扎營選擇與洞穴交接。",
+    kind: "coastCampTransition", regionId: "beach", supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
     id: "core-multi-enemy", category: "核心測試", name: "多敵人基礎",
     description: "哥布林戰士 ×2；第二名套用 statScale 0.75 / rewardScale 0.5。",
     kind: "multiEnemy", regionId: "forest", supportsBuild: false
@@ -107,5 +113,53 @@ export const DEBUG_SCENARIOS = Object.freeze([
     id: "goblin-ending", category: "哥布林營地", name: "弓箭手 Ending",
     description: "只測試四頁 Route Ending；不救援角色、不記通關、不解鎖成就。",
     kind: "goblinEnding", regionId: "forest", routeId: GOBLIN_ROUTE_ID, supportsBuild: false
+  }),
+  Object.freeze({
+    id: "coast-cave-entry", category: "海岸洞穴", name: "洞穴第 1 場・入口伏擊",
+    description: "完整建立海灘 16 場 Blessing、扎營保留 8 張與 50% HP，再直接進入洞穴第 1 場。",
+    kind: "coastCaveEncounter", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 0, supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
+    id: "coast-cave-event-rockspring", category: "海岸洞穴", name: "事件・岩縫清泉",
+    description: "完整海灘與扎營前置後，下一次繼續前進固定觸發「岩縫清泉」。可用低 HP 驗證恢復與安全離開。",
+    kind: "coastCaveEvent", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 4, eventId: "cave-rockspring", supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
+    id: "coast-cave-event-carvings", category: "海岸洞穴", name: "事件・潮痕石陣",
+    description: "完整海灘與扎營前置後，下一次繼續前進固定觸發「潮痕石陣」。低 HP 選讀取可驗證事件致死短路。",
+    kind: "coastCaveEvent", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 8, eventId: "cave-tide-carvings", supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
+    id: "coast-cave-elite-front", category: "海岸洞穴", name: "洞穴第 9 場・深潮精英",
+    description: "完整海灘、扎營與洞穴前 8 場 Blessing 時序後，直接進入第一場精英。",
+    kind: "coastCaveEncounter", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 8, supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
+    id: "coast-cave-event-altar", category: "海岸洞穴", name: "事件・深潮石壇",
+    description: "完整海灘與扎營前置後，下一次繼續前進固定觸發「深潮石壇」。可驗證稀有 Blessing、素材與事件致死。",
+    kind: "coastCaveEvent", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 12, eventId: "cave-deep-tide-altar", supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
+    id: "coast-cave-elite-deep", category: "海岸洞穴", name: "洞穴第 13 場・深窟精銳",
+    description: "完整海灘、扎營與洞穴前 12 場 Blessing 時序後，直接進入第二場精英。",
+    kind: "coastCaveEncounter", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 12, supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
+    id: "coast-cave-tail", category: "海岸洞穴", name: "洞穴第 15 場・尾段獵隊",
+    description: "完整海灘、扎營與洞穴前 14 場 Blessing 時序後，直接進入尾段壓力場。",
+    kind: "coastCaveEncounter", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 14, supportsBuild: true, defaultHpPercent: 50
+  }),
+  Object.freeze({
+    id: "coast-cave-boss", category: "海岸洞穴", name: "洞穴第 16 場・深潮首領",
+    description: "完整 32 場海岸流程的 Boss 壓力測試：海灘 16 場、扎營 8 張／50% HP、洞穴前 15 場。",
+    kind: "coastCaveEncounter", regionId: "beach", routeId: COAST_CAVE_ROUTE_ID,
+    routeEncounterIndex: 15, supportsBuild: true, defaultHpPercent: 50
   })
 ]);

@@ -1,6 +1,7 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
-import { applyParalysis, applySaltErosion } from "./combatStatusEffects.js";
+import { applyParalysis, applySaltErosion, getParalysisDamageMultiplier } from "./combatStatusEffects.js";
 import { roll } from "../utils.js";
+import { registerShieldDepletedByDirectAttack } from "./caveBlessingEffects.js";
 
 const DEFAULT_CHARGE_MULTIPLIER = 1.6;
 const STEADY_STANCE_CHANCE = 0.25;
@@ -10,7 +11,7 @@ const STEADY_STANCE_PLUS_REDUCTION = 0.4;
 
 export function resolveEnemyAction({ hero, enemy, turn, log, modifyDirectDamage = null }) {
   const enemyName = getEnemyDisplayName(enemy);
-  let damage = Math.max(1, enemy.attack - hero.defense);
+  let damage = Math.max(1, Math.round((enemy.attack - hero.defense) * getParalysisDamageMultiplier(enemy)));
   const damageSource = { type: "attack", label: `${enemyName}的攻擊` };
 
   if (enemy.chargeEvery && turn % enemy.chargeEvery === 0) {
@@ -43,12 +44,14 @@ export function resolveEnemyAction({ hero, enemy, turn, log, modifyDirectDamage 
     }
   }
 
+  const shieldBefore = Number(hero.shield) || 0;
   if (hero.shield > 0) {
     const blocked = Math.min(hero.shield, damage);
     hero.shield -= blocked;
     damage -= blocked;
     log.template("status", "block", { target: hero.name });
   }
+  registerShieldDepletedByDirectAttack(hero, shieldBefore);
 
   hero.hp = Math.max(0, hero.hp - damage);
   log.template("enemy-damage", "enemyDamage", {

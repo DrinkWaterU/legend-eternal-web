@@ -1,4 +1,5 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
+import { applyEnemyDamageProtection } from "./enemyProtection.js";
 import { resolvePreparationSaltErosionInitialTurns } from "./preparationEffects.js";
 
 const SALT_EROSION_INITIAL_TURNS = 5;
@@ -43,26 +44,38 @@ export function applySaltErosion(hero, log) {
   return remainingTurns;
 }
 
-export function applyParalysis(hero, log) {
-  if (!hero) return 0;
-  const currentTurns = Math.max(0, Number(hero.paralysis?.remainingTurns) || 0);
+export function applyParalysis(target, log) {
+  if (!target) return 0;
+  const currentTurns = Math.max(0, Number(target.paralysis?.remainingTurns) || 0);
   const remainingTurns = Math.min(
     PARALYSIS_MAX_TURNS,
     currentTurns > 0 ? currentTurns + 1 : PARALYSIS_INITIAL_TURNS
   );
-  hero.paralysis = { remainingTurns };
-  log?.fixed?.("status", `${hero.name} 陷入麻痺，接下來的攻擊可能變弱。`);
+  target.paralysis = { remainingTurns };
+  log?.fixed?.("status", `${target.name} 陷入麻痺，接下來的攻擊可能變弱。`);
   return remainingTurns;
 }
 
 export function advanceHeroCombatStatuses(hero) {
   if (!hero) return;
   ["saltErosion", "paralysis"].forEach((statusId) => {
-    const status = hero[statusId];
-    if (!status) return;
-    status.remainingTurns = Math.max(0, (Number(status.remainingTurns) || 0) - 1);
-    if (status.remainingTurns <= 0) hero[statusId] = null;
+    advanceCombatStatus(hero, statusId);
   });
+}
+
+export function advanceParalysis(target) {
+  advanceCombatStatus(target, "paralysis");
+}
+
+export function getParalysisDamageMultiplier(target, random = Math.random) {
+  return Number(target?.paralysis?.remainingTurns) > 0 && random() < 0.5 ? 0.8 : 1;
+}
+
+function advanceCombatStatus(target, statusId) {
+  const status = target?.[statusId];
+  if (!status) return;
+  status.remainingTurns = Math.max(0, (Number(status.remainingTurns) || 0) - 1);
+  if (status.remainingTurns <= 0) target[statusId] = null;
 }
 
 export function getHeroBattleHealingMultiplier(hero) {
@@ -108,15 +121,20 @@ export function applyHeroEndOfTurnNegativeEffects({ hero, log, modifyPoisonDamag
   return { heroDeathCause };
 }
 
-export function applyEnemyEndOfTurnNegativeEffects({ enemy, log }) {
+export function applyEnemyEndOfTurnNegativeEffects({ enemy, enemies = [], log }) {
   const poisonDamage = getEnemyPendingHpLoss(enemy);
   if (poisonDamage <= 0) {
     return;
   }
-  enemy.hp = Math.max(0, enemy.hp - poisonDamage);
+  const effectiveDamage = applyEnemyDamageProtection({
+    enemy,
+    enemies,
+    damage: poisonDamage
+  }).damage;
+  enemy.hp = Math.max(0, enemy.hp - effectiveDamage);
   log.template("hero-damage", "poisonTick", {
     target: getEnemyDisplayName(enemy),
-    amount: poisonDamage
+    amount: effectiveDamage
   });
 }
 

@@ -42,6 +42,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     tryFlee,
     continueAdventure,
     handleEventContinueButton,
+    returnToSegmentChoice,
+    confirmCampSelection,
     restAtSafeRoute,
     retreatRun,
     openAbilityInfoPanel,
@@ -137,6 +139,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.fleeButton.addEventListener("click", tryFlee);
   els.continueButton.addEventListener("click", continueAdventure);
   els.eventContinueButton.addEventListener("click", handleEventContinueButton);
+  els.campTransitionBackButton.addEventListener("click", returnToSegmentChoice);
+  els.campTransitionConfirmButton.addEventListener("click", confirmCampSelection);
   els.restButton.addEventListener("click", restAtSafeRoute);
   els.retreatButton.addEventListener("click", retreatRun);
   [els.openAbilityFromAttack, els.openAbilityFromDefense, els.openAbilityFromCrit]

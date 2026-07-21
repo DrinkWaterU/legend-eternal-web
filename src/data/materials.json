@@ -382,5 +382,53 @@
     "sellPrice": 18,
     "sortOrder": 880,
     "tags": ["beach", "beast", "boss", "core"]
+  },
+  "cave_shell_fragment": {
+    "id": "cave_shell_fragment",
+    "name": "洞窟殼片",
+    "rarity": "common",
+    "category": "material",
+    "description": "魚人礁甲剝落的殼片，邊緣留著洞窟潮水磨出的霧白痕跡。",
+    "usage": "可用於護具補強、盾牌外層與耐潮零件。",
+    "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮祭司、深潮魚人首領",
+    "sellPrice": 3,
+    "sortOrder": 900,
+    "tags": ["coast", "cave", "fishman", "shell"]
+  },
+  "tidebone_fragment": {
+    "id": "tidebone_fragment",
+    "name": "潮骨碎片",
+    "rarity": "common",
+    "category": "material",
+    "description": "深潮魚人留下的骨片，表面附著細小鹽晶，敲擊時聲音清脆。",
+    "usage": "可用於武器握柄、骨製零件與潮性材料的基礎加工。",
+    "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮咒師、深潮魚人首領",
+    "sellPrice": 3,
+    "sortOrder": 910,
+    "tags": ["coast", "cave", "fishman", "bone"]
+  },
+  "tide_mark_shard": {
+    "id": "tide_mark_shard",
+    "name": "潮痕碎片",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "凝固在骨片與岩面的潮痕碎片，靠近時仍會泛起微弱藍光。",
+    "usage": "可用於狀態材料、潮性調和與海岸祝福研究。",
+    "source": "海岸洞穴 / 魚人潮祭司、魚人潮咒師、精英魚人礁衛、深潮魚人首領",
+    "sellPrice": 7,
+    "sortOrder": 920,
+    "tags": ["coast", "cave", "fishman", "tide", "status"]
+  },
+  "deep_tide_core": {
+    "id": "deep_tide_core",
+    "name": "深潮核",
+    "rarity": "rare",
+    "category": "material",
+    "description": "深潮魚人首領胸腔內凝結的核心，內部像有一片不會平息的暗潮。",
+    "usage": "洞穴 Boss 素材，可用於高階潮性武器、護具與核心零件。",
+    "source": "海岸洞穴 / 深潮魚人首領",
+    "sellPrice": 18,
+    "sortOrder": 930,
+    "tags": ["coast", "cave", "fishman", "boss", "core"]
   }
 }

@@ -278,7 +278,8 @@ export function createEventRuntime(host) {
       state.blessingPoolOverrideId = target.poolId || null;
       showBlessings("eventChoice", {
         poolId: target.poolId,
-        count: Math.max(1, Math.floor(Number(target.count) || 3))
+        count: Math.max(1, Math.floor(Number(target.count) || 3)),
+        rarity: target.rarity || null
       });
     }
   }

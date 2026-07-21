@@ -1,21 +1,19 @@
-import { applyBlessingEffects } from "../core/blessings.js";
 import { buildScaledEnemy } from "../core/combat.js";
-import { scheduleRegionEvent } from "../core/events.js";
 import {
   buildHeroFromProgression,
   getCharacterMaxLevel
 } from "../core/progression.js";
-import { getAllIndependentBlessings } from "../data/blessings/index.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { getEventEnemyDefinition } from "../data/events/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { getRouteDefinition } from "../data/routes/index.js";
+import { createDebugCoastScenarioActions } from "./coastScenarioActions.js";
 import { createDebugRegionScenarioActions } from "./regionScenarioActions.js";
+import { prepareDebugRouteAt } from "./routeScenarioActions.js";
 import {
   getDebugScenarioBuildSlots,
   getDebugScenarioDefinition
 } from "./scenarios.js";
-import { clone } from "../utils.js";
 
 export function createDebugScenarioActions(host) {
   const {
@@ -36,12 +34,31 @@ export function createDebugScenarioActions(host) {
     recordSelectedBossInRunStats,
     applySceneContext,
     consumeBattleLimitedEffects,
+    runStartingFlees,
+    openCampSelection,
     clampInteger
   } = host;
+  const coastScenarioActions = createDebugCoastScenarioActions({
+    state,
+    prepareRunForRegion,
+    getRouteBossDefinition,
+    recordSelectedBossInRunStats,
+    applySceneContext,
+    clampInteger,
+    buildMaxLevelHero,
+    runStartingFlees,
+    openCampSelection,
+    startEncounter,
+    enterSafeState,
+    addFixedLog,
+    setScenarioHp,
+    consumeBattleLimitedEffects
+  });
+  const { applyScenarioBuild } = coastScenarioActions;
   const { startRegionEnemyScenario } = createDebugRegionScenarioActions({
     state,
     prepareRunForRegion,
-    applyScenarioBuild,
+    applyScenarioBuild: coastScenarioActions.applyScenarioBuild,
     setScenarioHp,
     beginBattleRuntime,
     addFixedLog,
@@ -79,9 +96,14 @@ export function createDebugScenarioActions(host) {
       case "regionEnemy":
       case "regionEnemyGroup":
         return startRegionEnemyScenario({ scenario, options, buildSlots, selections, debugHero });
+      case "coastCampTransition":
+        return coastScenarioActions.startCoastCampTransition({ buildSlots, selections, debugHero });
       case "goblinRouteEncounter":
       case "goblinMidEvent":
         return startGoblinScenario({ scenario, scenarioOptions, options, buildSlots, selections, debugHero });
+      case "coastCaveEncounter":
+      case "coastCaveEvent":
+        return coastScenarioActions.startCoastCaveScenario({ scenario, options, buildSlots, selections, debugHero });
       case "plainsStory":
         prepareRunForRegion("plains", getBossEncounterIndex("plains"), {
           hero: debugHero,
@@ -187,24 +209,20 @@ export function createDebugScenarioActions(host) {
   }
 
   function prepareGoblinRouteAt(routeEncounterIndex, options = {}) {
-    const route = getRouteDefinition("goblin-camp");
-    if (!route) throw new Error("找不到哥布林營地 Route。");
-    const routeIndex = clampInteger(routeEncounterIndex, 0, route.encounterPlan.length - 1);
     const entryEncounterIndex = clampInteger(Number(options.entryEncounterIndex), 5, 7);
-    prepareRunForRegion(route.regionId, entryEncounterIndex + routeIndex, {
+    return prepareDebugRouteAt({
+      state,
+      routeId: "goblin-camp",
+      routeEncounterIndex,
+      baseEncounterIndex: entryEncounterIndex,
       hero: options.hero || buildMaxLevelHero(state.selectedHeroId),
-      debugBuildRun: true,
-      persistSelection: false
+      scheduleEvent: options.scheduleEvent,
+      prepareRunForRegion,
+      getRouteBossDefinition,
+      recordSelectedBossInRunStats,
+      applySceneContext,
+      clampInteger
     });
-    state.activeRouteId = route.id;
-    state.routeEncounterIndex = routeIndex;
-    state.eventSchedule = options.scheduleEvent ? scheduleRegionEvent(route) : null;
-    state.selectedBoss = clone(getRouteBossDefinition(route));
-    recordSelectedBossInRunStats();
-    state.battleEncounterType = null;
-    state.runResultRecorded = false;
-    applySceneContext("gameScreen");
-    return route;
   }
 
   function validateScenarioSelections(buildSlots, rawSelections) {
@@ -222,30 +240,6 @@ export function createDebugScenarioActions(host) {
       selections.set(slotId, blessingId);
     });
     return selections;
-  }
-
-  function applyScenarioBuild(buildSlots, selections) {
-    buildSlots.forEach((slot) => {
-      const blessingId = selections.get(slot.id);
-      if (blessingId) {
-        const blessing = getBlessingDefinition(blessingId);
-        applyBlessingEffects(state.hero, blessing);
-        state.hero.blessings.push(blessing.name);
-      }
-      for (let victory = 0; victory < slot.battleVictoriesAfter; victory += 1) {
-        consumeBattleLimitedEffects();
-      }
-    });
-  }
-
-  function getBlessingDefinition(blessingId) {
-    const definitions = [
-      ...Object.values(regionDefinitions).flatMap((region) => region.blessings || []),
-      ...getAllIndependentBlessings()
-    ];
-    const blessing = definitions.find((candidate) => candidate.id === blessingId);
-    if (!blessing) throw new Error(`找不到 Blessing：${blessingId}`);
-    return blessing;
   }
 
   function setScenarioHp(hpPercent) {

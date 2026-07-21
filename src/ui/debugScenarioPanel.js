@@ -113,17 +113,26 @@ function syncDebugScenario(context, options = {}) {
   const supportsRouteEntry = Boolean(scenario?.supportsRouteEntry);
   const supportsMidChoice = Boolean(scenario?.supportsMidChoice);
   const supportsBuild = Boolean(scenario?.supportsBuild);
-  const supportsHp = !["plainsStory", "goblinEnding"].includes(scenario?.kind);
+  const supportsHp = !["plainsStory", "goblinEnding", "coastCampTransition"].includes(scenario?.kind);
+  const isCoastCave = scenario?.routeId === "coast-cave";
 
   const scenarioDescription = scenario?.description || "沒有可用的場景。";
   context.scenarioNote.textContent = supportsMidChoice
     ? `${scenarioDescription} 直接跳場時，中段回血不額外疊加；最終 HP 以下方進場 HP 為準。`
-    : scenarioDescription;
+    : isCoastCave
+      ? `${scenarioDescription} 預設為扎營完成的 50% HP；下方數值可覆寫，用於壓力與事件致死測試。`
+      : scenarioDescription;
   context.routeEntryRow.hidden = !supportsRouteEntry;
   context.midChoiceRow.hidden = !supportsMidChoice;
   context.hpRow.hidden = !supportsHp;
   context.buildSection.hidden = !supportsBuild;
   context.scenarioStartButton.disabled = !scenario;
+  if (supportsHp && Number.isFinite(Number(scenario?.defaultHpPercent))) {
+    context.hpInput.value = String(scenario.defaultHpPercent);
+  }
+  context.buildNote.textContent = isCoastCave
+    ? "海岸洞穴會先建立海灘 16 場，再重建為扎營保留 8 張／50% HP；洞穴 Blessing 依已完成場次套用。"
+    : "場景測試固定使用目前角色的滿等能力；Blessing 依正式取得位置與限場效果時序套用。";
 
   if (supportsBuild) {
     syncDebugBuildSlots(context, options);
@@ -188,7 +197,15 @@ function renderDebugBuildSlots(context) {
     context.buildList.append(empty);
   }
 
+  let lastStage = null;
   context.buildSlots.forEach((slot, index) => {
+    if (slot.stage && slot.stage !== lastStage) {
+      const sectionHeading = document.createElement("strong");
+      sectionHeading.className = "debug-build-stage";
+      sectionHeading.textContent = getBuildStageLabel(slot.stage);
+      context.buildList.append(sectionHeading);
+      lastStage = slot.stage;
+    }
     const item = document.createElement("label");
     item.className = "debug-build-slot";
     item.setAttribute("role", "listitem");
@@ -232,6 +249,26 @@ function renderDebugBuildSlots(context) {
 function updateBuildCount(context) {
   const selectedCount = context.buildSlots.filter((slot) => Boolean(context.buildSelections[slot.id])).length;
   context.buildCount.textContent = `${selectedCount} / ${context.buildSlots.length}`;
+  const coastCampSlots = context.buildSlots.filter((slot) => slot.stage === "campRetained");
+  if (coastCampSlots.length === 0) {
+    context.buildSummary.textContent = "";
+    context.buildSummary.classList.remove("is-warning");
+    return;
+  }
+  const coastCampSelected = coastCampSlots.filter((slot) => Boolean(context.buildSelections[slot.id])).length;
+  const beachSelected = context.buildSlots.filter((slot) => slot.stage === "beach" && Boolean(context.buildSelections[slot.id])).length;
+  const caveSelected = context.buildSlots.filter((slot) => slot.stage === "cave" && Boolean(context.buildSelections[slot.id])).length;
+  context.buildSummary.textContent = `海灘 ${beachSelected}/16 ｜ 扎營保留 ${coastCampSelected}/8 ｜ 洞穴前置 ${caveSelected}`;
+  context.buildSummary.classList.toggle("is-warning", coastCampSelected !== 8);
+}
+
+function getBuildStageLabel(stage) {
+  const labels = {
+    beach: "海灘 Blessing（16 場完成後進入扎營）",
+    campRetained: "扎營保留（必須剛好 8 張，且需來自上方海灘選擇）",
+    cave: "海岸洞穴 Blessing（依已完成洞穴場次）"
+  };
+  return labels[stage] || "Blessing 時序";
 }
 
 function parseBlessingBuildInput(context) {

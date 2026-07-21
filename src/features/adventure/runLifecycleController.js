@@ -8,6 +8,12 @@ import { DEFAULT_SAFE_AREA_ID } from "../../data/safeAreas.js";
 import { getRouteDefinition } from "../../data/routes/index.js";
 import { showCombatLayout } from "../../ui/eventView.js";
 import { clone } from "../../utils.js";
+import {
+  captureAdventureRouteState,
+  createAdventureRouteHandoff,
+  createBeachSegmentCheckpoint,
+  restoreAdventureRouteState
+} from "../../adventure/coastSegment.js";
 
 export function createRunLifecycleController({
   state,
@@ -28,6 +34,7 @@ export function createRunLifecycleController({
   clearAnpingArrivalTimers,
   selectRunBoss,
   recordSelectedBossInRunStats,
+  recordBeachSegmentCompleted,
   buildHeroFromProgression,
   hasPhoenixBlessing,
   captureRunStartPermanentState,
@@ -44,6 +51,8 @@ export function createRunLifecycleController({
   renderRegionScreen,
   closeTransientUiPanels,
   setCombatActionState,
+  render,
+  showBeachSegmentChoice,
   flushAchievementUnlockQueue,
   showAnpingArrivalStory,
   applySceneContext,
@@ -116,22 +125,77 @@ export function createRunLifecycleController({
 
   function enterAdventureRoute(routeId) {
     const route = getRouteDefinition(routeId);
-    if (!route || route.regionId !== state.selectedRegionId) {
-      throw new Error(`無法進入 Route：${routeId || "(empty)"}`);
+    const handoff = createAdventureRouteHandoff({ state, route });
+    const snapshot = captureAdventureRouteState(state);
+
+    try {
+      state.activeRouteId = handoff.routeId;
+      state.routeEncounterIndex = handoff.routeEncounterIndex;
+      state.eventSchedule = scheduleRegionEvent(route);
+      state.eventContext = null;
+      state.eventInputLocked = false;
+      state.adventureProgressLocked = false;
+      state.blessingPoolOverrideId = null;
+      const routeBoss = getRouteBossDefinition(route);
+      state.selectedBoss = routeBoss ? clone(routeBoss) : null;
+      recordSelectedBossInRunStats();
+      showCombatLayout(els);
+      applySceneContext("gameScreen");
+      startEncounter();
+      return handoff;
+    } catch (error) {
+      restoreAdventureRouteState(state, snapshot);
+      setCombatActionState();
+      renderAfterRouteStateChange();
+      throw error;
     }
-    state.activeRouteId = route.id;
-    state.routeEncounterIndex = 0;
-    state.eventSchedule = scheduleRegionEvent(route);
-    state.eventContext = null;
-    state.eventInputLocked = false;
-    state.adventureProgressLocked = false;
+  }
+
+  function openBeachSegmentCheckpoint() {
+    const checkpoint = createBeachSegmentCheckpoint({
+      state,
+      encounterCount: currentRegion().encounterCount
+    });
+    const existingCheckpoint = state.coastSegmentCheckpoint;
+    const isSameCheckpoint = existingCheckpoint
+      && existingCheckpoint.run === checkpoint.run
+      && existingCheckpoint.regionId === checkpoint.regionId
+      && existingCheckpoint.encounterIndex === checkpoint.encounterIndex
+      && existingCheckpoint.routeEncounterIndex === checkpoint.routeEncounterIndex
+      && existingCheckpoint.activeRouteId === checkpoint.activeRouteId;
+    if (isSameCheckpoint && state.phase === "segmentChoice" && !state.ended) {
+      return clone(existingCheckpoint);
+    }
+
+    recordBeachSegmentCompleted?.();
+    clearEnemyGroup();
+    clearPendingThreat();
+    state.coastSegmentCheckpoint = checkpoint;
+    state.ended = false;
+    state.phase = "segmentChoice";
+    state.awaitingBlessing = false;
+    state.blessingContext = "normal";
     state.blessingPoolOverrideId = null;
-    const routeBoss = getRouteBossDefinition(route);
-    state.selectedBoss = routeBoss ? clone(routeBoss) : null;
-    recordSelectedBossInRunStats();
-    showCombatLayout(els);
-    applySceneContext("gameScreen");
-    startEncounter();
+    state.blessingInputLocked = false;
+    state.eventInputLocked = false;
+    state.adventureProgressLocked = true;
+    state.routeEndingContext = null;
+    state.campSelection = null;
+    renderAfterRouteStateChange();
+    showBeachSegmentChoice?.();
+    return clone(checkpoint);
+  }
+
+  function getCoastSegmentCheckpoint() {
+    return state.coastSegmentCheckpoint ? clone(state.coastSegmentCheckpoint) : null;
+  }
+
+  function renderAfterRouteStateChange() {
+    try {
+      render();
+    } catch {
+      // Preserve the original Route error; UI recovery must not mask it.
+    }
   }
 
   function startPlayerRun() {
@@ -287,6 +351,8 @@ export function createRunLifecycleController({
     resetAdventureRunRuntime,
     initializeRunRuntime,
     enterAdventureRoute,
+    openBeachSegmentCheckpoint,
+    getCoastSegmentCheckpoint,
     startPlayerRun,
     restart,
     returnToSafeArea,

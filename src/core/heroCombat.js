@@ -1,4 +1,7 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
+import { applyEnemyDamageProtection } from "./enemyProtection.js";
+import { consumeCaveDirectAttackModifiers, finishCaveDirectAttack, getCaveDirectAttackModifiers } from "./caveBlessingEffects.js";
+import { getParalysisDamageMultiplier } from "./combatStatusEffects.js";
 import { consumePreparationParalysisPenaltyPrevention } from "./preparationEffects.js";
 import { roll } from "../utils.js";
 
@@ -43,8 +46,8 @@ export function resolveHeroEntangle({ hero, log, retryOnFailure = null, onRetryR
   return true;
 }
 
-export function resolveHeroAction({ hero, enemy, log }) {
-  const result = resolveHeroStrike({ hero, enemy, log });
+export function resolveHeroAction({ hero, enemy, enemies = [], log }) {
+  const result = resolveHeroStrike({ hero, enemy, enemies, log });
   if (result.dodged) {
     return result;
   }
@@ -57,8 +60,16 @@ export function resolveHeroAction({ hero, enemy, log }) {
     ? FOLLOW_UP_PLUS_ATTACK_RATIO
     : FOLLOW_UP_ATTACK_RATIO;
   if (enemy.hp > 0 && hasSkill(hero, "skilled-follow-up") && roll(followUpChance)) {
-    const followUpDamage = Math.max(1, Math.round(getHeroEffectiveAttack(hero) * followUpAttackRatio));
+    const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
+    const rawFollowUpDamage = Math.max(1, Math.round(getHeroEffectiveAttack(hero) * followUpAttackRatio * caveModifiers.damageMultiplier)) + caveModifiers.extraDamage;
+    const followUpDamage = applyEnemyDamageProtection({
+      enemy,
+      enemies,
+      damage: rawFollowUpDamage
+    }).damage;
     enemy.hp = Math.max(0, enemy.hp - followUpDamage);
+    consumeCaveDirectAttackModifiers(hero, caveModifiers);
+    finishCaveDirectAttack({ hero, enemy, enemyAlive: enemy.hp > 0 });
     log.template("hero-damage", "skilledFollowUp", {
       actor: hero.name,
       target: enemyName,
@@ -68,7 +79,7 @@ export function resolveHeroAction({ hero, enemy, log }) {
   return result;
 }
 
-export function resolveHeroStrike({ hero, enemy, log, options = {} }) {
+export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {} }) {
   const { critChanceBonus = 0, damageMultiplier = 1, allowHeavyStrike = true } = options;
   const enemyName = getEnemyDisplayName(enemy);
   const openingCritChance = hero.hasAttackedThisBattle ? 0 : (hero.openingCritChance || 0);
@@ -79,8 +90,9 @@ export function resolveHeroStrike({ hero, enemy, log, options = {} }) {
     return { dodged: true, critical: false, damage: 0 };
   }
 
+  const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
   const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
-  let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier, attackMultiplier });
+  let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier: damageMultiplier * caveModifiers.damageMultiplier, attackMultiplier }) + caveModifiers.extraDamage;
   if (allowHeavyStrike && hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
     damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
     log.template("skill", "heavyStrike", { actor: hero.name });
@@ -90,14 +102,18 @@ export function resolveHeroStrike({ hero, enemy, log, options = {} }) {
     + (enemy.poison > 0 ? hero.poisonedCritChance || 0 : 0)
     + openingCritChance
     + (enemy.hp < enemy.maxHp * 0.5 ? hero.woundedTargetCritChance || 0 : 0)
-    + Math.max(0, Number(critChanceBonus) || 0);
+    + Math.max(0, Number(critChanceBonus) || 0)
+    + caveModifiers.critChanceBonus;
   const critical = roll(critChance);
   if (critical) {
     damage = Math.round(damage * (hero.critDamageMultiplier || 1.7));
     log.template("critical", "critical", { actor: hero.name });
   }
 
+  damage = applyEnemyDamageProtection({ enemy, enemies, damage }).damage;
   enemy.hp = Math.max(0, enemy.hp - damage);
+  consumeCaveDirectAttackModifiers(hero, caveModifiers);
+  finishCaveDirectAttack({ hero, enemy, enemyAlive: enemy.hp > 0 });
   log.template("hero-damage", "heroDamage", { actor: hero.name, target: enemyName, amount: damage });
 
   if (hero.poisonPower > 0 && enemy.hp > 0) {
@@ -127,8 +143,8 @@ export function getHeroDirectAttackDamage({ hero, enemy, damageMultiplier = 1, a
 }
 
 export function getHeroAttackDamageMultiplier(hero, log) {
-  const remainingTurns = Number(hero?.paralysis?.remainingTurns) || 0;
-  if (remainingTurns <= 0 || Math.random() >= 0.5) {
+  const multiplier = getParalysisDamageMultiplier(hero);
+  if (multiplier === 1) {
     return 1;
   }
   if (consumePreparationParalysisPenaltyPrevention(hero?.activePreparation)) {
@@ -137,7 +153,7 @@ export function getHeroAttackDamageMultiplier(hero, log) {
     return 1;
   }
   log?.fixed?.("status", `${hero.name} 受到麻痺影響，這次攻擊力降低 20%。`);
-  return 0.8;
+  return multiplier;
 }
 
 function hasSkill(hero, skillId) {

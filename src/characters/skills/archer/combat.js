@@ -1,4 +1,9 @@
-import { getHeroAttackDamageMultiplier, getHeroDirectAttackDamage, resolveHeroStrike } from "../../../core/combat.js";
+import {
+  applyEnemyDamageProtection,
+  getHeroAttackDamageMultiplier,
+  getHeroDirectAttackDamage,
+  resolveHeroStrike
+} from "../../../core/combat.js";
 import { getEnemyDisplayName, getLivingEnemies, resolveTargetEnemy } from "../../../core/enemyGroups.js";
 import { roll } from "../../../utils.js";
 
@@ -106,6 +111,7 @@ function resolveShot({ hero, enemies, target, log, kind }) {
   const result = resolveHeroStrike({
     hero,
     enemy: target,
+    enemies,
     log,
     options: {
       critChanceBonus,
@@ -155,12 +161,13 @@ function resolveArrowRain({ hero, enemies, log }) {
   const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
   log.fixed("skill", `${hero.name} 射出箭雨。`);
   livingEnemies.forEach((enemy) => {
-    const damage = getHeroDirectAttackDamage({
+    const rawDamage = getHeroDirectAttackDamage({
       hero,
       enemy,
       damageMultiplier: damageRatio,
       attackMultiplier
     });
+    const damage = applyEnemyDamageProtection({ enemy, enemies, damage: rawDamage }).damage;
     enemy.hp = Math.max(0, enemy.hp - damage);
     log.fixed("hero-damage", `箭雨命中${getEnemyDisplayName(enemy)}，造成 ${damage} 點傷害。`);
   });
