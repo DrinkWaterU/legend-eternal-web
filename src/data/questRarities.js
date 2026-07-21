@@ -4,7 +4,6 @@ export const QUEST_RARITIES = Object.freeze({
   rare: Object.freeze({ id: "rare", label: "稀有", rank: 3, weight: 0 })
 });
 
-export const QUEST_RARITY_IDS = Object.freeze(Object.keys(QUEST_RARITIES));
 
 export function getQuestRarity(rarityId) {
   return QUEST_RARITIES[rarityId] || null;

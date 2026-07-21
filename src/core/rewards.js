@@ -1,4 +1,4 @@
-import { toSafeInteger } from "../utils.js";
+import { sumSafeIntegers, toSafeInteger } from "../utils.js";
 
 export function createEmptyRewards() {
   return {
@@ -46,7 +46,7 @@ export function rollEnemyRewards(enemy, options = {}, randomFn = Math.random) {
 export function mergeRewards(baseRewards = createEmptyRewards(), addedRewards = createEmptyRewards()) {
   const merged = normalizeRewards(baseRewards);
   const added = normalizeRewards(addedRewards);
-  merged.gold = addSafeIntegers(merged.gold, added.gold);
+  merged.gold = sumSafeIntegers(merged.gold, added.gold);
   Object.entries(added.materials).forEach(([materialId, material]) => {
     mergeMaterial(merged.materials, materialId, material);
   });
@@ -56,7 +56,7 @@ export function mergeRewards(baseRewards = createEmptyRewards(), addedRewards = 
 export function applyRewardsToInventory(inventory, rewards) {
   const normalizedInventory = normalizeInventory(inventory);
   const normalizedRewards = normalizeRewards(rewards);
-  normalizedInventory.gold = addSafeIntegers(normalizedInventory.gold, normalizedRewards.gold);
+  normalizedInventory.gold = sumSafeIntegers(normalizedInventory.gold, normalizedRewards.gold);
   Object.entries(normalizedRewards.materials).forEach(([materialId, material]) => {
     mergeMaterial(normalizedInventory.materials, materialId, material);
   });
@@ -153,20 +153,8 @@ function mergeMaterial(materials, materialId, material) {
   materials[materialId] = {
     id: materialId,
     name: material.name || current.name || materialId,
-    quantity: addSafeIntegers(current.quantity, material.quantity)
+    quantity: sumSafeIntegers(current.quantity, material.quantity)
   };
-}
-
-function addSafeIntegers(...values) {
-  let total = 0;
-  for (const value of values) {
-    const normalized = toSafeInteger(value);
-    if (normalized > Number.MAX_SAFE_INTEGER - total) {
-      return Number.MAX_SAFE_INTEGER;
-    }
-    total += normalized;
-  }
-  return total;
 }
 
 function hydrateMaterial(material, materialDefinitions) {

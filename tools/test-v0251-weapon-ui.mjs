@@ -70,14 +70,23 @@ const cacheVersion = GAME_VERSION.replace(/^v/, "");
 assert.match(html, new RegExp(`styles\\.css\\?v=${cacheVersion.replaceAll(".", "\\.")}`));
 assert.match(html, new RegExp(`game\\.js\\?v=${cacheVersion.replaceAll(".", "\\.")}`));
 
+assert.match(html, /class="[^"]*\bequipment-workspace\b/);
+assert.match(html, /class="[^"]*\bequipment-scroll-list\b/);
 assert.match(componentsCss, /\.blacksmith-layout/);
-assert.match(componentsCss, /\.equipment-layout/);
+assert.match(componentsCss, /\.equipment-weapon-card/);
+assert.match(componentsCss, /\.equipment-preview-heading/);
+assert.match(componentsCss, /\.equipment-current-slot/);
+assert.match(componentsCss, /\.equipment-comparison-list/);
 assert.match(componentsCss, /\.weapon-icon/);
 assert.match(componentsCss, /\.blacksmith-weapon-card\.rarity-uncommon/);
 assert.match(componentsCss, /\.equipment-current-slot\[data-rarity="uncommon"\]/);
+assert.doesNotMatch(componentsCss, /\.equipment-layout(?![A-Za-z0-9_-])/);
+assert.doesNotMatch(componentsCss, /\.character-equipment-summary(?![A-Za-z0-9_-])/);
 assert.doesNotMatch(componentsCss, /grade-special/);
 assert.match(responsiveCss, /\.blacksmith-layout/);
-assert.match(responsiveCss, /\.equipment-layout/);
+assert.match(responsiveCss, /\.equipment-weapon-grid/);
+assert.match(responsiveCss, /\.equipment-preview-heading/);
+assert.doesNotMatch(responsiveCss, /\.equipment-layout(?![A-Za-z0-9_-])/);
 assert.match(gitignore, /^\/武器icon生圖通用prompt\.md$/m);
 if (!existsSync(new URL("AI_PACKAGE_INFO.txt", root))) {
   await access(new URL("assets/images/icons/weapons/.gitkeep", root));

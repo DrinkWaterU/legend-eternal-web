@@ -18,6 +18,7 @@ export function buildGuildAdventureRecordModel({
   const statistics = save?.statistics || {};
   const regionStats = statistics.regions || {};
   const forestRouteClears = regionStats.forest?.routeClears || {};
+  const coastClears = safeCount(regionStats.beach?.clears);
 
   const experiences = [];
   addCountExperience(experiences, "完成平原主要冒險", regionStats.plains?.clears);
@@ -29,6 +30,7 @@ export function buildGuildAdventureRecordModel({
   if (save?.progression?.safeAreas?.[ANPING_TOWN_SAFE_AREA_ID]?.visitedAt) {
     experiences.push({ id: "anping-visited", label: "抵達安平鎮", status: "紀錄已確認" });
   }
+  addCountExperience(experiences, "完成海岸地區冒險", coastClears);
 
   const unlockedCharacters = Object.entries(characterDefinitions)
     .filter(([characterId]) => save?.progression?.characters?.[characterId]?.unlocked === true)
@@ -73,7 +75,7 @@ export function buildGuildAdventureRecordModel({
       abandonedTotal: safeCount(questStats.abandonedTotal)
     },
     unlockedCharacters,
-    celineComment: resolveCelineComment({ forestRouteClears })
+    celineComment: resolveCelineComment({ forestRouteClears, coastClears })
   };
 }
 
@@ -92,7 +94,10 @@ function safeCount(value) {
   return Number.isSafeInteger(value) && value >= 0 ? value : 0;
 }
 
-function resolveCelineComment({ forestRouteClears }) {
+function resolveCelineComment({ forestRouteClears, coastClears }) {
+  if (safeCount(coastClears) > 0) {
+    return "能從那些魚人的陰暗洞窟裡全身而退，確實證明了你的本事；但越是陌生的深水區，越不能把退路全押在運氣上喔。";
+  }
   if (safeCount(forestRouteClears.goblinCamp) > 0) {
     return "能處理哥布林營地那樣的混亂，證明你已經有自己的判斷了。不過，越有經驗的人越該記得留一條退路喔。";
   }

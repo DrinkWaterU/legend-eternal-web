@@ -19,8 +19,15 @@ for (const id of [
   "achievementBrowser", "achievementDetail", "achievementUnlockToast"
 ]) {
   assert.match(html, new RegExp(`id="${id}"`), `index.html 缺少 ${id}`);
+}
+for (const id of [
+  "characterSkillDetail", "equipmentSearchInput", "storageUsageList",
+  "statisticsJourneySummary", "statisticsCharacterDetail", "statisticsRegionDetail",
+  "achievementBrowser", "achievementDetail", "achievementUnlockToast"
+]) {
   assert.match(dom, new RegExp(`${id}: document\\.querySelector\\("#${id}"\\)`), `dom.js 缺少 ${id}`);
 }
+assert.doesNotMatch(dom, /storageDetailPanel: document\.querySelector/, "倉庫詳情根節點不應保留未使用的 registry 欄位");
 
 assert.doesNotMatch(html, /id="materialInfoPanel"/, "素材資訊應整合進倉庫，不應保留雙軌彈窗");
 assert.doesNotMatch(html, /id="skillInfoPanel"/, "技能資訊應整合進角色詳情，不應保留雙軌彈窗");

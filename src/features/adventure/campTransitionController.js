@@ -3,6 +3,7 @@ import {
   sortBlessingInstancesByAcquisition,
   syncBlessingInstancesRuntime
 } from "../../adventure/blessingInstances.js";
+import { clearHeroBattleRuntimeState } from "../../core/heroBattleState.js";
 import { getRouteDefinition } from "../../data/routes/index.js";
 import { hideEventTransition, showCombatLayout } from "../../ui/eventView.js";
 import {
@@ -138,7 +139,7 @@ export function createCampTransitionController({
         });
         rebuiltHero.blessings.push(blessing.name);
       });
-      clearRebuiltHeroBattleState(rebuiltHero);
+      clearHeroBattleRuntimeState(rebuiltHero);
       rebuiltHero.fleesRemaining = runStartingFlees;
       rebuiltHero.hp = Math.max(1, Math.round(rebuiltHero.maxHp * CAMP_HEAL_RATIO));
 
@@ -216,17 +217,4 @@ export function createCampTransitionController({
     returnToSegmentChoice,
     confirmCampSelection
   });
-}
-
-function clearRebuiltHeroBattleState(hero) {
-  hero.poison = 0;
-  hero.entangle = null;
-  hero.saltErosion = null;
-  hero.paralysis = null;
-  hero.battleAttackBonus = 0;
-  hero.battleCritBonus = 0;
-  hero.hasAttackedThisBattle = false;
-  hero.activeEnemyCount = 0;
-  hero.activePreparation = null;
-  hero.shield = 0;
 }

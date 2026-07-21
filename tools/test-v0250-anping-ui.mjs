@@ -61,8 +61,28 @@ for (const id of [
   "continueAnpingArrivalButton"
 ]) {
   assert.match(html, new RegExp(`id="${id}"`), `HTML 缺少 ${id}`);
+}
+for (const id of [
+  "campEyebrow",
+  "campTitle",
+  "campDescription",
+  "campTravelButton",
+  "campTravelHint",
+  "campTravelBadge",
+  "safeAreaTravelBackButton",
+  "safeAreaTravelCurrentName",
+  "safeAreaTravelList",
+  "safeAreaTravelEmpty",
+  "safeAreaTravelUnknownHint",
+  "anpingArrivalPanel",
+  "anpingArrivalDialog",
+  "anpingArrivalText",
+  "revealAnpingArrivalButton",
+  "continueAnpingArrivalButton"
+]) {
   assert.match(dom, new RegExp(`#${id}`), `dom.js 缺少 ${id}`);
 }
+assert.doesNotMatch(dom, /safeAreaTravelScreen: document\.querySelector/, "畫面根節點不應保留未使用的 registry 欄位");
 
 const imagePaths = [
   "assets/images/anping-town/anping-town-desktop.jpg",

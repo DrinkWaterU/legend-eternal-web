@@ -103,8 +103,9 @@ function applyEncounterBias(hero, encounterBias, options = {}) {
 
   const { instanceId = null, skipImmediate = false, runtimeState = null } = options;
   hero.encounterBiases = Array.isArray(hero.encounterBiases) ? hero.encounterBiases : [];
+  const savedRuntimeBias = runtimeState?.encounterBiases?.find((bias) => bias.instanceId === instanceId);
   const runtimeBias = skipImmediate
-    ? clone(runtimeState?.encounterBiases?.find((bias) => bias.instanceId === instanceId))
+    ? (savedRuntimeBias ? clone(savedRuntimeBias) : null)
     : clone(encounterBias);
   if (!runtimeBias) {
     return;

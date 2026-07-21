@@ -163,6 +163,18 @@ const state = {
 };
 
 const tideRest = beachData.blessings.find((blessing) => blessing.id === "beach-tide-rest");
+const fishmanTideeye = beachData.blessings.find((blessing) => blessing.id === "beach-fishman-tideeye");
+{
+  const hero = createHero();
+  assert.doesNotThrow(() => applyBlessingEffects(hero, fishmanTideeye, {
+    instanceId: "expired-encounter-bias",
+    skipImmediate: true,
+    runtimeState: { timedRegens: [], encounterBiases: [] }
+  }), "已消耗完的遭遇偏向不得在扎營重新套用時觸發 undefined JSON 錯誤");
+  assert.equal(hero.encounterBiases.length, 0, "已消耗完的遭遇偏向不得在扎營時重新啟動");
+  assert.equal(hero.critChance, 0.09, "遭遇偏向失效時仍應保留祝福的永久數值效果");
+  assert.equal(hero.familyDamageBonus.fishman, 0.08, "遭遇偏向失效時仍應保留魚人傷害加成");
+}
 const acquiredInstances = [];
 for (let index = 0; index < 9; index += 1) {
   const instance = createBlessingInstance({

@@ -120,15 +120,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .detail-info-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .detail-info-primary,
-  .detail-info-secondary {
-    grid-template-columns: 1fr;
-  }
-
   .story-star-strip {
     min-height: 118px;
   }
@@ -470,23 +461,12 @@
 }
 
 @media (max-width: 820px) {
-  .blacksmith-layout,
-  .equipment-layout {
+  .blacksmith-layout {
     grid-template-columns: 1fr;
   }
 
   .blacksmith-layout,
-  .equipment-layout,
   .equipment-inventory {
-    width: 100%;
-  }
-
-  .character-equipment-summary {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .character-equipment-summary .secondary-button {
     width: 100%;
   }
 
@@ -618,106 +598,19 @@
 }
 
 @media (max-width: 960px) {
-  .guild-record-layout,
-  .guild-bulk-layout {
+  .guild-record-layout {
     grid-template-columns: 1fr;
-  }
-
-  .guild-record-celine-card,
-  .guild-bulk-summary-card {
-    position: static;
-  }
-
-  .guild-record-celine-card {
-    display: grid;
-    grid-template-columns: 190px 1fr;
-    column-gap: 18px;
-    align-items: center;
-  }
-
-  .guild-record-celine-portrait {
-    grid-row: span 3;
-    min-height: 220px;
-    margin-bottom: 0;
-  }
-
-  .guild-record-celine-portrait img {
-    min-height: 220px;
-  }
-}
-
-@media (max-width: 700px) {
-  .guild-bulk-dialogue-card,
-  .guild-bulk-status-row {
-    grid-template-columns: 1fr;
-  }
-
-  .guild-record-summary,
-  .guild-bulk-price-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .guild-bulk-quantity-control {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-
-  .guild-bulk-quantity-control input {
-    grid-column: span 1;
-  }
-
-  .guild-bulk-quantity-control button:nth-last-child(-n + 2) {
-    grid-column: span 2;
   }
 }
 
 @media (max-width: 520px) {
-  .guild-record-celine-card {
-    display: block;
-  }
-
-  .guild-record-celine-portrait {
-    min-height: 300px;
-    margin-bottom: 16px;
-  }
-
-  .guild-record-celine-portrait img {
-    min-height: 300px;
-  }
-
-  .guild-record-summary,
-  .guild-record-character-list,
-  .guild-bulk-price-grid {
+  .guild-record-character-list {
     grid-template-columns: 1fr;
   }
 
-  .guild-record-experience-list > div,
-  .guild-bulk-tier-row,
-  .guild-bulk-summary-list > div,
   .guild-bulk-confirm-list > div {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .guild-record-experience-list span {
-    text-align: left;
-  }
-
-  .guild-bulk-quantity-control {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .guild-bulk-quantity-control input {
-    order: -1;
-    grid-column: 1 / -1;
-  }
-
-  .guild-bulk-quantity-control button:nth-last-child(-n + 2) {
-    grid-column: auto;
-  }
-
-  .guild-bulk-dialogue-text-region {
-    min-height: 176px;
-    height: 176px;
   }
 }
 

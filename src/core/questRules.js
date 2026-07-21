@@ -1,7 +1,7 @@
 import { questDefinitions as defaultQuestDefinitions } from "../data/quests.js";
 import { QUEST_RARITIES } from "../data/questRarities.js";
 import { getRouteDefinition } from "../data/routes/index.js";
-import { toSafeInteger } from "../utils.js";
+import { sumSafeIntegers, toSafeInteger } from "../utils.js";
 
 export const QUEST_BOARD_SIZE = 4;
 export const QUEST_RARE_BOARD_CHANCE = 0.35;
@@ -136,7 +136,7 @@ export function matchClearObjective(objective, event) {
 export function getQuestTarget(quest) {
   if (quest?.objective?.type === "deliverMaterials") {
     return (quest.objective.materials || []).reduce(
-      (sum, entry) => addSafeQuestIntegers(sum, entry.quantity),
+      (sum, entry) => sumSafeIntegers(sum, entry.quantity),
       0
     );
   }
@@ -150,7 +150,7 @@ export function getQuestProgress({ quest, active, inventory }) {
   }
   return (quest.objective.materials || []).reduce((sum, entry) => {
     const held = toSafeInteger(inventory?.materials?.[entry.id]?.quantity);
-    return addSafeQuestIntegers(sum, Math.min(entry.quantity, held));
+    return sumSafeIntegers(sum, Math.min(entry.quantity, held));
   }, 0);
 }
 
@@ -215,16 +215,6 @@ function isValidQuestBoard(boardIds, questDefinitions, excludedQuestId) {
   const advancedCount = quests.filter((quest) => quest.rarity === "advanced").length;
   const rareCount = quests.filter((quest) => quest.rarity === "rare").length;
   return quests.length === QUEST_BOARD_SIZE && advancedCount >= 1 && rareCount <= 1;
-}
-
-function addSafeQuestIntegers(...values) {
-  let total = 0;
-  for (const value of values) {
-    const normalized = toSafeInteger(value);
-    if (normalized > Number.MAX_SAFE_INTEGER - total) return Number.MAX_SAFE_INTEGER;
-    total += normalized;
-  }
-  return total;
 }
 
 function normalizeQuestIds(rawIds, questDefinitions) {

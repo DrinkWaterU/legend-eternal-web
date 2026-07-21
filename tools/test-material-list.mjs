@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { getInventoryMaterials, getSellableMaterials, sortMaterials } from "../src/ui/materialList.js";
+import { filterMaterials, getInventoryMaterials, getSellableMaterials, sortMaterials } from "../src/ui/materialList.js";
 
 const definitions = {
   common: { name: "普通素材", rarity: "common", sellPrice: 2, sortOrder: 2 },
@@ -26,5 +26,25 @@ assert.deepEqual(sortMaterials(hydrated, "quantity", "desc").map((item) => item.
 assert.deepEqual(sortMaterials(hydrated, "rarity", "desc").map((item) => item.id), ["rare", "free", "common", "decimal"]);
 assert.deepEqual(sortMaterials(hydrated, "unknown", "desc").map((item) => item.id), ["rare", "free", "common", "decimal"], "未知排序模式應正式退回 rarity");
 assert.deepEqual(sortMaterials(hydrated, "name", "asc").map((item) => item.name), ["不可出售", "普通素材", "稀有素材", "錯誤小數價格"]);
+
+const usageIndex = {
+  common: [{
+    regionName: "海灘",
+    title: "礁釘繫索",
+    subtitle: "冒險整備",
+    description: "強化海岸探索能力",
+    location: "海灘出發前整備"
+  }]
+};
+assert.deepEqual(
+  filterMaterials(hydrated, { searchQuery: "礁釘", usageIndex }).map((item) => item.id),
+  ["common"],
+  "素材用途索引文字應維持可搜尋"
+);
+assert.deepEqual(
+  filterMaterials(hydrated, { searchQuery: "不存在用途", usageIndex }),
+  [],
+  "不存在的用途文字不應誤配素材"
+);
 
 console.log("Shared material list tests passed.");

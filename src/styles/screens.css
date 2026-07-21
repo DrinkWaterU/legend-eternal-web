@@ -1,37 +1,3 @@
-.achievement-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.achievement-card {
-  padding: 16px;
-  border: 1px solid rgba(241, 211, 134, 0.42);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(241, 211, 134, 0.12), transparent 52%),
-    rgba(21, 24, 26, 0.92);
-  text-align: left;
-  box-shadow: var(--inner-light);
-}
-
-.achievement-card strong,
-.achievement-card span,
-.achievement-card small {
-  display: block;
-}
-
-.achievement-card strong {
-  color: var(--gold);
-  font-size: 1.1rem;
-}
-
-.achievement-card span {
-  margin-top: 6px;
-  color: var(--sky);
-  font-weight: 800;
-}
-
 .secondary-button.action-combat {
   border-color: rgba(241, 211, 134, 0.58);
   background:
@@ -65,16 +31,6 @@
   background:
     linear-gradient(180deg, rgba(50, 58, 58, 0.96), rgba(23, 28, 29, 0.96));
   color: #c8d2cf;
-}
-
-.achievement-card p {
-  margin: 10px 0;
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-.achievement-card small {
-  color: var(--moss);
 }
 
 .home-button {

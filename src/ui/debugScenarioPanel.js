@@ -82,32 +82,6 @@ function populateCharacterOptions(context) {
   context.characterSelect.disabled = characters.length === 0;
 }
 
-function runDebugAction(action, context) {
-  const actionMap = {
-    "set-level": () => context.actions.setLevel(Number(context.levelInput.value)),
-    "set-exp": () => context.actions.setExp(Number(context.expInput.value)),
-    heal: () => context.actions.healHero(),
-    "unlock-phoenix": () => context.actions.unlockPhoenix(),
-    "remove-phoenix": () => confirmDanger("要移除鳳凰加護並重置平原劇情旗標嗎？") && context.actions.removePhoenix(),
-    "clear-inventory": () => confirmDanger("要清空金幣與素材嗎？") && context.actions.clearInventory(),
-    "give-blacksmith-resources": () => context.actions.giveBlacksmithResources(),
-    "give-all-weapons": () => context.actions.giveAllWeapons(),
-    "clear-all-weapons": () => confirmDanger("要清空全部武器並卸下所有角色目前裝備嗎？")
-      && context.actions.clearAllWeapons(),
-    "prepare-safe-area": () => runSafeAreaAction(context, () => context.actions.prepareSafeArea(context.safeAreaSelect.value)),
-    "visit-safe-area": () => runSafeAreaAction(context, () => context.actions.visitSafeArea(context.safeAreaSelect.value)),
-    "travel-safe-area": () => runSafeAreaAction(context, () => context.actions.travelSafeArea(context.safeAreaSelect.value)),
-    "open-safe-area-travel": () => context.actions.openSafeAreaTravel(),
-    "reset-safe-area": () => confirmDanger("要重設這個據點的解鎖與造訪狀態嗎？")
-      && runSafeAreaAction(context, () => context.actions.resetSafeArea(context.safeAreaSelect.value)),
-    "play-anping-arrival": () => runSafeAreaAction(context, () => context.actions.playAnpingArrival()),
-    camp: () => context.actions.returnToCamp(),
-    "delete-save": () => confirmDanger("要刪除目前存檔嗎？這個動作無法復原。") && context.actions.deleteSave()
-  };
-
-  runDebugPanelActionSafely(context, actionMap[action]);
-}
-
 function syncDebugScenario(context, options = {}) {
   const scenario = getSelectedScenario(context);
   const supportsRouteEntry = Boolean(scenario?.supportsRouteEntry);

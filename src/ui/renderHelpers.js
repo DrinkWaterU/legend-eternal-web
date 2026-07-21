@@ -9,48 +9,6 @@ export function renderStatList(element, items) {
   });
 }
 
-export function renderDetailInfoLayout(element, detailData = {}) {
-  const primary = normalizeDetailItems(detailData.primary);
-  const secondary = normalizeDetailItems(detailData.secondary);
-  element.replaceChildren();
-  appendDetailInfoGroup(element, "detail-info-primary", primary);
-  appendDetailInfoGroup(element, "detail-info-secondary", secondary);
-}
-
-function appendDetailInfoGroup(element, className, items) {
-  if (items.length === 0) {
-    return;
-  }
-  const list = document.createElement("dl");
-  list.className = className;
-  items.forEach(({ label, value }) => {
-    const card = document.createElement("div");
-    const term = document.createElement("dt");
-    const description = document.createElement("dd");
-    card.className = "detail-info-card";
-    term.textContent = label;
-    description.textContent = value;
-    card.append(term, description);
-    list.append(card);
-  });
-  element.append(list);
-}
-
-function normalizeDetailItems(items = []) {
-  if (!Array.isArray(items)) {
-    return [];
-  }
-  return items.filter((item) => (
-    item
-    && item.label !== null
-    && item.label !== undefined
-    && String(item.label).trim() !== ""
-    && item.value !== null
-    && item.value !== undefined
-    && String(item.value).trim() !== ""
-  ));
-}
-
 export function renderChoiceList(element, choices) {
   element.innerHTML = "";
   choices.forEach((choice) => {
@@ -172,4 +130,3 @@ export function renderBattleLog(element, log) {
   });
   element.scrollTop = 0;
 }
-
