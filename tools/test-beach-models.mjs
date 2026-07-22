@@ -53,7 +53,7 @@ const MULTI_ENEMY_STAT_SCALES = {
   double: parsePositiveNumber(process.argv[10], 0.9),
   triple: parsePositiveNumber(process.argv[11], 0.7)
 };
-const BOSS_DISTANCE_BYPASS_CHANCE = parseRatio(process.argv[12], 0);
+const LEGACY_BOSS_DISTANCE_BYPASS_CHANCE = parseRatio(process.argv[12], 0);
 const BLESSING_MODE = ["forest", "beach-basic", "beach"].includes(process.argv[13])
   ? process.argv[13]
   : "beach";
@@ -184,6 +184,12 @@ const beachBlessings = [
     modelEffects: { multiEnemyDamageBonus: 0.1, stackMultiEnemyDamageBonus: false }
   }
 ];
+const formalTidalGiantCrab = formalBeachRegion.bosses.find(
+  (boss) => boss.id === "tidal-giant-crab"
+);
+assert.ok(formalTidalGiantCrab, "正式海灘資料應包含潮汐巨蟹");
+void LEGACY_BOSS_DISTANCE_BYPASS_CHANCE;
+
 const beachRegion = {
   id: "beach-model",
   encounterPlan,
@@ -202,15 +208,7 @@ const beachRegion = {
   ],
   boss: createEnemy({
     difficulty: "boss",
-    distanceBypassChance: BOSS_DISTANCE_BYPASS_CHANCE,
-    id: "tidal-giant-crab",
-    name: "潮汐巨蟹",
-    family: "beast",
-    maxHp: 713,
-    attack: 49,
-    defense: 13,
-    critChance: 0.05,
-    saltErosionChance: 0.3
+    ...formalTidalGiantCrab
   }),
   blessings: BLESSING_MODE === "forest" ? forestRegion.blessings : beachBlessings
 };
@@ -324,6 +322,102 @@ const playerBuildProfiles = [
       "beach-tide-rest",
       "beach-tide-whetstone"
     ]
+  },
+  {
+    id: "coast-balanced-adventurer-shared",
+    label: "冒險者／海岸攻守平衡 Build",
+    characterId: "adventurer",
+    weaponId: "vanguard-hunting-bow",
+    expectedWinRatio: { min: 0.25, max: 0.45 },
+    blessingIds: [
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-fishman-hunt",
+      "beach-reef-shell",
+      "beach-crosscurrent-guard",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-reef-shell",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-rest"
+    ]
+  },
+  {
+    id: "coast-balanced-adventurer-native",
+    label: "冒險者／海岸攻守平衡 Build",
+    characterId: "adventurer",
+    weaponId: "guard-short-sword",
+    expectedWinRatio: { min: 0.25, max: 0.45 },
+    blessingIds: [
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-fishman-hunt",
+      "beach-reef-shell",
+      "beach-crosscurrent-guard",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-reef-shell",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-rest"
+    ]
+  },
+  {
+    id: "coast-balanced-archer-shared",
+    label: "弓箭手／海岸攻守平衡 Build",
+    characterId: "archer",
+    weaponId: "vanguard-hunting-bow",
+    expectedWinRatio: { min: 0.5, max: 0.75 },
+    blessingIds: [
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-fishman-hunt",
+      "beach-reef-shell",
+      "beach-crosscurrent-guard",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-reef-shell",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-rest"
+    ]
+  },
+  {
+    id: "coast-balanced-archer-native",
+    label: "弓箭手／海岸攻守平衡 Build",
+    characterId: "archer",
+    weaponId: "verdant-pursuit-bow",
+    expectedWinRatio: { min: 0.5, max: 0.75 },
+    blessingIds: [
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-fishman-hunt",
+      "beach-reef-shell",
+      "beach-crosscurrent-guard",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-whetstone",
+      "beach-fishman-tideeye",
+      "beach-reef-shell",
+      "beach-saltbound-shell",
+      "beach-tide-counter",
+      "beach-tide-scavenger",
+      "beach-tide-rest"
+    ]
   }
 ];
 
@@ -333,7 +427,7 @@ console.log(
   + `elite=${ENEMY_GROUP_SCALES.elite} boss=${ENEMY_GROUP_SCALES.boss} `
   + `multiHp=${MULTI_ENEMY_STAT_SCALES.double}/${MULTI_ENEMY_STAT_SCALES.triple} `
   + `multiAttack=${MULTI_ENEMY_ATTACK_SCALES.double}/${MULTI_ENEMY_ATTACK_SCALES.triple} `
-  + `bossBypassDistance=${BOSS_DISTANCE_BYPASS_CHANCE} blessings=${BLESSING_MODE} `
+  + `bossSpecial=${formalTidalGiantCrab.specialAttack?.id || "none"} blessings=${BLESSING_MODE} `
   + `preparation=${PREPARATION_ID || "none"}${PREPARATION_ENHANCED ? ":enhanced" : ""}`
 );
 
@@ -348,13 +442,15 @@ if (PLAYER_BUILD_MODE) {
     : playerBuildProfiles;
   assert.ok(selectedProfiles.length > 0, `找不到固定玩家 Build：${PLAYER_BUILD_FILTER}`);
   for (const profile of selectedProfiles) {
-    const result = withSeed(getSeed(profile.id, 25, "vanguard-hunting-bow"), () => simulateRuns({
+    const profileWeaponId = profile.weaponId || "vanguard-hunting-bow";
+    const result = withSeed(getSeed(profile.id, 25, profileWeaponId), () => simulateRuns({
       characterId: profile.characterId,
       level: 25,
-      weaponId: "vanguard-hunting-bow",
+      weaponId: profileWeaponId,
       fixedBlessingIds: profile.blessingIds
     }));
-    printResult(profile.label, "先鋒獵弓", result);
+    printResult(profile.label, weaponDefinitions[profileWeaponId]?.name || "未裝備", result);
+    assertExpectedProfileBalance(profile, result);
   }
 } else {
   for (const characterId of CHARACTER_IDS) {
@@ -375,6 +471,32 @@ if (PLAYER_BUILD_MODE) {
       }
     }
   }
+
+  for (const profile of playerBuildProfiles.filter((entry) => entry.expectedWinRatio)) {
+    const profileWeaponId = profile.weaponId || "vanguard-hunting-bow";
+    const result = withSeed(getSeed(profile.id, 25, profileWeaponId), () => simulateRuns({
+      characterId: profile.characterId,
+      level: 25,
+      weaponId: profileWeaponId,
+      fixedBlessingIds: profile.blessingIds
+    }));
+    printResult(profile.label, weaponDefinitions[profileWeaponId]?.name || "未裝備", result);
+    assertExpectedProfileBalance(profile, result);
+  }
+}
+
+function assertExpectedProfileBalance(profile, result) {
+  if (ROUNDS < 1000 || !profile.expectedWinRatio) {
+    return;
+  }
+  assert.ok(
+    result.winRatio >= profile.expectedWinRatio.min,
+    `${profile.label} 勝場比例 ${(result.winRatio * 100).toFixed(2)}% 低於施工基準 ${(profile.expectedWinRatio.min * 100).toFixed(0)}%`
+  );
+  assert.ok(
+    result.winRatio <= profile.expectedWinRatio.max,
+    `${profile.label} 勝場比例 ${(result.winRatio * 100).toFixed(2)}% 高於施工基準 ${(profile.expectedWinRatio.max * 100).toFixed(0)}%`
+  );
 }
 
 function printResult(profileLabel, weaponLabel, result) {
@@ -415,7 +537,7 @@ function createEnemy({
   saltErosionChance = 0,
   paralysisChance = 0,
   minEncounter = 0,
-  distanceBypassChance = 0
+  specialAttack = null
 }) {
   const groupScale = ENEMY_GROUP_SCALES[difficulty] || ENEMY_GROUP_SCALES.normal;
   return {
@@ -431,7 +553,7 @@ function createEnemy({
     saltErosionChance,
     paralysisChance,
     minEncounter,
-    distanceBypassChance,
+    specialAttack,
     poison: 0
   };
 }
@@ -717,16 +839,6 @@ function simulateEncounter({ hero, enemies, battleSkills, preparation }) {
 }
 
 function modifyBeachIncomingDamage(context, preparation) {
-  if (
-    context.enemy?.distanceBypassChance > 0
-    && Math.random() < context.enemy.distanceBypassChance
-  ) {
-    return resolvePreparationIncomingDirectDamage({
-      preparation,
-      enemy: context.enemy,
-      damage: context.damage
-    }).damage;
-  }
   const characterAdjustedDamage = modifyCharacterIncomingDirectDamage(context);
   return resolvePreparationIncomingDirectDamage({
     preparation,

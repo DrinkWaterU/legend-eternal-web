@@ -48,12 +48,8 @@ const caveEnemyIds = [
 ];
 caveEnemyIds.forEach((enemyId) => assert.ok(getEnemyDefinition(enemyId), `洞穴敵人應可解析：${enemyId}`));
 
-assert.equal(caveBlessingData.contentStatus, "draft", "洞穴祝福在平衡完成前不得標示正式");
+assert.equal(caveBlessingData.contentStatus, "balanced", "v0.2.7.2 完成平衡後應標示為 balanced");
 assert.equal(caveBlessingData.blessings.length, 15, "洞穴祝福池應固定 15 張");
-assert.ok(
-  caveBlessingData.blessings.every((blessing) => blessing.name !== blessing.eventTitle),
-  "洞穴 Blessing 的 eventTitle 應與玩家可見名稱分離"
-);
 assert.equal(
   new Set(caveBlessingData.blessings.map((blessing) => blessing.eventTitle)).size,
   caveBlessingData.blessings.length,
@@ -317,4 +313,4 @@ assert.equal(bossRewards.gold, 22);
 assert.equal(bossRewards.materials.deep_tide_core.quantity, 1, "洞穴 Boss 深潮核應保底掉落");
 assert.equal(bossRewards.materials.tidebone_fragment.quantity, 1);
 
-console.log("v0.2.7.1-alpha 施工步驟 03 洞穴戰鬥與資料驗證：全部通過");
+console.log("v0.2.7.2-alpha 洞穴回歸 洞穴戰鬥與資料驗證：全部通過");

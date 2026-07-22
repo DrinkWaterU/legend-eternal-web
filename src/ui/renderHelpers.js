@@ -36,7 +36,8 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
     reveal = false,
     onRevealComplete = null,
     revealIntervalMs = BLESSING_REVEAL_INTERVAL_MS,
-    revealDurationMs = BLESSING_REVEAL_DURATION_MS
+    revealDurationMs = BLESSING_REVEAL_DURATION_MS,
+    ownedCounts = {}
   } = options;
   element.innerHTML = "";
   const buttons = blessings.map((blessing) => {
@@ -55,6 +56,21 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
       <em>${blessing.flavorText}</em>
       <b>${blessing.effectText}</b>
     `;
+    const ownedCount = Math.max(0, Math.floor(Number(ownedCounts?.[blessing.id]) || 0));
+    button.setAttribute(
+      "aria-label",
+      ownedCount > 0
+        ? `${blessing.name}，目前持有 ${ownedCount} 個`
+        : blessing.name
+    );
+    if (ownedCount > 0) {
+      button.classList.add("has-owned-count");
+      const ownedCountBadge = document.createElement("span");
+      ownedCountBadge.className = "blessing-card-owned-count";
+      ownedCountBadge.textContent = `×${ownedCount}`;
+      ownedCountBadge.setAttribute("aria-hidden", "true");
+      button.append(ownedCountBadge);
+    }
     button.addEventListener("click", () => onChoose(blessing));
     if (reveal) {
       button.disabled = true;

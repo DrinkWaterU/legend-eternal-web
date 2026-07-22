@@ -29,6 +29,8 @@ class TestNode {
     this.className = "";
     this.type = "";
     this.innerHTML = "";
+    this.textContent = "";
+    this.attributes = {};
     this.disabled = false;
     this.listeners = new Map();
   }
@@ -39,6 +41,10 @@ class TestNode {
 
   addEventListener(type, callback) {
     this.listeners.set(type, callback);
+  }
+
+  setAttribute(name, value) {
+    this.attributes[name] = String(value);
   }
 
   click() {
@@ -81,9 +87,9 @@ class TestScheduler {
   }
 }
 const blessings = [
-  { name: "祝福一", eventTitle: "一", eventText: "一", flavorText: "一", effectText: "一", rarity: "common" },
-  { name: "祝福二", eventTitle: "二", eventText: "二", flavorText: "二", effectText: "二", rarity: "common" },
-  { name: "祝福三", eventTitle: "三", eventText: "三", flavorText: "三", effectText: "三", rarity: "common" }
+  { id: "blessing-one", name: "祝福一", eventTitle: "一", eventText: "一", flavorText: "一", effectText: "一", rarity: "common" },
+  { id: "blessing-two", name: "祝福二", eventTitle: "二", eventText: "二", flavorText: "二", effectText: "二", rarity: "common" },
+  { id: "blessing-three", name: "祝福三", eventTitle: "三", eventText: "三", flavorText: "三", effectText: "三", rarity: "common" }
 ];
 
 const container = new TestNode();
@@ -101,6 +107,7 @@ try {
     (blessing) => chosen.push(blessing.name),
     {
       reveal: true,
+      ownedCounts: { "blessing-one": 3 },
       revealIntervalMs: 20,
       revealDurationMs: 20,
       onRevealComplete: () => {
@@ -112,6 +119,11 @@ try {
   assert.equal(container.children.length, 3, "應一次建立全部祝福卡，避免 Grid 在揭露期間重排");
   assert.ok(container.children.every((button) => button.disabled), "揭露期間全部祝福卡都應 disabled");
   assert.ok(container.children.every((button) => button.classList.contains("is-revealing")), "揭露期間應套用 revealing 狀態");
+  assert.equal(container.children[0].classList.contains("has-owned-count"), true, "已持有祝福卡應標記數量狀態");
+  assert.equal(container.children[0].children[0].textContent, "×3", "已持有祝福應顯示實際數量");
+  assert.equal(container.children[0].attributes["aria-label"], "祝福一，目前持有 3 個", "可存取名稱應包含持有數量");
+  assert.equal(container.children[1].children.length, 0, "未持有祝福不得顯示 ×0");
+  assert.equal(container.children[1].attributes["aria-label"], "祝福二", "未持有祝福不朗讀 0 個");
   container.children[0].click();
   assert.deepEqual(chosen, [], "揭露期間點擊不得選取祝福");
 
@@ -140,5 +152,7 @@ try {
 const blessingControllerSource = await readFile(new URL("../src/features/blessing/blessingController.js", import.meta.url), "utf8");
 assert.match(blessingControllerSource, /state\.blessingInputLocked = true;[\s\S]*renderBlessingChoices\(/, "showBlessings 應先鎖定祝福輸入");
 assert.match(blessingControllerSource, /function chooseBlessing\(blessing\) \{\s*if \(state\.blessingInputLocked\) return;\s*state\.blessingInputLocked = true;/, "chooseBlessing 應具備 runtime lock guard 與雙擊防護");
+assert.match(blessingControllerSource, /instance\?\.blessingId/, "祝福持有數量應依 blessingId 計算");
+assert.match(blessingControllerSource, /ownedCounts: getOwnedBlessingCounts\(\)/, "祝福三選一應傳入目前持有數量");
 
 console.log("Blessing reveal and input lock tests passed.");

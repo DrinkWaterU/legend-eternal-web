@@ -41,7 +41,14 @@ function applyEffect(hero, effect, blessing, options) {
   }
 
   if (effect.type === "max") {
-    hero[effect.stat] = Math.max(hero[effect.stat], effect.value);
+    const currentValue = Number.isFinite(Number(hero[effect.stat]))
+      ? Number(hero[effect.stat])
+      : 0;
+    const value = Number(effect.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    hero[effect.stat] = Math.max(currentValue, value);
     return;
   }
 

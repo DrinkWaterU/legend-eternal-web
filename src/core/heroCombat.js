@@ -1,6 +1,11 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
 import { applyEnemyDamageProtection } from "./enemyProtection.js";
-import { consumeCaveDirectAttackModifiers, finishCaveDirectAttack, getCaveDirectAttackModifiers } from "./caveBlessingEffects.js";
+import {
+  consumeCaveDirectAttackModifiers,
+  finishCaveDirectAttack,
+  getCaveDirectAttackModifiers,
+  shouldIgnoreProtectedEnemyReduction
+} from "./caveBlessingEffects.js";
 import { getParalysisDamageMultiplier } from "./combatStatusEffects.js";
 import { consumePreparationParalysisPenaltyPrevention } from "./preparationEffects.js";
 import { roll } from "../utils.js";
@@ -65,7 +70,8 @@ export function resolveHeroAction({ hero, enemy, enemies = [], log }) {
     const followUpDamage = applyEnemyDamageProtection({
       enemy,
       enemies,
-      damage: rawFollowUpDamage
+      damage: rawFollowUpDamage,
+      reductionRatio: shouldIgnoreProtectedEnemyReduction(hero) ? 0 : undefined
     }).damage;
     enemy.hp = Math.max(0, enemy.hp - followUpDamage);
     consumeCaveDirectAttackModifiers(hero, caveModifiers);
@@ -110,7 +116,12 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
     log.template("critical", "critical", { actor: hero.name });
   }
 
-  damage = applyEnemyDamageProtection({ enemy, enemies, damage }).damage;
+  damage = applyEnemyDamageProtection({
+    enemy,
+    enemies,
+    damage,
+    reductionRatio: shouldIgnoreProtectedEnemyReduction(hero) ? 0 : undefined
+  }).damage;
   enemy.hp = Math.max(0, enemy.hp - damage);
   consumeCaveDirectAttackModifiers(hero, caveModifiers);
   finishCaveDirectAttack({ hero, enemy, enemyAlive: enemy.hp > 0 });

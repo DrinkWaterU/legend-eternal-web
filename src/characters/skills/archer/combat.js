@@ -4,6 +4,7 @@ import {
   getHeroDirectAttackDamage,
   resolveHeroStrike
 } from "../../../core/combat.js";
+import { shouldIgnoreProtectedEnemyReduction } from "../../../core/caveBlessingEffects.js";
 import { getEnemyDisplayName, getLivingEnemies, resolveTargetEnemy } from "../../../core/enemyGroups.js";
 import { roll } from "../../../utils.js";
 
@@ -167,7 +168,12 @@ function resolveArrowRain({ hero, enemies, log }) {
       damageMultiplier: damageRatio,
       attackMultiplier
     });
-    const damage = applyEnemyDamageProtection({ enemy, enemies, damage: rawDamage }).damage;
+    const damage = applyEnemyDamageProtection({
+      enemy,
+      enemies,
+      damage: rawDamage,
+      reductionRatio: shouldIgnoreProtectedEnemyReduction(hero) ? 0 : undefined
+    }).damage;
     enemy.hp = Math.max(0, enemy.hp - damage);
     log.fixed("hero-damage", `箭雨命中${getEnemyDisplayName(enemy)}，造成 ${damage} 點傷害。`);
   });

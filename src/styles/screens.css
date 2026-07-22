@@ -1743,3 +1743,30 @@
     transform: scale(1);
   }
 }
+
+.blessing-card.has-owned-count {
+  position: relative;
+  padding-right: 54px;
+  padding-bottom: 42px;
+}
+
+.blessing-card > .blessing-card-owned-count {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid rgba(241, 211, 134, 0.34);
+  border-radius: 999px;
+  background: rgba(7, 11, 12, 0.78);
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}

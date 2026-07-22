@@ -35,10 +35,18 @@
       "enhancement": {
         "title": "多層淡水封布",
         "description": "鹽蝕首次附著時，初始持續時間縮短 3 回合。",
-        "changedFragments": ["3 回合"],
+        "changedFragments": [
+          "3 回合"
+        ],
         "materialCosts": [
-          { "materialId": "jelly_membrane", "quantity": 2 },
-          { "materialId": "shore_hide", "quantity": 1 }
+          {
+            "materialId": "jelly_membrane",
+            "quantity": 2
+          },
+          {
+            "materialId": "shore_hide",
+            "quantity": 1
+          }
         ],
         "effect": {
           "type": "saltErosionInitialTurnReduction",
@@ -59,10 +67,18 @@
       "enhancement": {
         "title": "加厚絕緣內襯",
         "description": "前 5 次因麻痺觸發攻擊下降時，使該次弱化失效。",
-        "changedFragments": ["5 次"],
+        "changedFragments": [
+          "5 次"
+        ],
         "materialCosts": [
-          { "materialId": "jelly_membrane", "quantity": 1 },
-          { "materialId": "tidewing_membrane", "quantity": 1 }
+          {
+            "materialId": "jelly_membrane",
+            "quantity": 1
+          },
+          {
+            "materialId": "tidewing_membrane",
+            "quantity": 1
+          }
         ],
         "effect": {
           "type": "paralysisPenaltyPrevention",
@@ -83,10 +99,18 @@
       "enhancement": {
         "title": "雙股礁釘繫索",
         "description": "面對 2 名以上敵人時，每名敵人的第一次直接攻擊傷害降低 35%。",
-        "changedFragments": ["35%"],
+        "changedFragments": [
+          "35%"
+        ],
         "materialCosts": [
-          { "materialId": "reef_shell", "quantity": 2 },
-          { "materialId": "shore_hide", "quantity": 1 }
+          {
+            "materialId": "reef_shell",
+            "quantity": 2
+          },
+          {
+            "materialId": "shore_hide",
+            "quantity": 1
+          }
         ],
         "effect": {
           "type": "firstMultiEnemyDirectDamageReduction",
@@ -96,57 +120,249 @@
     }
   ],
   "encounterPlan": [
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "normal", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    { "type": "elite", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
     {
       "type": "normal",
       "groupOptions": [
-        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
-        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
-        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
       ]
     },
     {
       "type": "normal",
       "groupOptions": [
-        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
-        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
-        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
       ]
     },
     {
       "type": "normal",
       "groupOptions": [
-        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
-        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
-        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
-      ]
-    },
-    { "type": "elite", "groupOptions": [{ "count": 1, "statScale": 1, "rewardScale": 1, "weight": 100 }] },
-    {
-      "type": "normal",
-      "groupOptions": [
-        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
-        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
-        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
       ]
     },
     {
       "type": "normal",
       "groupOptions": [
-        { "count": 1, "statScale": 1, "attackScale": 1, "rewardScale": 1, "weight": 65 },
-        { "count": 2, "statScale": 0.9, "attackScale": 1.55, "rewardScale": 0.55, "weight": 25 },
-        { "count": 3, "statScale": 0.7, "attackScale": 1.45, "rewardScale": 0.4, "weight": 10 }
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
       ]
     },
-    { "type": "boss" }
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
+      ]
+    },
+    {
+      "type": "elite",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "attackScale": 1,
+          "rewardScale": 1,
+          "weight": 65
+        },
+        {
+          "count": 2,
+          "statScale": 0.9,
+          "attackScale": 1.55,
+          "rewardScale": 0.55,
+          "weight": 25
+        },
+        {
+          "count": 3,
+          "statScale": 0.7,
+          "attackScale": 1.45,
+          "rewardScale": 0.4,
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "attackScale": 1,
+          "rewardScale": 1,
+          "weight": 65
+        },
+        {
+          "count": 2,
+          "statScale": 0.9,
+          "attackScale": 1.55,
+          "rewardScale": 0.55,
+          "weight": 25
+        },
+        {
+          "count": 3,
+          "statScale": 0.7,
+          "attackScale": 1.45,
+          "rewardScale": 0.4,
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "attackScale": 1,
+          "rewardScale": 1,
+          "weight": 65
+        },
+        {
+          "count": 2,
+          "statScale": 0.9,
+          "attackScale": 1.55,
+          "rewardScale": 0.55,
+          "weight": 25
+        },
+        {
+          "count": 3,
+          "statScale": 0.7,
+          "attackScale": 1.45,
+          "rewardScale": 0.4,
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "type": "elite",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "rewardScale": 1,
+          "weight": 100
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "attackScale": 1,
+          "rewardScale": 1,
+          "weight": 65
+        },
+        {
+          "count": 2,
+          "statScale": 0.9,
+          "attackScale": 1.55,
+          "rewardScale": 0.55,
+          "weight": 25
+        },
+        {
+          "count": 3,
+          "statScale": 0.7,
+          "attackScale": 1.45,
+          "rewardScale": 0.4,
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "type": "normal",
+      "groupOptions": [
+        {
+          "count": 1,
+          "statScale": 1,
+          "attackScale": 1,
+          "rewardScale": 1,
+          "weight": 65
+        },
+        {
+          "count": 2,
+          "statScale": 0.9,
+          "attackScale": 1.55,
+          "rewardScale": 0.55,
+          "weight": 25
+        },
+        {
+          "count": 3,
+          "statScale": 0.7,
+          "attackScale": 1.45,
+          "rewardScale": 0.4,
+          "weight": 10
+        }
+      ]
+    },
+    {
+      "type": "boss"
+    }
   ],
   "scaling": {
     "hpPerEncounter": 0.006,
@@ -165,8 +381,18 @@
       "critChance": 0,
       "expReward": 62,
       "rewards": {
-        "gold": { "min": 0, "max": 1 },
-        "materials": [{ "id": "reef_shell", "chance": 0.36, "min": 1, "max": 1 }]
+        "gold": {
+          "min": 0,
+          "max": 1
+        },
+        "materials": [
+          {
+            "id": "reef_shell",
+            "chance": 0.36,
+            "min": 1,
+            "max": 1
+          }
+        ]
       },
       "intro": "礁甲蟹從濕滑的岩縫裡爬出，硬殼在潮光下泛著冷色。"
     },
@@ -184,10 +410,23 @@
       "paralysisChance": 0.2,
       "expReward": 64,
       "rewards": {
-        "gold": { "min": 0, "max": 1 },
+        "gold": {
+          "min": 0,
+          "max": 1
+        },
         "materials": [
-          { "id": "jelly_membrane", "chance": 0.38, "min": 1, "max": 1 },
-          { "id": "salt_crystal", "chance": 0.15, "min": 1, "max": 1 }
+          {
+            "id": "jelly_membrane",
+            "chance": 0.38,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "salt_crystal",
+            "chance": 0.15,
+            "min": 1,
+            "max": 1
+          }
         ]
       },
       "intro": "半透明的水母在浪沫間漂浮，鹽霧隨著牠的觸手一同散開。"
@@ -204,8 +443,18 @@
       "critChance": 0.14,
       "expReward": 68,
       "rewards": {
-        "gold": { "min": 0, "max": 1 },
-        "materials": [{ "id": "shore_hide", "chance": 0.34, "min": 1, "max": 1 }]
+        "gold": {
+          "min": 0,
+          "max": 1
+        },
+        "materials": [
+          {
+            "id": "shore_hide",
+            "chance": 0.34,
+            "min": 1,
+            "max": 1
+          }
+        ]
       },
       "intro": "沙痕獵獸伏低身體，牠的腳印在下一道浪打來前便幾乎消失。"
     },
@@ -221,8 +470,18 @@
       "critChance": 0.18,
       "expReward": 70,
       "rewards": {
-        "gold": { "min": 0, "max": 1 },
-        "materials": [{ "id": "tidewing_membrane", "chance": 0.32, "min": 1, "max": 1 }]
+        "gold": {
+          "min": 0,
+          "max": 1
+        },
+        "materials": [
+          {
+            "id": "tidewing_membrane",
+            "chance": 0.32,
+            "min": 1,
+            "max": 1
+          }
+        ]
       },
       "intro": "潮翼掠食者貼著海面掠過，尖銳的鳴聲在礁石間來回折返。"
     },
@@ -239,8 +498,18 @@
       "critChance": 0.1,
       "expReward": 72,
       "rewards": {
-        "gold": { "min": 0, "max": 1 },
-        "materials": [{ "id": "fishman_scale", "chance": 0.34, "min": 1, "max": 1 }]
+        "gold": {
+          "min": 0,
+          "max": 1
+        },
+        "materials": [
+          {
+            "id": "fishman_scale",
+            "chance": 0.34,
+            "min": 1,
+            "max": 1
+          }
+        ]
       },
       "intro": "魚人斥候從礁柱後探出身影，手中的短刃先一步指向你的退路。"
     },
@@ -258,10 +527,23 @@
       "saltErosionChance": 0.2,
       "expReward": 70,
       "rewards": {
-        "gold": { "min": 0, "max": 1 },
+        "gold": {
+          "min": 0,
+          "max": 1
+        },
         "materials": [
-          { "id": "fishman_scale", "chance": 0.36, "min": 1, "max": 1 },
-          { "id": "salt_crystal", "chance": 0.12, "min": 1, "max": 1 }
+          {
+            "id": "fishman_scale",
+            "chance": 0.36,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "salt_crystal",
+            "chance": 0.12,
+            "min": 1,
+            "max": 1
+          }
         ]
       },
       "intro": "魚人鹽矛手把沾滿鹽霜的長矛拖過沙地，矛尖在潮光裡微微顫動。"
@@ -280,10 +562,23 @@
       "critChance": 0,
       "expReward": 140,
       "rewards": {
-        "gold": { "min": 4, "max": 6 },
+        "gold": {
+          "min": 4,
+          "max": 6
+        },
         "materials": [
-          { "id": "reef_claw_core", "chance": 0.7, "min": 1, "max": 2 },
-          { "id": "reef_shell", "chance": 0.38, "min": 1, "max": 1 }
+          {
+            "id": "reef_claw_core",
+            "chance": 0.7,
+            "min": 1,
+            "max": 2
+          },
+          {
+            "id": "reef_shell",
+            "chance": 0.38,
+            "min": 1,
+            "max": 1
+          }
         ]
       },
       "intro": "巨鉗礁甲蟹撞開礁石，兩支巨鉗像閘門一樣在身前合攏。"
@@ -302,11 +597,29 @@
       "paralysisChance": 0.3,
       "expReward": 148,
       "rewards": {
-        "gold": { "min": 4, "max": 6 },
+        "gold": {
+          "min": 4,
+          "max": 6
+        },
         "materials": [
-          { "id": "brine_core", "chance": 0.7, "min": 1, "max": 2 },
-          { "id": "jelly_membrane", "chance": 0.4, "min": 1, "max": 1 },
-          { "id": "salt_crystal", "chance": 0.35, "min": 1, "max": 1 }
+          {
+            "id": "brine_core",
+            "chance": 0.7,
+            "min": 1,
+            "max": 2
+          },
+          {
+            "id": "jelly_membrane",
+            "chance": 0.4,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "salt_crystal",
+            "chance": 0.35,
+            "min": 1,
+            "max": 1
+          }
         ]
       },
       "intro": "腐潮水母從黑色浪沫裡升起，發亮的傘面下流動著不自然的暗色。"
@@ -319,26 +632,66 @@
       "kind": "首領",
       "family": "beast",
       "weight": 100,
-      "maxHp": 713,
-      "attack": 49,
-      "defense": 13,
+      "maxHp": 660,
+      "attack": 45,
+      "defense": 12,
       "critChance": 0.05,
       "saltErosionChance": 0.3,
       "expReward": 270,
       "rewards": {
-        "gold": { "min": 15, "max": 20 },
+        "gold": {
+          "min": 15,
+          "max": 20
+        },
         "materials": [
-          { "id": "tidal_claw_core", "chance": 1, "min": 1, "max": 1 },
-          { "id": "reef_claw_core", "chance": 0.6, "min": 1, "max": 1 },
-          { "id": "reef_shell", "chance": 0.55, "min": 1, "max": 1 }
+          {
+            "id": "tidal_claw_core",
+            "chance": 1,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "reef_claw_core",
+            "chance": 0.6,
+            "min": 1,
+            "max": 1
+          },
+          {
+            "id": "reef_shell",
+            "chance": 0.55,
+            "min": 1,
+            "max": 1
+          }
         ]
       },
-      "intro": "潮汐巨蟹從退潮後的深坑裡升起，巨大的甲殼遮住半片潮線。"
+      "intro": "潮汐巨蟹從退潮後的深坑裡升起，巨大的甲殼遮住半片潮線。",
+      "specialAttack": {
+        "id": "breaking-wave-pincer",
+        "name": "破浪橫鉗",
+        "everyTurns": 4,
+        "telegraphText": "潮汐巨蟹張開雙鉗，壓低身軀準備橫掃。",
+        "hits": [
+          {
+            "label": "第一鉗",
+            "attackRatio": 0.4,
+            "allowDirectDamageModifier": true
+          },
+          {
+            "label": "第二鉗",
+            "attackRatio": 1,
+            "allowDirectDamageModifier": false
+          }
+        ]
+      }
     }
   ],
   "events": {
     "scheduleChance": 0.6,
-    "triggerBeforeEncounters": [5, 9, 13],
+    "triggerBeforeEncounters": [
+      5,
+      9,
+      13
+    ],
     "pool": [
       "beach-stranded-ship",
       "beach-jelly-pool",

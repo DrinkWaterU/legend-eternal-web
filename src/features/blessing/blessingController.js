@@ -35,6 +35,17 @@ export function createBlessingController({
     return choices;
   }
 
+  function getOwnedBlessingCounts() {
+    return (Array.isArray(state.blessingInstances) ? state.blessingInstances : [])
+      .reduce((counts, instance) => {
+        const blessingId = String(instance?.blessingId || "").trim();
+        if (blessingId) {
+          counts[blessingId] = (counts[blessingId] || 0) + 1;
+        }
+        return counts;
+      }, {});
+  }
+
   function getBlessingSourceLabel(sourceLabel = null) {
     if (sourceLabel) return sourceLabel;
     if (state.blessingContext === "beachBoss") return "海灘 Boss";
@@ -110,6 +121,7 @@ export function createBlessingController({
     els.resultLabel.textContent = context === "beachBoss" ? "選擇 Boss 後祝福" : "選擇祝福";
     renderBlessingChoices(els.blessingChoices, getBlessingChoices(count, poolId, rarity), chooseBlessing, {
       reveal: true,
+      ownedCounts: getOwnedBlessingCounts(),
       onRevealComplete: () => {
         state.blessingInputLocked = false;
       }
