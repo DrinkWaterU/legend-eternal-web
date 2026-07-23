@@ -256,7 +256,7 @@
         },
         {
           "id": "ask-about-guild",
-          "label": "詢問冒險者公會",
+          "label": "介紹冒險者公會",
           "action": {
             "type": "gotoNode",
             "nodeId": "about-guild"

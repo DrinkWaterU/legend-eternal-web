@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { applyBlessingEffects } from "../src/core/blessings.js";
+import { syncBlessingInstancesRuntime } from "../src/adventure/blessingInstances.js";
 import {
   advanceHeroCombatStatuses,
   applyEnemyEndOfTurnNegativeEffects,
@@ -32,6 +35,14 @@ import {
   resolveCharacterPlayerAction
 } from "../src/characters/skills/index.js";
 import { createBattleSkills } from "../src/features/battle/battleSkills.js";
+import { applyEquippedWeaponBattleStart } from "../src/core/weaponBattleEffects.js";
+import {
+  createSeededRandom,
+  formatPercent,
+  seedFromText,
+  weightedPick,
+  withSeed
+} from "./model-test-helpers.mjs";
 
 const ROUNDS = Math.max(1, Number(process.argv[2]) || 5000);
 const SCENARIO = process.argv[3] === "single" ? "single" : "mixed";
@@ -66,6 +77,14 @@ const FISHMAN_HUNT_ATTACK = parsePositiveNumber(process.argv[17], 5);
 const PLAYER_BUILD_FILTER = process.argv[18] === "all" ? "" : (process.argv[18] || "");
 const PREPARATION_ID = process.argv[19] || "";
 const PREPARATION_ENHANCED = process.argv[20] === "enhanced";
+const WEAPON_PROTOTYPE_MODE = process.argv[21] === "v02721-weapon-prototypes";
+const modelWeaponDefinitions = weaponDefinitions;
+const V02721_WEAPON_IDS = new Set([
+  "adventurer-pathfinder-sword",
+  "tidepiercer-shortbow",
+  "reefbreaker-warhammer",
+  "brinefang-dagger"
+]);
 const MAX_TURNS = 500;
 const logger = { template() {}, fixed() {} };
 const encounterPlan = [
@@ -421,46 +440,54 @@ const playerBuildProfiles = [
   }
 ];
 
-console.log(
-  `Beach model: ${SCENARIO}, roles=${CHARACTER_MODE}, ${ROUNDS} rounds per case, `
-  + `enemy scales hp=${ENEMY_STAT_SCALES.hp} attack=${ENEMY_STAT_SCALES.attack} defense=${ENEMY_STAT_SCALES.defense} `
-  + `elite=${ENEMY_GROUP_SCALES.elite} boss=${ENEMY_GROUP_SCALES.boss} `
-  + `multiHp=${MULTI_ENEMY_STAT_SCALES.double}/${MULTI_ENEMY_STAT_SCALES.triple} `
-  + `multiAttack=${MULTI_ENEMY_ATTACK_SCALES.double}/${MULTI_ENEMY_ATTACK_SCALES.triple} `
-  + `bossSpecial=${formalTidalGiantCrab.specialAttack?.id || "none"} blessings=${BLESSING_MODE} `
-  + `preparation=${PREPARATION_ID || "none"}${PREPARATION_ENHANCED ? ":enhanced" : ""}`
-);
-
-if (BLESSING_MODE === "beach") {
-  console.log("Beach blessing model assumptions: multiEnemyShieldStart=6, multiEnemyDamageBonus=10% non-stacking, saltHealingReduction=20%.");
+if (isDirectExecution()) {
+  runBeachModel();
 }
 
-if (PLAYER_BUILD_MODE) {
-  assert.equal(BLESSING_MODE, "beach", "固定玩家 Build 只適用海灘 Blessing");
-  const selectedProfiles = PLAYER_BUILD_FILTER
-    ? playerBuildProfiles.filter((profile) => profile.id === PLAYER_BUILD_FILTER)
-    : playerBuildProfiles;
-  assert.ok(selectedProfiles.length > 0, `找不到固定玩家 Build：${PLAYER_BUILD_FILTER}`);
-  for (const profile of selectedProfiles) {
-    const profileWeaponId = profile.weaponId || "vanguard-hunting-bow";
-    const result = withSeed(getSeed(profile.id, 25, profileWeaponId), () => simulateRuns({
-      characterId: profile.characterId,
-      level: 25,
-      weaponId: profileWeaponId,
-      fixedBlessingIds: profile.blessingIds
-    }));
-    printResult(profile.label, weaponDefinitions[profileWeaponId]?.name || "未裝備", result);
-    assertExpectedProfileBalance(profile, result);
+function runBeachModel() {
+  console.log(
+    `Beach model: ${SCENARIO}, roles=${CHARACTER_MODE}, ${ROUNDS} rounds per case, `
+    + `enemy scales hp=${ENEMY_STAT_SCALES.hp} attack=${ENEMY_STAT_SCALES.attack} defense=${ENEMY_STAT_SCALES.defense} `
+    + `elite=${ENEMY_GROUP_SCALES.elite} boss=${ENEMY_GROUP_SCALES.boss} `
+    + `multiHp=${MULTI_ENEMY_STAT_SCALES.double}/${MULTI_ENEMY_STAT_SCALES.triple} `
+    + `multiAttack=${MULTI_ENEMY_ATTACK_SCALES.double}/${MULTI_ENEMY_ATTACK_SCALES.triple} `
+    + `bossSpecial=${formalTidalGiantCrab.specialAttack?.id || "none"} blessings=${BLESSING_MODE} `
+    + `preparation=${PREPARATION_ID || "none"}${PREPARATION_ENHANCED ? ":enhanced" : ""}`
+  );
+
+  if (BLESSING_MODE === "beach") {
+    console.log("Beach blessing model assumptions: multiEnemyShieldStart=6, multiEnemyDamageBonus=10% non-stacking, saltHealingReduction=20%.");
   }
-} else {
+
+  if (PLAYER_BUILD_MODE) {
+    assert.equal(BLESSING_MODE, "beach", "固定玩家 Build 只適用海灘 Blessing");
+    const selectedProfiles = PLAYER_BUILD_FILTER
+      ? playerBuildProfiles.filter((profile) => profile.id === PLAYER_BUILD_FILTER)
+      : playerBuildProfiles;
+    assert.ok(selectedProfiles.length > 0, `找不到固定玩家 Build：${PLAYER_BUILD_FILTER}`);
+    for (const profile of selectedProfiles) {
+      const profileWeaponId = profile.weaponId || "vanguard-hunting-bow";
+      const result = withSeed(getSeed(profile.id, 25, profileWeaponId), () => simulateRuns({
+        characterId: profile.characterId,
+        level: 25,
+        weaponId: profileWeaponId,
+        fixedBlessingIds: profile.blessingIds
+      }));
+      printResult(profile.label, modelWeaponDefinitions[profileWeaponId]?.name || "未裝備", result);
+      assertExpectedProfileBalance(profile, result);
+    }
+    return;
+  }
+
   for (const characterId of CHARACTER_IDS) {
     const weaponCases = getWeaponCases(characterId);
     assert.ok(weaponCases.length > 1, `${characterId} 海灘模型應包含可用武器`);
-    if (characterId === "adventurer") {
+    if (characterId === "adventurer" && !WEAPON_PROTOTYPE_MODE) {
       assert.equal(weaponCases.length, Object.keys(weaponDefinitions).length + 1, "冒險者模型應涵蓋所有現有武器");
     }
 
-    for (const level of [20, 25]) {
+    const levels = WEAPON_PROTOTYPE_MODE ? [25] : [20, 25];
+    for (const level of levels) {
       for (const weapon of weaponCases) {
         const result = withSeed(getSeed(characterId, level, weapon.id), () => simulateRuns({
           characterId,
@@ -472,7 +499,9 @@ if (PLAYER_BUILD_MODE) {
     }
   }
 
-  for (const profile of playerBuildProfiles.filter((entry) => entry.expectedWinRatio)) {
+  for (const profile of WEAPON_PROTOTYPE_MODE
+    ? []
+    : playerBuildProfiles.filter((entry) => entry.expectedWinRatio)) {
     const profileWeaponId = profile.weaponId || "vanguard-hunting-bow";
     const result = withSeed(getSeed(profile.id, 25, profileWeaponId), () => simulateRuns({
       characterId: profile.characterId,
@@ -480,7 +509,7 @@ if (PLAYER_BUILD_MODE) {
       weaponId: profileWeaponId,
       fixedBlessingIds: profile.blessingIds
     }));
-    printResult(profile.label, weaponDefinitions[profileWeaponId]?.name || "未裝備", result);
+    printResult(profile.label, modelWeaponDefinitions[profileWeaponId]?.name || "未裝備", result);
     assertExpectedProfileBalance(profile, result);
   }
 }
@@ -502,7 +531,7 @@ function assertExpectedProfileBalance(profile, result) {
 function printResult(profileLabel, weaponLabel, result) {
   assert.ok(result.winRatio >= 0 && result.winRatio <= 1, `${profileLabel} 勝場比例必須有效`);
   assert.ok(result.averageReached >= 1 && result.averageReached <= encounterPlan.length);
-  console.log([
+  const fields = [
     profileLabel,
     weaponLabel,
     `勝場 ${formatPercent(result.winRatio)}`,
@@ -511,15 +540,37 @@ function printResult(profileLabel, weaponLabel, result) {
     `平均鹽蝕觸發 ${result.averageSaltApplications.toFixed(2)}`,
     `平均整備觸發 ${result.averagePreparationTriggers.toFixed(2)}`,
     `主要敗北 ${formatDefeats(result.defeatsByEncounter)}`
-  ].join(" | "));
+  ];
+  if (WEAPON_PROTOTYPE_MODE) {
+    fields.push(
+      `中段抵達 ${formatPercent(result.encounterEntryRatios[7])}`,
+      `尾段抵達 ${formatPercent(result.encounterEntryRatios[12])}`,
+      `Boss到達 ${formatPercent(result.bossEntryRatio)}`,
+      `Boss前HP ${result.averageBossEntryHpRatio === null ? "-" : formatPercent(result.averageBossEntryHpRatio)}`
+    );
+  }
+  console.log(fields.join(" | "));
 }
 
 function getWeaponCases(characterId) {
   const character = characterDefinitions[characterId];
+  const prototypeBaselineIds = characterId === "archer"
+    ? new Set(["vanguard-hunting-bow", "verdant-pursuit-bow", "ancient-wood-eroding-bow"])
+    : new Set([
+      "guard-short-sword",
+      "vanguard-hunting-bow",
+      "bloodbone-guardian-mace",
+      "spider-silk-stinger-dagger"
+    ]);
   return [
     { id: null, label: "未裝備" },
-    ...Object.values(weaponDefinitions)
+    ...Object.values(modelWeaponDefinitions)
       .filter((weapon) => canCharacterEquipWeapon(character, weapon))
+      .filter((weapon) => (
+        !WEAPON_PROTOTYPE_MODE
+        || prototypeBaselineIds.has(weapon.id)
+        || V02721_WEAPON_IDS.has(weapon.id)
+      ))
       .sort((left, right) => left.id.localeCompare(right.id))
       .map((weapon) => ({ id: weapon.id, label: weapon.name }))
   ];
@@ -558,15 +609,14 @@ function createEnemy({
   };
 }
 
-function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null }) {
-  let wins = 0;
-  let reachedTotal = 0;
-  let clearHpRatioTotal = 0;
-  let saltApplications = 0;
-  let preparationTriggers = 0;
-  const defeatsByEncounter = new Map();
-
-  for (let run = 0; run < ROUNDS; run += 1) {
+export function simulateContinuousBeachPhase({
+  characterId,
+  level = 25,
+  weaponId,
+  run = 0,
+  seed = seedFromText(`${characterId}:${weaponId}:beach:${run}`)
+}) {
+  return withSeed(seed, () => {
     const hero = buildHeroFromProgression(characterDefinitions[characterId], {
       level,
       exp: 0,
@@ -574,7 +624,124 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
       equipment: { weaponId }
     }, {
       inventory: { weapons: weaponId ? { [weaponId]: true } : {} },
-      weaponDefinitions
+      weaponDefinitions: modelWeaponDefinitions
+    });
+    const preparation = null;
+    hero.activePreparation = preparation;
+    const blessingInstances = [];
+    let reached = 0;
+    let bossEntered = false;
+
+    for (let encounterIndex = 0; encounterIndex < encounterPlan.length; encounterIndex += 1) {
+      reached = encounterIndex + 1;
+      bossEntered ||= encounterIndex === encounterPlan.length - 1;
+      resetBattleState(hero);
+      const battleSkills = createModelBattleSkills(hero);
+      battleSkills.applyBattleStartSkills();
+      const enemies = buildBeachEnemyGroup(encounterIndex, hero);
+      beginPreparationBattle(preparation, { enemyCount: enemies.length });
+      applyBeachBattleStartEffects(hero, enemies);
+      applyEquippedWeaponBattleStart(hero, {
+        enemyCount: enemies.length,
+        encounterType: encounterIndex === encounterPlan.length - 1 ? "boss" : "normal"
+      });
+      const encounterResult = simulateEncounter({ hero, enemies, battleSkills, preparation });
+      if (!encounterResult.won) {
+        syncBlessingInstancesRuntime(blessingInstances, hero);
+        return {
+          cleared: false,
+          hero,
+          blessingInstances,
+          reached,
+          bossEntered,
+          preparationTriggers: preparation?.triggerCount || 0
+        };
+      }
+
+      applySaltAwareVictorySkills(hero, battleSkills);
+      battleSkills.consumeBattleLimitedEffects();
+      if (encounterIndex < encounterPlan.length - 1) {
+        const blessing = chooseBlessing(
+          characterId,
+          getBlessingChoices(beachRegion.blessings, 3),
+          hero
+        );
+        const acquiredOrder = blessingInstances.length + 1;
+        const instanceId = `coast-${run + 1}-beach-${acquiredOrder}`;
+        const formalDefinition = formalBeachRegion.blessings.find((entry) => entry.id === blessing.id);
+        assert.ok(formalDefinition, `正式海灘資料缺少 Blessing：${blessing.id}`);
+        applyModelBlessing(hero, blessing, { instanceId });
+        blessingInstances.push({
+          instanceId,
+          blessingId: blessing.id,
+          acquiredOrder,
+          sourceLabel: "海灘",
+          definition: structuredClone(formalDefinition),
+          runtime: { timedRegens: [], encounterBiases: [] }
+        });
+      }
+    }
+
+    syncBlessingInstancesRuntime(blessingInstances, hero);
+    return {
+      cleared: true,
+      hero,
+      blessingInstances,
+      reached,
+      bossEntered,
+      preparationTriggers: preparation?.triggerCount || 0
+    };
+  });
+}
+
+export function selectContinuousCampBlessings({
+  characterId,
+  hero,
+  blessingInstances,
+  count = 8
+}) {
+  return [...blessingInstances]
+    .map((instance) => ({
+      instance,
+      score: scoreCampBlessing(characterId, instance, hero)
+    }))
+    .sort((left, right) => (
+      right.score - left.score
+      || left.instance.acquiredOrder - right.instance.acquiredOrder
+    ))
+    .slice(0, count)
+    .map(({ instance }) => instance)
+    .sort((left, right) => left.acquiredOrder - right.acquiredOrder);
+}
+
+function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null }) {
+  let wins = 0;
+  let reachedTotal = 0;
+  let clearHpRatioTotal = 0;
+  let saltApplications = 0;
+  let preparationTriggers = 0;
+  let bossEntryHpRatioTotal = 0;
+  let bossEntries = 0;
+  const defeatsByEncounter = new Map();
+  const encounterEntries = Array(encounterPlan.length).fill(0);
+  const hpAfterEncounterTotals = Array(encounterPlan.length).fill(0);
+  const hpAfterEncounterSamples = Array(encounterPlan.length).fill(0);
+
+  for (let run = 0; run < ROUNDS; run += 1) {
+    if (WEAPON_PROTOTYPE_MODE) {
+      const characterSeed = characterId === "archer" ? 0x0a2c3e51 : 0x0ad7e217;
+      Math.random = createSeededRandom(
+        (characterSeed ^ Math.imul(run + 1, 0x9e3779b1) ^ Math.imul(level, 0x45d9f3b)) >>> 0
+      );
+    }
+    const hero = buildHeroFromProgression(characterDefinitions[characterId], {
+      level,
+      exp: 0,
+      learnedSkills: [],
+      equipment: { weaponId }
+    }, {
+      inventory: { weapons: weaponId ? { [weaponId]: true } : {} },
+      weaponDefinitions: modelWeaponDefinitions
     });
     const preparation = PREPARATION_ID
       ? createRunPreparation(formalBeachRegion, PREPARATION_ID, { enhanced: PREPARATION_ENHANCED })
@@ -585,12 +752,21 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
 
     for (let encounterIndex = 0; encounterIndex < encounterPlan.length; encounterIndex += 1) {
       reached = encounterIndex + 1;
+      encounterEntries[encounterIndex] += 1;
+      if (encounterIndex === encounterPlan.length - 1) {
+        bossEntries += 1;
+        bossEntryHpRatioTotal += hero.maxHp > 0 ? hero.hp / hero.maxHp : 0;
+      }
       resetBattleState(hero);
       const battleSkills = createModelBattleSkills(hero);
       battleSkills.applyBattleStartSkills();
       const enemies = buildBeachEnemyGroup(encounterIndex, hero);
       beginPreparationBattle(preparation, { enemyCount: enemies.length });
       applyBeachBattleStartEffects(hero, enemies);
+      applyEquippedWeaponBattleStart(hero, {
+        enemyCount: enemies.length,
+        encounterType: encounterIndex === encounterPlan.length - 1 ? "boss" : "normal"
+      });
       const encounterResult = simulateEncounter({ hero, enemies, battleSkills, preparation });
       saltApplications += encounterResult.saltApplications;
 
@@ -602,6 +778,8 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
 
       applySaltAwareVictorySkills(hero, battleSkills);
       battleSkills.consumeBattleLimitedEffects();
+      hpAfterEncounterTotals[encounterIndex] += hero.maxHp > 0 ? hero.hp / hero.maxHp : 0;
+      hpAfterEncounterSamples[encounterIndex] += 1;
       if (encounterIndex < encounterPlan.length - 1) {
         const blessing = fixedBlessingIds
           ? getFixedBlessing(fixedBlessingIds[encounterIndex])
@@ -622,9 +800,15 @@ function simulateRuns({ characterId, level, weaponId, fixedBlessingIds = null })
     winRatio: wins / ROUNDS,
     averageReached: reachedTotal / ROUNDS,
     averageClearHpRatio: wins > 0 ? clearHpRatioTotal / wins : null,
+    bossEntryRatio: bossEntries / ROUNDS,
+    averageBossEntryHpRatio: bossEntries > 0 ? bossEntryHpRatioTotal / bossEntries : null,
     averageSaltApplications: saltApplications / ROUNDS,
     averagePreparationTriggers: preparationTriggers / ROUNDS,
-    defeatsByEncounter
+    defeatsByEncounter,
+    encounterEntryRatios: encounterEntries.map((count) => count / ROUNDS),
+    hpCurve: hpAfterEncounterTotals.map((total, index) => (
+      hpAfterEncounterSamples[index] > 0 ? total / hpAfterEncounterSamples[index] : null
+    ))
   };
 }
 
@@ -640,8 +824,8 @@ function chooseBlessing(characterId, choices, hero) {
     : chooseReasonableAdventurerBlessing(choices, hero);
 }
 
-function applyModelBlessing(hero, blessing) {
-  applyBlessingEffects(hero, blessing);
+function applyModelBlessing(hero, blessing, options = undefined) {
+  applyBlessingEffects(hero, blessing, options);
   if (BLESSING_MODE !== "beach") return;
 
   const modelEffects = blessing.modelEffects || {};
@@ -660,6 +844,43 @@ function applyModelBlessing(hero, blessing) {
       : 0.3;
     hero.saltHealingReduction = Math.min(currentReduction, modelEffects.saltHealingReduction);
   }
+}
+
+function scoreCampBlessing(characterId, instance, hero) {
+  const blessing = instance.definition;
+  let score = 0;
+  for (const effect of blessing.effects || []) {
+    const amount = Number(effect.amount) || 0;
+    if (effect.type === "add") {
+      if (effect.stat === "attack") score += amount * (characterId === "archer" ? 5.5 : 6);
+      if (effect.stat === "defense") score += amount * 6;
+      if (effect.stat === "maxHp") score += amount * 0.7;
+      if (effect.stat === "shieldStart") score += amount * 0.8;
+      if (effect.stat === "multiEnemyShieldStart") score += amount * 0.7;
+      if (effect.stat === "killHeal") score += amount * 0.7;
+      if (effect.stat === "regenAmount") score += amount * 2;
+      if (effect.stat === "critChance") score += amount * (characterId === "archer" ? 120 : 95);
+    }
+    if (effect.type === "addFamilyDamageBonus" && effect.family === "fishman") {
+      score += amount * 85;
+    }
+    if (effect.type === "set" && effect.stat === "multiEnemyDamageBonus") {
+      score += Math.max(0, Number(effect.value) || 0) * 75;
+    }
+    if (effect.type === "set" && effect.stat === "saltHealingReduction") {
+      score += 3;
+    }
+  }
+  if ((instance.runtime?.timedRegens || []).some((effect) => effect.remainingEncounters > 0)) {
+    score += 7;
+  }
+  if ((instance.runtime?.encounterBiases || []).length > 0) {
+    score += 1;
+  }
+  if (hero.maxHp > 0 && hero.hp / hero.maxHp < 0.4 && blessing.primaryFlow === "defense") {
+    score += 2;
+  }
+  return score;
 }
 
 function buildBeachEnemyGroup(encounterIndex, hero) {
@@ -889,6 +1110,8 @@ function resetBattleState(hero) {
   hero.battleAttackBonus = 0;
   hero.battleCritBonus = 0;
   hero.hasAttackedThisBattle = false;
+  hero.weaponBattleStartApplied = false;
+  hero.weaponBattleMode = null;
   hero.statusFamiliarityLimitBonus = 0;
   hero.victoryHealBonusRatio = 0;
   hero.shield = hero.shieldStart;
@@ -978,20 +1201,6 @@ function hasSkill(hero, skillId) {
   return Array.isArray(hero.skills) && hero.skills.includes(skillId);
 }
 
-function weightedPick(items, getWeight) {
-  const total = items.reduce((sum, item) => sum + Math.max(0, Number(getWeight(item)) || 0), 0);
-  let value = Math.random() * total;
-  for (const item of items) {
-    value -= Math.max(0, Number(getWeight(item)) || 0);
-    if (value <= 0) return item;
-  }
-  return items.at(-1);
-}
-
-function formatPercent(value) {
-  return `${(value * 100).toFixed(2)}%`;
-}
-
 function formatDefeats(defeats) {
   return [...defeats.entries()]
     .sort((left, right) => left[0] - right[0])
@@ -1001,7 +1210,7 @@ function formatDefeats(defeats) {
 }
 
 function getSeed(characterId, level, weaponId) {
-  const weaponOffset = weaponId ? [...Object.keys(weaponDefinitions)].indexOf(weaponId) + 1 : 0;
+  const weaponOffset = weaponId ? [...Object.keys(modelWeaponDefinitions)].indexOf(weaponId) + 1 : 0;
   const characterOffset = characterId === "archer" ? 0x400000 : 0;
   return (0x27080000 + characterOffset + level * 0x100 + weaponOffset) >>> 0;
 }
@@ -1016,20 +1225,9 @@ function parseRatio(value, fallback) {
   return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : fallback;
 }
 
-function withSeed(seed, action) {
-  const originalRandom = Math.random;
-  Math.random = createSeededRandom(seed);
-  try {
-    return action();
-  } finally {
-    Math.random = originalRandom;
-  }
-}
-
-function createSeededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
+function isDirectExecution() {
+  return Boolean(
+    process.argv[1]
+    && pathToFileURL(resolve(process.argv[1])).href === import.meta.url
+  );
 }

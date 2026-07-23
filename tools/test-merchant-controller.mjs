@@ -1,74 +1,9 @@
 import assert from "node:assert/strict";
 
 import { createMerchantController } from "../src/ui/merchantController.js";
+import { createElementMap, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() {
-    this.values = new Set();
-  }
-
-  add(...names) {
-    names.forEach((name) => this.values.add(name));
-  }
-
-  remove(...names) {
-    names.forEach((name) => this.values.delete(name));
-  }
-
-  toggle(name, force) {
-    const shouldAdd = force ?? !this.values.has(name);
-    if (shouldAdd) {
-      this.values.add(name);
-    } else {
-      this.values.delete(name);
-    }
-    return shouldAdd;
-  }
-
-  contains(name) {
-    return this.values.has(name);
-  }
-}
-
-class TestNode {
-  constructor() {
-    this.classList = new TestClassList();
-    this.children = [];
-    this.dataset = {};
-    this.attributes = {};
-    this.hidden = false;
-    this.disabled = false;
-    this.textContent = "";
-    this.value = "";
-    this.onclick = null;
-    this.oninput = null;
-    this.onchange = null;
-  }
-
-  append(...nodes) {
-    this.children.push(...nodes);
-  }
-
-  replaceChildren(...nodes) {
-    this.children = [...nodes];
-  }
-
-  addEventListener(type, handler) {
-    this[`on${type}`] = handler;
-  }
-
-  setAttribute(name, value) {
-    this.attributes[name] = String(value);
-  }
-
-  getAttribute(name) {
-    return this.attributes[name] ?? null;
-  }
-}
-
-globalThis.document = {
-  createElement: () => new TestNode()
-};
+installTestDocument();
 
 function createMerchantElements() {
   const ids = [
@@ -100,7 +35,7 @@ function createMerchantElements() {
     "merchantSaleTotal",
     "confirmMerchantSaleButton"
   ];
-  return Object.fromEntries(ids.map((id) => [id, new TestNode()]));
+  return createElementMap(ids);
 }
 
 function findMaterialButton(els, materialName) {

@@ -8,67 +8,9 @@ import { characterDefinitions } from "../src/data/characters/index.js";
 import { regionDefinitions } from "../src/data/regions/index.js";
 import { createCampTransitionController } from "../src/features/adventure/campTransitionController.js";
 import beachData from "../src/data/blessings/beach.json" with { type: "json" };
+import { TestNode, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() {
-    this.values = new Set();
-  }
-
-  add(...names) {
-    names.forEach((name) => this.values.add(name));
-  }
-
-  remove(...names) {
-    names.forEach((name) => this.values.delete(name));
-  }
-
-  toggle(name, force) {
-    const next = force ?? !this.values.has(name);
-    if (next) this.values.add(name);
-    else this.values.delete(name);
-  }
-}
-
-class TestNode {
-  constructor() {
-    this.classList = new TestClassList();
-    this.children = [];
-    this.hidden = false;
-    this.disabled = false;
-    this.textContent = "";
-    this.innerHTML = "";
-    this.attributes = {};
-    this.listeners = new Map();
-  }
-
-  append(...nodes) {
-    this.children.push(...nodes);
-  }
-
-  replaceChildren(...nodes) {
-    this.children = [...nodes];
-  }
-
-  addEventListener(type, callback) {
-    this.listeners.set(type, callback);
-  }
-
-  setAttribute(name, value) {
-    this.attributes[name] = String(value);
-  }
-
-  closest() {
-    return null;
-  }
-
-  click() {
-    if (!this.disabled) this.listeners.get("click")?.();
-  }
-}
-
-globalThis.document = {
-  createElement: () => new TestNode()
-};
+installTestDocument();
 
 function createElements() {
   return {

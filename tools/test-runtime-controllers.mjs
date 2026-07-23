@@ -4,67 +4,9 @@ import { createEventRuntime } from "../src/adventure/eventRuntime.js";
 import { createDefaultSave } from "../src/core/storage.js";
 import { characterDefinitions } from "../src/data/characters/index.js";
 import { createDebugRuntimeActions } from "../src/debug/runtimeActions.js";
+import { TestNode, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() {
-    this.values = new Set();
-  }
-
-  add(...names) {
-    names.forEach((name) => this.values.add(name));
-  }
-
-  remove(...names) {
-    names.forEach((name) => this.values.delete(name));
-  }
-
-  toggle(name, force) {
-    const shouldAdd = force ?? !this.values.has(name);
-    if (shouldAdd) {
-      this.values.add(name);
-    } else {
-      this.values.delete(name);
-    }
-  }
-
-  contains(name) {
-    return this.values.has(name);
-  }
-}
-
-class TestNode {
-  constructor() {
-    this.classList = new TestClassList();
-    this.children = [];
-    this.hidden = false;
-    this.disabled = false;
-    this.textContent = "";
-    this.innerHTML = "";
-  }
-
-  append(...nodes) {
-    this.children.push(...nodes);
-  }
-
-  replaceChildren(...nodes) {
-    this.children = [...nodes];
-  }
-
-  addEventListener() {}
-
-  querySelectorAll() {
-    return [];
-  }
-
-  closest() {
-    return null;
-  }
-}
-
-globalThis.document = {
-  createElement: () => new TestNode(),
-  querySelector: () => null
-};
+installTestDocument();
 
 globalThis.window = {
   setTimeout: (callback) => {
@@ -234,14 +176,14 @@ assert.equal(typeof debugActions.clearActiveQuest, "function");
 assert.equal(typeof debugActions.resetQuestData, "function");
 
 const blacksmithResourcesMessage = debugActions.giveBlacksmithResources();
-assert.match(blacksmithResourcesMessage, /1000 金幣/);
-assert.equal(debugSaveData.inventory.gold, 1000);
+assert.match(blacksmithResourcesMessage, /2680 金幣/);
+assert.equal(debugSaveData.inventory.gold, 2680);
 assert.ok(debugSaveData.inventory.materials.goblin_scrap.quantity >= 8);
 assert.ok(debugSaveData.inventory.materials.spider_silk.quantity >= 5);
 
 const giveWeaponsMessage = debugActions.giveAllWeapons();
-assert.match(giveWeaponsMessage, /全部 8 把武器/);
-assert.equal(Object.keys(debugSaveData.inventory.weapons).length, 8, "Debug 應可一次取得全部正式武器");
+assert.match(giveWeaponsMessage, /全部 12 把武器/);
+assert.equal(Object.keys(debugSaveData.inventory.weapons).length, 12, "Debug 應可一次取得全部正式武器");
 debugSaveData.progression.characters.adventurer.equipment.weaponId = "iron-longsword";
 debugSaveData.progression.characters.archer.equipment.weaponId = "hunter-shortbow";
 const clearWeaponsMessage = debugActions.clearAllWeapons();

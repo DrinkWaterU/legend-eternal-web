@@ -2,67 +2,9 @@ import assert from "node:assert/strict";
 
 import { characterDefinitions } from "../src/data/characters/index.js";
 import { renderCharacterCards } from "../src/ui/characterSelectView.js";
+import { TestNode, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() {
-    this.values = new Set();
-  }
-
-  add(...names) {
-    names.forEach((name) => this.values.add(name));
-  }
-
-  remove(...names) {
-    names.forEach((name) => this.values.delete(name));
-  }
-
-  toggle(name, force) {
-    const shouldAdd = force ?? !this.values.has(name);
-    if (shouldAdd) this.values.add(name);
-    else this.values.delete(name);
-  }
-
-  contains(name) {
-    return this.values.has(name);
-  }
-}
-
-class TestNode {
-  constructor(tagName = "div") {
-    this.tagName = tagName;
-    this.classList = new TestClassList();
-    this.children = [];
-    this.dataset = {};
-    this.textContent = "";
-    this.className = "";
-    this.type = "";
-    this.alt = "";
-    this.src = "";
-    this.listeners = new Map();
-  }
-
-  append(...nodes) {
-    this.children.push(...nodes);
-  }
-
-  replaceChildren(...nodes) {
-    this.children = [...nodes];
-  }
-
-  addEventListener(type, callback) {
-    this.listeners.set(type, callback);
-  }
-
-  remove() {}
-
-  click() {
-    this.listeners.get("click")?.();
-  }
-}
-
-globalThis.document = {
-  createElement: (tagName) => new TestNode(tagName)
-};
+installTestDocument();
 
 function flattenText(node) {
   return [node.textContent, ...node.children.map(flattenText)].filter(Boolean).join(" ");

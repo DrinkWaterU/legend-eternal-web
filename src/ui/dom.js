@@ -169,6 +169,7 @@ export const els = {
   blacksmithSearchInput: document.querySelector("#blacksmithSearchInput"),
   blacksmithWeaponList: document.querySelector("#blacksmithWeaponList"),
   blacksmithDetailState: document.querySelector("#blacksmithDetailState"),
+  blacksmithDetailPanel: document.querySelector("#blacksmithDetailPanel"),
   blacksmithDetail: document.querySelector("#blacksmithDetail"),
   blacksmithCraftHint: document.querySelector("#blacksmithCraftHint"),
   blacksmithCraftButton: document.querySelector("#blacksmithCraftButton"),

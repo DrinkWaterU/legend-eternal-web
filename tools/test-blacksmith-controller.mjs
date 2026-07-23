@@ -1,52 +1,18 @@
 import assert from "node:assert/strict";
 
 import { createBlacksmithController } from "../src/ui/blacksmithController.js";
+import { createElementMap, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() { this.values = new Set(); }
-  add(...names) { names.forEach((name) => this.values.add(name)); }
-  remove(...names) { names.forEach((name) => this.values.delete(name)); }
-  toggle(name, force) {
-    const shouldAdd = force ?? !this.values.has(name);
-    if (shouldAdd) this.values.add(name);
-    else this.values.delete(name);
-    return shouldAdd;
-  }
-  contains(name) { return this.values.has(name); }
-}
-
-class TestNode {
-  constructor(tagName = "div") {
-    this.tagName = tagName;
-    this.classList = new TestClassList();
-    this.children = [];
-    this.dataset = {};
-    this.attributes = {};
-    this.hidden = false;
-    this.disabled = false;
-    this.textContent = "";
-    this.className = "";
-    this.onclick = null;
-    this.listeners = new Map();
-  }
-  append(...nodes) { this.children.push(...nodes); }
-  prepend(...nodes) { this.children.unshift(...nodes); }
-  replaceChildren(...nodes) { this.children = [...nodes]; }
-  addEventListener(type, handler) { this.listeners.set(type, handler); }
-  setAttribute(name, value) { this.attributes[name] = String(value); }
-  remove() { this.removed = true; }
-}
-
-globalThis.document = { createElement: (tagName) => new TestNode(tagName) };
+installTestDocument();
 
 function createElements() {
   const ids = [
     "blacksmithAreaLabel", "blacksmithGold", "blacksmithNotice", "blacksmithWeaponList",
-    "blacksmithEmpty", "blacksmithDetail", "blacksmithCraftButton", "blacksmithCraftPanel",
+    "blacksmithEmpty", "blacksmithDetailPanel", "blacksmithDetail", "blacksmithCraftButton", "blacksmithCraftPanel",
     "blacksmithCraftTitle", "blacksmithCraftMeta", "blacksmithCraftCostList",
     "confirmBlacksmithCraftButton"
   ];
-  return Object.fromEntries(ids.map((id) => [id, new TestNode()]));
+  return createElementMap(ids);
 }
 
 const weaponDefinitions = {
@@ -59,9 +25,22 @@ const weaponDefinitions = {
     statEffects: [{ type: "add", stat: "attack", amount: 2 }],
     specialEffect: null,
     recipe: { goldCost: 10, materialCosts: [{ materialId: "iron", quantity: 2 }] }
+  },
+  "test-bow": {
+    id: "test-bow",
+    name: "測試獵弓",
+    categoryId: "bow",
+    rarityId: "uncommon",
+    description: "測試精良武器。",
+    statEffects: [{ type: "add", stat: "critChance", amount: 0.05 }],
+    specialEffect: null,
+    recipe: { goldCost: 20, materialCosts: [] }
   }
 };
-const weaponCategoryDefinitions = { sword: { label: "劍" } };
+const weaponCategoryDefinitions = {
+  sword: { label: "劍" },
+  bow: { label: "弓" }
+};
 const materialDefinitions = { iron: { name: "廢鐵" } };
 
 assert.throws(() => createBlacksmithController(), /有效的 els/);
@@ -90,6 +69,16 @@ assert.throws(() => createBlacksmithController({ els: {} }), /getInventory/);
 
   controller.render();
   assert.equal(els.blacksmithAreaLabel.textContent, "安平鎮去處");
+  const weaponCards = [...els.blacksmithWeaponList.children];
+  weaponCards[1].listeners.get("click")();
+  assert.equal(els.blacksmithWeaponList.children[0], weaponCards[0], "選擇武器不應重建清單卡片");
+  assert.equal(els.blacksmithWeaponList.children[1], weaponCards[1], "被選取的卡片應保留原節點");
+  assert.equal(weaponCards[0].classList.contains("is-selected"), false);
+  assert.equal(weaponCards[1].classList.contains("is-selected"), true);
+  assert.equal(weaponCards[1].attributes["aria-pressed"], "true");
+  assert.equal(els.blacksmithDetailPanel.dataset.rarity, "uncommon");
+
+  weaponCards[0].listeners.get("click")();
   els.blacksmithCraftButton.onclick();
   assert.equal(els.blacksmithCraftPanel.classList.contains("is-visible"), true);
   els.confirmBlacksmithCraftButton.onclick();

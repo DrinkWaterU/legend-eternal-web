@@ -24,10 +24,11 @@ import {
 import { formatWeaponEffects } from "../src/ui/weaponViewHelpers.js";
 
 assert.equal(assertWeaponDefinitions(weaponDefinitions, { materialDefinitions }), true);
-assert.equal(Object.keys(weaponDefinitions).length, 8, "v0.2.6.4 應固定提供八把武器");
-assert.deepEqual(Object.keys(weaponRarityDefinitions), ["common", "uncommon"]);
+assert.equal(Object.keys(weaponDefinitions).length, 12, "v0.2.7.2.1 應提供既有八把與四把海岸武器");
+assert.deepEqual(Object.keys(weaponRarityDefinitions), ["common", "uncommon", "rare"]);
 assert.equal(getWeaponRarityDefinition("common").label, "普通");
 assert.equal(getWeaponRarityDefinition("uncommon").label, "精良");
+assert.equal(getWeaponRarityDefinition("rare").label, "稀有");
 assert.deepEqual(
   Object.fromEntries(Object.entries(weaponDefinitions).map(([weaponId, weapon]) => [weaponId, weapon.rarityId])),
   {
@@ -38,7 +39,11 @@ assert.deepEqual(
     "verdant-pursuit-bow": "uncommon",
     "ancient-wood-eroding-bow": "uncommon",
     "bloodbone-guardian-mace": "uncommon",
-    "spider-silk-stinger-dagger": "uncommon"
+    "spider-silk-stinger-dagger": "uncommon",
+    "adventurer-pathfinder-sword": "rare",
+    "tidepiercer-shortbow": "uncommon",
+    "reefbreaker-warhammer": "uncommon",
+    "brinefang-dagger": "uncommon"
   }
 );
 assert.equal(
@@ -83,6 +88,8 @@ assert.equal(
   assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["bloodbone-guardian-mace"]), false);
   assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["spider-silk-stinger-dagger"]), false);
   assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["iron-longsword"]), false);
+  assert.equal(canCharacterEquipWeapon(adventurer, weaponDefinitions["adventurer-pathfinder-sword"]), true);
+  assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["adventurer-pathfinder-sword"]), false);
 }
 
 {

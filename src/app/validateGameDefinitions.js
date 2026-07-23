@@ -5,6 +5,7 @@ import { assertFacilityDefinitions, facilityDefinitions } from "../data/faciliti
 import { dialogueDefinitions } from "../data/dialogues.js";
 import { assertNpcDefinitions, npcDefinitions } from "../data/npcs.js";
 import { assertQuestDefinitions, questDefinitions } from "../data/quests.js";
+import { characterDefinitions } from "../data/characters/index.js";
 import { sharedEnemyDefinitions } from "../data/enemies/index.js";
 import { routeDefinitions } from "../data/routes/index.js";
 import { materialDefinitions } from "../data/materials.js";
@@ -28,7 +29,7 @@ export function validateGameDefinitions() {
     routeDefinitions,
     enemyDefinitions: buildEnemyRegistry()
   });
-  assertWeaponDefinitions(weaponDefinitions, { materialDefinitions });
+  assertWeaponDefinitions(weaponDefinitions, { materialDefinitions, characterDefinitions });
   assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
   Object.values(regionDefinitions).forEach((region) => {
     assertRegionPreparations(region);

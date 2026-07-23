@@ -24,6 +24,7 @@ for (const id of [
   "blacksmithNotice",
   "blacksmithWeaponList",
   "blacksmithEmpty",
+  "blacksmithDetailPanel",
   "blacksmithDetail",
   "blacksmithCraftButton",
   "blacksmithCraftPanel",
@@ -57,7 +58,11 @@ assert.deepEqual(Object.keys(weaponDefinitions), [
   "verdant-pursuit-bow",
   "ancient-wood-eroding-bow",
   "bloodbone-guardian-mace",
-  "spider-silk-stinger-dagger"
+  "spider-silk-stinger-dagger",
+  "adventurer-pathfinder-sword",
+  "tidepiercer-shortbow",
+  "reefbreaker-warhammer",
+  "brinefang-dagger"
 ]);
 
 assert.match(game, /const actionHandlers = Object\.freeze\(\{[\s\S]*blacksmith: showBlacksmithFacility/);
@@ -79,7 +84,13 @@ assert.match(componentsCss, /\.equipment-current-slot/);
 assert.match(componentsCss, /\.equipment-comparison-list/);
 assert.match(componentsCss, /\.weapon-icon/);
 assert.match(componentsCss, /\.blacksmith-weapon-card\.rarity-uncommon/);
+assert.match(componentsCss, /\.blacksmith-weapon-card\.rarity-rare/);
+assert.match(componentsCss, /\.blacksmith-detail-panel\[data-rarity="rare"\]/);
+assert.match(componentsCss, /\.blacksmith-detail-panel\[data-rarity="rare"\] \.blacksmith-effect-item/);
+assert.match(componentsCss, /\.blacksmith-craft-panel\[data-rarity="rare"\] \.blacksmith-craft-dialog/);
 assert.match(componentsCss, /\.equipment-current-slot\[data-rarity="uncommon"\]/);
+assert.match(componentsCss, /\.equipment-current-slot\[data-rarity="rare"\]/);
+assert.match(componentsCss, /\.equipment-preview-panel\[data-rarity="rare"\]/);
 assert.doesNotMatch(componentsCss, /\.equipment-layout(?![A-Za-z0-9_-])/);
 assert.doesNotMatch(componentsCss, /\.character-equipment-summary(?![A-Za-z0-9_-])/);
 assert.doesNotMatch(componentsCss, /grade-special/);

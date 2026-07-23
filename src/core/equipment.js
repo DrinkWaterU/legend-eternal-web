@@ -3,6 +3,11 @@ export function canCharacterEquipWeapon(character, weapon) {
     return false;
   }
 
+  if (Array.isArray(weapon.allowedCharacterIds)
+    && !weapon.allowedCharacterIds.includes(character.id)) {
+    return false;
+  }
+
   const compatibility = character.weaponCompatibility;
   if (compatibility?.mode === "all") {
     return true;

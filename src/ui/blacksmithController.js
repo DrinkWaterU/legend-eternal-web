@@ -5,6 +5,7 @@ import {
   renderBlacksmithView,
   updateBlacksmithCategoryControls
 } from "./blacksmithView.js";
+import { renderBlacksmithWeaponSelection } from "./blacksmithSelectionView.js";
 
 export function createBlacksmithController({
   els,
@@ -118,11 +119,19 @@ export function createBlacksmithController({
   }
 
   function selectWeapon(weaponId) {
-    if (!weaponDefinitions[weaponId]) {
+    const weapon = weaponDefinitions[weaponId];
+    if (!weapon) {
       return;
     }
     state.selectedWeaponId = weaponId;
-    render();
+    renderBlacksmithWeaponSelection({
+      els,
+      weapon,
+      inventory: getInventory(),
+      weaponCategoryDefinitions,
+      materialDefinitions,
+      onCraftRequest: requestCraft
+    });
   }
 
   function requestCraft(weaponId) {

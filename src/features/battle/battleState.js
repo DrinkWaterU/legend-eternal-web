@@ -14,6 +14,7 @@ import { buildScaledEnemy } from "../../core/combat.js";
 import { getEnemyDefinition } from "../../data/enemies/index.js";
 import { clone, weightedRandomItem } from "../../utils.js";
 import { resetBlessingBattleState } from "../../core/caveBlessingEffects.js";
+import { applyEquippedWeaponBattleStart } from "../../core/weaponBattleEffects.js";
 
 export function createBattleState({
   state,
@@ -95,6 +96,8 @@ export function createBattleState({
     state.hero.battleAttackBonus = 0;
     state.hero.battleCritBonus = 0;
     state.hero.hasAttackedThisBattle = false;
+    state.hero.weaponBattleStartApplied = false;
+    state.hero.weaponBattleMode = null;
     state.hero.statusFamiliarityLimitBonus = 0;
     state.hero.victoryHealBonusRatio = 0;
     state.hero.activePreparation = state.runPreparation;
@@ -119,6 +122,16 @@ export function createBattleState({
     resetHeroBattleState();
     beginPreparationBattle(state.runPreparation, { enemyCount: state.hero.activeEnemyCount });
     applyBattleStartSkills();
+    const weaponStart = applyEquippedWeaponBattleStart(state.hero, {
+      enemyCount: state.hero.activeEnemyCount,
+      encounterType: state.battleEncounterType
+    });
+    if (weaponStart) {
+      addFixedLog(
+        "status",
+        `${weaponStart.weaponName}啟動「${weaponStart.modeName}」：${weaponStart.summary}。`
+      );
+    }
     if (state.hero.activeEnemyCount >= 2 && state.hero.multiEnemyShieldStart > 0) {
       state.hero.shield += state.hero.multiEnemyShieldStart;
       addFixedLog("status", `敵群逼近，${state.hero.name}獲得額外 ${state.hero.multiEnemyShieldStart} 點護盾。`);

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { applyBlessingEffects } from "../src/core/blessings.js";
+import { applyEventEffects, scheduleRegionEvent, shouldTriggerScheduledEvent } from "../src/core/events.js";
 import {
   advanceHeroCombatStatuses,
   advanceParalysis,
@@ -31,11 +34,24 @@ import {
   resolveCharacterPlayerAction
 } from "../src/characters/skills/index.js";
 import { createBattleSkills } from "../src/features/battle/battleSkills.js";
+import { applyEquippedWeaponBattleStart } from "../src/core/weaponBattleEffects.js";
+import {
+  createSeededRandom,
+  encounterSortValue,
+  parseRoundCount,
+  seedFromText as seedFrom,
+  weightedPick
+} from "./model-test-helpers.mjs";
 
-const ROUNDS = Math.max(1, Number(process.argv[2]) || 1000);
+const ROUNDS = parseRoundCount(process.argv[2], 1000);
 const MODE_LABEL = process.argv[3] || "v0.2.7.2-formal";
+const EVENT_MODE = process.argv[4] === "no-events" ? "no-events" : "route-events";
+const WEAPON_PROTOTYPE_MODE = process.argv[5] === "v02721-weapon-prototypes";
+const INCLUDE_ROUTE_EVENTS = EVENT_MODE === "route-events";
+const modelWeaponDefinitions = weaponDefinitions;
 const LEVEL = 25;
 const MAX_TURNS = 500;
+const TIDE_CARVINGS_MIN_HP_RATIO = 0.35;
 const route = getRouteDefinition("coast-cave");
 const logger = { template() {}, fixed() {} };
 
@@ -50,32 +66,68 @@ const retainedBeachBlessingIds = [
   "beach-tide-scavenger"
 ];
 
-const cases = [
+const formalCases = [
   { id: "adventurer-shared", characterId: "adventurer", weaponId: "vanguard-hunting-bow", weaponSet: "共同武器" },
   { id: "archer-shared", characterId: "archer", weaponId: "vanguard-hunting-bow", weaponSet: "共同武器" },
   { id: "adventurer-native", characterId: "adventurer", weaponId: "guard-short-sword", weaponSet: "職業合理武器" },
   { id: "archer-native", characterId: "archer", weaponId: "verdant-pursuit-bow", weaponSet: "職業合理武器" }
 ];
+const prototypeCases = [
+  { id: "adventurer-pathfinder", characterId: "adventurer", weaponId: "adventurer-pathfinder-sword", weaponSet: "v0.2.7.2.1 正式武器" },
+  { id: "adventurer-tidepiercer", characterId: "adventurer", weaponId: "tidepiercer-shortbow", weaponSet: "v0.2.7.2.1 正式武器" },
+  { id: "adventurer-reefbreaker", characterId: "adventurer", weaponId: "reefbreaker-warhammer", weaponSet: "v0.2.7.2.1 正式武器" },
+  { id: "adventurer-brinefang", characterId: "adventurer", weaponId: "brinefang-dagger", weaponSet: "v0.2.7.2.1 正式武器" },
+  { id: "archer-tidepiercer", characterId: "archer", weaponId: "tidepiercer-shortbow", weaponSet: "v0.2.7.2.1 正式武器" }
+];
+const cases = WEAPON_PROTOTYPE_MODE ? [...formalCases, ...prototypeCases] : formalCases;
 
 assert.equal(route.encounterPlan.length, 16);
 assert.equal(caveBlessingData.blessings.length, 15);
+assert.equal(route.events?.scheduleChance, 0.6);
+assert.deepEqual(route.events?.triggerBeforeEncounters, [5, 9, 13]);
+assert.deepEqual(route.events?.pool, [
+  "cave-rockspring",
+  "cave-tide-carvings",
+  "cave-deep-tide-altar"
+]);
+route.events.pool.forEach((eventId) => {
+  assert.ok(route.eventDefinitions?.some((event) => event.id === eventId), `洞穴 Route 缺少事件 ${eventId}`);
+});
 retainedBeachBlessingIds.forEach((id) => assert.ok(beachBlessingData.blessings.some((b) => b.id === id), `缺少海灘祝福 ${id}`));
 
-const results = [];
-for (const scenario of cases) {
-  const result = simulateCase(scenario);
-  results.push({ ...scenario, mode: MODE_LABEL, ...result });
-  console.log(formatResult({ ...scenario, mode: MODE_LABEL, ...result }));
+if (isDirectExecution()) {
+  runCaveModel();
 }
 
-console.log(`MODEL_JSON ${JSON.stringify({ mode: MODE_LABEL, rounds: ROUNDS, retainedBeachBlessingIds, results })}`);
+function runCaveModel() {
+  const results = [];
+  for (const scenario of cases) {
+    const result = simulateCase(scenario);
+    results.push({ ...scenario, mode: MODE_LABEL, eventMode: EVENT_MODE, ...result });
+    console.log(formatResult({ ...scenario, mode: MODE_LABEL, eventMode: EVENT_MODE, ...result }));
+  }
 
-results.forEach((result) => {
-  assert.ok(result.winRatio >= 0.82, `${result.id} 洞穴勝場比例不應低於 82%`);
-  assert.ok(result.winRatio <= 1, `${result.id} 洞穴勝場比例必須有效`);
-  assert.ok(result.bossEntryRatio >= 0.85, `${result.id} 應有至少 85% 抵達洞穴 Boss`);
-  assert.ok(result.averageTurns > 60 && result.averageTurns < 180, `${result.id} 平均回合數應落在合理範圍`);
-});
+  console.log(`MODEL_JSON ${JSON.stringify({ mode: MODE_LABEL, eventMode: EVENT_MODE, rounds: ROUNDS, retainedBeachBlessingIds, results })}`);
+
+  results.forEach((result) => {
+    assert.ok(result.winRatio >= 0.82, `${result.id} 洞穴勝場比例不應低於 82%`);
+    assert.ok(result.winRatio <= 1, `${result.id} 洞穴勝場比例必須有效`);
+    assert.ok(result.bossEntryRatio >= 0.85, `${result.id} 應有至少 85% 抵達洞穴 Boss`);
+    assert.ok(result.averageTurns > 60 && result.averageTurns < 180, `${result.id} 平均回合數應落在合理範圍`);
+    assert.ok(result.triggeredEventRatio <= result.scheduledEventRatio, `${result.id} 事件觸發率不可高於排程率`);
+    assert.ok(result.averageEventBlessings <= result.triggeredEventRatio, `${result.id} 每輪事件祝福不可多於事件觸發`);
+
+    if (INCLUDE_ROUTE_EVENTS && ROUNDS >= 1000) {
+      assert.ok(result.scheduledEventRatio >= 0.54 && result.scheduledEventRatio <= 0.66, `${result.id} 洞穴事件排程率應接近正式 60%`);
+      assert.ok(result.eventDeathRatio <= 0.02, `${result.id} 洞穴事件死亡比例不應高於 2%`);
+    }
+    if (!INCLUDE_ROUTE_EVENTS) {
+      assert.equal(result.scheduledEventRatio, 0, `${result.id} 無事件模式不應建立事件排程`);
+      assert.equal(result.triggeredEventRatio, 0, `${result.id} 無事件模式不應觸發事件`);
+      assert.equal(result.averageEventBlessings, 0, `${result.id} 無事件模式不應取得事件祝福`);
+    }
+  });
+}
 
 function simulateCase({ id, characterId, weaponId }) {
   let wins = 0;
@@ -84,6 +136,11 @@ function simulateCase({ id, characterId, weaponId }) {
   let bossEntryHpRatioTotal = 0;
   let bossEntries = 0;
   let totalTurns = 0;
+  let scheduledEvents = 0;
+  let triggeredEvents = 0;
+  let eventBlessings = 0;
+  let eventDeaths = 0;
+  const eventOutcomes = new Map();
   const defeatsByEncounter = new Map();
   const selectedBlessingCounts = new Map();
   const selectedRarityCounts = new Map();
@@ -93,6 +150,9 @@ function simulateCase({ id, characterId, weaponId }) {
   for (let run = 0; run < ROUNDS; run += 1) {
     const combatSeed = seedFrom(`${id}:combat:${run}`);
     const blessingRng = createSeededRandom(seedFrom(`${id}:blessing:${run}`));
+    const eventRng = createSeededRandom(seedFrom(`${id}:event:${run}`));
+    const eventSchedule = INCLUDE_ROUTE_EVENTS ? scheduleRegionEvent(route, eventRng) : null;
+    if (eventSchedule) scheduledEvents += 1;
     const originalRandom = Math.random;
     Math.random = createSeededRandom(combatSeed);
     try {
@@ -101,6 +161,35 @@ function simulateCase({ id, characterId, weaponId }) {
       let cleared = true;
 
       for (let encounterIndex = 0; encounterIndex < route.encounterPlan.length; encounterIndex += 1) {
+        if (shouldTriggerScheduledEvent(eventSchedule, encounterIndex)) {
+          triggeredEvents += 1;
+          const eventResult = resolveScheduledEvent({
+            hero,
+            eventId: eventSchedule.eventId,
+            characterId,
+            encounterIndex,
+            blessingRng
+          });
+          eventOutcomes.set(eventResult.outcomeId, (eventOutcomes.get(eventResult.outcomeId) || 0) + 1);
+          if (eventResult.grantedBlessing) {
+            eventBlessings += 1;
+            selectedBlessingCounts.set(
+              eventResult.blessing.id,
+              (selectedBlessingCounts.get(eventResult.blessing.id) || 0) + 1
+            );
+            selectedRarityCounts.set(
+              eventResult.blessing.rarity,
+              (selectedRarityCounts.get(eventResult.blessing.rarity) || 0) + 1
+            );
+          }
+          if (eventResult.heroDefeated) {
+            eventDeaths += 1;
+            cleared = false;
+            defeatsByEncounter.set(`event-before-${encounterIndex + 1}`, (defeatsByEncounter.get(`event-before-${encounterIndex + 1}`) || 0) + 1);
+            break;
+          }
+        }
+
         reached = encounterIndex + 1;
         if (encounterIndex === route.encounterPlan.length - 1) {
           bossEntries += 1;
@@ -108,7 +197,9 @@ function simulateCase({ id, characterId, weaponId }) {
         }
 
         const enemies = buildRouteEnemyGroup(encounterIndex);
-        const battleSkills = beginBattle(hero, enemies);
+        const battleSkills = beginBattle(hero, enemies, {
+          isBoss: encounterIndex === route.encounterPlan.length - 1
+        });
         const encounter = simulateEncounter({ hero, enemies, battleSkills });
         totalTurns += encounter.turns;
 
@@ -149,7 +240,14 @@ function simulateCase({ id, characterId, weaponId }) {
     averageBossEntryHpRatio: bossEntries > 0 ? bossEntryHpRatioTotal / bossEntries : null,
     bossEntryRatio: bossEntries / ROUNDS,
     averageTurns: totalTurns / ROUNDS,
-    defeatsByEncounter: Object.fromEntries([...defeatsByEncounter.entries()].sort((a, b) => a[0] - b[0])),
+    scheduledEventRatio: scheduledEvents / ROUNDS,
+    triggeredEventRatio: triggeredEvents / ROUNDS,
+    averageEventBlessings: eventBlessings / ROUNDS,
+    eventDeathRatio: eventDeaths / ROUNDS,
+    eventOutcomes: Object.fromEntries([...eventOutcomes.entries()].sort((a, b) => a[0].localeCompare(b[0]))),
+    defeatsByEncounter: Object.fromEntries([...defeatsByEncounter.entries()].sort(compareEncounterKeys)),
+    averageCaveBlessingCount: [...selectedBlessingCounts.values()]
+      .reduce((total, count) => total + count, 0) / ROUNDS,
     averageSelectedBlessings: Object.fromEntries(
       [...selectedBlessingCounts.entries()]
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -162,6 +260,99 @@ function simulateCase({ id, characterId, weaponId }) {
   };
 }
 
+export function simulateContinuousCavePhase({
+  hero,
+  id,
+  characterId,
+  run = 0,
+  includeRouteEvents = true
+}) {
+  const blessingRng = createSeededRandom(seedFrom(`${id}:blessing:${run}`));
+  const eventRng = createSeededRandom(seedFrom(`${id}:event:${run}`));
+  const eventSchedule = includeRouteEvents ? scheduleRegionEvent(route, eventRng) : null;
+  const originalRandom = Math.random;
+  Math.random = createSeededRandom(seedFrom(`${id}:combat:${run}`));
+  let reached = 0;
+  let bossEntered = false;
+  let turns = 0;
+  let triggeredEvent = false;
+  let eventDeath = false;
+
+  try {
+    for (let encounterIndex = 0; encounterIndex < route.encounterPlan.length; encounterIndex += 1) {
+      if (shouldTriggerScheduledEvent(eventSchedule, encounterIndex)) {
+        triggeredEvent = true;
+        const eventResult = resolveScheduledEvent({
+          hero,
+          eventId: eventSchedule.eventId,
+          characterId,
+          encounterIndex,
+          blessingRng
+        });
+        if (eventResult.heroDefeated) {
+          eventDeath = true;
+          return {
+            cleared: false,
+            hero,
+            reached,
+            bossEntered,
+            turns,
+            eventScheduled: Boolean(eventSchedule),
+            triggeredEvent,
+            eventDeath,
+            defeatKey: `event-before-${encounterIndex + 17}`
+          };
+        }
+      }
+
+      reached = encounterIndex + 1;
+      bossEntered ||= encounterIndex === route.encounterPlan.length - 1;
+      const enemies = buildRouteEnemyGroup(encounterIndex);
+      const battleSkills = beginBattle(hero, enemies, {
+        isBoss: encounterIndex === route.encounterPlan.length - 1
+      });
+      const encounter = simulateEncounter({ hero, enemies, battleSkills });
+      turns += encounter.turns;
+
+      if (!encounter.won) {
+        return {
+          cleared: false,
+          hero,
+          reached,
+          bossEntered,
+          turns,
+          eventScheduled: Boolean(eventSchedule),
+          triggeredEvent,
+          eventDeath,
+          defeatKey: String(encounterIndex + 17)
+        };
+      }
+
+      battleSkills.applyVictorySkills();
+      battleSkills.consumeBattleLimitedEffects();
+      if (encounterIndex < route.encounterPlan.length - 1) {
+        const choices = getBlessingChoices(caveBlessingData.blessings, 3, blessingRng);
+        const selected = chooseBlessing({ characterId, choices, hero, encounterIndex });
+        applyBlessingEffects(hero, selected);
+      }
+    }
+
+    return {
+      cleared: true,
+      hero,
+      reached,
+      bossEntered,
+      turns,
+      eventScheduled: Boolean(eventSchedule),
+      triggeredEvent,
+      eventDeath,
+      defeatKey: null
+    };
+  } finally {
+    Math.random = originalRandom;
+  }
+}
+
 function createCaveEntryHero({ characterId, weaponId }) {
   const hero = buildHeroFromProgression(characterDefinitions[characterId], {
     level: LEVEL,
@@ -170,7 +361,7 @@ function createCaveEntryHero({ characterId, weaponId }) {
     equipment: { weaponId }
   }, {
     inventory: { weapons: { [weaponId]: true } },
-    weaponDefinitions
+    weaponDefinitions: modelWeaponDefinitions
   });
 
   retainedBeachBlessingIds.forEach((blessingId, index) => {
@@ -196,7 +387,77 @@ function buildRouteEnemyGroup(encounterIndex) {
   })));
 }
 
-function beginBattle(hero, enemies) {
+
+function resolveScheduledEvent({ hero, eventId, characterId, encounterIndex, blessingRng }) {
+  const event = route.eventDefinitions?.find((entry) => entry.id === eventId);
+  assert.ok(event, `洞穴模型找不到事件 ${eventId}`);
+  const choice = chooseModelEventChoice({ event, hero });
+  assert.ok(choice, `洞穴模型事件 ${eventId} 缺少可用選項`);
+
+  const effectResult = applyEventEffects({
+    effects: choice.result?.effects,
+    hero
+  });
+  if (effectResult.heroDefeated) {
+    return { outcomeId: `${eventId}:${choice.id}:defeated`, blessing: null, grantedBlessing: false, heroDefeated: true };
+  }
+
+  const target = choice.result?.defaultTarget;
+  if (target?.type !== "chooseBlessing") {
+    return { outcomeId: `${eventId}:${choice.id}`, blessing: null, grantedBlessing: false, heroDefeated: false };
+  }
+
+  const blessing = chooseEventBlessing({
+    characterId,
+    hero,
+    encounterIndex,
+    blessingRng,
+    rarity: target.rarity || null,
+    count: target.count
+  });
+  applyBlessingEffects(hero, blessing);
+  return { outcomeId: `${eventId}:${choice.id}`, blessing, grantedBlessing: true, heroDefeated: false };
+}
+
+function chooseModelEventChoice({ event, hero }) {
+  if (event.id === "cave-rockspring") {
+    return event.choices.find((choice) => choice.id === "rest");
+  }
+  if (event.id === "cave-tide-carvings") {
+    const readChoice = event.choices.find((choice) => choice.id === "read");
+    const leaveChoice = event.choices.find((choice) => choice.id === "leave");
+    const damage = getChoiceLoseHp(readChoice);
+    const safeToRead = hero.hp > damage && hero.hp / hero.maxHp >= TIDE_CARVINGS_MIN_HP_RATIO;
+    return safeToRead ? readChoice : leaveChoice;
+  }
+  if (event.id === "cave-deep-tide-altar") {
+    const readChoice = event.choices.find((choice) => choice.id === "read");
+    const materialsChoice = event.choices.find((choice) => choice.id === "materials");
+    assert.equal(
+      getChoiceLoseHp(readChoice),
+      getChoiceLoseHp(materialsChoice),
+      "深潮石壇模型選擇依賴兩條路線承受相同生命代價"
+    );
+    return readChoice;
+  }
+  return event.choices?.[0] || null;
+}
+
+function getChoiceLoseHp(choice) {
+  return (choice?.result?.effects || []).reduce((total, effect) => {
+    return effect.type === "loseHp" ? total + Math.max(0, Math.floor(Number(effect.amount) || 0)) : total;
+  }, 0);
+}
+
+function chooseEventBlessing({ characterId, hero, encounterIndex, blessingRng, rarity = null, count = 3 }) {
+  const pool = rarity
+    ? caveBlessingData.blessings.filter((blessing) => blessing.rarity === rarity)
+    : caveBlessingData.blessings;
+  const choices = getBlessingChoices(pool, Math.max(1, Number(count) || 3), blessingRng);
+  return chooseBlessing({ characterId, choices, hero, encounterIndex });
+}
+
+function beginBattle(hero, enemies, { isBoss = false } = {}) {
   hero.poison = 0;
   hero.entangle = null;
   hero.saltErosion = null;
@@ -205,6 +466,8 @@ function beginBattle(hero, enemies) {
   hero.battleAttackBonus = 0;
   hero.battleCritBonus = 0;
   hero.hasAttackedThisBattle = false;
+  hero.weaponBattleStartApplied = false;
+  hero.weaponBattleMode = null;
   hero.statusFamiliarityLimitBonus = 0;
   hero.victoryHealBonusRatio = 0;
   hero.activePreparation = null;
@@ -224,6 +487,10 @@ function beginBattle(hero, enemies) {
   if (getLivingEnemies(enemies).length >= 2 && hero.multiEnemyShieldStart > 0) {
     hero.shield += hero.multiEnemyShieldStart;
   }
+  applyEquippedWeaponBattleStart(hero, {
+    enemyCount: getLivingEnemies(enemies).length,
+    encounterType: isBoss ? "boss" : "normal"
+  });
   return battleSkills;
 }
 
@@ -395,19 +662,9 @@ function getEffectAmount(blessing, stat) {
   }, 0);
 }
 
-function weightedPick(items, getWeight, rng) {
-  const total = items.reduce((sum, item) => sum + Math.max(0, Number(getWeight(item)) || 0), 0);
-  let value = rng() * total;
-  for (const item of items) {
-    value -= Math.max(0, Number(getWeight(item)) || 0);
-    if (value <= 0) return item;
-  }
-  return items.at(-1);
-}
-
 function formatResult(result) {
   const defeats = Object.entries(result.defeatsByEncounter)
-    .sort((a, b) => Number(a[0]) - Number(b[0]))
+    .sort(compareEncounterKeys)
     .slice(-5)
     .map(([index, count]) => `${index}:${count}`)
     .join(",") || "無";
@@ -418,7 +675,7 @@ function formatResult(result) {
   return [
     result.mode,
     characterDefinitions[result.characterId].name,
-    weaponDefinitions[result.weaponId].name,
+    modelWeaponDefinitions[result.weaponId].name,
     result.weaponSet,
     `勝場比例 ${(result.winRatio * 100).toFixed(2)}%`,
     `平均抵達 ${result.averageReached.toFixed(2)}/16`,
@@ -426,24 +683,24 @@ function formatResult(result) {
     `Boss前HP ${result.averageBossEntryHpRatio == null ? "-" : (result.averageBossEntryHpRatio * 100).toFixed(2) + "%"}`,
     `通關HP ${result.averageClearHpRatio == null ? "-" : (result.averageClearHpRatio * 100).toFixed(2) + "%"}`,
     `平均回合 ${result.averageTurns.toFixed(1)}`,
+    `模式 ${result.eventMode}`,
+    `事件排程 ${(result.scheduledEventRatio * 100).toFixed(1)}%`,
+    `事件觸發 ${(result.triggeredEventRatio * 100).toFixed(1)}%`,
+    `事件祝福 ${result.averageEventBlessings.toFixed(2)}`,
+    `洞穴祝福 ${result.averageCaveBlessingCount.toFixed(2)}`,
+    `事件死亡 ${(result.eventDeathRatio * 100).toFixed(2)}%`,
     `主要敗北 ${defeats}`,
     `常選 ${topPicks}`
   ].join(" | ");
 }
 
-function seedFrom(text) {
-  let hash = 2166136261;
-  for (let i = 0; i < text.length; i += 1) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
+function compareEncounterKeys([left], [right]) {
+  return encounterSortValue(left) - encounterSortValue(right) || String(left).localeCompare(String(right));
 }
 
-function createSeededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
+function isDirectExecution() {
+  return Boolean(
+    process.argv[1]
+    && pathToFileURL(resolve(process.argv[1])).href === import.meta.url
+  );
 }

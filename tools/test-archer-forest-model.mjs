@@ -19,6 +19,7 @@ import {
   modifyCharacterIncomingDirectDamage,
   resolveCharacterPlayerAction
 } from "../src/characters/skills/index.js";
+import { createSeededRandom, weightedPick } from "./model-test-helpers.mjs";
 
 const ROUNDS = Math.max(1, Number(process.argv[2]) || 20000);
 const MAX_TURNS = 500;
@@ -240,27 +241,6 @@ function scoreBlessing(blessing, hero, encounterIndex) {
   if (blessing.id === "heartwood-guidance") score += 2;
 
   return score;
-}
-
-function weightedPick(items, getWeight) {
-  const weights = items.map((item) => Math.max(0, Number(getWeight(item)) || 0));
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  let roll = Math.random() * total;
-  for (let index = 0; index < items.length; index += 1) {
-    roll -= weights[index];
-    if (roll <= 0) {
-      return items[index];
-    }
-  }
-  return items.at(-1);
-}
-
-function createSeededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
 }
 
 function formatDefeats(defeatsByEncounter) {

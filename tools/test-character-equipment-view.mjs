@@ -4,44 +4,9 @@ import {
   createEquipmentComparison,
   renderCharacterEquipmentView
 } from "../src/ui/characterEquipmentView.js";
+import { createElementMap, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() { this.values = new Set(); }
-  add(...names) { names.forEach((name) => this.values.add(name)); }
-  remove(...names) { names.forEach((name) => this.values.delete(name)); }
-  toggle(name, force) {
-    const shouldAdd = force ?? !this.values.has(name);
-    if (shouldAdd) this.values.add(name);
-    else this.values.delete(name);
-    return shouldAdd;
-  }
-  contains(name) { return this.values.has(name); }
-}
-
-class TestNode {
-  constructor(tagName = "div") {
-    this.tagName = tagName;
-    this.classList = new TestClassList();
-    this.children = [];
-    this.dataset = {};
-    this.attributes = {};
-    this.hidden = false;
-    this.disabled = false;
-    this.textContent = "";
-    this.value = "";
-    this.className = "";
-    this.onclick = null;
-    this.listeners = new Map();
-  }
-  append(...nodes) { this.children.push(...nodes); }
-  prepend(...nodes) { this.children.unshift(...nodes); }
-  replaceChildren(...nodes) { this.children = [...nodes]; }
-  addEventListener(type, handler) { this.listeners.set(type, handler); }
-  setAttribute(name, value) { this.attributes[name] = String(value); }
-  remove() { this.removed = true; }
-}
-
-globalThis.document = { createElement: (tagName) => new TestNode(tagName) };
+installTestDocument();
 
 function createElements() {
   const ids = [
@@ -50,7 +15,7 @@ function createElements() {
     "equipmentCurrentSlot", "equipmentWeaponGrid", "equipmentEmpty", "equipmentPreview",
     "equipWeaponButton", "unequipWeaponButton"
   ];
-  return Object.fromEntries(ids.map((id) => [id, new TestNode()]));
+  return createElementMap(ids);
 }
 
 const sword = {
@@ -112,6 +77,7 @@ const guard = {
   assert.equal(els.equipmentWeaponGrid.children[0].children[2].textContent, "劍｜普通品級");
   assert.equal(els.equipmentWeaponGrid.children[1].children[2].textContent, "劍｜精良品級");
   assert.equal(els.equipmentCurrentSlot.dataset.rarity, "common");
+  assert.equal(els.equipmentPreview.dataset.rarity, "uncommon");
   assert.match(els.equipmentCurrentSlot.children[1].children[2].textContent, /普通品級/);
   assert.equal(els.equipmentWeaponGrid.children[0].classList.contains("is-equipped"), true);
   assert.equal(els.equipWeaponButton.disabled, false);
@@ -143,6 +109,8 @@ const guard = {
     onUnequip() {}
   });
   assert.equal(els.equipmentEmpty.classList.contains("is-hidden"), false);
+  assert.equal(els.equipmentCurrentSlot.dataset.rarity, "none");
+  assert.equal(els.equipmentPreview.dataset.rarity, "none");
   assert.equal(els.equipWeaponButton.hidden, true);
   assert.equal(els.unequipWeaponButton.hidden, true);
 }

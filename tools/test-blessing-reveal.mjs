@@ -2,61 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 import { renderBlessingChoices } from "../src/ui/renderHelpers.js";
+import { TestNode, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() {
-    this.values = new Set();
-  }
-
-  add(...names) {
-    names.forEach((name) => this.values.add(name));
-  }
-
-  remove(...names) {
-    names.forEach((name) => this.values.delete(name));
-  }
-
-  contains(name) {
-    return this.values.has(name);
-  }
-}
-
-class TestNode {
-  constructor(tagName = "div") {
-    this.tagName = tagName;
-    this.classList = new TestClassList();
-    this.children = [];
-    this.className = "";
-    this.type = "";
-    this.innerHTML = "";
-    this.textContent = "";
-    this.attributes = {};
-    this.disabled = false;
-    this.listeners = new Map();
-  }
-
-  append(...nodes) {
-    this.children.push(...nodes);
-  }
-
-  addEventListener(type, callback) {
-    this.listeners.set(type, callback);
-  }
-
-  setAttribute(name, value) {
-    this.attributes[name] = String(value);
-  }
-
-  click() {
-    if (!this.disabled) {
-      this.listeners.get("click")?.();
-    }
-  }
-}
-
-globalThis.document = {
-  createElement: (tagName) => new TestNode(tagName)
-};
+installTestDocument();
 
 class TestScheduler {
   constructor() {

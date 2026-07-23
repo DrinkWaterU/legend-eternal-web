@@ -22,18 +22,31 @@ export class TestNode {
     this.hidden = false;
     this.disabled = false;
     this.textContent = "";
+    this.innerHTML = "";
     this.value = "";
-    this.className = "";
+    this._className = "";
+    this.type = "";
+    this.src = "";
+    this.alt = "";
     this.onclick = null;
     this.oninput = null;
     this.onchange = null;
     this.listeners = new Map();
     this.isConnected = true;
   }
+  set className(value) {
+    this._className = String(value || "");
+    this.classList = new TestClassList();
+    this._className.split(/\s+/).filter(Boolean).forEach((name) => this.classList.add(name));
+  }
+  get className() { return this._className; }
   append(...nodes) { this.children.push(...nodes); }
   prepend(...nodes) { this.children.unshift(...nodes); }
   replaceChildren(...nodes) { this.children = [...nodes]; }
-  addEventListener(type, handler) { this.listeners.set(type, handler); }
+  addEventListener(type, handler) {
+    this.listeners.set(type, handler);
+    this[`on${type}`] = handler;
+  }
   setAttribute(name, value) {
     this.attributes[name] = String(value);
     if (name.startsWith("data-")) {
@@ -41,6 +54,7 @@ export class TestNode {
       this.dataset[key] = String(value);
     }
   }
+  getAttribute(name) { return this.attributes[name] ?? null; }
   removeAttribute(name) {
     delete this.attributes[name];
     if (name.startsWith("data-")) {
@@ -61,11 +75,24 @@ export class TestNode {
   }
   remove() { this.removed = true; this.isConnected = false; }
   focus() { this.focused = true; }
+  click() {
+    if (!this.disabled) {
+      (this.listeners.get("click") || this.onclick)?.();
+    }
+  }
+  closest() { return null; }
 }
 
 export function installTestDocument() {
   globalThis.document = {
-    createElement: (tagName) => new TestNode(tagName)
+    createElement: (tagName) => new TestNode(tagName),
+    createTextNode: (text) => {
+      const node = new TestNode("#text");
+      node.type = "text";
+      node.textContent = String(text);
+      return node;
+    },
+    querySelector: () => null
   };
 }
 

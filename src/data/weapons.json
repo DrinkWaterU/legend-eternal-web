@@ -300,5 +300,193 @@
       ]
     },
     "iconAssetId": "spider-silk-stinger-dagger"
+  },
+  "adventurer-pathfinder-sword": {
+    "id": "adventurer-pathfinder-sword",
+    "name": "萬途歷戰刃",
+    "categoryId": "sword",
+    "rarityId": "rare",
+    "allowedCharacterIds": [
+      "adventurer"
+    ],
+    "effectName": "歷戰應變",
+    "effectText": "冒險者專屬。攻擊 +2。每場戰鬥開始時，依序判斷敵勢並進入一種「歷戰架勢」：求生架勢（生命值為 50% 以下）：攻擊 +1，獲得 16 點護盾。迎戰架勢（Boss 戰）：攻擊 +2、暴擊率 +8%，獲得 20 點護盾。守陣架勢（面對 2 名以上敵人）：攻擊 +1，獲得 12 點護盾。破勢架勢（其餘單體戰）：攻擊 +1、暴擊率 +8%。",
+    "description": "將漫長征途中獵獲的首領遺材反覆熔鑄、拼鍛。刃身上每一道交錯的斑駁紋路，都銘刻著一次死裡逃生的記憶。它不替持用者指明戰法，只會在危局之中，喚醒冒險者一路磨出的百戰直覺。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      }
+    ],
+    "specialEffect": {
+      "type": "adventurerAdaptation",
+      "lowHpThreshold": 0.5,
+      "lowHpAttackBonus": 1,
+      "lowHpShield": 16,
+      "bossAttackBonus": 2,
+      "bossCritChance": 0.08,
+      "bossShield": 20,
+      "multiEnemyThreshold": 2,
+      "multiEnemyAttackBonus": 1,
+      "multiEnemyShield": 12,
+      "singleEnemyAttackBonus": 1,
+      "singleEnemyCritChance": 0.08
+    },
+    "recipe": {
+      "goldCost": 500,
+      "materialCosts": [
+        {
+          "materialId": "tainted_tusk",
+          "quantity": 1
+        },
+        {
+          "materialId": "ancient_wood_core",
+          "quantity": 1
+        },
+        {
+          "materialId": "verdant_antler",
+          "quantity": 1
+        },
+        {
+          "materialId": "bloodbone_charm",
+          "quantity": 1
+        },
+        {
+          "materialId": "tidal_claw_core",
+          "quantity": 1
+        },
+        {
+          "materialId": "deep_tide_core",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "adventurer-pathfinder-sword"
+  },
+  "tidepiercer-shortbow": {
+    "id": "tidepiercer-shortbow",
+    "name": "潮翼獵風弓",
+    "categoryId": "bow",
+    "rarityId": "uncommon",
+    "effectName": "穿潮校準",
+    "effectText": "攻擊 +2。每場戰鬥的首次攻擊，額外獲得 35% 暴擊率。",
+    "description": "弓身鑲嵌著潮翼掠食者的輕韌薄膜，即使置身濕重海風之中，依然能夠迅捷回彈；細密交疊的魚人鱗片，則穩住箭矢離弦前最後的震顫。當弓弦拉至滿月，視線中的怒濤彷彿瞬間停滯，露出一道致命的縫隙。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      },
+      {
+        "type": "add",
+        "stat": "openingCritChance",
+        "amount": 0.35
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 260,
+      "materialCosts": [
+        {
+          "materialId": "tidewing_membrane",
+          "quantity": 3
+        },
+        {
+          "materialId": "fishman_scale",
+          "quantity": 2
+        },
+        {
+          "materialId": "salt_crystal",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "tidepiercer-shortbow"
+  },
+  "reefbreaker-warhammer": {
+    "id": "reefbreaker-warhammer",
+    "name": "礁甲鎮潮鎚",
+    "categoryId": "mace",
+    "rarityId": "uncommon",
+    "effectName": "礁鉗架勢",
+    "effectText": "攻擊 +2。每場戰鬥開始時獲得 4 點護盾；若面對 2 名以上敵人，額外獲得 6 點護盾，共計 10 點。",
+    "description": "將巨鉗礁甲蟹的堅硬鉗核嵌入鎚首，外層再覆上層疊礁甲。這柄戰鎚雖然笨重，敵人的包圍卻反而能成為最佳的槓桿支點——潮勢越是洶湧，持鎚者越能在萬鈞重壓之下屹立不搖。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      },
+      {
+        "type": "add",
+        "stat": "shieldStart",
+        "amount": 4
+      },
+      {
+        "type": "add",
+        "stat": "multiEnemyShieldStart",
+        "amount": 6
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 280,
+      "materialCosts": [
+        {
+          "materialId": "reef_claw_core",
+          "quantity": 2
+        },
+        {
+          "materialId": "reef_shell",
+          "quantity": 3
+        },
+        {
+          "materialId": "salt_crystal",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "reefbreaker-warhammer"
+  },
+  "brinefang-dagger": {
+    "id": "brinefang-dagger",
+    "name": "腐潮刻痕刃",
+    "categoryId": "dagger",
+    "rarityId": "uncommon",
+    "effectName": "腐潮裂創",
+    "effectText": "攻擊 +2，暴擊傷害 +30%。",
+    "description": "以深潮魚人的潮骨磨製刃身，並將腐潮凝核封入刃口深處。看似沉寂的細碎潮痕，會在命中要害的瞬間猛烈撕裂傷口。它不為頻繁交鋒而生，只靜靜等待那一次足以見骨的致命破綻。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      },
+      {
+        "type": "add",
+        "stat": "critDamageMultiplier",
+        "amount": 0.3
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 300,
+      "materialCosts": [
+        {
+          "materialId": "brine_core",
+          "quantity": 2
+        },
+        {
+          "materialId": "tide_mark_shard",
+          "quantity": 2
+        },
+        {
+          "materialId": "tidebone_fragment",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "brinefang-dagger"
   }
 }

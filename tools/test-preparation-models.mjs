@@ -32,6 +32,7 @@ import {
   resolveCharacterPlayerAction
 } from "../src/characters/skills/index.js";
 import { createBattleSkills } from "../src/features/battle/battleSkills.js";
+import { weightedPick, withSeed } from "./model-test-helpers.mjs";
 
 const ROUNDS = Math.max(1, Number(process.argv[2]) || 5000);
 const SCOPE = ["all", "plains", "forest"].includes(process.argv[3]) ? process.argv[3] : "all";
@@ -444,37 +445,6 @@ function getEncounterType(entry) {
 
 function hasSkill(hero, skillId) {
   return Array.isArray(hero?.skills) && hero.skills.includes(skillId);
-}
-
-function weightedPick(items, getWeight) {
-  const weights = items.map((item) => Math.max(0, Number(getWeight(item)) || 0));
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  let value = Math.random() * total;
-  for (let index = 0; index < items.length; index += 1) {
-    value -= weights[index];
-    if (value <= 0) {
-      return items[index];
-    }
-  }
-  return items.at(-1);
-}
-
-function withSeed(seed, action) {
-  const originalRandom = Math.random;
-  Math.random = createSeededRandom(seed);
-  try {
-    return action();
-  } finally {
-    Math.random = originalRandom;
-  }
-}
-
-function createSeededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
 }
 
 function getWinRatio(result) {
