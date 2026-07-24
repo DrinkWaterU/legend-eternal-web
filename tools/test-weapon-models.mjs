@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { applyBlessingEffects } from "../src/core/blessings.js";
+import { canCharacterEquipWeapon } from "../src/core/equipment.js";
 import {
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
@@ -23,13 +24,47 @@ import {
   resolveCharacterPlayerAction
 } from "../src/characters/skills/index.js";
 import { createBattleSkills } from "../src/features/battle/battleSkills.js";
+import { applyEquippedWeaponBattleStart } from "../src/core/weaponBattleEffects.js";
+import { weightedPick, withSeed } from "./model-test-helpers.mjs";
 
 const ROUNDS = Math.max(1, Number(process.argv[2]) || 5000);
+const INCLUDE_ADVENTURER_RARE_PROTOTYPES = process.argv[3] === "adventurer-rare-prototypes";
+const INCLUDE_V02721_WEAPON_PROTOTYPES = process.argv[3] === "v02721-weapon-prototypes";
 const MAX_TURNS = 500;
 const logger = {
   template() {},
   fixed() {}
 };
+const ADVENTURER_RARE_PROTOTYPES = Object.freeze({
+  "rare-guarded": Object.freeze({
+    label: "稀有劍・守勢",
+    attack: 2,
+    singleEnemyCritBonus: 0.08,
+    multiEnemyShield: 8,
+    lowHpShield: 12
+  }),
+  "rare-balanced": Object.freeze({
+    label: "稀有劍・平衡",
+    attack: 2,
+    singleEnemyAttackBonus: 1,
+    multiEnemyShield: 8,
+    lowHpShield: 10
+  }),
+  "rare-offensive": Object.freeze({
+    label: "稀有劍・進取",
+    attack: 2,
+    singleEnemyAttackBonus: 1,
+    singleEnemyCritBonus: 0.05,
+    multiEnemyShield: 6,
+    lowHpShield: 8
+  })
+});
+if (INCLUDE_ADVENTURER_RARE_PROTOTYPES) {
+  validateAdventurerRarePrototypeContracts();
+}
+if (INCLUDE_V02721_WEAPON_PROTOTYPES) {
+  validateV02721WeaponPrototypeContracts();
+}
 
 const modelGroups = [
   {
@@ -39,7 +74,7 @@ const modelGroups = [
     characterId: "adventurer",
     level: 10,
     chooseBlessing: chooseReasonableAdventurerBlessing,
-    cases: [
+    cases: withV02721WeaponPrototypes(withAdventurerRarePrototypes([
       { weaponId: null, label: "未裝備" },
       { weaponId: "iron-longsword", label: "鐵製長劍" },
       { weaponId: "guard-short-sword", label: "守備短劍" },
@@ -47,7 +82,7 @@ const modelGroups = [
       { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" },
       { weaponId: "bloodbone-guardian-mace", label: "血骨衛士鎚" },
       { weaponId: "spider-silk-stinger-dagger", label: "蛛絲刺匕" }
-    ]
+    ]), "adventurer")
   },
   {
     title: "Forest Lv.25 adventurer weapon model",
@@ -56,7 +91,7 @@ const modelGroups = [
     characterId: "adventurer",
     level: 25,
     chooseBlessing: chooseReasonableAdventurerBlessing,
-    cases: [
+    cases: withV02721WeaponPrototypes(withAdventurerRarePrototypes([
       { weaponId: null, label: "未裝備" },
       { weaponId: "iron-longsword", label: "鐵製長劍" },
       { weaponId: "guard-short-sword", label: "守備短劍" },
@@ -64,7 +99,7 @@ const modelGroups = [
       { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" },
       { weaponId: "bloodbone-guardian-mace", label: "血骨衛士鎚" },
       { weaponId: "spider-silk-stinger-dagger", label: "蛛絲刺匕" }
-    ]
+    ]), "adventurer")
   },
   {
     title: "Forest Lv.25 archer weapon model",
@@ -73,13 +108,13 @@ const modelGroups = [
     characterId: "archer",
     level: 25,
     chooseBlessing: chooseReasonableArcherBlessing,
-    cases: [
+    cases: withV02721WeaponPrototypes([
       { weaponId: null, label: "未裝備" },
       { weaponId: "hunter-shortbow", label: "獵人短弓" },
       { weaponId: "vanguard-hunting-bow", label: "先鋒獵弓" },
       { weaponId: "verdant-pursuit-bow", label: "翠影追擊弓" },
       { weaponId: "ancient-wood-eroding-bow", label: "古木蝕甲弓" }
-    ]
+    ], "archer")
   }
 ];
 
@@ -92,6 +127,7 @@ for (const group of modelGroups) {
       characterId: group.characterId,
       level: group.level,
       weaponId: entry.weaponId,
+      prototypeId: entry.prototypeId,
       chooseBlessing: group.chooseBlessing
     }))
   }));
@@ -101,13 +137,13 @@ for (const group of modelGroups) {
 
 console.log("Equipped weapon formal runtime balance comparison passed.");
 
-function simulateRegionRuns({ rounds, region, characterId, level, weaponId, chooseBlessing }) {
+function simulateRegionRuns({ rounds, region, characterId, level, weaponId, prototypeId, chooseBlessing }) {
   let wins = 0;
   let reachedTotal = 0;
   const defeatsByEncounter = new Map();
 
   for (let run = 0; run < rounds; run += 1) {
-    const hero = buildEquippedHero(characterId, level, weaponId);
+    const hero = buildEquippedHero(characterId, level, weaponId, prototypeId);
     const bosses = region.bosses || [region.boss];
     const selectedBoss = weightedPick(bosses, (boss) => Number(boss.weight) || 100);
     let reached = 0;
@@ -118,6 +154,11 @@ function simulateRegionRuns({ rounds, region, characterId, level, weaponId, choo
       resetBattleState(hero);
       const battleSkills = createModelBattleSkills(hero);
       battleSkills.applyBattleStartSkills();
+      applyAdventurerRarePrototype(hero, prototypeId, { enemyCount: 1 });
+      applyEquippedWeaponBattleStart(hero, {
+        enemyCount: 1,
+        encounterType: encounterIndex === region.encounterPlan.length - 1 ? "boss" : "normal"
+      });
       const enemy = buildEnemy(region, encounterIndex, hero, { boss: selectedBoss });
       enemy.poison = 0;
       applyEnemyAmbush(hero, enemy);
@@ -153,8 +194,8 @@ function simulateRegionRuns({ rounds, region, characterId, level, weaponId, choo
   };
 }
 
-function buildEquippedHero(characterId, level, weaponId) {
-  return buildHeroFromProgression(characterDefinitions[characterId], {
+function buildEquippedHero(characterId, level, weaponId, prototypeId = null) {
+  const hero = buildHeroFromProgression(characterDefinitions[characterId], {
     level,
     exp: 0,
     learnedSkills: [],
@@ -165,6 +206,156 @@ function buildEquippedHero(characterId, level, weaponId) {
     },
     weaponDefinitions
   });
+  const rarePrototype = ADVENTURER_RARE_PROTOTYPES[prototypeId];
+  if (rarePrototype) {
+    assert.equal(characterId, "adventurer", "稀有武器原型只能套用於冒險者模型");
+    hero.attack += rarePrototype.attack;
+    hero.equipment = { weaponId: prototypeId };
+  }
+  return hero;
+}
+
+function applyAdventurerRarePrototype(hero, prototypeId, { enemyCount }) {
+  const prototype = ADVENTURER_RARE_PROTOTYPES[prototypeId];
+  if (!prototype) {
+    return null;
+  }
+  assert.equal(hero.characterId, "adventurer", "稀有武器原型不得套用於其他角色");
+
+  const hpRatio = hero.maxHp > 0 ? hero.hp / hero.maxHp : 0;
+  if (hpRatio <= 0.5) {
+    hero.shield += prototype.lowHpShield;
+    return "low-hp";
+  }
+  if (enemyCount >= 2) {
+    hero.shield += prototype.multiEnemyShield;
+    return "multi-enemy";
+  }
+  hero.battleAttackBonus += prototype.singleEnemyAttackBonus || 0;
+  hero.battleCritBonus += prototype.singleEnemyCritBonus || 0;
+  return "single-enemy";
+}
+
+function withAdventurerRarePrototypes(cases) {
+  if (!INCLUDE_ADVENTURER_RARE_PROTOTYPES) {
+    return cases;
+  }
+  return [
+    ...cases,
+    ...Object.entries(ADVENTURER_RARE_PROTOTYPES).map(([prototypeId, prototype]) => ({
+      prototypeId,
+      label: prototype.label
+    }))
+  ];
+}
+
+function withV02721WeaponPrototypes(cases, characterId) {
+  if (!INCLUDE_V02721_WEAPON_PROTOTYPES) {
+    return cases;
+  }
+  return [
+    ...cases,
+    ...Object.values(weaponDefinitions)
+      .filter((weapon) => [
+        "adventurer-pathfinder-sword",
+        "tidepiercer-shortbow",
+        "reefbreaker-warhammer",
+        "brinefang-dagger"
+      ].includes(weapon.id))
+      .filter((weapon) => canCharacterEquipWeapon(characterDefinitions[characterId], weapon))
+      .map((weapon) => ({
+        weaponId: weapon.id,
+        label: weapon.name
+      }))
+  ];
+}
+
+function validateV02721WeaponPrototypeContracts() {
+  const createHero = (overrides = {}) => ({
+    characterId: "adventurer",
+    equipment: { weaponId: "adventurer-pathfinder-sword" },
+    maxHp: 100,
+    hp: 100,
+    shield: 0,
+    battleAttackBonus: 0,
+    battleCritBonus: 0,
+    ...overrides
+  });
+
+  const swordSingleHero = createHero();
+  assert.equal(
+    applyEquippedWeaponBattleStart(swordSingleHero, { enemyCount: 1 })?.modeId,
+    "single-enemy"
+  );
+  assert.equal(swordSingleHero.battleAttackBonus, 1);
+  assert.equal(swordSingleHero.battleCritBonus, 0.08);
+
+  const swordBossHero = createHero();
+  assert.equal(
+    applyEquippedWeaponBattleStart(swordBossHero, { enemyCount: 1, encounterType: "boss" })?.modeId,
+    "boss"
+  );
+  assert.equal(swordBossHero.shield, 20);
+  assert.equal(swordBossHero.battleAttackBonus, 2);
+  assert.equal(swordBossHero.battleCritBonus, 0.08);
+
+  const swordLowHpHero = createHero({ hp: 50 });
+  assert.equal(
+    applyEquippedWeaponBattleStart(swordLowHpHero, { enemyCount: 3 })?.modeId,
+    "low-hp"
+  );
+  assert.equal(swordLowHpHero.battleAttackBonus, 1);
+  assert.equal(swordLowHpHero.shield, 16);
+
+  assert.equal(
+    applyEquippedWeaponBattleStart(createHero({ characterId: "future-sword-user" }), { enemyCount: 1 }),
+    null
+  );
+}
+
+function validateAdventurerRarePrototypeContracts() {
+  const createHero = (overrides = {}) => ({
+    characterId: "adventurer",
+    maxHp: 100,
+    hp: 100,
+    shield: 0,
+    battleAttackBonus: 0,
+    battleCritBonus: 0,
+    ...overrides
+  });
+
+  const singleHero = createHero();
+  assert.equal(
+    applyAdventurerRarePrototype(singleHero, "rare-balanced", { enemyCount: 1 }),
+    "single-enemy"
+  );
+  assert.equal(singleHero.battleAttackBonus, 1);
+  assert.equal(singleHero.shield, 0);
+
+  const multiHero = createHero();
+  assert.equal(
+    applyAdventurerRarePrototype(multiHero, "rare-balanced", { enemyCount: 3 }),
+    "multi-enemy"
+  );
+  assert.equal(multiHero.battleAttackBonus, 0);
+  assert.equal(multiHero.shield, 8);
+
+  const lowHpHero = createHero({ hp: 50 });
+  assert.equal(
+    applyAdventurerRarePrototype(lowHpHero, "rare-balanced", { enemyCount: 3 }),
+    "low-hp"
+  );
+  assert.equal(lowHpHero.battleAttackBonus, 0);
+  assert.equal(lowHpHero.shield, 10);
+
+  assert.throws(
+    () => applyAdventurerRarePrototype(
+      createHero({ characterId: "future-sword-user" }),
+      "rare-balanced",
+      { enemyCount: 1 }
+    ),
+    /不得套用於其他角色/
+  );
 }
 
 function simulateEncounter(hero, enemy, battleSkills) {
@@ -225,6 +416,8 @@ function resetBattleState(hero) {
   hero.battleAttackBonus = 0;
   hero.battleCritBonus = 0;
   hero.hasAttackedThisBattle = false;
+  hero.weaponBattleStartApplied = false;
+  hero.weaponBattleMode = null;
   hero.statusFamiliarityLimitBonus = 0;
   hero.victoryHealBonusRatio = 0;
   hero.shield = hero.shieldStart;
@@ -356,37 +549,6 @@ function scoreArcherBlessing(blessing, hero) {
 
 function hasSkill(hero, skillId) {
   return Array.isArray(hero?.skills) && hero.skills.includes(skillId);
-}
-
-function weightedPick(items, getWeight) {
-  const weights = items.map((item) => Math.max(0, Number(getWeight(item)) || 0));
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  let value = Math.random() * total;
-  for (let index = 0; index < items.length; index += 1) {
-    value -= weights[index];
-    if (value <= 0) {
-      return items[index];
-    }
-  }
-  return items.at(-1);
-}
-
-function withSeed(seed, action) {
-  const originalRandom = Math.random;
-  Math.random = createSeededRandom(seed);
-  try {
-    return action();
-  } finally {
-    Math.random = originalRandom;
-  }
-}
-
-function createSeededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
 }
 
 function validateResults(group, entries) {

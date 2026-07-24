@@ -19,7 +19,7 @@ for (let index = 0; index < 40; index += 1) {
 }
 
 const legacyCode = createLegacySaveTransferCode(save, "v0.2.7.0.1-alpha");
-const compressedCode = await createSaveTransferCode(save, "v0.2.7.0.2-alpha");
+const compressedCode = await createSaveTransferCode(save, "v0.2.7.1-alpha");
 assert.match(legacyCode, /^LE_SAVE_1:/);
 assert.match(compressedCode, /^LE_SAVE_2:/);
 assert.ok(compressedCode.length < legacyCode.length * 0.6, "壓縮碼應顯著短於舊版 Base64 存檔碼");
@@ -36,8 +36,8 @@ await assert.rejects(() => parseSaveTransferCode("UNKNOWN:value"), /無法解析
 assert.equal(await readSaveTransferFile({ text: async () => ` \n${compressedCode}\n ` }), compressedCode);
 await assert.rejects(() => readSaveTransferFile({ text: async () => "  " }), /內容空白/);
 
-const fileName = createSaveTransferFileName("v0.2.7.0.2-alpha", new Date("2026-07-19T00:00:00.000Z"));
-assert.equal(fileName, "傳說永恆_v0.2.7.0.2-alpha_2026-07-19.lesave");
+const fileName = createSaveTransferFileName("v0.2.7.1-alpha", new Date("2026-07-19T00:00:00.000Z"));
+assert.equal(fileName, "傳說永恆_v0.2.7.1-alpha_2026-07-19.lesave");
 
 let clicked = false;
 let appended = false;
@@ -75,12 +75,12 @@ const urlApi = {
     revokedUrl = url;
   }
 };
-const downloadedName = downloadSaveTransferFile(compressedCode, "v0.2.7.0.2-alpha", {
+const downloadedName = downloadSaveTransferFile(compressedCode, "v0.2.7.1-alpha", {
   documentRef,
   urlApi,
   BlobCtor: FakeBlob
 });
-assert.equal(downloadedName, createSaveTransferFileName("v0.2.7.0.2-alpha"));
+assert.equal(downloadedName, createSaveTransferFileName("v0.2.7.1-alpha"));
 assert.deepEqual(createdBlob.parts, [compressedCode]);
 assert.equal(anchor.href, "blob:test-save");
 assert.equal(anchor.download, downloadedName);

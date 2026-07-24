@@ -35,7 +35,7 @@ export function renderStatisticsCharacterBrowser({
     meta.textContent = `${character.role || "角色"}｜Lv. ${Math.max(1, progress.level || 1)}`;
     summary.textContent = `出戰 ${safeStatisticCount(stats.runs)} 次｜通關 ${safeStatisticCount(stats.clears)} 次`;
     copy.append(name, meta, summary);
-    button.append(createCharacterEmblem(characterId, character.name), copy);
+    button.append(createCharacterEmblem(characterId, character.name, character), copy);
     button.addEventListener("click", () => onCharacterSelect?.(characterId));
     els.statisticsCharacterList.append(button);
   });
@@ -63,7 +63,7 @@ function renderCharacterDetail({ element, characterId, character, progress, stat
   const header = document.createElement("header");
   header.className = "statistics-detail-heading";
   const identity = document.createElement("div");
-  identity.append(createCharacterEmblem(characterId, character.name));
+  identity.append(createCharacterEmblem(characterId, character.name, character));
   const copy = document.createElement("div");
   const eyebrow = document.createElement("span");
   const title = document.createElement("h3");

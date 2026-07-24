@@ -1643,8 +1643,7 @@ button:disabled {
 .facility-panel > .subview > .section-heading + .body-text,
 .region-detail-view > .body-text,
 .preparation-section,
-.merchant-summary,
-.blacksmith-summary {
+.merchant-summary {
   border-radius: 9px;
 }
 

@@ -34,6 +34,14 @@ export function createRegionDefinition(regionData) {
   };
 }
 
+export function getRegionDisplayName(region) {
+  return region?.regionName || region?.name || "";
+}
+
+export function getRegionSegmentName(region) {
+  return region?.segmentName || region?.name || "";
+}
+
 export function getRegionEncounterGroupOption(encounterEntry, randomFn = Math.random) {
   const options = Array.isArray(encounterEntry?.groupOptions)
     ? encounterEntry.groupOptions.filter((option) => option && Number(option.count) > 0)

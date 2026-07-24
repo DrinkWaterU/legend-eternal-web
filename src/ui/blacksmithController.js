@@ -5,6 +5,7 @@ import {
   renderBlacksmithView,
   updateBlacksmithCategoryControls
 } from "./blacksmithView.js";
+import { renderBlacksmithWeaponSelection } from "./blacksmithSelectionView.js";
 
 export function createBlacksmithController({
   els,
@@ -28,7 +29,10 @@ export function createBlacksmithController({
     throw new Error("Blacksmith Controller 的 saveInventory 必須是函式。");
   }
 
-  const firstWeaponId = Object.keys(weaponDefinitions)[0] || null;
+  const craftableWeaponDefinitions = Object.fromEntries(
+    Object.entries(weaponDefinitions).filter(([, weapon]) => weapon.craftable !== false)
+  );
+  const firstWeaponId = Object.keys(craftableWeaponDefinitions)[0] || null;
   const state = {
     selectedWeaponId: firstWeaponId,
     pendingWeaponId: null,
@@ -40,7 +44,7 @@ export function createBlacksmithController({
   };
 
   function reset() {
-    if (!weaponDefinitions[state.selectedWeaponId]) {
+    if (!craftableWeaponDefinitions[state.selectedWeaponId]) {
       state.selectedWeaponId = firstWeaponId;
     }
     state.pendingWeaponId = null;
@@ -60,7 +64,7 @@ export function createBlacksmithController({
     renderBlacksmithView({
       els,
       inventory: getInventory(),
-      weaponDefinitions,
+      weaponDefinitions: craftableWeaponDefinitions,
       weaponCategoryDefinitions,
       materialDefinitions,
       selectedWeaponId: state.selectedWeaponId,
@@ -118,15 +122,23 @@ export function createBlacksmithController({
   }
 
   function selectWeapon(weaponId) {
-    if (!weaponDefinitions[weaponId]) {
+    const weapon = craftableWeaponDefinitions[weaponId];
+    if (!weapon) {
       return;
     }
     state.selectedWeaponId = weaponId;
-    render();
+    renderBlacksmithWeaponSelection({
+      els,
+      weapon,
+      inventory: getInventory(),
+      weaponCategoryDefinitions,
+      materialDefinitions,
+      onCraftRequest: requestCraft
+    });
   }
 
   function requestCraft(weaponId) {
-    const weapon = weaponDefinitions[weaponId];
+    const weapon = craftableWeaponDefinitions[weaponId];
     if (!weapon) {
       return;
     }
@@ -141,7 +153,7 @@ export function createBlacksmithController({
   }
 
   function confirmCraft() {
-    const weapon = weaponDefinitions[state.pendingWeaponId];
+    const weapon = craftableWeaponDefinitions[state.pendingWeaponId];
     if (!weapon) {
       closeCraftDialog();
       return;

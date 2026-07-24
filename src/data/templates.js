@@ -12,6 +12,9 @@ export const templates = {
   heal: "{target} 恢復了 {amount} 點生命。",
   timedRegen: "{source} 的餘韻讓 {target} 恢復了 {amount} 點生命。",
   charge: "{actor} 準備衝撞。",
+  enemySupportAttack: "{actor} 支援了 {target}，攻擊提高 {attackGain} 點。",
+  enemySupportDefense: "{actor} 支援了 {target}，防禦提高 {defenseGain} 點。",
+  enemySupportAttackDefense: "{actor} 支援了 {target}，攻擊提高 {attackGain} 點，防禦提高 {defenseGain} 點。",
   shield: "{target} 獲得了 {amount} 點護盾。",
   enemyDefeated: "{target} 倒下了。",
   battleVictory: "戰鬥勝利。",
@@ -43,5 +46,6 @@ export const templates = {
   ambushAdvantage: "{enemy} 被你搶先壓制，生命降低了 {amount} 點。",
   enemyRecover: "{enemy} 在追擊中恢復了 {amount} 點生命。",
   boss: "{region}深處傳來首領的氣息。",
-  clear: "你擊敗了{region}的首領。這次冒險成功了。"
+  clear: "你擊敗了{region}的首領。這次冒險成功了。",
+  beachSegmentClear: "你擊敗了{region}的首領。海灘段落完成，前方仍有潮聲。"
 };

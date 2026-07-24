@@ -13,6 +13,7 @@ import {
 } from "../../ui/preparationState.js";
 import { renderRegionChoiceList } from "../../ui/regionChoiceView.js";
 import { renderStatList } from "../../ui/renderHelpers.js";
+import { getRegionDisplayName, getRegionSegmentName } from "../../data/regions/regionDefinition.js";
 
 export function createRegionController({
   state,
@@ -91,15 +92,17 @@ export function createRegionController({
       enabled: phoenixUnlocked
     });
 
-    els.regionDetailName.textContent = region.name;
+    const displayName = getRegionDisplayName(region);
+    const segmentName = getRegionSegmentName(region);
+    els.regionDetailName.textContent = displayName;
     els.regionDetailDescription.textContent = region.note
       ? `${region.description}\n${region.note}`
       : region.description;
     renderStatList(els.regionDetailStats, [
-      ["遭遇", `${region.encounterCount} 場`],
+      ["遭遇", segmentName === displayName ? `${region.encounterCount} 場` : `${segmentName}段落｜${region.encounterCount} 場`],
       ["難度", region.difficulty],
       ["推薦等級", region.recommendedLevel || "Lv.1+"],
-      ["首領", region.bossName]
+      ["首領", segmentName === displayName ? region.bossName : `${segmentName}首領：${region.bossName}`]
     ]);
 
     renderRegionTraits(traits);
@@ -149,9 +152,9 @@ export function createRegionController({
     renderPreparationRunCostPreview({ preparation: activePreparation, enhanced: activePreparationEnhanced });
     els.startButton.textContent = activePreparation
       ? activePreparationEnhanced
-        ? `花費 ${activePreparation.cost} 金幣＋素材並開始${region.name}冒險`
-        : `花費 ${activePreparation.cost} 金幣並開始${region.name}冒險`
-      : `開始${region.name}冒險`;
+        ? `花費 ${activePreparation.cost} 金幣＋素材並開始${getRegionSegmentName(region)}冒險`
+        : `花費 ${activePreparation.cost} 金幣並開始${getRegionSegmentName(region)}冒險`
+      : `開始${getRegionSegmentName(region)}冒險`;
     els.startButton.disabled = uiState.runStartLocked;
   }
 

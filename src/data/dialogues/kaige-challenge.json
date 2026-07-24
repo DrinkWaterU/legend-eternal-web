@@ -1,0 +1,202 @@
+{
+  "id": "kaige-challenge",
+  "npcId": "kaige",
+  "entryRules": [
+    {
+      "conditions": [
+        {
+          "type": "storyFlag",
+          "key": "knowsKaigeName",
+          "operator": "equals",
+          "value": false
+        }
+      ],
+      "nodeId": "first-meeting"
+    }
+  ],
+  "fallbackNodeId": "challenge-offer",
+  "nodes": {
+    "first-meeting": {
+      "speakerLabel": "陌生的壯漢",
+      "pages": [
+        {
+          "text": "喂，你就是從森林那頭走出來的冒險者吧？"
+        },
+        {
+          "text": "那股架勢可不像只是在路上散步。我叫凱哥，最近正愁找不到能痛快打一場的人。"
+        },
+        {
+          "text": "跟我切磋一場吧。放心，點到為止，不拿命拚。"
+        }
+      ],
+      "actionsOnComplete": [
+        {
+          "type": "setStoryFlag",
+          "key": "metKaige",
+          "value": true
+        },
+        {
+          "type": "setStoryFlag",
+          "key": "knowsKaigeName",
+          "value": true
+        }
+      ],
+      "nextNodeId": "challenge-offer"
+    },
+    "challenge-offer": {
+      "pages": [
+        {
+          "text": "怎麼樣？要不要來場痛快的切磋？"
+        }
+      ],
+      "choices": [
+        {
+          "id": "accept-duel",
+          "label": "接受切磋",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "accepted"
+          }
+        },
+        {
+          "id": "decline-duel",
+          "label": "暫時拒絕",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "declined"
+          }
+        }
+      ]
+    },
+    "accepted": {
+      "pages": [
+        {
+          "text": "哈哈，好！我就知道你不會讓我失望。"
+        },
+        {
+          "text": "準備好了就來。別客氣，拿出真本事！"
+        }
+      ],
+      "choices": [
+        {
+          "id": "start-duel",
+          "label": "開始切磋",
+          "action": {
+            "type": "startDuel",
+            "duelId": "kaige-challenge"
+          }
+        },
+        {
+          "id": "not-ready",
+          "label": "還沒準備好",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "declined"
+          }
+        }
+      ]
+    },
+    "declined": {
+      "pages": [
+        {
+          "text": "行，打架得兩邊都願意才痛快。"
+        },
+        {
+          "text": "哪天想試試，再來找我。我隨時奉陪。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "leave-after-decline",
+          "label": "離開",
+          "action": {
+            "type": "returnToFacilityList"
+          }
+        }
+      ]
+    },
+    "defeat": {
+      "pages": [
+        {
+          "text": "差一點。你的本事不只這樣吧？"
+        },
+        {
+          "text": "把氣喘順了再來，我會在這裡等你。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "retry-after-defeat",
+          "label": "再次切磋",
+          "action": {
+            "type": "startDuel",
+            "duelId": "kaige-challenge"
+          }
+        },
+        {
+          "id": "leave-after-defeat",
+          "label": "先休息一下",
+          "action": {
+            "type": "returnToFacilityList"
+          }
+        }
+      ]
+    },
+    "withdraw": {
+      "pages": [
+        {
+          "text": "不打了就收手，沒什麼好丟臉的。"
+        },
+        {
+          "text": "想再來，我照樣奉陪。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "retry-after-withdraw",
+          "label": "再次切磋",
+          "action": {
+            "type": "startDuel",
+            "duelId": "kaige-challenge"
+          }
+        },
+        {
+          "id": "leave-after-withdraw",
+          "label": "離開",
+          "action": {
+            "type": "returnToFacilityList"
+          }
+        }
+      ]
+    },
+    "victory": {
+      "pages": [
+        {
+          "text": "哈哈……痛快！這一場我輸得心服口服。"
+        },
+        {
+          "text": "我認你這個對手。接下來的路，也算我一份。"
+        },
+        {
+          "text": "這把磨痕戰斧跟著我走過不少地方，不花俏，但夠可靠。往後就帶著它一起上路吧。"
+        }
+      ]
+    },
+    "save-failed": {
+      "pages": [
+        {
+          "text": "剛才那場打得痛快，但你的行囊似乎出了點狀況。先整理好，再來找我。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "leave-after-save-failed",
+          "label": "離開",
+          "action": {
+            "type": "returnToFacilityList"
+          }
+        }
+      ]
+    }
+  }
+}

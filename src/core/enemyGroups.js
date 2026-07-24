@@ -93,6 +93,9 @@ function normalizeEnemyEntry(entry, index, { applyStatScale }) {
   }
 
   enemy.poison = normalizeNonNegativeNumber(enemy.poison);
+  enemy.supportUses = applyStatScale ? 0 : normalizeNonNegativeInteger(enemy.supportUses);
+  enemy.supportAttackBonus = applyStatScale ? 0 : normalizeNonNegativeInteger(enemy.supportAttackBonus);
+  enemy.supportDefenseBonus = applyStatScale ? 0 : normalizeNonNegativeInteger(enemy.supportDefenseBonus);
   enemy.statScale = statScale;
   enemy.attackScale = attackScale;
   enemy.rewardScale = rewardScale;
@@ -170,4 +173,9 @@ function normalizeNonNegativeScale(value, fallback) {
 function normalizeNonNegativeNumber(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
+function normalizeNonNegativeInteger(value) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
 }

@@ -20,6 +20,7 @@ export function createDialogueController(options = {}) {
     getDialogueContext = () => ({}),
     setStoryFlag,
     onOpenFacility,
+    onStartDuel,
     onReturnToFacilityList,
     onEndDialogue = onReturnToFacilityList,
     textAnimationOptions = {}
@@ -179,6 +180,19 @@ export function createDialogueController(options = {}) {
         cancelDialogueTextAnimation(els);
         onOpenFacility?.(action.facilityId, state.npcId);
         return true;
+      case "startDuel": {
+        const result = onStartDuel?.(action.duelId, state.npcId);
+        if (result === true || result?.ok === true) {
+          cancelDialogueTextAnimation(els);
+          return true;
+        }
+        state.notice = result?.message || "目前無法開始切磋，請重新確認角色狀態。";
+        state.noticeType = "error";
+        if (renderAfter) {
+          render({ preserveScroll: true });
+        }
+        return false;
+      }
       case "returnToFacilityList":
         cancelDialogueTextAnimation(els);
         onReturnToFacilityList?.();

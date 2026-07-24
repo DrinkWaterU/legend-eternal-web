@@ -5,6 +5,7 @@ const ACTION_TYPES = new Set([
   "endDialogue",
   "setStoryFlag",
   "openFacility",
+  "startDuel",
   "returnToFacilityList"
 ]);
 
@@ -57,7 +58,12 @@ export function getVisibleDialogueChoices(node, context = {}) {
 }
 
 export function assertDialogueDefinitions(dialogues, options = {}) {
-  const { npcDefinitions = null, storyFlagKeys = [], facilityDefinitions = null } = options;
+  const {
+    npcDefinitions = null,
+    storyFlagKeys = [],
+    facilityDefinitions = null,
+    duelDefinitions = null
+  } = options;
   const knownStoryFlags = new Set(storyFlagKeys);
 
   Object.entries(dialogues || {}).forEach(([dialogueId, dialogue]) => {
@@ -104,10 +110,24 @@ export function assertDialogueDefinitions(dialogues, options = {}) {
         }
         choiceIds.add(choice.id);
         assertConditions(choice.conditions, { dialogueId, knownStoryFlags });
-        assertAction(choice.action, { dialogueId, nodeId, nodes, knownStoryFlags, facilityDefinitions });
+        assertAction(choice.action, {
+          dialogueId,
+          nodeId,
+          nodes,
+          knownStoryFlags,
+          facilityDefinitions,
+          duelDefinitions
+        });
       });
       (node.actionsOnComplete || []).forEach((action) => {
-        assertAction(action, { dialogueId, nodeId, nodes, knownStoryFlags, facilityDefinitions });
+        assertAction(action, {
+          dialogueId,
+          nodeId,
+          nodes,
+          knownStoryFlags,
+          facilityDefinitions,
+          duelDefinitions
+        });
       });
     });
   });
@@ -154,7 +174,14 @@ function assertConditions(conditions = [], { dialogueId, knownStoryFlags }) {
   });
 }
 
-function assertAction(action, { dialogueId, nodeId, nodes, knownStoryFlags, facilityDefinitions }) {
+function assertAction(action, {
+  dialogueId,
+  nodeId,
+  nodes,
+  knownStoryFlags,
+  facilityDefinitions,
+  duelDefinitions
+}) {
   if (!ACTION_TYPES.has(action?.type)) {
     throw new Error(`Dialogue ${dialogueId} node ${nodeId} 使用未知 action type：${action?.type || "(empty)"}`);
   }
@@ -178,6 +205,14 @@ function assertAction(action, { dialogueId, nodeId, nodes, knownStoryFlags, faci
     }
     if (facilityDefinitions && !facilityDefinitions[action.facilityId]) {
       throw new Error(`Dialogue ${dialogueId} 引用了未知 facility：${action.facilityId}`);
+    }
+  }
+  if (action.type === "startDuel") {
+    if (!String(action.duelId || "").trim()) {
+      throw new Error(`Dialogue ${dialogueId} node ${nodeId} startDuel 缺少 duelId。`);
+    }
+    if (duelDefinitions && !duelDefinitions[action.duelId]) {
+      throw new Error(`Dialogue ${dialogueId} 引用了未知特殊決鬥：${action.duelId}`);
     }
   }
 }

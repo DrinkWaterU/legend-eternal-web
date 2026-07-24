@@ -6,6 +6,7 @@ import {
   rollEnemyRewards
 } from "../../core/rewards.js";
 import { getHeroBattleHealingAmount } from "../../core/combatStatusEffects.js";
+import { registerFrontlineDefeat } from "../../core/caveBlessingEffects.js";
 
 export function createBattleSettlement({
   state,
@@ -14,6 +15,7 @@ export function createBattleSettlement({
   addLog,
   addFixedLog,
   gainCharacterExp,
+  settleCharacterProgression,
   recordEnemyDefeated,
   hasPhoenixBlessing,
   saveGameSafe,
@@ -71,6 +73,10 @@ export function createBattleSettlement({
 
   function settleEnemyDefeated(enemy) {
     const defeatedBoss = enemy.kind === "首領";
+    if (state.battleSource === "duel") {
+      addLog("system", "enemyDefeated", { target: getEnemyDisplayName(enemy) });
+      return;
+    }
     const hpRatioBeforeKillRewards = state.hero.maxHp > 0 ? state.hero.hp / state.hero.maxHp : 0;
     addLog("system", "enemyDefeated", { target: getEnemyDisplayName(enemy) });
     gainCharacterExp(getEnemyExpReward(enemy));
@@ -79,6 +85,9 @@ export function createBattleSettlement({
     state.defeatedEnemies += 1;
     state.defeatedBoss = state.defeatedBoss || defeatedBoss;
     applyLivingEnemyDefeatReactions(enemy);
+    if (registerFrontlineDefeat(state.hero, enemy)) {
+      addFixedLog("status", `${state.hero.name}擊破前衛，本場攻擊提高 ${state.hero.frontlineBreakAttack}。`);
+    }
 
     if (state.hero.killAttackGain > 0) {
       state.hero.battleAttackBonus = (state.hero.battleAttackBonus || 0) + state.hero.killAttackGain;
@@ -102,8 +111,12 @@ export function createBattleSettlement({
 
   function settleBattleVictory() {
     addLog("system", "battleVictory");
+    if (state.battleSource === "duel") {
+      return;
+    }
     applyVictorySkills();
     consumeBattleLimitedEffects();
+    settleCharacterProgression();
   }
 
   function finishCounterEncounterVictory() {

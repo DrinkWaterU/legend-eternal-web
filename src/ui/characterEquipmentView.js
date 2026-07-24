@@ -4,8 +4,8 @@ import {
   formatWeaponCategory,
   formatWeaponEffects,
   getWeaponRarityClass,
-  getWeaponRarityId,
-  getWeaponRarityLabel
+  getWeaponRarityLabel,
+  setWeaponRarityData
 } from "./weaponViewHelpers.js";
 
 const COMPARISON_FIELDS = Object.freeze([
@@ -191,12 +191,13 @@ function renderCurrentWeaponSlot({ element, weapon, weaponCategoryDefinitions })
     : "選擇武器庫中的相容武器。";
   copy.append(label, name, effect);
   element.classList.toggle("is-empty", !weapon);
-  element.dataset.rarity = weapon ? getWeaponRarityId(weapon) : "none";
+  setWeaponRarityData(element, weapon);
   element.append(icon, copy);
 }
 
 function renderPreview({ element, selectedWeapon, equippedWeapon, currentHero, previewHero, weaponCategoryDefinitions }) {
   element.replaceChildren();
+  setWeaponRarityData(element, selectedWeapon);
   if (!selectedWeapon) {
     const empty = document.createElement("p");
     empty.className = "empty-state";
@@ -207,7 +208,6 @@ function renderPreview({ element, selectedWeapon, equippedWeapon, currentHero, p
 
   const heading = document.createElement("div");
   heading.className = "equipment-preview-heading";
-  heading.dataset.rarity = getWeaponRarityId(selectedWeapon);
   const title = document.createElement("div");
   const eyebrow = document.createElement("span");
   const name = document.createElement("h3");

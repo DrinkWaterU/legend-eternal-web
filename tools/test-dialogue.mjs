@@ -75,6 +75,20 @@ assert.deepEqual(
   ["return-after-principle-known"]
 );
 
+const blacksmithChatMenu = dialogue.nodes["chat-menu"];
+assert.deepEqual(
+  getVisibleDialogueChoices(blacksmithChatMenu, {
+    storyFlags: { knowsAnpingBlacksmithName: false }
+  }).map((choice) => choice.id),
+  ["talk-weapons", "talk-anping", "chat-return-unknown"]
+);
+assert.deepEqual(
+  getVisibleDialogueChoices(blacksmithChatMenu, {
+    storyFlags: { knowsAnpingBlacksmithName: true }
+  }).map((choice) => choice.id),
+  ["talk-weapons", "talk-anping", "talk-past", "chat-return-known"]
+);
+
 
 const guildDialogue = dialogueDefinitions["anping-guild-receptionist-main"];
 const guildNpc = npcDefinitions["anping-guild-receptionist"];
@@ -119,6 +133,10 @@ assert.equal(guildDialogue.nodes["first-feature-overview"].pages.length, 4);
 assert.equal(guildDialogue.nodes["about-guild"].pages.length, 5);
 assert.equal(guildDialogue.nodes["about-work"].pages.length, 4);
 assert.equal(guildDialogue.nodes["about-anping"].pages.length, 4);
+assert.equal(
+  guildDialogue.nodes["default-greeting"].choices.find((choice) => choice.id === "ask-about-guild")?.label,
+  "介紹冒險者公會"
+);
 
 const oldSave = createDefaultSave();
 delete oldSave.storyFlags.metAnpingBlacksmith;

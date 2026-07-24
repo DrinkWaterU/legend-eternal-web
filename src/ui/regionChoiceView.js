@@ -1,3 +1,5 @@
+import { getRegionDisplayName, getRegionSegmentName } from "../data/regions/regionDefinition.js";
+
 export function renderRegionChoiceList({
   element,
   regions,
@@ -29,11 +31,14 @@ export function renderRegionChoiceList({
     }
 
     heading.className = "region-choice-heading";
-    title.textContent = region.name;
+    title.textContent = getRegionDisplayName(region);
     meta.textContent = region.recommendedLevel
       ? `${region.difficulty}｜${region.recommendedLevel}`
       : region.difficulty;
-    description.textContent = `${region.encounterCount} 場遭遇，首領：${region.bossName}`;
+    const segmentName = getRegionSegmentName(region);
+    description.textContent = segmentName === getRegionDisplayName(region)
+      ? `${region.encounterCount} 場遭遇，首領：${region.bossName}`
+      : `${segmentName}段落｜${region.encounterCount} 場遭遇，首領：${region.bossName}`;
     action.textContent = "查看地區";
     heading.append(title, meta);
     button.append(heading, description, action);

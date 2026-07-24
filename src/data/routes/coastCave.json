@@ -1,0 +1,39 @@
+{
+  "id": "coast-cave",
+  "regionId": "beach",
+  "clearSourceId": "coastCave",
+  "contentStatus": "draft",
+  "name": "海岸洞穴",
+  "audio": { "bgmId": "coast-cave" },
+  "visual": {
+    "background": { "desktop": "assets/images/regions/coast/coast-cave.jpg", "mobile": "assets/images/regions/coast/coast-cave-mobile.jpg", "tone": "coast-cave" },
+    "backgroundStages": [{ "id": "cave", "fromEncounter": 1, "toEncounter": 16, "desktop": "assets/images/regions/coast/coast-cave.jpg", "mobile": "assets/images/regions/coast/coast-cave-mobile.jpg", "tone": "coast-cave" }]
+  },
+  "blessingPoolId": "cave",
+  "encounterPlan": [
+    {"type":"normal","groupId":"cave-lesson-front-output"},{"type":"normal","groupId":"cave-lesson-front-output"},{"type":"normal","groupId":"cave-lesson-front-output"},{"type":"normal","groupId":"cave-lesson-front-output"},
+    {"type":"normal","groupId":"cave-support-lesson"},{"type":"normal","groupId":"cave-support-mix"},{"type":"normal","groupId":"cave-control-lesson"},{"type":"normal","groupId":"cave-control-lesson"},
+    {"type":"elite","groupId":"cave-control-mix-elite"},{"type":"normal","groupId":"cave-control-mix"},{"type":"normal","groupId":"cave-support-control"},{"type":"normal","groupId":"cave-support-control"},
+    {"type":"elite","groupId":"cave-full-roles-elite"},{"type":"normal","groupId":"cave-full-roles"},{"type":"normal","groupId":"cave-full-roles"},{"type":"boss","groupId":"cave-boss"}
+  ],
+  "events": { "scheduleChance": 0.6, "triggerBeforeEncounters": [5, 9, 13], "pool": ["cave-rockspring", "cave-tide-carvings", "cave-deep-tide-altar"] },
+  "eventDefinitions": [
+    {"id":"cave-rockspring","weight":100,"eyebrow":"冒險事件","title":"岩縫清泉","transitionText":["洞窟裡的潮聲忽然遠了些……","岩壁縫隙間傳來細小而規律的滴水聲。"],"narrative":["你在礁岩縫隙間找到一小處沒有鹽味的水窪。","前方仍有更深的黑暗，這裡至少能讓你喘口氣。"],"prompt":"你打算怎麼利用這處水源？","choices":[{"id":"rest","meta":"恢復生命","title":"短暫休息","description":"飲水清洗，整理呼吸。","action":"恢復最大生命 15%","result":{"narrative":["清水帶走了口中的鹹苦。你收起行囊，繼續往洞窟深處前進。"],"effects":[{"type":"recoverHp","maxHpRatio":0.15}],"resultIds":["cave-rockspring-rested"],"defaultTarget":{"type":"returnAdventure"},"continueLabel":"離開清泉","followUpChoices":[]}},{"id":"leave","meta":"安全離開","title":"保持警戒","description":"不久留，確認裝備與退路。","action":"不獲得額外效果","result":{"narrative":["你沒有在這裡久留，確認退路後便離開水窟。"],"effects":[],"resultIds":["cave-rockspring-left"],"defaultTarget":{"type":"returnAdventure"},"continueLabel":"繞過水窟","followUpChoices":[]}}]},
+    {"id":"cave-tide-carvings","weight":100,"eyebrow":"冒險事件","title":"潮痕石陣","transitionText":["前方的岩壁上浮著一圈圈奇怪的潮痕……","貝殼碎片在水線下排列成不自然的記號。"],"narrative":["潮水退去後，洞壁露出一圈圈被磨亮的刻痕。","要讀懂它，必須把手伸進冰冷的潮水。"],"prompt":"你要冒險讀出這些記號嗎？","choices":[{"id":"read","meta":"承受風險","title":"承受潮流","description":"失去 18 點生命，取得一般洞穴祝福。","action":"失去 18 點生命；洞穴祝福三選一","result":{"narrative":["潮水從石縫中猛然倒灌，你咬緊牙關記住刻痕。"],"effects":[{"type":"loseHp","amount":18}],"resultIds":["cave-tide-carvings-read"],"defaultTarget":{"type":"chooseBlessing","poolId":"cave","count":3},"continueLabel":"選擇祝福","followUpChoices":[]}},{"id":"leave","meta":"安全離開","title":"安全離開","description":"避開回湧的潮水。","action":"不獲得額外效果","result":{"narrative":["你把石陣的位置記在心裡，沿著乾燥岩壁繞了過去。"],"effects":[],"resultIds":["cave-tide-carvings-left"],"defaultTarget":{"type":"returnAdventure"},"continueLabel":"繞過石陣","followUpChoices":[]}}]},
+    {"id":"cave-deep-tide-altar","weight":100,"eyebrow":"冒險事件","title":"深潮石壇","transitionText":["越往深處，潮聲越像從腳下傳來……","一座被海水反覆沖刷的石壇，靜靜立在黑暗裡。"],"narrative":["石壇邊緣堆著少量尚未被帶走的素材，中央則留著一枚完整潮痕。","回湧的潮力不會讓人安然取走任何東西。"],"prompt":"你要取走哪一種收穫？","choices":[{"id":"read","meta":"稀有祝福","title":"讀取深處記號","description":"失去 24 點生命，取得稀有洞穴祝福。","action":"失去 24 點生命；稀有祝福三選一","result":{"narrative":["回湧潮力撞上手臂，等潮水退去，你已記住最完整的戰鬥記號。"],"effects":[{"type":"loseHp","amount":24}],"resultIds":["cave-deep-tide-altar-read"],"defaultTarget":{"type":"chooseBlessing","poolId":"cave","count":3,"rarity":"rare"},"continueLabel":"選擇稀有祝福","followUpChoices":[]}},{"id":"materials","meta":"取得素材","title":"帶走可用物資","description":"失去 24 點生命，取得 2 份潮痕碎片。","action":"失去 24 點生命；取得潮痕碎片 ×2","result":{"narrative":["你避開中央冷光，從石壇邊緣取下素材。"],"effects":[{"type":"loseHp","amount":24},{"type":"grantMaterials","materials":[{"id":"tide_mark_shard","quantity":2}]}],"resultIds":["cave-deep-tide-altar-materials"],"defaultTarget":{"type":"returnAdventure"},"continueLabel":"收起素材，繼續前進","followUpChoices":[]}}]}
+  ],
+  "groups": [
+    {"id":"cave-lesson-front-output","name":"洞口伏擊","members":[{"enemyId":"cave-fishman-frontline","statScale":0.92,"rewardScale":0.76},{"enemyId":"cave-fishman-output","statScale":0.86,"rewardScale":0.68}]},
+    {"id":"cave-support-lesson","name":"潮殼護衛","members":[{"enemyId":"cave-fishman-frontline","statScale":0.88,"rewardScale":0.72},{"enemyId":"cave-fishman-support","statScale":0.78,"rewardScale":0.6}]},
+    {"id":"cave-support-mix","name":"裂潮小隊","members":[{"enemyId":"cave-fishman-frontline","statScale":0.8,"rewardScale":0.64},{"enemyId":"cave-fishman-output","statScale":0.68,"rewardScale":0.54},{"enemyId":"cave-fishman-support","statScale":0.6,"rewardScale":0.46}]},
+    {"id":"cave-control-lesson","name":"麻痺伏擊","members":[{"enemyId":"cave-fishman-frontline","statScale":0.88,"rewardScale":0.72},{"enemyId":"cave-fishman-control","statScale":0.78,"rewardScale":0.6}]},
+    {"id":"cave-control-mix-elite","name":"深潮精英","members":[{"enemyId":"cave-fishman-elite-frontline","statScale":0.9,"rewardScale":0.78},{"enemyId":"cave-fishman-output","statScale":0.66,"rewardScale":0.54},{"enemyId":"cave-fishman-control","statScale":0.6,"rewardScale":0.48}]},
+    {"id":"cave-control-mix","name":"潮電獵隊","members":[{"enemyId":"cave-fishman-frontline","statScale":0.8,"rewardScale":0.64},{"enemyId":"cave-fishman-output","statScale":0.68,"rewardScale":0.54},{"enemyId":"cave-fishman-control","statScale":0.62,"rewardScale":0.5}]},
+    {"id":"cave-support-control","name":"潮窟協同","members":[{"enemyId":"cave-fishman-frontline","statScale":0.78,"rewardScale":0.62},{"enemyId":"cave-fishman-support","statScale":0.6,"rewardScale":0.46},{"enemyId":"cave-fishman-control","statScale":0.62,"rewardScale":0.5}]},
+    {"id":"cave-full-roles-elite","name":"深窟精銳","members":[{"enemyId":"cave-fishman-elite-frontline","statScale":0.82,"rewardScale":0.76},{"enemyId":"cave-fishman-output","statScale":0.6,"rewardScale":0.5},{"enemyId":"cave-fishman-support","statScale":0.54,"rewardScale":0.42},{"enemyId":"cave-fishman-control","statScale":0.58,"rewardScale":0.48}]},
+    {"id":"cave-full-roles","name":"深潮獵隊","members":[{"enemyId":"cave-fishman-frontline","statScale":0.76,"rewardScale":0.62},{"enemyId":"cave-fishman-output","statScale":0.62,"rewardScale":0.5},{"enemyId":"cave-fishman-support","statScale":0.55,"rewardScale":0.42},{"enemyId":"cave-fishman-control","statScale":0.6,"rewardScale":0.48}]},
+    {"id":"cave-boss","name":"深潮首領","members":[{"enemyId":"cave-fishman-boss","statScale":1,"rewardScale":1}]}
+  ],
+  "counterEnemyIds": ["cave-fishman-frontline","cave-fishman-output","cave-fishman-support","cave-fishman-control","cave-fishman-elite-frontline"],
+  "fleeChance": {"normal":0.75,"elite":0.5,"boss":0}
+}

@@ -5,11 +5,20 @@ export function showCombatLayout(els) {
   resetRouteEndingPresentation(els);
   els.combatLayout.hidden = false;
   els.eventLayout.hidden = true;
+  if (els.campTransitionLayout) els.campTransitionLayout.hidden = true;
 }
 
 export function showEventLayout(els) {
   els.combatLayout.hidden = true;
   els.eventLayout.hidden = false;
+  if (els.campTransitionLayout) els.campTransitionLayout.hidden = true;
+}
+
+export function showCampLayout(els) {
+  resetRouteEndingPresentation(els);
+  els.combatLayout.hidden = true;
+  els.eventLayout.hidden = true;
+  if (els.campTransitionLayout) els.campTransitionLayout.hidden = false;
 }
 
 export function showEventTransition(els, text) {

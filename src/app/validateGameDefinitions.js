@@ -5,6 +5,7 @@ import { assertFacilityDefinitions, facilityDefinitions } from "../data/faciliti
 import { dialogueDefinitions } from "../data/dialogues.js";
 import { assertNpcDefinitions, npcDefinitions } from "../data/npcs.js";
 import { assertQuestDefinitions, questDefinitions } from "../data/quests.js";
+import { characterDefinitions } from "../data/characters/index.js";
 import { sharedEnemyDefinitions } from "../data/enemies/index.js";
 import { routeDefinitions } from "../data/routes/index.js";
 import { materialDefinitions } from "../data/materials.js";
@@ -12,6 +13,8 @@ import { regionDefinitions } from "../data/regions/index.js";
 import { assertRegionEncounterDefinitions } from "../data/regions/regionDefinition.js";
 import { assertSafeAreaDefinitions, safeAreaDefinitions } from "../data/safeAreas.js";
 import { assertWeaponDefinitions, weaponDefinitions } from "../data/weapons.js";
+import { assertStoryQuestDefinitions, storyQuestDefinitions } from "../data/storyQuests.js";
+import { assertDuelDefinitions, duelDefinitions } from "../data/duels/index.js";
 
 export function validateGameDefinitions() {
   const storyFlagKeys = Object.freeze(Object.keys(createDefaultSave().storyFlags));
@@ -20,15 +23,25 @@ export function validateGameDefinitions() {
   assertDialogueDefinitions(dialogueDefinitions, {
     npcDefinitions,
     storyFlagKeys,
-    facilityDefinitions
+    facilityDefinitions,
+    duelDefinitions
   });
+  assertDuelDefinitions(duelDefinitions);
   assertQuestDefinitions(questDefinitions, {
     materialDefinitions,
     regionDefinitions,
     routeDefinitions,
     enemyDefinitions: buildEnemyRegistry()
   });
-  assertWeaponDefinitions(weaponDefinitions, { materialDefinitions });
+  assertWeaponDefinitions(weaponDefinitions, { materialDefinitions, characterDefinitions });
+  assertStoryQuestDefinitions(storyQuestDefinitions, {
+    characterDefinitions,
+    weaponDefinitions,
+    regionDefinitions,
+    safeAreaDefinitions,
+    materialDefinitions,
+    storyFlagKeys
+  });
   assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
   Object.values(regionDefinitions).forEach((region) => {
     assertRegionPreparations(region);

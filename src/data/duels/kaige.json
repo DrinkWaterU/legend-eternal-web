@@ -1,0 +1,23 @@
+{
+  "id": "kaige-challenge",
+  "name": "凱哥",
+  "opponent": {
+    "id": "kaige-duel-opponent",
+    "name": "凱哥",
+    "kind": "切磋",
+    "maxHp": 220,
+    "hp": 220,
+    "attack": 27,
+    "defense": 6,
+    "critChance": 0.05,
+    "expReward": 0,
+    "rewardScale": 0,
+    "duelFury": {
+      "max": 3,
+      "lowHpThreshold": 0.5,
+      "normalGain": 1,
+      "lowHpGain": 2,
+      "heavyMultiplier": 1.5
+    }
+  }
+}

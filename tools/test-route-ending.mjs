@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { getRouteDefinition } from "../src/data/routes/index.js";
 import { regionDefinitions } from "../src/data/regions/index.js";
+import { createRouteEndingController } from "../src/features/adventure/routeEndingController.js";
 import {
   renderEventResultView,
   renderRouteEndingView
@@ -82,7 +83,11 @@ const els = {
   eventPrompt: createNode(),
   eventReward: createNode(),
   eventChoices: createNode(),
-  eventContinueButton: createNode()
+  eventContinueButton: createNode(),
+  nextButton: createNode(),
+  blessingPanel: createNode(),
+  endPanel: createNode(),
+  resultLabel: createNode()
 };
 
 renderRouteEndingView({
@@ -134,5 +139,64 @@ assert.equal(panel.classList.contains("route-ending-panel"), false);
 assert.equal(panel.classList.contains("route-ending-tone-archer"), false);
 assert.equal(eventNarrative.classList.contains("route-ending-narrative"), false);
 assert.equal(eventNarrative.children.at(-1).classList.contains("event-narrative-emphasis"), true);
+
+const state = {
+  activeRouteId: "goblin-camp",
+  routeEncounterIndex: route.encounterPlan.length,
+  battleEncounterType: "boss",
+  enemies: [],
+  encounterIndex: route.encounterPlan.length,
+  debugBuildRun: false,
+  runStats: { unlockedCharacters: [] },
+  awaitingBlessing: false
+};
+const saveStore = {
+  current: {
+    storyFlags: { archerRescued: false },
+    progression: { characters: { archer: { unlocked: false } } }
+  }
+};
+const finishedRuns = [];
+const achievementCalls = [];
+let coastClearUnlocks = 0;
+let recordedRuns = 0;
+const controller = createRouteEndingController({
+  state,
+  saveStore,
+  els,
+  characterDefinitions: { archer: { name: "弓箭手" } },
+  currentRoute: () => getRouteDefinition(state.activeRouteId),
+  clearPendingThreat: () => {},
+  closeAbilityInfoPanel: () => {},
+  closeBlessingInfoPanel: () => {},
+  unlockAdventureClearAchievements: (options) => achievementCalls.push(options),
+  unlockCoastClearAchievement: () => { coastClearUnlocks += 1; },
+  recordRunFinished: () => { recordedRuns += 1; },
+  finishRun: (...args) => finishedRuns.push(args),
+  render: () => {},
+  getEventRuntime: () => null
+});
+
+controller.completeRoute();
+assert.equal(state.phase, "routeEnding", "哥布林營地應由共用 Route 完成入口進入 Ending");
+assert.equal(saveStore.current.storyFlags.archerRescued, true);
+assert.equal(saveStore.current.progression.characters.archer.unlocked, true);
+assert.deepEqual(state.runStats.unlockedCharacters, ["弓箭手"]);
+assert.deepEqual(achievementCalls, [{ regionId: "forest", routeId: "goblin-camp" }]);
+assert.equal(recordedRuns, 1);
+
+const coastCaveRoute = getRouteDefinition("coast-cave");
+state.activeRouteId = coastCaveRoute.id;
+state.routeEncounterIndex = coastCaveRoute.encounterPlan.length;
+state.battleEncounterType = "boss";
+state.enemies = [];
+state.encounterIndex = 32;
+state.phase = "combat";
+controller.completeRoute();
+assert.equal(coastClearUnlocks, 1, "洞穴應由同一個 Route 完成入口解鎖海岸通關");
+assert.deepEqual(finishedRuns.at(-1), ["clear", { completedEncounterCount: 32 }]);
+
+state.routeEncounterIndex = coastCaveRoute.encounterPlan.length - 1;
+assert.throws(() => controller.completeRoute(), /completion 條件尚未成立/);
 
 console.log("Route ending presentation and content ownership tests passed.");

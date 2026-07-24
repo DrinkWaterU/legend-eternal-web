@@ -1,5 +1,6 @@
 import { clampProgress, safeStatisticCount } from "./statisticsMetrics.js";
 import { renderDefinitionList } from "./statisticsViewHelpers.js";
+import { getRegionDisplayName, getRegionSegmentName } from "../data/regions/regionDefinition.js";
 
 export function renderStatisticsRegionBrowser({ els, uiState, saveData, regionDefinitions, onRegionSelect }) {
   const entries = Object.entries(regionDefinitions);
@@ -20,9 +21,10 @@ export function renderStatisticsRegionBrowser({ els, uiState, saveData, regionDe
     const title = document.createElement("strong");
     const meta = document.createElement("small");
     const summary = document.createElement("span");
-    title.textContent = region.name;
+    title.textContent = getRegionDisplayName(region);
     meta.textContent = region.difficulty || "未知難度";
-    summary.textContent = `冒險 ${safeStatisticCount(stats.runs)} 次｜最高 ${safeStatisticCount(stats.bestEncounter)} / ${safeStatisticCount(region.encounterCount)}`;
+    const segmentName = getRegionSegmentName(region);
+    summary.textContent = `冒險 ${safeStatisticCount(stats.runs)} 次｜${segmentName}最高 ${safeStatisticCount(stats.bestEncounter)} / ${safeStatisticCount(region.encounterCount)}`;
     button.append(title, meta, summary);
     button.addEventListener("click", () => onRegionSelect?.(regionId));
     els.statisticsRegionList.append(button);
@@ -53,8 +55,10 @@ function renderRegionDetail({ element, regionId, region, stats }) {
   const title = document.createElement("h3");
   const meta = document.createElement("p");
   eyebrow.textContent = "地區冒險紀錄";
-  title.textContent = region.name;
-  meta.textContent = `${region.difficulty || "未知難度"}｜首領：${region.bossName || region.boss?.name || "未知"}`;
+  const displayName = getRegionDisplayName(region);
+  const segmentName = getRegionSegmentName(region);
+  title.textContent = displayName;
+  meta.textContent = `${region.difficulty || "未知難度"}｜${segmentName}首領：${region.bossName || region.boss?.name || "未知"}`;
   copy.append(eyebrow, title, meta);
   header.append(copy);
 

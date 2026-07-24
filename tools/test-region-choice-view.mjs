@@ -76,6 +76,10 @@ assert.match(forestCard.children[1].textContent, /16 場遭遇/);
 forestCard.click();
 assert.equal(selectedRegionId, "forest");
 
+const coastCard = list.children.find((button) => button.children[0].children[0].textContent === "海岸");
+assert.ok(coastCard, "第三地區玩家可見名稱應為海岸");
+assert.match(coastCard.children[1].textContent, /海灘段落｜16 場遭遇/);
+
 const root = new URL("../", import.meta.url);
 const [uiCss, responsiveCss] = await Promise.all([
   readFile(new URL("src/styles/ui-refresh.css", root), "utf8"),

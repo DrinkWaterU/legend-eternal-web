@@ -64,7 +64,28 @@ export function createRunRecords({
     saveGameSafe();
   }
 
-  function recordRunFinished(outcome) {
+  function recordBeachSegmentCompleted() {
+    if (state.debugBuildRun || state.selectedRegionId !== "beach" || state.beachSegmentCompleted) return false;
+
+    const stats = saveStore.current.statistics;
+    const regionStats = stats.regions[state.selectedRegionId];
+    const regionProgress = saveStore.current.progression.regions[state.selectedRegionId];
+    const segmentEncounterCount = currentRegion().encounterCount;
+
+    regionStats.bestEncounter = Math.max(regionStats.bestEncounter, segmentEncounterCount);
+    regionProgress.bestEncounter = Math.max(regionProgress.bestEncounter, segmentEncounterCount);
+    questRuntime?.recordRunCleared({
+      regionId: state.selectedRegionId,
+      routeId: null,
+      clearSourceId: "main",
+      debugBuildRun: false
+    });
+    state.beachSegmentCompleted = true;
+    saveGameSafe();
+    return true;
+  }
+
+  function recordRunFinished(outcome, { completedEncounterCount = null } = {}) {
     if (state.debugBuildRun || state.runResultRecorded) return;
 
     const stats = saveStore.current.statistics;
@@ -73,9 +94,17 @@ export function createRunRecords({
     const regionProgress = saveStore.current.progression.regions[state.selectedRegionId];
     const characterProgress = saveStore.current.progression.characters[state.selectedHeroId];
     const cleared = outcome === "clear";
+    const segmentCleared = outcome === "segmentClear";
     const retreated = outcome === "retreat";
     const evacuated = retreated && Boolean(state.runStats?.evacuated);
-    const bestEncounter = cleared ? currentRegion().encounterCount : state.encounterIndex + 1;
+    const defeated = outcome === "defeat";
+    const bestEncounter = cleared
+      ? Math.max(currentRegion().encounterCount, Number(completedEncounterCount) || 0)
+      : segmentCleared
+        ? currentRegion().encounterCount
+        : state.encounterIndex + 1;
+
+    if (segmentCleared) recordBeachSegmentCompleted();
 
     regionStats.bestEncounter = Math.max(regionStats.bestEncounter, bestEncounter);
     regionProgress.bestEncounter = Math.max(regionProgress.bestEncounter, bestEncounter);
@@ -88,7 +117,18 @@ export function createRunRecords({
     stats.counterEscapes += state.runStats?.counterEscapes || 0;
     stats.evacuationEscapes += state.runStats?.evacuationEscapes || 0;
 
-    applyOutcomeCounters({ cleared, retreated, evacuated, stats, regionStats, characterStats, regionProgress, characterProgress });
+    applyOutcomeCounters({
+      cleared,
+      segmentCleared,
+      retreated,
+      evacuated,
+      defeated,
+      stats,
+      regionStats,
+      characterStats,
+      regionProgress,
+      characterProgress
+    });
     if (cleared) {
       questRuntime?.recordRunCleared({
         regionId: state.selectedRegionId,
@@ -104,8 +144,10 @@ export function createRunRecords({
 
   function applyOutcomeCounters({
     cleared,
+    segmentCleared,
     retreated,
     evacuated,
+    defeated,
     stats,
     regionStats,
     characterStats,
@@ -124,13 +166,14 @@ export function createRunRecords({
       }
       return;
     }
+    if (segmentCleared) return;
     if (retreated && !evacuated) {
       stats.totalRetreats += 1;
       regionStats.retreats += 1;
       characterStats.retreats += 1;
       return;
     }
-    stats.totalDefeats += 1;
+    if (defeated) stats.totalDefeats += 1;
   }
 
   return Object.freeze({
@@ -138,6 +181,7 @@ export function createRunRecords({
     captureRunStartPermanentState,
     restoreRunStartPermanentState,
     recordEnemyDefeated,
+    recordBeachSegmentCompleted,
     recordRunFinished
   });
 }

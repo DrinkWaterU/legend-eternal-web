@@ -28,10 +28,18 @@ export function roll(chance) {
   return Math.random() < chance;
 }
 
-export function toSafeNumber(value, fallback = 0) {
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
-}
-
 export function toSafeInteger(value, fallback = 0) {
   return Number.isSafeInteger(value) && value >= 0 ? value : fallback;
+}
+
+export function sumSafeIntegers(...values) {
+  let total = 0;
+  for (const value of values) {
+    const normalized = toSafeInteger(value);
+    if (normalized > Number.MAX_SAFE_INTEGER - total) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+    total += normalized;
+  }
+  return total;
 }

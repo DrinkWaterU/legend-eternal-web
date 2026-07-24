@@ -9,48 +9,6 @@ export function renderStatList(element, items) {
   });
 }
 
-export function renderDetailInfoLayout(element, detailData = {}) {
-  const primary = normalizeDetailItems(detailData.primary);
-  const secondary = normalizeDetailItems(detailData.secondary);
-  element.replaceChildren();
-  appendDetailInfoGroup(element, "detail-info-primary", primary);
-  appendDetailInfoGroup(element, "detail-info-secondary", secondary);
-}
-
-function appendDetailInfoGroup(element, className, items) {
-  if (items.length === 0) {
-    return;
-  }
-  const list = document.createElement("dl");
-  list.className = className;
-  items.forEach(({ label, value }) => {
-    const card = document.createElement("div");
-    const term = document.createElement("dt");
-    const description = document.createElement("dd");
-    card.className = "detail-info-card";
-    term.textContent = label;
-    description.textContent = value;
-    card.append(term, description);
-    list.append(card);
-  });
-  element.append(list);
-}
-
-function normalizeDetailItems(items = []) {
-  if (!Array.isArray(items)) {
-    return [];
-  }
-  return items.filter((item) => (
-    item
-    && item.label !== null
-    && item.label !== undefined
-    && String(item.label).trim() !== ""
-    && item.value !== null
-    && item.value !== undefined
-    && String(item.value).trim() !== ""
-  ));
-}
-
 export function renderChoiceList(element, choices) {
   element.innerHTML = "";
   choices.forEach((choice) => {
@@ -78,7 +36,8 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
     reveal = false,
     onRevealComplete = null,
     revealIntervalMs = BLESSING_REVEAL_INTERVAL_MS,
-    revealDurationMs = BLESSING_REVEAL_DURATION_MS
+    revealDurationMs = BLESSING_REVEAL_DURATION_MS,
+    ownedCounts = {}
   } = options;
   element.innerHTML = "";
   const buttons = blessings.map((blessing) => {
@@ -97,6 +56,21 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
       <em>${blessing.flavorText}</em>
       <b>${blessing.effectText}</b>
     `;
+    const ownedCount = Math.max(0, Math.floor(Number(ownedCounts?.[blessing.id]) || 0));
+    button.setAttribute(
+      "aria-label",
+      ownedCount > 0
+        ? `${blessing.name}，目前持有 ${ownedCount} 個`
+        : blessing.name
+    );
+    if (ownedCount > 0) {
+      button.classList.add("has-owned-count");
+      const ownedCountBadge = document.createElement("span");
+      ownedCountBadge.className = "blessing-card-owned-count";
+      ownedCountBadge.textContent = `×${ownedCount}`;
+      ownedCountBadge.setAttribute("aria-hidden", "true");
+      button.append(ownedCountBadge);
+    }
     button.addEventListener("click", () => onChoose(blessing));
     if (reveal) {
       button.disabled = true;
@@ -127,6 +101,41 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
   }, revealCompleteDelay);
 }
 
+export function renderCampBlessingChoices(element, instances, selectedIds, onToggle) {
+  const selected = new Set(selectedIds);
+  element.replaceChildren();
+  (Array.isArray(instances) ? instances : []).forEach((instance) => {
+    const blessing = instance.definition || instance;
+    const rarityId = blessing.rarity || DEFAULT_BLESSING_RARITY;
+    const rarity = getBlessingRarity(rarityId);
+    const button = document.createElement("button");
+    const isSelected = selected.has(instance.instanceId);
+    button.className = `blessing-card camp-blessing-card rarity-${rarity.id}${isSelected ? " is-retained" : ""}`;
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(isSelected));
+    button.setAttribute("aria-label", `${blessing.name}，來源：${instance.sourceLabel || "冒險途中"}`);
+
+    const meta = document.createElement("small");
+    const source = document.createElement("span");
+    const rarityLabel = document.createElement("i");
+    source.textContent = instance.sourceLabel || "冒險途中";
+    rarityLabel.textContent = rarity.label;
+    meta.append(source, rarityLabel);
+
+    const name = document.createElement("strong");
+    const eventText = document.createElement("span");
+    const flavor = document.createElement("em");
+    const effect = document.createElement("b");
+    name.textContent = blessing.name || "未命名祝福";
+    eventText.textContent = blessing.eventText || "";
+    flavor.textContent = blessing.flavorText || "";
+    effect.textContent = blessing.effectText || "";
+    button.append(meta, name, eventText, flavor, effect);
+    button.addEventListener("click", () => onToggle(instance.instanceId));
+    element.append(button);
+  });
+}
+
 export function renderBattleLog(element, log) {
   element.innerHTML = "";
   log.slice(-80).reverse().forEach((entry) => {
@@ -137,4 +146,3 @@ export function renderBattleLog(element, log) {
   });
   element.scrollTop = 0;
 }
-

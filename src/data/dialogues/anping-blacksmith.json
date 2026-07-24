@@ -64,19 +64,11 @@
           }
         },
         {
-          "id": "talk-weapons",
-          "label": "聊聊武器",
+          "id": "talk-logan",
+          "label": "和羅根聊聊",
           "action": {
             "type": "gotoNode",
-            "nodeId": "about-weapons"
-          }
-        },
-        {
-          "id": "talk-anping",
-          "label": "聊聊安平鎮",
-          "action": {
-            "type": "gotoNode",
-            "nodeId": "about-anping"
+            "nodeId": "chat-menu"
           }
         },
         {
@@ -104,7 +96,31 @@
           }
         },
         {
-          "id": "talk-weapons-known",
+          "id": "talk-logan-known",
+          "label": "和羅根聊聊",
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "chat-menu"
+          }
+        },
+        {
+          "id": "leave-known",
+          "label": "離開",
+          "action": {
+            "type": "returnToFacilityList"
+          }
+        }
+      ]
+    },
+    "chat-menu": {
+      "pages": [
+        {
+          "text": "……想問什麼？"
+        }
+      ],
+      "choices": [
+        {
+          "id": "talk-weapons",
           "label": "聊聊武器",
           "action": {
             "type": "gotoNode",
@@ -112,7 +128,7 @@
           }
         },
         {
-          "id": "talk-anping-known",
+          "id": "talk-anping",
           "label": "聊聊安平鎮",
           "action": {
             "type": "gotoNode",
@@ -122,16 +138,49 @@
         {
           "id": "talk-past",
           "label": "聊聊你的過去",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "knowsAnpingBlacksmithName",
+              "operator": "equals",
+              "value": true
+            }
+          ],
           "action": {
             "type": "gotoNode",
             "nodeId": "about-past"
           }
         },
         {
-          "id": "leave-known",
-          "label": "離開",
+          "id": "chat-return-unknown",
+          "label": "先聊到這裡",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "knowsAnpingBlacksmithName",
+              "operator": "equals",
+              "value": false
+            }
+          ],
           "action": {
-            "type": "returnToFacilityList"
+            "type": "gotoNode",
+            "nodeId": "default-greeting"
+          }
+        },
+        {
+          "id": "chat-return-known",
+          "label": "先聊到這裡",
+          "conditions": [
+            {
+              "type": "storyFlag",
+              "key": "knowsAnpingBlacksmithName",
+              "operator": "equals",
+              "value": true
+            }
+          ],
+          "action": {
+            "type": "gotoNode",
+            "nodeId": "known-name-greeting"
           }
         }
       ]
@@ -170,7 +219,7 @@
           ],
           "action": {
             "type": "gotoNode",
-            "nodeId": "default-greeting"
+            "nodeId": "chat-menu"
           }
         },
         {
@@ -186,7 +235,7 @@
           ],
           "action": {
             "type": "gotoNode",
-            "nodeId": "known-name-greeting"
+            "nodeId": "chat-menu"
           }
         }
       ]
@@ -230,7 +279,7 @@
           ],
           "action": {
             "type": "gotoNode",
-            "nodeId": "default-greeting"
+            "nodeId": "chat-menu"
           }
         },
         {
@@ -246,7 +295,7 @@
           ],
           "action": {
             "type": "gotoNode",
-            "nodeId": "known-name-greeting"
+            "nodeId": "chat-menu"
           }
         }
       ]
@@ -270,7 +319,7 @@
           "value": true
         }
       ],
-      "nextNodeId": "known-name-greeting"
+      "nextNodeId": "chat-menu"
     },
     "about-anping": {
       "pages": [
@@ -298,7 +347,7 @@
           ],
           "action": {
             "type": "gotoNode",
-            "nodeId": "default-greeting"
+            "nodeId": "chat-menu"
           }
         },
         {
@@ -314,7 +363,7 @@
           ],
           "action": {
             "type": "gotoNode",
-            "nodeId": "known-name-greeting"
+            "nodeId": "chat-menu"
           }
         }
       ]
@@ -334,7 +383,7 @@
           "label": "不再追問",
           "action": {
             "type": "gotoNode",
-            "nodeId": "known-name-greeting"
+            "nodeId": "chat-menu"
           }
         }
       ]

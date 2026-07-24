@@ -49,13 +49,16 @@ export function createSceneController({
 
   function applySceneContext(screenId) {
     const context = getNavigationContext();
-    const scene = screenId === "gameScreen"
-      ? "region"
-      : screenId === "campScreen"
-        ? "camp"
-        : screenId === "menuScreen"
-          ? null
-          : context.scene;
+    const isDuelScreen = screenId === "gameScreen" && state.battleSource === "duel";
+    const scene = isDuelScreen
+      ? "camp"
+      : screenId === "gameScreen"
+        ? "region"
+        : screenId === "campScreen"
+          ? "camp"
+          : screenId === "menuScreen"
+            ? null
+            : context.scene;
 
     if (scene) {
       documentRef.body.dataset.scene = scene;

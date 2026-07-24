@@ -4,6 +4,7 @@ const SUPPORTED_WEAPON_EFFECT_STATS = new Set([
   "attack",
   "critChance",
   "shieldStart",
+  "multiEnemyShieldStart",
   "openingCritChance",
   "woundedTargetCritChance",
   "poisonedTargetDefenseIgnore",
@@ -27,6 +28,10 @@ export const weaponCategoryDefinitions = Object.freeze({
   dagger: Object.freeze({
     id: "dagger",
     label: "匕首"
+  }),
+  "battle-axe": Object.freeze({
+    id: "battle-axe",
+    label: "戰斧"
   })
 });
 
@@ -42,6 +47,11 @@ export const weaponRarityDefinitions = Object.freeze({
     id: "uncommon",
     label: "精良",
     rank: 2
+  }),
+  rare: Object.freeze({
+    id: "rare",
+    label: "稀有",
+    rank: 3
   })
 });
 
@@ -65,7 +75,7 @@ export function getWeaponRarityDefinition(rarityId) {
 }
 
 export function assertWeaponDefinitions(definitions = weaponDefinitions, options = {}) {
-  const { materialDefinitions = null } = options;
+  const { materialDefinitions = null, characterDefinitions = null } = options;
 
   Object.entries(definitions).forEach(([weaponId, weapon]) => {
     if (!weapon || weapon.id !== weaponId) {
@@ -80,6 +90,8 @@ export function assertWeaponDefinitions(definitions = weaponDefinitions, options
     if (!weaponRarityDefinitions[weapon.rarityId]) {
       throw new Error(`Weapon ${weaponId} 使用未知 rarityId：${weapon.rarityId}`);
     }
+    assertAllowedCharacterIds(weaponId, weapon.allowedCharacterIds, characterDefinitions);
+    assertWeaponDisplayEffect(weaponId, weapon);
     if (!Array.isArray(weapon.statEffects)) {
       throw new Error(`Weapon ${weaponId} 的 statEffects 必須是陣列。`);
     }
@@ -88,6 +100,12 @@ export function assertWeaponDefinitions(definitions = weaponDefinitions, options
       .forEach((effect) => assertWeaponEffect(weaponId, effect));
 
     const recipe = weapon.recipe;
+    if (weapon.craftable === false) {
+      if (recipe !== null) {
+        throw new Error(`不可製作武器 ${weaponId} 的 recipe 必須是 null。`);
+      }
+      return;
+    }
     if (!recipe || !Number.isSafeInteger(recipe.goldCost) || recipe.goldCost < 0) {
       throw new Error(`Weapon ${weaponId} 的 recipe.goldCost 無效。`);
     }
@@ -117,6 +135,10 @@ export function assertWeaponDefinitions(definitions = weaponDefinitions, options
 }
 
 function assertWeaponEffect(weaponId, effect) {
+  if (effect.type === "adventurerAdaptation") {
+    assertAdventurerAdaptationEffect(weaponId, effect);
+    return;
+  }
   if (effect.type !== "add") {
     throw new Error(`Weapon ${weaponId} 使用不支援的 effect type：${effect.type}`);
   }
@@ -126,4 +148,58 @@ function assertWeaponEffect(weaponId, effect) {
   if (!Number.isFinite(effect.amount)) {
     throw new Error(`Weapon ${weaponId} 的 effect amount 無效：${effect.stat}`);
   }
+}
+
+function assertAllowedCharacterIds(weaponId, allowedCharacterIds, characterDefinitions) {
+  if (allowedCharacterIds == null) return;
+  if (!Array.isArray(allowedCharacterIds) || allowedCharacterIds.length === 0) {
+    throw new Error(`Weapon ${weaponId} 的 allowedCharacterIds 必須是非空陣列。`);
+  }
+
+  const uniqueIds = new Set();
+  allowedCharacterIds.forEach((characterId) => {
+    if (typeof characterId !== "string" || !characterId.trim()) {
+      throw new Error(`Weapon ${weaponId} 的 allowedCharacterIds 包含無效角色 ID。`);
+    }
+    if (uniqueIds.has(characterId)) {
+      throw new Error(`Weapon ${weaponId} 的 allowedCharacterIds 包含重複角色：${characterId}`);
+    }
+    uniqueIds.add(characterId);
+    if (characterDefinitions && !characterDefinitions[characterId]) {
+      throw new Error(`Weapon ${weaponId} 使用未知角色：${characterId}`);
+    }
+  });
+}
+
+function assertWeaponDisplayEffect(weaponId, weapon) {
+  const hasEffectName = typeof weapon.effectName === "string" && Boolean(weapon.effectName.trim());
+  const hasEffectText = typeof weapon.effectText === "string" && Boolean(weapon.effectText.trim());
+  if (hasEffectName !== hasEffectText) {
+    throw new Error(`Weapon ${weaponId} 的 effectName 與 effectText 必須同時提供。`);
+  }
+}
+
+function assertAdventurerAdaptationEffect(weaponId, effect) {
+  const ratioFields = ["lowHpThreshold", "bossCritChance", "singleEnemyCritChance"];
+  const positiveIntegerFields = [
+    "lowHpAttackBonus",
+    "lowHpShield",
+    "bossAttackBonus",
+    "bossShield",
+    "multiEnemyThreshold",
+    "multiEnemyAttackBonus",
+    "multiEnemyShield",
+    "singleEnemyAttackBonus"
+  ];
+
+  ratioFields.forEach((field) => {
+    if (!Number.isFinite(effect[field]) || effect[field] < 0 || effect[field] > 1) {
+      throw new Error(`Weapon ${weaponId} 的 adventurerAdaptation.${field} 無效。`);
+    }
+  });
+  positiveIntegerFields.forEach((field) => {
+    if (!Number.isSafeInteger(effect[field]) || effect[field] <= 0) {
+      throw new Error(`Weapon ${weaponId} 的 adventurerAdaptation.${field} 無效。`);
+    }
+  });
 }

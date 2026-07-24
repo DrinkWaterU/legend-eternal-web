@@ -10,6 +10,7 @@ export function createScreenController({
   renderMenuScreen,
   renderCampScreen,
   renderSafeAreaTravelScreen,
+  renderStoryQuestScreen,
   renderStorageScreen,
   renderFacilityScreen,
   renderRegionScreen,
@@ -36,6 +37,10 @@ export function createScreenController({
       els.resultLabel.textContent = "據點移動";
       els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
       renderSafeAreaTravelScreen();
+    } else if (screenId === "storyQuestScreen") {
+      els.resultLabel.textContent = "任務紀錄";
+      els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";
+      renderStoryQuestScreen();
     } else if (screenId === "storageScreen") {
       els.resultLabel.textContent = "倉庫";
       els.encounterLabel.textContent = getCurrentSafeArea()?.name || "安全區";

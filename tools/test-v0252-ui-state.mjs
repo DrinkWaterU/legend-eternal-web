@@ -45,9 +45,9 @@ const hiddenLockedState = {
   forest_trial: { unlocked: false, unlockedAt: null },
   goblin_camp_clear: { unlocked: false, unlockedAt: null }
 };
-assert.equal(getVisibleAchievementEntries({ definitions: achievementDefinitions, achievementState: hiddenLockedState }).length, 3, "未解鎖隱藏成就不可洩漏");
+assert.equal(getVisibleAchievementEntries({ definitions: achievementDefinitions, achievementState: hiddenLockedState }).length, 4, "未解鎖隱藏成就不可洩漏");
 hiddenLockedState.goblin_camp_clear.unlocked = true;
-assert.equal(getVisibleAchievementEntries({ definitions: achievementDefinitions, achievementState: hiddenLockedState }).length, 4);
+assert.equal(getVisibleAchievementEntries({ definitions: achievementDefinitions, achievementState: hiddenLockedState }).length, 5);
 assert.notEqual(formatAchievementDate("not-a-date"), "Invalid Date");
 
 console.log("v0.2.5.2 UI model and compatibility tests passed.");

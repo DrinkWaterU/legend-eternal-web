@@ -35,30 +35,60 @@ export function discoverTestFiles(toolsDirectory) {
     .filter(isTestFile);
 }
 
-export function parseCliArguments(args = []) {
-  const [firstArgument] = args;
-  if (!firstArgument) {
-    return { mode: "quick", help: false, error: null };
-  }
-  if (firstArgument === "--help" || firstArgument === "-h") {
-    return { mode: null, help: true, error: null };
-  }
-  if (!VALID_MODES.has(firstArgument)) {
-    return {
-      mode: null,
-      help: false,
-      error: `未知測試模式：${firstArgument}`
-    };
-  }
-  if (args.length > 1) {
-    return {
-      mode: null,
-      help: false,
-      error: `不支援額外參數：${args.slice(1).join(" ")}`
-    };
-  }
+export function matchesTestFilter(fileName, match = "") {
+  const normalizedMatch = String(match || "").trim().toLowerCase();
+  return !normalizedMatch || String(fileName || "").toLowerCase().includes(normalizedMatch);
+}
 
-  return { mode: firstArgument, help: false, error: null };
+export function parseCliArguments(args = []) {
+  const remaining = [...args];
+  if (remaining[0] === "--help" || remaining[0] === "-h") {
+    return { mode: null, match: "", help: true, error: null };
+  }
+  let mode = "quick";
+  let match = "";
+  if (remaining[0] && !remaining[0].startsWith("-")) {
+    const requestedMode = remaining.shift();
+    if (!VALID_MODES.has(requestedMode)) {
+      return {
+        mode: null,
+        match: "",
+        help: false,
+        error: `未知測試模式：${requestedMode}`
+      };
+    }
+    mode = requestedMode;
+  }
+  if (remaining.length === 0) {
+    return { mode, match, help: false, error: null };
+  }
+  if (remaining[0] !== "--match") {
+    return {
+      mode: null,
+      match: "",
+      help: false,
+      error: `不支援額外參數：${remaining.join(" ")}`
+    };
+  }
+  remaining.shift();
+  match = String(remaining.shift() || "").trim();
+  if (!match) {
+    return {
+      mode: null,
+      match: "",
+      help: false,
+      error: "--match 需要提供測試名稱片段"
+    };
+  }
+  if (remaining.length > 0) {
+    return {
+      mode: null,
+      match: "",
+      help: false,
+      error: `不支援額外參數：${remaining.join(" ")}`
+    };
+  }
+  return { mode, match, help: false, error: null };
 }
 
 export function runTestFile(testFilePath, options = {}) {
@@ -92,22 +122,48 @@ export function formatHelp() {
     "  model  只執行正式平衡模型測試",
     "  full   先執行 quick，再執行 model",
     "",
+    "篩選：",
+    "  --match <文字>  只執行檔名包含指定文字的測試；找不到時以錯誤結束",
+    "",
     "範例：",
     "  node tools/run-tests.mjs",
     "  node tools/run-tests.mjs quick",
+    "  node tools/run-tests.mjs quick --match blacksmith",
     "  node tools/run-tests.mjs model",
     "  node tools/run-tests.mjs full"
   ].join("\n");
 }
 
-export function runTestSuite({ mode, toolsDirectory, output = process.stdout, errorOutput = process.stderr }) {
+export function runTestSuite({
+  mode,
+  match = "",
+  toolsDirectory,
+  output = process.stdout,
+  errorOutput = process.stderr
+}) {
   const classified = classifyTestFiles(discoverTestFiles(toolsDirectory));
-  const selectedTests = classified[mode] || [];
+  const selectedTests = (classified[mode] || []).filter((fileName) => matchesTestFilter(fileName, match));
   const startedAt = process.hrtime.bigint();
   const results = [];
 
   output.write(`Mode: ${mode}\n`);
+  if (match) {
+    output.write(`Match: ${match}\n`);
+  }
   output.write(`Tests: ${selectedTests.length}\n\n`);
+  if (selectedTests.length === 0) {
+    errorOutput.write(`找不到符合條件的測試：${match || mode}\n`);
+    return {
+      mode,
+      match,
+      selectedTests,
+      results,
+      passed: 0,
+      failed: 0,
+      durationSeconds: 0,
+      exitCode: 2
+    };
+  }
 
   for (const fileName of selectedTests) {
     const testFilePath = path.join(toolsDirectory, fileName);
@@ -157,6 +213,7 @@ export function runTestSuite({ mode, toolsDirectory, output = process.stdout, er
 
   return {
     mode,
+    match,
     selectedTests,
     results,
     passed,
@@ -180,7 +237,7 @@ export function main(args = process.argv.slice(2)) {
   }
 
   const toolsDirectory = path.dirname(fileURLToPath(import.meta.url));
-  return runTestSuite({ mode: parsed.mode, toolsDirectory }).exitCode;
+  return runTestSuite({ mode: parsed.mode, match: parsed.match, toolsDirectory }).exitCode;
 }
 
 const isDirectExecution = process.argv[1]

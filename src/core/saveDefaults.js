@@ -10,6 +10,7 @@ import { regionDefinitions } from "../data/regions/index.js";
 import { DEFAULT_SAFE_AREA_ID } from "../data/safeAreas.js";
 import { createDefaultSafeAreaProgression } from "./safeAreaProgression.js";
 import { createDefaultQuestState } from "./questRules.js";
+import { createDefaultStoryQuestState } from "./storyQuestRules.js";
 
 export function createDefaultSave() {
   const now = new Date().toISOString();
@@ -31,6 +32,7 @@ export function createDefaultSave() {
     storyFlags: createDefaultStoryFlags(),
     achievements: createDefaultAchievements(),
     quests: createDefaultQuestState(),
+    storyQuests: createDefaultStoryQuestState(),
     statistics: {
       totalRuns: 0,
       totalDefeats: 0,
@@ -91,7 +93,9 @@ function createDefaultStoryFlags() {
     metAnpingGuildReceptionist: false,
     knowsAnpingGuildReceptionistName: false,
     registeredAtAnpingGuild: false,
-    guildQuestIntroductionSeen: false
+    guildQuestIntroductionSeen: false,
+    metKaige: false,
+    knowsKaigeName: false
   };
 }
 

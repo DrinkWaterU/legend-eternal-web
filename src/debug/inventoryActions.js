@@ -53,7 +53,8 @@ export function createDebugInventoryActions({ getSaveData, saveGameSafe, refresh
   function giveBlacksmithResources() {
     const saveData = getSaveData();
     const rewards = createEmptyRewards();
-    rewards.gold = 1000;
+    rewards.gold = Object.values(weaponDefinitions)
+      .reduce((total, weapon) => total + (Number(weapon.recipe?.goldCost) || 0), 0);
     Object.values(weaponDefinitions).forEach((weapon) => {
       (weapon.recipe?.materialCosts || []).forEach((cost) => {
         const material = materialDefinitions[cost.materialId];
@@ -69,7 +70,7 @@ export function createDebugInventoryActions({ getSaveData, saveGameSafe, refresh
     applyRewardsToInventory(saveData.inventory, rewards);
     saveGameSafe();
     refresh();
-    return "已給予 1000 金幣與製作八把武器所需素材。";
+    return `已給予 ${rewards.gold} 金幣與製作全部武器所需素材。`;
   }
 
   function giveAllWeapons() {

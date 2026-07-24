@@ -143,7 +143,7 @@ assert.equal(matchClearObjective(questDefinitions["beach-route-survey"].objectiv
 }), false);
 
 const migrated = migrateSave({ schemaVersion: 8, inventory: { gold: 7 }, storyFlags: {} });
-assert.equal(migrated.schemaVersion, 9);
+assert.equal(migrated.schemaVersion, 10);
 assert.deepEqual(migrated.quests, createDefaultSave().quests);
 assert.equal(migrated.storyFlags.guildQuestIntroductionSeen, false);
 

@@ -1,5 +1,6 @@
 import {
   COUNTER_ESCAPE_ENEMY_HEAL_RATIO,
+  COAST_TRIAL_ACHIEVEMENT_ID,
   ELITE_FLEE_CHANCE,
   BEACH_TRIAL_ACHIEVEMENT_ID,
   FOREST_TRIAL_ACHIEVEMENT_ID,
@@ -17,11 +18,13 @@ import { createRunLifecycleController } from "../features/adventure/runLifecycle
 import { createRunResultController } from "../features/adventure/runResultController.js";
 import { createAdventureAchievements } from "../features/adventure/adventureAchievements.js";
 import { createRouteEndingController } from "../features/adventure/routeEndingController.js";
+import { createCampTransitionController } from "../features/adventure/campTransitionController.js";
 import { createEncounterVictoryController } from "../features/adventure/encounterVictoryController.js";
 import { createBlessingController } from "../features/blessing/blessingController.js";
 import { createEscapeController } from "../features/escape/escapeController.js";
 import { createAnpingArrivalController } from "../features/story/anpingArrivalController.js";
 import { createPlainsStoryController } from "../features/story/plainsStoryController.js";
+import { createDuelController } from "../features/duel/duelController.js";
 import { materialDefinitions } from "../data/materials.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
@@ -40,6 +43,8 @@ export function createAdventureFeatures({
 }) {
   const { state, uiState, saveStore } = foundation;
   let anpingArrivalController;
+  let campTransitionController;
+  let adventureAchievements;
 
   const runLifecycleController = createRunLifecycleController({
     state,
@@ -60,6 +65,7 @@ export function createAdventureFeatures({
     clearAnpingArrivalTimers: (...args) => anpingArrivalController?.clearTimers(...args),
     selectRunBoss: battle.selectRunBoss,
     recordSelectedBossInRunStats: battle.recordSelectedBossInRunStats,
+    recordBeachSegmentCompleted: battle.recordBeachSegmentCompleted,
     buildHeroFromProgression: foundation.buildHeroFromProgression,
     hasPhoenixBlessing: foundation.hasPhoenixBlessing,
     captureRunStartPermanentState: battle.captureRunStartPermanentState,
@@ -76,6 +82,8 @@ export function createAdventureFeatures({
     renderRegionScreen: world.renderRegionScreen,
     closeTransientUiPanels: profile.closeTransientUiPanels,
     setCombatActionState: battle.setCombatActionState,
+    render: battle.render,
+    showBeachSegmentChoice: () => campTransitionController?.showBeachSegmentChoice(),
     flushAchievementUnlockQueue: profile.flushAchievementUnlockQueue,
     showAnpingArrivalStory: (...args) => anpingArrivalController?.showStory(...args),
     applySceneContext: foundation.applySceneContext,
@@ -96,6 +104,7 @@ export function createAdventureFeatures({
     getCharacterProgress: foundation.getCharacterProgress,
     hasPhoenixBlessing: foundation.hasPhoenixBlessing,
     resetCharacterProgress: foundation.resetCharacterProgress,
+    settleCharacterProgression: foundation.settleCharacterProgression,
     recordRunFinished: battle.recordRunFinished,
     saveGameSafe: foundation.saveGameSafe,
     clearEnemyGroup: battle.clearEnemyGroup,
@@ -107,13 +116,27 @@ export function createAdventureFeatures({
     flushAchievementUnlockQueue: profile.flushAchievementUnlockQueue
   });
 
-  const adventureAchievements = createAdventureAchievements({
+  adventureAchievements = createAdventureAchievements({
     state,
     saveStore,
     queueAchievementUnlock: profile.queueAchievementUnlock,
     forestTrialAchievementId: FOREST_TRIAL_ACHIEVEMENT_ID,
     goblinCampClearAchievementId: GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID,
-    beachTrialAchievementId: BEACH_TRIAL_ACHIEVEMENT_ID
+    beachTrialAchievementId: BEACH_TRIAL_ACHIEVEMENT_ID,
+    coastTrialAchievementId: COAST_TRIAL_ACHIEVEMENT_ID,
+    saveGameSafe: foundation.saveGameSafe
+  });
+
+  campTransitionController = createCampTransitionController({
+    state,
+    els,
+    runStartingFlees: RUN_STARTING_FLEES,
+    buildHeroFromProgression: foundation.buildHeroFromProgression,
+    clearEnemyGroup: battle.clearEnemyGroup,
+    clearPendingThreat: battle.clearPendingThreat,
+    render: battle.render,
+    finishRun: runResultController.finishRun,
+    enterAdventureRoute: runLifecycleController.enterAdventureRoute
   });
 
   const routeEndingController = createRouteEndingController({
@@ -126,6 +149,7 @@ export function createAdventureFeatures({
     closeAbilityInfoPanel: profile.closeAbilityInfoPanel,
     closeBlessingInfoPanel: profile.closeBlessingInfoPanel,
     unlockAdventureClearAchievements: adventureAchievements.unlockAdventureClearAchievements,
+    unlockCoastClearAchievement: adventureAchievements.unlockCoastClearAchievement,
     recordRunFinished: battle.recordRunFinished,
     finishRun: runResultController.finishRun,
     render: battle.render,
@@ -140,7 +164,8 @@ export function createAdventureFeatures({
     addLog: battle.addLog,
     hasPendingThreat: battle.hasPendingThreat,
     resumePendingThreat: battle.resumePendingThreat,
-    enterSafeState: runResultController.enterSafeState
+    enterSafeState: runResultController.enterSafeState,
+    onBeachBossBlessingChosen: runLifecycleController.openBeachSegmentCheckpoint
   });
 
   const escapeController = createEscapeController({
@@ -164,6 +189,7 @@ export function createAdventureFeatures({
     enterSafeState: runResultController.enterSafeState,
     buildCounterEnemy: battle.buildCounterEnemy,
     currentRegion: foundation.currentRegion,
+    currentRoute: foundation.currentRoute,
     currentTargetEnemy: battle.currentTargetEnemy,
     beginBattleRuntime: battle.beginBattleRuntime,
     finishRun: runResultController.finishRun,
@@ -228,7 +254,7 @@ export function createAdventureFeatures({
     render: battle.render,
     addLog: battle.addLog,
     getAdventureSourceName: foundation.getAdventureSourceName,
-    completeGoblinCampRoute: routeEndingController.completeGoblinCampRoute,
+    completeRoute: routeEndingController.completeRoute,
     shouldTriggerPlainsStory: plainsStoryController.shouldTriggerStory,
     showPlainsStory: plainsStoryController.showStory,
     unlockAdventureClearAchievements: adventureAchievements.unlockAdventureClearAchievements,
@@ -236,20 +262,64 @@ export function createAdventureFeatures({
     showBlessings: blessingController.showBlessings
   });
 
+  const duelController = createDuelController({
+    state,
+    saveStore,
+    els,
+    storyQuestRuntime: world.storyQuestRuntime,
+    buildHeroFromProgression: foundation.buildHeroFromProgression,
+    resetAdventureRunRuntime: runLifecycleController.resetAdventureRunRuntime,
+    beginBattleRuntime: battle.beginBattleRuntime,
+    settleBattleVictory: battle.settleBattleVictory,
+    addFixedLog: battle.addFixedLog,
+    logCurrentEnemyGroupEncounter: battle.logCurrentEnemyGroupEncounter,
+    render: battle.render,
+    showScreen,
+    showNpcDialogue: world.showNpcDialogue,
+    setNavigationContext: foundation.setNavigationContext,
+    closeAbilityInfoPanel: profile.closeAbilityInfoPanel,
+    closeBlessingInfoPanel: profile.closeBlessingInfoPanel
+  });
+
+  function handleBattleVictory() {
+    if (duelController.handleBattleVictory()) {
+      return;
+    }
+    encounterVictoryController.winEncounter();
+  }
+
+  function handleBattleDefeat() {
+    if (duelController.handleBattleDefeat()) {
+      return;
+    }
+    runResultController.loseRun();
+  }
+
+  function handleEscapeAction() {
+    if (duelController.isDuelActive()) {
+      duelController.requestExit();
+      return;
+    }
+    escapeController.tryFlee();
+  }
+
   return Object.freeze({
     runLifecycleController,
     runResultController,
     adventureAchievements,
     routeEndingController,
+    campTransitionController,
     blessingController,
     escapeController,
     anpingArrivalController,
     plainsStoryController,
     encounterVictoryController,
+    duelController,
     ...runLifecycleController,
     ...runResultController,
     ...adventureAchievements,
     ...routeEndingController,
+    ...campTransitionController,
     ...blessingController,
     ...escapeController,
     clearAnpingArrivalTimers: anpingArrivalController.clearTimers,
@@ -262,6 +332,16 @@ export function createAdventureFeatures({
     showPlainsStory: plainsStoryController.showStory,
     revealStoryText: plainsStoryController.revealStoryText,
     completePlainsStory: plainsStoryController.completeStory,
-    winEncounter: encounterVictoryController.winEncounter
+    winEncounter: encounterVictoryController.winEncounter,
+    handleBattleVictory,
+    handleBattleDefeat,
+    handleEscapeAction,
+    startDuel: duelController.startDuel,
+    requestDuelExit: duelController.requestExit,
+    cancelDuelExit: duelController.cancelExit,
+    confirmDuelExit: duelController.confirmExit,
+    prepareDuelEnemyAction: duelController.prepareEnemyAction,
+    completeDuelEnemyAction: duelController.completeEnemyAction,
+    isDuelActive: duelController.isDuelActive
   });
 }

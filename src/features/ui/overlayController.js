@@ -18,6 +18,28 @@ export function createOverlayController({
 }) {
   function closeEndPanel() {
     els.endPanel.classList.remove("is-visible");
+    els.returnToEndSummaryButton.hidden = true;
+  }
+
+  function reviewEndPanelLog() {
+    if (!state.ended || !els.endPanel.classList.contains("is-visible")) {
+      return false;
+    }
+    els.endPanel.classList.remove("is-visible");
+    els.returnToEndSummaryButton.hidden = false;
+    els.combatHomeButton.hidden = true;
+    els.returnToEndSummaryButton.focus();
+    return true;
+  }
+
+  function returnToEndPanel() {
+    if (!state.ended) {
+      return false;
+    }
+    els.returnToEndSummaryButton.hidden = true;
+    els.endPanel.classList.add("is-visible");
+    els.viewLogButton.focus();
+    return true;
   }
 
   function openAbilityInfoPanel() {
@@ -81,6 +103,8 @@ export function createOverlayController({
 
   return Object.freeze({
     closeEndPanel,
+    reviewEndPanelLog,
+    returnToEndPanel,
     openAbilityInfoPanel,
     closeAbilityInfoPanel,
     openBlessingInfoPanel,

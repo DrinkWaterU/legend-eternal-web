@@ -46,14 +46,29 @@ export function createCharacterProgression({
       return;
     }
 
-    const character = getCharacterDefinition();
     const progress = getCharacterProgress();
     progress.exp += amount;
     state.runStats.expGained += amount;
     addLog("system", "expGain", { amount });
+    saveGameSafe();
+  }
+
+  function settleCharacterProgression() {
+    if (!state.hero || state.debugBuildRun) {
+      return { levelUps: [], learnedSkills: [] };
+    }
+
+    const character = getCharacterDefinition();
+    const progress = getCharacterProgress();
+    const previousLevelUpCount = state.runStats?.levelUps.length || 0;
+    const previousSkillCount = state.runStats?.learnedSkills.length || 0;
     applyCharacterLevelUps(character, progress);
     syncHeroProgressState(character, progress);
     saveGameSafe();
+    return {
+      levelUps: (state.runStats?.levelUps || []).slice(previousLevelUpCount),
+      learnedSkills: (state.runStats?.learnedSkills || []).slice(previousSkillCount)
+    };
   }
 
   function applyCharacterLevelUps(character, progress) {
@@ -121,6 +136,7 @@ export function createCharacterProgression({
     normalizeCharacterProgress,
     buildHeroFromProgression,
     gainCharacterExp,
+    settleCharacterProgression,
     syncHeroProgressState,
     hasPhoenixBlessing,
     resetCharacterProgress,

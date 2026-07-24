@@ -142,6 +142,7 @@ function renderPortrait({ els, npc, displayName, page }) {
     return;
   }
   els.dialoguePortraitImage.alt = `${displayName}的插圖`;
+  els.dialoguePortraitImage.style.objectPosition = String(npc?.portraitFocus || "").trim() || "";
   els.dialoguePortraitImage.onload = () => {
     els.dialoguePortraitImage.hidden = false;
     els.dialoguePortraitFallback.hidden = true;

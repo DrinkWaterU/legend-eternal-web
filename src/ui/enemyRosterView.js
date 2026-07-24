@@ -1,4 +1,4 @@
-import { getEnemyPendingHpLoss } from "../core/combat.js";
+import { getEnemyPendingHpLoss, getEnemyProtectionState } from "../core/combat.js";
 import { getEnemyDisplayName, getLivingEnemies } from "../core/enemyGroups.js";
 import { renderLayeredMeter, renderStatusChips } from "./combatMeterView.js";
 
@@ -39,7 +39,7 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
   });
   orderedCards.forEach(({ enemy, card }) => {
     card._onTargetSelect = onTargetSelect;
-    updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId);
+    updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies);
   });
   keepTargetVisible(roster, targetEnemyId);
 }
@@ -67,13 +67,14 @@ function createEnemyCard(runtimeId) {
         <span><small>暴擊率</small><b data-enemy-crit></b></span>
       </span>
       <span class="combat-statuses enemy-statuses" data-enemy-statuses></span>
+      <span class="enemy-protection-detail" data-enemy-protection></span>
       <span class="enemy-intro" data-enemy-intro></span>
     </span></span></span>`;
   card.addEventListener("click", () => card._onTargetSelect?.(card.dataset.runtimeId));
   return card;
 }
 
-function updateEnemyCard(card, enemy, enemyCount, isTarget) {
+function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
   card.classList.toggle("is-target", isTarget);
   card.classList.toggle("is-single", enemyCount === 1);
   card.disabled = enemy.hp <= 0;
@@ -86,6 +87,10 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget) {
   const intro = card.querySelector("[data-enemy-intro]");
   intro.textContent = enemy.intro || "";
   intro.hidden = !intro.textContent;
+  const protection = getEnemyProtectionState({ enemy, enemies });
+  const protectionDetail = card.querySelector("[data-enemy-protection]");
+  protectionDetail.textContent = protection.description;
+  protectionDetail.hidden = !protection.protected;
   renderLayeredMeter({
     meter: card.querySelector("[data-enemy-meter]"),
     currentLayer: card.querySelector("[data-enemy-hp]"),
@@ -99,8 +104,20 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget) {
   });
   const statuses = [];
   if (enemy.shield > 0) statuses.push({ label: `護盾 ${enemy.shield}`, className: "is-shield" });
+  if (enemy.supportAttackBonus > 0) {
+    statuses.push({ label: `攻擊 +${enemy.supportAttackBonus}`, className: "is-positive" });
+  }
+  if (enemy.supportDefenseBonus > 0) {
+    statuses.push({ label: `防禦 +${enemy.supportDefenseBonus}`, className: "is-positive" });
+  }
+  if (protection.protected) {
+    statuses.push({ label: protection.label, className: "is-protected" });
+  }
   if (enemy.poison > 0) {
     statuses.push({ label: `中毒 ${enemy.poison} · 預計 -${getEnemyPendingHpLoss(enemy)}`, className: "is-negative" });
+  }
+  if (enemy.paralysis?.remainingTurns > 0) {
+    statuses.push({ label: `麻痺 ${enemy.paralysis.remainingTurns}`, className: "is-negative" });
   }
   renderStatusChips(card.querySelector("[data-enemy-statuses]"), statuses, "狀態正常");
 }

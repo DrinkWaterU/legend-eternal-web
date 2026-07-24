@@ -5,55 +5,18 @@ import {
   renderBlacksmithCraftPanel,
   renderBlacksmithView
 } from "../src/ui/blacksmithView.js";
+import { TestNode, createElementMap, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() { this.values = new Set(); }
-  add(...names) { names.forEach((name) => this.values.add(name)); }
-  remove(...names) { names.forEach((name) => this.values.delete(name)); }
-  toggle(name, force) {
-    const shouldAdd = force ?? !this.values.has(name);
-    if (shouldAdd) this.values.add(name);
-    else this.values.delete(name);
-    return shouldAdd;
-  }
-  contains(name) { return this.values.has(name); }
-}
-
-class TestNode {
-  constructor(tagName = "div") {
-    this.tagName = tagName;
-    this.classList = new TestClassList();
-    this.children = [];
-    this.dataset = {};
-    this.attributes = {};
-    this.hidden = false;
-    this.disabled = false;
-    this.textContent = "";
-    this.className = "";
-    this.type = "";
-    this.src = "";
-    this.alt = "";
-    this.onclick = null;
-    this.listeners = new Map();
-  }
-  append(...nodes) { this.children.push(...nodes); }
-  prepend(...nodes) { this.children.unshift(...nodes); }
-  replaceChildren(...nodes) { this.children = [...nodes]; }
-  addEventListener(type, handler) { this.listeners.set(type, handler); }
-  setAttribute(name, value) { this.attributes[name] = String(value); }
-  remove() { this.removed = true; }
-}
-
-globalThis.document = { createElement: (tagName) => new TestNode(tagName) };
+installTestDocument();
 
 function createElements() {
   const ids = [
     "blacksmithGold", "blacksmithNotice", "blacksmithWeaponList", "blacksmithEmpty",
-    "blacksmithDetail", "blacksmithCraftButton", "blacksmithCraftPanel",
+    "blacksmithDetailPanel", "blacksmithDetail", "blacksmithCraftButton", "blacksmithCraftPanel",
     "blacksmithCraftTitle", "blacksmithCraftMeta", "blacksmithCraftCostList",
     "confirmBlacksmithCraftButton"
   ];
-  return Object.fromEntries(ids.map((id) => [id, new TestNode()]));
+  return createElementMap(ids);
 }
 
 const weaponDefinitions = {
@@ -86,6 +49,16 @@ const weaponDefinitions = {
     statEffects: [],
     specialEffect: null,
     recipe: { goldCost: 1, materialCosts: [] }
+  },
+  rare: {
+    id: "rare",
+    name: "稀有測試劍",
+    categoryId: "sword",
+    rarityId: "rare",
+    description: "稀有品級測試武器。",
+    statEffects: [{ type: "add", stat: "attack", amount: 2 }],
+    specialEffect: null,
+    recipe: { goldCost: 10, materialCosts: [] }
   }
 };
 const weaponCategoryDefinitions = {
@@ -121,22 +94,42 @@ const inventory = {
   });
 
   assert.equal(els.blacksmithGold.textContent, "15");
-  assert.equal(els.blacksmithWeaponList.children.length, 3);
+  assert.equal(els.blacksmithWeaponList.children.length, 4);
   assert.deepEqual(
     els.blacksmithWeaponList.children.map((button) => button.dataset.state),
-    ["available", "locked", "owned"],
+    ["available", "locked", "owned", "available"],
     "武器卡應區分可製作、材料不足與已擁有"
   );
   assert.match(els.blacksmithWeaponList.children[0].className, /rarity-common/);
   assert.match(els.blacksmithWeaponList.children[1].className, /rarity-uncommon/);
+  assert.equal(els.blacksmithWeaponList.children[0].dataset.weaponId, "sword");
+  assert.equal(els.blacksmithWeaponList.children[0].attributes["aria-pressed"], "true");
+  assert.equal(els.blacksmithWeaponList.children[1].attributes["aria-pressed"], "false");
   assert.equal(els.blacksmithWeaponList.children[0].children[1].children[1].textContent, "劍｜普通品級");
   assert.equal(els.blacksmithWeaponList.children[1].children[1].children[1].textContent, "弓｜精良品級");
+  assert.equal(els.blacksmithDetailPanel.dataset.rarity, "common");
   assert.equal(els.blacksmithCraftButton.disabled, false);
   assert.equal(els.blacksmithCraftButton.textContent, "製作測試長劍");
   els.blacksmithCraftButton.onclick();
   assert.equal(requestedId, "sword");
   els.blacksmithWeaponList.children[1].listeners.get("click")();
   assert.equal(selectedId, "bow");
+}
+
+{
+  const els = createElements();
+  renderBlacksmithView({
+    els,
+    inventory,
+    weaponDefinitions,
+    weaponCategoryDefinitions,
+    materialDefinitions,
+    selectedWeaponId: "rare",
+    onWeaponSelect() {},
+    onCraftRequest() {}
+  });
+  assert.equal(els.blacksmithDetailPanel.dataset.rarity, "rare");
+  assert.match(els.blacksmithWeaponList.children[3].className, /rarity-rare/);
 }
 
 {
@@ -150,6 +143,7 @@ const inventory = {
     onConfirm: () => { confirmed = true; }
   });
   assert.equal(els.blacksmithCraftPanel.classList.contains("is-visible"), true);
+  assert.equal(els.blacksmithCraftPanel.dataset.rarity, "common");
   assert.equal(els.blacksmithCraftTitle.textContent, "測試長劍");
   assert.equal(els.blacksmithCraftCostList.children.length, 2);
   assert.equal(els.confirmBlacksmithCraftButton.disabled, false);
@@ -157,6 +151,19 @@ const inventory = {
   assert.equal(confirmed, true);
   closeBlacksmithCraftPanel(els);
   assert.equal(els.blacksmithCraftPanel.classList.contains("is-visible"), false);
+  assert.equal(els.blacksmithCraftPanel.dataset.rarity, "none");
+}
+
+{
+  const els = createElements();
+  renderBlacksmithCraftPanel({
+    els,
+    weapon: weaponDefinitions.rare,
+    inventory,
+    materialDefinitions,
+    onConfirm() {}
+  });
+  assert.equal(els.blacksmithCraftPanel.dataset.rarity, "rare");
 }
 
 console.log("Blacksmith catalog, cost state, detail, and confirmation view tests passed.");

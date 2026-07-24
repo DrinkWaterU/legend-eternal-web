@@ -61,7 +61,7 @@ export const safeAreaDefinitions = Object.freeze({
       routeClearKey: "main",
       minimumClears: 1
     }),
-    facilityIds: Object.freeze(["blacksmith", "adventurers-guild"])
+    facilityIds: Object.freeze(["blacksmith", "adventurers-guild", "kaige-encounter"])
   })
 });
 

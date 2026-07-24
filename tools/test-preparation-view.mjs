@@ -6,87 +6,9 @@ import {
   renderPreparationDetail
 } from "../src/ui/preparationView.js";
 import { forestRegion } from "../src/data/regions/forest.js";
+import { TestNode, installTestDocument } from "./dom-test-stub.mjs";
 
-class TestClassList {
-  constructor() {
-    this.values = new Set();
-  }
-
-  add(...names) {
-    names.forEach((name) => this.values.add(name));
-  }
-
-  remove(...names) {
-    names.forEach((name) => this.values.delete(name));
-  }
-
-  toggle(name, force) {
-    const shouldAdd = force ?? !this.values.has(name);
-    if (shouldAdd) {
-      this.values.add(name);
-    } else {
-      this.values.delete(name);
-    }
-    return shouldAdd;
-  }
-
-  contains(name) {
-    return this.values.has(name);
-  }
-}
-
-class TestNode {
-  constructor(type = "element") {
-    this.type = type;
-    this.classList = new TestClassList();
-    this.children = [];
-    this.dataset = {};
-    this.attributes = {};
-    this.style = {};
-    this.disabled = false;
-    this.textContent = "";
-    this.onclick = null;
-    this._className = "";
-  }
-
-  set className(value) {
-    this._className = value;
-    this.classList = new TestClassList();
-    String(value).split(/\s+/).filter(Boolean).forEach((name) => this.classList.add(name));
-  }
-
-  get className() {
-    return this._className;
-  }
-
-  append(...nodes) {
-    this.children.push(...nodes);
-  }
-
-  replaceChildren(...nodes) {
-    this.children = [...nodes];
-  }
-
-  addEventListener(type, handler) {
-    this[`on${type}`] = handler;
-  }
-
-  setAttribute(name, value) {
-    this.attributes[name] = String(value);
-  }
-}
-
-class TestTextNode extends TestNode {
-  constructor(text) {
-    super("text");
-    this.textContent = text;
-  }
-}
-
-globalThis.document = {
-  createElement: () => new TestNode(),
-  createTextNode: (text) => new TestTextNode(text)
-};
+installTestDocument();
 
 const materialDefinitions = {
   spider_silk: { id: "spider_silk", name: "韌蛛絲" },

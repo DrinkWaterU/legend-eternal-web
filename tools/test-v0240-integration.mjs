@@ -144,10 +144,12 @@ assert.match(game, /facilityBackButton\.addEventListener\("click", \(\) => showS
 
 const routeEntry = game.match(/function enterAdventureRoute\([\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(routeEntry, /runPreparation\s*=\s*null/, "Route 切換不可清除整備 runtime");
-const goblinRouteCompletion = game.match(/function completeGoblinCampRoute\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
-assert.match(goblinRouteCompletion, /storyFlags\.archerRescued \|\| archerProgress\?\.unlocked/);
-assert.match(goblinRouteCompletion, /endingKey = alreadyRescued \? "repeatEnding" : "ending"/);
-assert.match(goblinRouteCompletion, /showRouteEnding\(route, \{ endingKey \}\)/);
+const routeCompletion = game.match(/function completeRoute\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+assert.match(routeCompletion, /canCompleteRouteEncounter/);
+assert.match(routeCompletion, /applyRouteCompletionPolicy\(route\)/);
+assert.match(routeCompletion, /showRouteEnding\(route, \{ endingKey \}\)/);
+assert.match(game, /storyFlags\.archerRescued \|\| archerProgress\?\.unlocked/);
+assert.match(game, /endingKey = alreadyRescued \? "repeatEnding" : "ending"/);
 assert.match(game, /const endingKey = state\.routeEndingContext\?\.endingKey \|\| "ending"/);
 
 assert.match(battleLifecycleSource, /export function resetBattleEntryState\(state, options = \{\}\)/);

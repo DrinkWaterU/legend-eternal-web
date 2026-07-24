@@ -175,6 +175,90 @@
   color: #d895a4;
 }
 
+.combat-status.is-positive {
+  border-color: rgba(117, 213, 155, 0.45);
+  color: #8ee4ad;
+}
+
+.combat-status.is-protected {
+  border-color: rgba(241, 211, 134, 0.52);
+  color: #f1d386;
+}
+
+.combat-status.is-fury {
+  position: relative;
+  gap: 0.4rem;
+  border-color: rgba(197, 90, 62, 0.65);
+  background: linear-gradient(135deg, rgba(74, 25, 23, 0.92), rgba(36, 24, 28, 0.94));
+  color: #ffd4bd;
+}
+
+.combat-status.is-fury small {
+  color: #ffb08a;
+  font-size: 0.7rem;
+}
+
+.fury-segments {
+  display: inline-flex;
+  gap: 0.18rem;
+}
+
+.fury-segments i {
+  width: 0.58rem;
+  height: 0.72rem;
+  border: 1px solid rgba(255, 170, 132, 0.45);
+  background: rgba(20, 18, 22, 0.8);
+  transform: skewX(-16deg);
+}
+
+.fury-segments i.is-filled {
+  border-color: #ff9d72;
+  background: linear-gradient(180deg, #e96e45, #8f2928);
+  box-shadow: 0 0 0.5rem rgba(231, 91, 55, 0.48);
+}
+
+.combat-status.is-fury.is-full {
+  border-color: rgba(255, 149, 96, 0.9);
+  box-shadow: 0 0 0.65rem rgba(225, 76, 46, 0.3);
+  animation: fury-full-pulse 1.8s ease-in-out infinite;
+}
+
+.combat-status.fury-change-gain {
+  animation: fury-gain 280ms ease-out;
+}
+
+.combat-status.fury-change-full {
+  animation: fury-full 420ms ease-out, fury-full-pulse 1.8s 420ms ease-in-out infinite;
+}
+
+.combat-status.fury-change-consume::after {
+  content: "";
+  position: absolute;
+  inset: 45% -0.25rem auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ffd0b8, transparent);
+  animation: fury-slash 260ms ease-out both;
+  pointer-events: none;
+}
+
+@keyframes fury-gain {
+  50% { transform: scale(1.05); filter: brightness(1.2); }
+}
+
+@keyframes fury-full {
+  50% { transform: scale(1.07); filter: brightness(1.35); }
+}
+
+@keyframes fury-full-pulse {
+  50% { box-shadow: 0 0 0.9rem rgba(225, 76, 46, 0.48); }
+}
+
+@keyframes fury-slash {
+  from { opacity: 0; transform: translateX(-30%) scaleX(0.3); }
+  45% { opacity: 1; }
+  to { opacity: 0; transform: translateX(30%) scaleX(1); }
+}
+
 .combat-preparation-status {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -362,7 +446,7 @@
 }
 
 .enemy-card.is-target .enemy-card-detail {
-  max-height: 260px;
+  max-height: 320px;
   opacity: 1;
 }
 
@@ -431,6 +515,14 @@
   display: block;
   margin-top: 8px;
   color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.enemy-protection-detail {
+  display: block;
+  margin-top: 8px;
+  color: #f1d386;
   font-size: 0.74rem;
   line-height: 1.5;
 }
@@ -920,8 +1012,14 @@
   .enemy-card,
   .enemy-card-detail,
   .enemy-detail-content,
-  .summary-tile {
+  .summary-tile,
+  .combat-status.is-fury {
     transition: none;
+    animation: none;
     scroll-behavior: auto;
+  }
+
+  .combat-status.fury-change-consume::after {
+    display: none;
   }
 }

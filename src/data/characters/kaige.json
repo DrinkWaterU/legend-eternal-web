@@ -1,0 +1,441 @@
+{
+  "name": "凱哥",
+  "role": "戰意・狂攻",
+  "summary": "承受攻勢累積戰意，以沉重斬擊與有限回復撐過危險戰局。",
+  "description": "豪爽耿直、熱愛公平戰鬥的旅行戰士。壯碩的身形適合揮動長柄雙刃戰斧，越是危急的戰局，越能逼出他猛烈的反擊。",
+  "portrait": "assets/images/characters/kaige/kaige.png",
+  "portraitFocus": "50% 24%",
+  "emblemPortraitFocus": "50% 24%",
+  "emblemPortraitScale": 1.35,
+  "weaponCompatibility": {
+    "mode": "include",
+    "categoryIds": [
+      "battle-axe"
+    ]
+  },
+  "template": {
+    "name": "凱哥",
+    "maxHp": 110,
+    "hp": 110,
+    "attack": 11,
+    "defense": 1,
+    "critChance": 0.05,
+    "critDamageMultiplier": 1.7,
+    "shieldStart": 0,
+    "poisonPower": 0,
+    "regenEvery": 0,
+    "regenAmount": 0,
+    "killHeal": 0,
+    "slimeBonus": 0,
+    "familyDamageBonus": {},
+    "encounterBiases": [],
+    "damageReduction": 0,
+    "blessings": [],
+    "killAttackGain": 0,
+    "lowHpKillHeal": 0,
+    "poisonedTargetDefenseIgnore": 0,
+    "killHealRatio": 0
+  },
+  "stats": {
+    "maxHp": 110,
+    "attack": 11,
+    "defense": 1,
+    "critChance": "5%"
+  },
+  "levelCurve": {
+    "base": 18,
+    "exponent": 1.48,
+    "linear": 8,
+    "offset": 0,
+    "maxLevel": 25
+  },
+  "levelGrowth": [
+    {
+      "level": 2,
+      "name": "體魄鍛鍊",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "name": "戰斧訓練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "name": "實戰護身",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 5,
+      "name": "強健體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "level": 6,
+      "name": "耐力磨練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 7,
+      "name": "戰場直覺",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        }
+      ]
+    },
+    {
+      "level": 8,
+      "name": "長途鍛鍊",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 9,
+      "name": "斧勢熟練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 10,
+      "name": "浴血耐性",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "level": 11,
+      "name": "戰士體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 12,
+      "name": "厚實筋骨",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "level": 13,
+      "name": "猛攻磨練",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 14,
+      "name": "防具熟悉",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 15,
+      "name": "死鬥體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "level": 16,
+      "name": "遠征耐力",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 17,
+      "name": "布甲步法",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 18,
+      "name": "重斧鍛鍊",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "level": 19,
+      "name": "不屈體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 20,
+      "name": "遠征整備",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        },
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 21,
+      "name": "狂攻精熟",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 22,
+      "name": "海風耐受",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 23,
+      "name": "巨斧精通",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 24,
+      "name": "實戰猛攻",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 25,
+      "name": "戰士巔峰",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "battle-hunger",
+      "level": 3,
+      "type": "minor",
+      "name": "嗜戰本能",
+      "description": "擊敗敵人時恢復最大生命 7%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHealRatio",
+          "amount": 0.07
+        }
+      ]
+    },
+    {
+      "id": "battle-fury",
+      "level": 5,
+      "type": "milestone",
+      "name": "戰意沸騰",
+      "description": "受到敵人直接攻擊時獲得 1 層戰意，最多 3 層；每層使本場攻擊 +1。"
+    },
+    {
+      "id": "formation-breaking-cleave",
+      "level": 6,
+      "type": "minor",
+      "name": "破陣重斬",
+      "description": "戰意達 3 層時，下一次原始攻擊消耗全部戰意並造成 150% 傷害。"
+    },
+    {
+      "id": "spinning-axe-sweep",
+      "level": 9,
+      "type": "minor",
+      "name": "旋斧橫掃",
+      "description": "戰意終結技命中時，對其他所有存活敵人各造成攻擊 40% 的傷害。"
+    },
+    {
+      "id": "blood-soaked-fight",
+      "level": 10,
+      "type": "milestone",
+      "name": "浴血奮戰",
+      "description": "戰意終結技結算後恢復最大生命 8%，回復後生命不高於最大生命 70%。"
+    },
+    {
+      "id": "blood-rush",
+      "level": 12,
+      "type": "minor",
+      "name": "血性高漲",
+      "description": "生命不高於 50% 時攻擊 +2；不高於 25% 時改為攻擊 +3。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "lowHpAttackBonus",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "berserker-heart",
+      "level": 15,
+      "type": "rare",
+      "name": "狂戰之心",
+      "description": "生命不高於 50% 時，每次受到敵人直接攻擊改為取得 2 層戰意。"
+    },
+    {
+      "id": "battle-hunger-plus",
+      "level": 18,
+      "type": "minor",
+      "targetSkillId": "battle-hunger",
+      "name": "嗜戰本能強化",
+      "description": "擊敗敵人的回復由最大生命 7% 提高至 8%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHealRatio",
+          "amount": 0.01
+        }
+      ]
+    },
+    {
+      "id": "unyielding-fighting-spirit",
+      "level": 20,
+      "type": "milestone",
+      "targetSkillId": "blood-soaked-fight",
+      "name": "不息鬥志",
+      "description": "戰意終結技回復提高至最大生命 10%，回復後生命上限維持最大生命 70%。"
+    },
+    {
+      "id": "cleave-mastery",
+      "level": 21,
+      "type": "minor",
+      "targetSkillId": "formation-breaking-cleave",
+      "name": "重斬精熟",
+      "description": "戰意終結技提高至 175%，旋斧橫掃提高至攻擊 60%。"
+    },
+    {
+      "id": "adversity-fury",
+      "level": 24,
+      "type": "minor",
+      "name": "逆境戰意",
+      "description": "進入戰鬥時，生命不高於 50% 取得 1 層戰意；不高於 25% 時改為取得 2 層。"
+    },
+    {
+      "id": "battle-without-end",
+      "level": 25,
+      "type": "milestone",
+      "name": "戰無止境",
+      "description": "戰意終結技改為只消耗 2 層戰意；仍須在出手前達到 3 層才會觸發。"
+    }
+  ],
+  "unlock": {
+    "storyQuestId": "kaige-challenge"
+  }
+}

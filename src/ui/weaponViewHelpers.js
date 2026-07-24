@@ -4,6 +4,7 @@ const EFFECT_LABELS = Object.freeze({
   attack: "攻擊",
   critChance: "暴擊率",
   shieldStart: "開場護盾",
+  multiEnemyShieldStart: "多敵開場額外護盾",
   openingCritChance: "首次攻擊暴擊率",
   woundedTargetCritChance: "半血追擊暴擊率",
   poisonedTargetDefenseIgnore: "中毒目標無視防禦",
@@ -22,7 +23,7 @@ export function createWeaponIcon(weapon, options = {}) {
   const wrapper = document.createElement("span");
   wrapper.className = options.className || "weapon-icon";
   wrapper.dataset.category = weapon?.categoryId || "unknown";
-  wrapper.dataset.rarity = getWeaponRarityId(weapon);
+  setWeaponRarityData(wrapper, weapon);
 
   const fallback = document.createElement("span");
   fallback.className = "weapon-icon-fallback";
@@ -70,6 +71,10 @@ export function formatWeaponEffect(effect) {
 }
 
 export function formatWeaponEffects(weapon) {
+  if (String(weapon?.effectText || "").trim()) {
+    const effectName = String(weapon?.effectName || "").trim();
+    return effectName ? `${effectName}：${weapon.effectText}` : weapon.effectText;
+  }
   const effects = getWeaponEffects(weapon);
   return effects.length > 0
     ? effects.map(formatWeaponEffect).join("、")
@@ -86,6 +91,11 @@ export function getWeaponRarityLabel(weapon) {
 
 export function getWeaponRarityClass(weapon) {
   return `rarity-${getWeaponRarityId(weapon)}`;
+}
+
+export function setWeaponRarityData(element, weapon) {
+  if (!element?.dataset) return;
+  element.dataset.rarity = weapon ? getWeaponRarityId(weapon) : "none";
 }
 
 export function formatWeaponCategory(weapon, categoryDefinitions = {}) {

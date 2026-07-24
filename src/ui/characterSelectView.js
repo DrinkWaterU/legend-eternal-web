@@ -1,4 +1,5 @@
 import { createWeaponIcon, formatWeaponCategory } from "./weaponViewHelpers.js";
+import { applyCharacterEmblemPortrait, getCharacterPortraitPath } from "./characterPortrait.js";
 
 export function renderCharacterCards({
   element,
@@ -42,6 +43,7 @@ export function renderCharacterCards({
     card.append(
       createCharacterHeading({
         characterId,
+        character,
         fallback: character.name?.charAt(0) || "？",
         name: character.name,
         meta: `Lv. ${Math.max(1, Math.floor(progress?.level || 1))}`,
@@ -58,20 +60,22 @@ export function renderCharacterCards({
   });
 }
 
-function createCharacterHeading({ characterId = null, fallback, name, meta, status, statusClass }) {
+function createCharacterHeading({ characterId = null, character = null, fallback, name, meta, status, statusClass }) {
   const heading = document.createElement("span");
   heading.className = "character-card-heading";
 
   const emblem = document.createElement("span");
   emblem.className = "character-emblem";
-  if (characterId) {
+  const portraitPath = getCharacterPortraitPath(character, characterId);
+  if (portraitPath) {
     const image = document.createElement("img");
     image.alt = "";
     image.addEventListener("error", () => {
       image.remove();
       emblem.textContent = fallback;
     }, { once: true });
-    image.src = `./assets/images/characters/${characterId}/emblem.png`;
+    image.src = portraitPath;
+    applyCharacterEmblemPortrait(image, character);
     emblem.append(image);
   } else {
     emblem.textContent = fallback;

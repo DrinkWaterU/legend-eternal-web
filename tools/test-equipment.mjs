@@ -24,10 +24,11 @@ import {
 import { formatWeaponEffects } from "../src/ui/weaponViewHelpers.js";
 
 assert.equal(assertWeaponDefinitions(weaponDefinitions, { materialDefinitions }), true);
-assert.equal(Object.keys(weaponDefinitions).length, 8, "v0.2.6.4 應固定提供八把武器");
-assert.deepEqual(Object.keys(weaponRarityDefinitions), ["common", "uncommon"]);
+assert.equal(Object.keys(weaponDefinitions).length, 13, "v0.2.7.3 應保留十二把既有武器並新增凱哥破舊戰斧");
+assert.deepEqual(Object.keys(weaponRarityDefinitions), ["common", "uncommon", "rare"]);
 assert.equal(getWeaponRarityDefinition("common").label, "普通");
 assert.equal(getWeaponRarityDefinition("uncommon").label, "精良");
+assert.equal(getWeaponRarityDefinition("rare").label, "稀有");
 assert.deepEqual(
   Object.fromEntries(Object.entries(weaponDefinitions).map(([weaponId, weapon]) => [weaponId, weapon.rarityId])),
   {
@@ -38,7 +39,12 @@ assert.deepEqual(
     "verdant-pursuit-bow": "uncommon",
     "ancient-wood-eroding-bow": "uncommon",
     "bloodbone-guardian-mace": "uncommon",
-    "spider-silk-stinger-dagger": "uncommon"
+    "spider-silk-stinger-dagger": "uncommon",
+    "adventurer-pathfinder-sword": "rare",
+    "tidepiercer-shortbow": "uncommon",
+    "reefbreaker-warhammer": "uncommon",
+    "brinefang-dagger": "uncommon",
+    "worn-battle-axe": "common"
   }
 );
 assert.equal(
@@ -83,6 +89,8 @@ assert.equal(
   assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["bloodbone-guardian-mace"]), false);
   assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["spider-silk-stinger-dagger"]), false);
   assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["iron-longsword"]), false);
+  assert.equal(canCharacterEquipWeapon(adventurer, weaponDefinitions["adventurer-pathfinder-sword"]), true);
+  assert.equal(canCharacterEquipWeapon(archer, weaponDefinitions["adventurer-pathfinder-sword"]), false);
 }
 
 {
@@ -96,7 +104,7 @@ assert.equal(
 
 {
   const save = createDefaultSave();
-  assert.equal(SAVE_SCHEMA_VERSION, 9);
+  assert.equal(SAVE_SCHEMA_VERSION, 10);
   assert.deepEqual(save.inventory.weapons, {});
   assert.deepEqual(save.progression.characters.adventurer.equipment, { weaponId: null });
   assert.deepEqual(save.progression.characters.archer.equipment, { weaponId: null });
@@ -114,7 +122,7 @@ assert.equal(
   raw.progression.characters.archer.equipment.weaponId = "hunter-shortbow";
 
   const migrated = migrateSave(raw);
-  assert.equal(migrated.schemaVersion, 9);
+  assert.equal(migrated.schemaVersion, 10);
   assert.deepEqual(migrated.inventory.weapons, {
     "iron-longsword": true,
     "hunter-shortbow": true

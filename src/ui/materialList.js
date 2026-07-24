@@ -1,4 +1,5 @@
 import { getMaterialRarity } from "../data/materials.js";
+import { getMaterialUsageSearchText } from "./materialUsage.js";
 
 const MATERIAL_SORT_MODES = Object.freeze({
   rarity: compareByRarity,
@@ -46,12 +47,7 @@ export function filterMaterials(items = [], options = {}) {
     if (!query) {
       return true;
     }
-    const usageSearchText = Array.isArray(usageIndex[item.id])
-      ? usageIndex[item.id]
-        .flatMap((entry) => [entry.regionName, entry.title, entry.subtitle, entry.description, entry.location])
-        .filter(Boolean)
-        .join(" ")
-      : "";
+    const usageSearchText = getMaterialUsageSearchText(usageIndex, item.id);
     const searchable = [
       item.name,
       item.description,

@@ -17,6 +17,7 @@ save.statistics.bossesDefeated = 9;
 save.statistics.regions.plains.clears = 3;
 save.statistics.regions.forest.routeClears.main = 2;
 save.statistics.regions.forest.routeClears.goblinCamp = 1;
+save.statistics.regions.beach.clears = 2;
 save.storyFlags.archerRescued = true;
 save.progression.characters.archer.unlocked = true;
 save.progression.characters.archer.level = 12;
@@ -41,14 +42,16 @@ assert.deepEqual(model.experiences.map((item) => item.label), [
   "穿越森林主要路線",
   "解決哥布林營地事件",
   "救出弓箭手",
-  "抵達安平鎮"
+  "抵達安平鎮",
+  "完成海岸地區冒險"
 ]);
 assert.match(model.experiences[0].status, /3 次/);
 assert.equal(model.experiences[3].status, "紀錄已確認");
+assert.match(model.experiences.at(-1).status, /2 次/);
 assert.deepEqual(model.unlockedCharacters.map((item) => item.id), ["adventurer", "archer"]);
 assert.deepEqual(model.unlockedCharacters.map((item) => item.level), [25, 12]);
 assert.equal(model.unlockedCharacters.some((item) => item.level === undefined), false);
-assert.match(model.celineComment, /哥布林營地/);
+assert.match(model.celineComment, /魚人的陰暗洞窟/);
 assert.deepEqual(model.questHistory, {
   completedTotal: 12,
   completedByRarity: { common: 7, advanced: 4, rare: 1 },
@@ -65,13 +68,14 @@ const layout = content.children[0];
 assert.equal(layout.children.length, 2, "正式資歷版面應包含瑟琳卡與資歷表");
 const panel = layout.children[1];
 assert.equal(panel.children.at(-1).tagName, "blockquote", "資歷表末端應顯示瑟琳評語");
-assert.match(panel.children.at(-1).textContent, /哥布林營地/);
+assert.match(panel.children.at(-1).textContent, /魚人的陰暗洞窟/);
 const renderedText = collectNodeText(content);
 assert.match(renderedText, /Lv\. 25/);
 assert.match(renderedText, /Lv\. 12/);
 assert.doesNotMatch(renderedText, /undefined/);
 assert.match(renderedText, /委託履歷/);
 assert.match(renderedText, /255 G/);
+assert.match(renderedText, /完成海岸地區冒險/);
 const collapsedSections = findNodesByClass(content, "guild-record-collapsible");
 assert.equal(collapsedSections.length, 3, "主要經歷、委託履歷與可用角色應各自收合");
 collapsedSections.forEach((section) => {
@@ -88,6 +92,11 @@ assert.deepEqual(emptyModel.experiences, []);
 assert.deepEqual(emptyModel.unlockedCharacters.map((item) => item.id), ["adventurer"]);
 assert.deepEqual(emptyModel.unlockedCharacters.map((item) => item.level), [1]);
 assert.match(emptyModel.celineComment, /紀錄還不算多/);
+
+const forestOnlySave = createDefaultSave();
+forestOnlySave.statistics.regions.forest.routeClears.goblinCamp = 1;
+const forestOnlyModel = buildGuildAdventureRecordModel({ save: forestOnlySave, characterDefinitions });
+assert.match(forestOnlyModel.celineComment, /哥布林營地/, "未完成海岸時應維持既有森林最高進度評語");
 
 function findNodesByClass(node, className) {
   const matches = String(node?.className || "").split(/\s+/u).includes(className) ? [node] : [];

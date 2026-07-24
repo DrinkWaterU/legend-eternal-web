@@ -11,6 +11,11 @@ const RUN_STATE_DEFAULTS = Object.freeze({
   deathCause: null,
   runStats: null,
   runPreparation: null,
+  beachSegmentCompleted: false,
+  coastSegmentCheckpoint: null,
+  blessingInstances: [],
+  blessingInstanceSequence: 0,
+  campSelection: null,
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
@@ -18,6 +23,7 @@ const RUN_STATE_DEFAULTS = Object.freeze({
   blessingInputLocked: false,
   battleSource: "main",
   battleEncounterType: null,
+  specialDuelContext: null,
   debugBuildRun: false,
   runOriginSafeAreaId: null,
   pendingAnpingArrival: false,
@@ -35,6 +41,7 @@ export function resetAdventureRunState(state, options = {}) {
 
   const { clearLastRunSummary = false } = options;
   Object.assign(state, RUN_STATE_DEFAULTS);
+  state.blessingInstances = [];
   state.log = [];
 
   if (clearLastRunSummary) {

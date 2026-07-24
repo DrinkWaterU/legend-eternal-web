@@ -272,58 +272,6 @@
   --slot-glow: rgba(124, 191, 235, 0.22);
 }
 
-.material-info-dialog {
-  max-width: 720px;
-}
-
-.detail-info-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
-  gap: 0.8rem;
-  width: 100%;
-  align-items: stretch;
-  text-align: left;
-}
-
-.detail-info-primary,
-.detail-info-secondary {
-  display: grid;
-  gap: 0.8rem;
-  min-width: 0;
-  margin: 0;
-}
-
-.detail-info-primary {
-  grid-auto-rows: minmax(min-content, 1fr);
-}
-
-.detail-info-secondary {
-  align-content: start;
-}
-
-.detail-info-card {
-  min-width: 0;
-  padding: 0.9rem 1rem;
-  border: 1px solid rgba(241, 211, 134, 0.24);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(111, 176, 193, 0.06), transparent 52%),
-    rgba(9, 14, 15, 0.68);
-}
-
-.detail-info-card dt {
-  color: var(--sky);
-  font-size: 0.82rem;
-  font-weight: 800;
-}
-
-.detail-info-card dd {
-  margin: 0.5rem 0 0;
-  color: var(--ink);
-  line-height: 1.7;
-  overflow-wrap: anywhere;
-}
-
 .modal-status {
   color: var(--gold);
   font-weight: 700;
@@ -370,8 +318,7 @@
   margin-bottom: 14px;
 }
 
-.skill-section-heading h3,
-.skill-group h4 {
+.skill-section-heading h3 {
   margin: 0 0 12px;
   color: var(--sky);
   font-size: 0.95rem;
@@ -385,121 +332,6 @@
   margin: 0;
   color: var(--muted);
   font-size: 0.86rem;
-}
-
-.skill-group + .skill-group {
-  margin-top: 16px;
-}
-
-.skill-chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.skill-chip {
-  appearance: none;
-  min-height: 34px;
-  padding: 7px 11px;
-  border: 1px solid rgba(241, 211, 134, 0.28);
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(33, 40, 42, 0.86), rgba(16, 20, 21, 0.86));
-  color: var(--ink);
-  cursor: pointer;
-  font-size: 0.92rem;
-  font-weight: 800;
-  line-height: 1.35;
-  transition:
-    border-color 150ms ease,
-    color 150ms ease,
-    transform 150ms ease;
-}
-
-.skill-chip:hover,
-.skill-chip:focus-visible {
-  border-color: rgba(241, 211, 134, 0.62);
-  color: var(--gold);
-  transform: translateY(-1px);
-}
-
-.skill-chip.is-empty {
-  cursor: default;
-  color: var(--muted);
-}
-
-.skill-chip.is-empty:hover {
-  border-color: rgba(241, 211, 134, 0.28);
-  color: var(--muted);
-  transform: none;
-}
-
-.next-skill-list {
-  display: grid;
-  gap: 10px;
-}
-
-.next-skill-card {
-  display: grid;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid rgba(111, 176, 193, 0.28);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(111, 176, 193, 0.12), transparent 54%),
-    rgba(13, 18, 19, 0.76);
-  color: var(--ink);
-  cursor: pointer;
-  text-align: left;
-  transition:
-    border-color 150ms ease,
-    transform 150ms ease,
-    box-shadow 150ms ease;
-}
-
-.next-skill-card:hover,
-.next-skill-card:focus-visible {
-  border-color: rgba(111, 176, 193, 0.62);
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
-  transform: translateY(-1px);
-}
-
-.next-skill-card > span {
-  display: grid;
-  gap: 4px;
-}
-
-.next-skill-card strong,
-.next-skill-card small,
-.next-skill-card > span:last-child {
-  display: block;
-}
-
-.next-skill-card strong {
-  color: var(--gold);
-  font-size: 1rem;
-}
-
-.next-skill-card small {
-  color: var(--sky);
-  font-weight: 800;
-}
-
-.next-skill-card > span:last-child {
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.next-skill-card.is-empty {
-  cursor: default;
-  color: var(--muted);
-}
-
-.next-skill-card.is-empty:hover {
-  border-color: rgba(111, 176, 193, 0.28);
-  box-shadow: none;
-  transform: none;
 }
 
 .skill-type-milestone {
@@ -1844,6 +1676,16 @@
     rgba(18, 29, 27, 0.98);
 }
 
+.facility-panel.is-blacksmith-mode .blacksmith-detail-panel[data-rarity="rare"] {
+  border-color: rgba(207, 156, 255, 0.68);
+  background:
+    radial-gradient(circle at 92% 4%, rgba(207, 156, 255, 0.18), transparent 38%),
+    linear-gradient(145deg, rgba(55, 34, 68, 0.96), rgba(24, 21, 31, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(232, 204, 255, 0.08),
+    0 16px 34px rgba(20, 8, 29, 0.28);
+}
+
 .blacksmith-detail-topline {
   display: flex;
   align-items: center;
@@ -1951,6 +1793,15 @@
   color: var(--grass);
   font-size: 0.86rem;
   line-height: 1.5;
+}
+
+.blacksmith-detail-panel[data-rarity="rare"] .blacksmith-effect-item {
+  border-color: rgba(207, 156, 255, 0.38);
+  background: rgba(112, 66, 137, 0.16);
+}
+
+.blacksmith-detail-panel[data-rarity="rare"] .blacksmith-effect-item strong {
+  color: #e7c9ff;
 }
 
 .blacksmith-recipe-list {
@@ -2205,9 +2056,19 @@
   color: var(--sky);
 }
 
-.blacksmith-summary {
-  width: min(100%, 680px);
-  grid-template-columns: minmax(0, 1fr);
+.weapon-icon[data-rarity="uncommon"] {
+  border-color: rgba(127, 183, 127, 0.52);
+}
+
+.weapon-icon[data-rarity="rare"] {
+  border-color: rgba(207, 156, 255, 0.76);
+  background:
+    radial-gradient(circle at 35% 28%, rgba(232, 204, 255, 0.16), transparent 38%),
+    linear-gradient(145deg, rgba(63, 39, 76, 0.96), rgba(18, 16, 24, 0.98));
+  color: #e7c9ff;
+  box-shadow:
+    inset 0 0 0 1px rgba(232, 204, 255, 0.08),
+    0 0 18px rgba(93, 48, 118, 0.16);
 }
 
 .blacksmith-layout {
@@ -2428,6 +2289,34 @@
     rgba(8, 14, 14, 0.68);
 }
 
+.blacksmith-weapon-card.rarity-rare,
+.equipment-weapon-card.rarity-rare {
+  border-color: rgba(207, 156, 255, 0.72);
+  background:
+    radial-gradient(circle at 14% 18%, rgba(207, 156, 255, 0.15), transparent 42%),
+    linear-gradient(145deg, rgba(66, 38, 82, 0.78), rgba(31, 24, 42, 0.94));
+  box-shadow: inset 0 0 0 1px rgba(232, 204, 255, 0.08);
+}
+
+.blacksmith-weapon-card.rarity-rare:hover,
+.blacksmith-weapon-card.rarity-rare:focus-visible,
+.blacksmith-weapon-card.rarity-rare.is-selected,
+.equipment-weapon-card.rarity-rare:hover,
+.equipment-weapon-card.rarity-rare:focus-visible,
+.equipment-weapon-card.rarity-rare.is-selected {
+  border-color: rgba(226, 190, 255, 0.96);
+  box-shadow:
+    0 0 0 1px rgba(226, 190, 255, 0.2),
+    0 12px 26px rgba(23, 8, 35, 0.32);
+}
+
+.blacksmith-weapon-card.rarity-rare strong,
+.equipment-weapon-card.rarity-rare strong,
+.blacksmith-detail-panel[data-rarity="rare"] .blacksmith-detail-heading span,
+.equipment-preview-panel[data-rarity="rare"] .equipment-preview-heading small {
+  color: #e7c9ff;
+}
+
 .blacksmith-weapon-card.rarity-uncommon:hover,
 .blacksmith-weapon-card.rarity-uncommon:focus-visible,
 .blacksmith-weapon-card.rarity-uncommon.is-selected,
@@ -2442,8 +2331,8 @@
 
 .blacksmith-weapon-card.rarity-uncommon strong,
 .equipment-weapon-card.rarity-uncommon strong,
-.blacksmith-detail-heading[data-rarity="uncommon"] span,
-.equipment-preview-heading[data-rarity="uncommon"] small {
+.blacksmith-detail-panel[data-rarity="uncommon"] .blacksmith-detail-heading span,
+.equipment-preview-panel[data-rarity="uncommon"] .equipment-preview-heading small {
   color: #a8d79a;
 }
 
@@ -2579,45 +2468,19 @@
   max-width: 520px;
 }
 
+.blacksmith-craft-panel[data-rarity="uncommon"] .blacksmith-craft-dialog {
+  border-color: rgba(127, 183, 127, 0.5);
+}
+
+.blacksmith-craft-panel[data-rarity="rare"] .blacksmith-craft-dialog {
+  border-color: rgba(207, 156, 255, 0.72);
+  background:
+    radial-gradient(circle at 92% 4%, rgba(207, 156, 255, 0.16), transparent 38%),
+    linear-gradient(145deg, rgba(50, 31, 62, 0.98), rgba(20, 18, 27, 0.99));
+}
+
 .blacksmith-craft-cost-list {
   margin: 18px 0 6px;
-}
-
-.character-equipment-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  width: min(100%, 520px);
-  margin: 18px 0;
-  padding: 14px;
-  border: 1px solid rgba(241, 211, 134, 0.28);
-  border-radius: 9px;
-  background: rgba(13, 19, 19, 0.72);
-  text-align: left;
-}
-
-.character-equipment-summary > div {
-  display: grid;
-  gap: 3px;
-}
-
-.character-equipment-summary span {
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.character-equipment-summary strong {
-  color: var(--gold);
-}
-
-.equipment-layout {
-  display: grid;
-  grid-template-columns: minmax(250px, 0.85fr) minmax(0, 1.15fr);
-  gap: 16px;
-  width: min(100%, 760px);
-  margin-top: 8px;
-  text-align: left;
 }
 
 .equipment-character-panel,
@@ -2644,6 +2507,11 @@
   background:
     linear-gradient(145deg, rgba(94, 145, 96, 0.1), transparent 50%),
     rgba(7, 12, 13, 0.72);
+}
+
+.equipment-current-slot[data-rarity="rare"] {
+  border-color: rgba(207, 156, 255, 0.7);
+  background: linear-gradient(145deg, rgba(67, 39, 83, 0.8), rgba(28, 23, 38, 0.94));
 }
 
 .equipment-current-slot.is-empty {
@@ -2685,6 +2553,23 @@
 
 .equipment-preview-panel {
   min-height: 250px;
+}
+
+.equipment-preview-panel[data-rarity="uncommon"] {
+  border-color: rgba(127, 183, 127, 0.48);
+  background:
+    linear-gradient(145deg, rgba(94, 145, 96, 0.1), transparent 50%),
+    rgba(14, 20, 20, 0.92);
+}
+
+.equipment-preview-panel[data-rarity="rare"] {
+  border-color: rgba(207, 156, 255, 0.68);
+  background:
+    radial-gradient(circle at 92% 4%, rgba(207, 156, 255, 0.14), transparent 40%),
+    linear-gradient(145deg, rgba(55, 34, 68, 0.9), rgba(24, 21, 31, 0.96));
+  box-shadow:
+    inset 0 0 0 1px rgba(232, 204, 255, 0.08),
+    0 14px 30px rgba(20, 8, 29, 0.22);
 }
 
 .equipment-preview-effect {
@@ -3059,64 +2944,6 @@
   align-items: start;
 }
 
-.guild-record-celine-card,
-.guild-record-panel,
-.guild-bulk-dialogue-card,
-.guild-bulk-catalog,
-.guild-bulk-summary-card {
-  border: 1px solid rgba(215, 181, 112, 0.22);
-  border-radius: 18px;
-  background: linear-gradient(155deg, rgba(24, 29, 35, 0.97), rgba(12, 16, 21, 0.96));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 18px 44px rgba(0, 0, 0, 0.18);
-}
-
-.guild-record-celine-card {
-  position: sticky;
-  top: 18px;
-  padding: 18px;
-}
-
-.guild-record-celine-portrait {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 320px;
-  margin-bottom: 18px;
-  overflow: hidden;
-  border-radius: 14px;
-  background: radial-gradient(circle at 50% 22%, rgba(215, 181, 112, 0.16), transparent 48%), #111820;
-}
-
-.guild-record-celine-portrait img {
-  width: 100%;
-  height: 100%;
-  min-height: 320px;
-  object-fit: cover;
-  object-position: center 20%;
-}
-
-.guild-record-celine-portrait span {
-  font-size: 2rem;
-  color: var(--text-muted);
-}
-
-.guild-record-celine-card h3 {
-  margin: 4px 0 10px;
-  font-size: 1.55rem;
-}
-
-.guild-record-celine-quote {
-  margin: 0;
-  color: var(--text-soft);
-  line-height: 1.75;
-}
-
-.guild-record-panel {
-  display: grid;
-  gap: 16px;
-  padding: 20px;
-}
-
 .guild-record-section {
   padding: 17px;
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -3129,27 +2956,6 @@
   color: var(--gold-soft);
 }
 
-.guild-record-identity {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.guild-record-identity > div {
-  display: grid;
-  gap: 3px;
-}
-
-.guild-record-identity strong {
-  font-size: 1.12rem;
-}
-
-.guild-record-identity span,
-.guild-record-identity small {
-  color: var(--text-muted);
-}
-
-.guild-record-emblem,
 .guild-record-character-emblem {
   display: grid;
   place-items: center;
@@ -3161,62 +2967,23 @@
   color: var(--gold-soft);
 }
 
-.guild-record-emblem {
-  width: 64px;
-  height: 64px;
-  font-size: 1.25rem;
-}
-
 .guild-record-character-emblem {
   width: 42px;
   height: 42px;
 }
 
-.guild-record-emblem img,
 .guild-record-character-emblem img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.guild-record-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-}
-
-.guild-record-summary div,
-.guild-bulk-summary-totals div {
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.18);
-}
-
-.guild-record-summary dt,
-.guild-bulk-summary-totals dt {
-  color: var(--text-muted);
-  font-size: 0.82rem;
-}
-
-.guild-record-summary dd,
-.guild-bulk-summary-totals dd {
-  margin: 5px 0 0;
-  color: var(--gold-soft);
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-
-.guild-record-experience-list,
 .guild-record-character-list,
-.guild-bulk-summary-list,
 .guild-bulk-confirm-list {
   display: grid;
   gap: 9px;
 }
 
-.guild-record-experience-list > div,
-.guild-bulk-summary-list > div,
 .guild-bulk-confirm-list > div {
   display: flex;
   justify-content: space-between;
@@ -3224,11 +2991,6 @@
   padding: 11px 13px;
   border-radius: 11px;
   background: rgba(0, 0, 0, 0.18);
-}
-
-.guild-record-experience-list span {
-  color: var(--text-muted);
-  text-align: right;
 }
 
 .guild-record-character-list {
@@ -3253,218 +3015,20 @@
   color: var(--text-muted);
 }
 
-.guild-record-empty {
-  margin: 0;
-}
-
-.guild-bulk-dialogue-card {
-  display: grid;
-  grid-template-columns: minmax(210px, 0.4fr) minmax(0, 1.6fr);
-  gap: 18px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.guild-bulk-speaker {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-}
-
-.guild-bulk-speaker h3 {
-  margin: 2px 0 0;
-}
-
-.guild-bulk-speaker-portrait {
-  display: grid;
-  place-items: center;
-  width: 78px;
-  height: 78px;
-  flex: 0 0 78px;
-  overflow: hidden;
-  border-radius: 50%;
-  border: 1px solid rgba(215, 181, 112, 0.34);
-  background: #121a22;
-  color: var(--gold-soft);
-}
-
-.guild-bulk-speaker-portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 18%;
-}
-
-.guild-bulk-dialogue-text-region {
-  min-height: 132px;
-  height: 132px;
-  margin: 0;
-}
-
-.guild-bulk-dialogue-text-region p {
-  margin: 0;
-}
-
-.guild-bulk-status-row {
-  display: grid;
-  grid-template-columns: minmax(170px, 0.25fr) minmax(0, 1fr);
-  gap: 14px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.guild-bulk-gold-summary {
-  margin: 0;
-}
-
-.guild-bulk-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.7fr);
-  gap: 18px;
-  align-items: start;
-}
-
-.guild-bulk-catalog,
-.guild-bulk-summary-card {
-  padding: 18px;
-}
-
-.guild-bulk-catalog > h3,
-.guild-bulk-summary-card > h3 {
-  margin: 0 0 14px;
-}
-
-.guild-bulk-summary-card {
-  position: sticky;
-  top: 18px;
-}
-
-.guild-bulk-grid {
-  display: grid;
-  gap: 12px;
-}
-
-.guild-bulk-material-card {
-  display: grid;
-  gap: 12px;
-  padding: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-left: 3px solid rgba(215, 181, 112, 0.45);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.025);
-}
-
-.guild-bulk-material-card > header {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
-
-.guild-bulk-material-card > header > div {
-  display: grid;
-  gap: 2px;
-}
-
-.guild-bulk-material-card h3 {
-  margin: 0;
-}
-
-.guild-bulk-material-card > header > b {
-  color: var(--text-soft);
-}
-
-.guild-bulk-tier-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-.guild-bulk-tier-row strong {
-  color: var(--gold-soft);
-}
-
-.guild-bulk-tier-row strong[data-tier="below-minimum"] {
-  color: var(--ui-warning);
-}
-
-.guild-bulk-quantity-control {
-  display: grid;
-  grid-template-columns: auto auto minmax(76px, 1fr) auto auto auto auto;
-  gap: 7px;
-}
-
-.guild-bulk-quantity-control input {
-  min-width: 0;
-  text-align: center;
-}
-
-.guild-bulk-remove-button {
-  border: 1px solid rgba(228, 129, 114, 0.34);
-  border-radius: 10px;
-  background: rgba(228, 129, 114, 0.08);
-  color: var(--ui-error);
-}
-
-.guild-bulk-price-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-
-.guild-bulk-price-grid div {
-  padding: 9px 10px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.18);
-}
-
-.guild-bulk-price-grid dt {
-  color: var(--text-muted);
-  font-size: 0.78rem;
-}
-
-.guild-bulk-price-grid dd {
-  margin: 4px 0 0;
-  font-weight: 700;
-}
-
-.guild-bulk-summary-empty {
-  display: grid;
-  gap: 7px;
-  padding: 22px 12px;
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.guild-bulk-summary-empty strong {
-  color: var(--text-soft);
-}
-
-.guild-bulk-summary-totals,
 .guild-bulk-confirm-totals {
   display: grid;
   gap: 8px;
   margin: 14px 0;
 }
 
-.guild-bulk-summary-totals div,
 .guild-bulk-confirm-totals div {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.guild-bulk-summary-totals dd,
 .guild-bulk-confirm-totals dd {
   margin: 0;
-}
-
-.guild-bulk-summary-card .primary-button {
-  width: 100%;
 }
 
 .guild-bulk-confirm-list {
@@ -3477,75 +3041,7 @@
   width: min(620px, calc(100vw - 28px));
 }
 
-.guild-record-intro {
-  margin: 0 0 16px;
-  padding: 13px 16px;
-  border-left: 3px solid rgba(215, 181, 112, 0.62);
-  border-radius: 0 12px 12px 0;
-  background: rgba(215, 181, 112, 0.065);
-  color: var(--text-soft);
-  line-height: 1.7;
-}
-
 /* v0.2.6.1 冒險資歷正式版補強 */
-.guild-record-celine-copy {
-  display: grid;
-  align-content: start;
-}
-
-.guild-record-panel-heading {
-  padding: 2px 2px 4px;
-}
-
-.guild-record-panel-heading h3 {
-  margin: 4px 0 8px;
-  font-size: 1.45rem;
-}
-
-.guild-record-panel-heading > p:last-child {
-  margin: 0;
-  color: var(--text-muted);
-  line-height: 1.65;
-}
-
-.guild-record-section-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 13px;
-}
-
-.guild-record-section-heading h3 {
-  margin: 0;
-}
-
-.guild-record-experience-list > div {
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.guild-record-experience-marker {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-  border: 1px solid rgba(215, 181, 112, 0.38);
-  border-radius: 50%;
-  color: var(--gold-soft);
-  background: rgba(215, 181, 112, 0.08);
-}
-
-.guild-record-experience-list > div > span {
-  display: grid;
-  gap: 3px;
-  text-align: left;
-}
-
-.guild-record-experience-list small {
-  color: var(--text-muted);
-}
 
 .guild-record-celine-note {
   margin: 0;
@@ -3555,18 +3051,6 @@
   background: rgba(215, 181, 112, 0.065);
   color: var(--text-soft);
   line-height: 1.75;
-}
-
-.guild-bulk-summary-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.guild-bulk-summary-heading h3 {
-  margin: 0;
 }
 
 /* v0.2.6.1 冒險者公會定版 Demo 對齊 */

@@ -6,8 +6,8 @@ import {
   formatWeaponEffects,
   getWeaponEffects,
   getWeaponRarityClass,
-  getWeaponRarityId,
-  getWeaponRarityLabel
+  getWeaponRarityLabel,
+  setWeaponRarityData
 } from "./weaponViewHelpers.js";
 
 const MATERIAL_SYMBOLS = Object.freeze({
@@ -97,7 +97,9 @@ export function renderBlacksmithView({
     button.type = "button";
     button.className = `blacksmith-weapon-card ${getWeaponRarityClass(weapon)}`;
     button.classList.toggle("is-selected", weapon.id === selectedWeapon?.id);
+    button.dataset.weaponId = weapon.id;
     button.dataset.state = state;
+    button.setAttribute("aria-pressed", String(weapon.id === selectedWeapon?.id));
 
     const icon = createWeaponIcon(weapon, { className: "weapon-icon blacksmith-card-icon" });
     const copy = document.createElement("span");
@@ -187,7 +189,7 @@ function forEachElement(elements, callback) {
   Array.from(elements).forEach(callback);
 }
 
-function renderBlacksmithDetail({
+export function renderBlacksmithDetail({
   els,
   weapon,
   inventory,
@@ -196,6 +198,7 @@ function renderBlacksmithDetail({
   onCraftRequest
 }) {
   els.blacksmithDetail.replaceChildren();
+  setWeaponRarityData(els.blacksmithDetailPanel, weapon);
   if (!weapon) {
     els.blacksmithDetail.append(createMessage("目前沒有可製作的武器。"));
     if (els.blacksmithDetailState) {
@@ -231,7 +234,6 @@ function renderBlacksmithDetail({
   const eyebrow = document.createElement("span");
   const name = document.createElement("h3");
   eyebrow.textContent = `${getWeaponRarityLabel(weapon)}品級・${formatWeaponCategory(weapon, weaponCategoryDefinitions)}類武器`;
-  heading.dataset.rarity = getWeaponRarityId(weapon);
   name.textContent = weapon.name;
   title.append(eyebrow, name);
   heading.append(icon, title);
@@ -246,16 +248,27 @@ function renderBlacksmithDetail({
   const effectList = document.createElement("div");
   effectTitle.textContent = "武器效果";
   effectList.className = "blacksmith-effect-list";
-  getWeaponEffects(weapon).forEach((effect) => {
+  if (weapon.effectText) {
     const item = document.createElement("div");
     item.className = "blacksmith-effect-item";
     const label = document.createElement("small");
     const value = document.createElement("strong");
-    label.textContent = effect.stat === "attack" ? "基礎能力" : "特殊效果";
-    value.textContent = formatWeaponEffect(effect);
+    label.textContent = weapon.effectName || "特殊效果";
+    value.textContent = weapon.effectText;
     item.append(label, value);
     effectList.append(item);
-  });
+  } else {
+    getWeaponEffects(weapon).forEach((effect) => {
+      const item = document.createElement("div");
+      item.className = "blacksmith-effect-item";
+      const label = document.createElement("small");
+      const value = document.createElement("strong");
+      label.textContent = effect.stat === "attack" ? "基礎能力" : "特殊效果";
+      value.textContent = formatWeaponEffect(effect);
+      item.append(label, value);
+      effectList.append(item);
+    });
+  }
   if (!effectList.children.length) {
     const effectText = document.createElement("p");
     effectText.textContent = formatWeaponEffects(weapon);
@@ -356,6 +369,7 @@ export function renderBlacksmithCraftPanel({
     materialCosts: weapon.recipe.materialCosts
   });
   els.blacksmithCraftTitle.textContent = weapon.name;
+  setWeaponRarityData(els.blacksmithCraftPanel, weapon);
   els.blacksmithCraftMeta.textContent = "確認後會立即扣除下列金幣與素材。";
   els.blacksmithCraftCostList.replaceChildren();
   els.blacksmithCraftCostList.append(createConfirmCostRow("金幣", costStatus.goldCost));
@@ -369,6 +383,7 @@ export function renderBlacksmithCraftPanel({
 
 export function closeBlacksmithCraftPanel(els) {
   els.blacksmithCraftPanel.classList.remove("is-visible");
+  setWeaponRarityData(els.blacksmithCraftPanel, null);
 }
 
 function createConfirmCostRow(label, quantity) {

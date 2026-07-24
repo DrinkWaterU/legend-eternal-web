@@ -31,7 +31,7 @@ export function createPreparationBattleEffects({ state, addFixedLog }) {
           log
         });
         if (!characterAction.handled) {
-          resolveHeroAction({ hero: state.hero, enemy: target, log });
+          resolveHeroAction({ hero: state.hero, enemy: target, enemies: state.enemies, log });
         }
         return characterAction;
       }

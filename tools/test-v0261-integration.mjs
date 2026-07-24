@@ -20,8 +20,8 @@ const [html, game, dom, componentsCss, responsiveCss, storage, commerce, dialogu
   readFile(new URL("src/core/dialogue.js", root), "utf8")
 ]);
 
-assert.equal(SAVE_SCHEMA_VERSION, 9);
-assert.deepEqual(safeAreaDefinitions["anping-town"].facilityIds, ["blacksmith", "adventurers-guild"]);
+assert.ok(SAVE_SCHEMA_VERSION >= 9);
+assert.deepEqual(safeAreaDefinitions["anping-town"].facilityIds, ["blacksmith", "adventurers-guild", "kaige-encounter"]);
 assert.equal(facilityDefinitions["adventurers-guild"].npcId, "anping-guild-receptionist");
 assert.equal(facilityDefinitions["guild-adventure-record"].hiddenFromList, true);
 assert.equal(facilityDefinitions["guild-bulk-sale"].hiddenFromList, true);

@@ -1,3 +1,5 @@
+import { applyCharacterPortraitFocus, getCharacterPortraitPath } from "./characterPortrait.js";
+
 let guildRecordSectionCounter = 0;
 
 export function renderGuildAdventureRecordView({ els, model, npc = null }) {
@@ -80,7 +82,8 @@ function createIdentityCard(character) {
 
   const emblem = createEmblem({
     className: "guild-record-current-emblem",
-    path: character.emblemPath,
+    path: getCharacterPortraitPath(character, character.id),
+    focus: character.portraitFocus,
     name: character.name
   });
   const copy = document.createElement("div");
@@ -201,7 +204,8 @@ function createCharactersSection(characters) {
       card.className = "guild-record-character-card guild-record-reveal-item";
       const emblem = createEmblem({
         className: "guild-record-character-emblem",
-        path: `./assets/images/characters/${character.id}/emblem.png`,
+        path: getCharacterPortraitPath(character, character.id),
+        focus: character.portraitFocus,
         name: character.name
       });
       const copy = document.createElement("div");
@@ -310,12 +314,17 @@ function createCelineNote(text) {
   return note;
 }
 
-function createEmblem({ className, path, name }) {
+function createEmblem({ className, path, focus, name }) {
   const emblem = document.createElement("span");
   emblem.className = className;
+  if (!path) {
+    emblem.textContent = name.charAt(0) || "？";
+    return emblem;
+  }
   const image = document.createElement("img");
   image.src = path;
   image.alt = `${name}徽記`;
+  applyCharacterPortraitFocus(image, { portraitFocus: focus });
   image.addEventListener("error", () => {
     image.hidden = true;
     emblem.textContent = name.charAt(0) || "？";

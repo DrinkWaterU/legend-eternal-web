@@ -4,14 +4,19 @@ import { clone } from "../utils.js";
 const FLOW_MOMENTUM_DECAY = 0.7;
 const FLOW_MOMENTUM_GAIN = 1;
 
-export function applyBlessingEffects(hero, blessing) {
+export function applyBlessingEffects(hero, blessing, options = {}) {
+  const { instanceId = null, skipImmediate = false, runtimeState = null } = options;
   registerBlessingFlows(hero, blessing);
   updateBlessingFlowMomentum(hero, blessing);
-  blessing.effects.forEach((effect) => applyEffect(hero, effect, blessing));
-  applyEncounterBias(hero, blessing.encounterBias);
+  blessing.effects.forEach((effect) => applyEffect(hero, effect, blessing, options));
+  applyEncounterBias(hero, blessing.encounterBias, {
+    instanceId,
+    skipImmediate,
+    runtimeState
+  });
 }
 
-function applyEffect(hero, effect, blessing) {
+function applyEffect(hero, effect, blessing, options) {
   if (effect.type === "addFamilyDamageBonus") {
     hero.familyDamageBonus = hero.familyDamageBonus || {};
     getEffectFamilies(effect).forEach((family) => {
@@ -36,29 +41,50 @@ function applyEffect(hero, effect, blessing) {
   }
 
   if (effect.type === "max") {
-    hero[effect.stat] = Math.max(hero[effect.stat], effect.value);
+    const currentValue = Number.isFinite(Number(hero[effect.stat]))
+      ? Number(hero[effect.stat])
+      : 0;
+    const value = Number(effect.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    hero[effect.stat] = Math.max(currentValue, value);
     return;
   }
 
   if (effect.type === "recoverHp") {
+    if (options.skipImmediate) {
+      return;
+    }
     hero.hp = Math.min(hero.maxHp, hero.hp + effect.amount);
     return;
   }
 
   if (effect.type === "addTimedRegen") {
-    addTimedRegen(hero, effect, blessing);
+    addTimedRegen(hero, effect, blessing, options);
   }
 }
 
-function addTimedRegen(hero, effect, blessing) {
-  const id = effect.id || blessing.id || "timed-regen";
+function addTimedRegen(hero, effect, blessing, options = {}) {
+  const { instanceId = null, skipImmediate = false, runtimeState = null } = options;
+  const defaultId = effect.id || blessing.id || "timed-regen";
+  const id = instanceId ? `${instanceId}:${defaultId}` : defaultId;
   const runtimeEffect = {
     id,
+    instanceId,
     source: effect.source || blessing.name || "祝福",
     remainingEncounters: Math.max(0, Math.floor(effect.durationEncounters || 0)),
     everyTurns: Math.max(1, Math.floor(effect.everyTurns || 1)),
     maxHpRatio: Math.max(0, Number(effect.maxHpRatio) || 0)
   };
+
+  if (skipImmediate) {
+    const savedEffect = runtimeState?.timedRegens?.find((item) => item.id === id);
+    if (!savedEffect) {
+      return;
+    }
+    Object.assign(runtimeEffect, clone(savedEffect));
+  }
 
   if (runtimeEffect.remainingEncounters <= 0 || runtimeEffect.maxHpRatio <= 0) {
     return;
@@ -77,22 +103,32 @@ function addTimedRegen(hero, effect, blessing) {
   existing.maxHpRatio = Math.max(existing.maxHpRatio, runtimeEffect.maxHpRatio);
 }
 
-function applyEncounterBias(hero, encounterBias) {
+function applyEncounterBias(hero, encounterBias, options = {}) {
   if (!encounterBias) {
     return;
   }
 
+  const { instanceId = null, skipImmediate = false, runtimeState = null } = options;
   hero.encounterBiases = Array.isArray(hero.encounterBiases) ? hero.encounterBiases : [];
-  const runtimeBias = clone(encounterBias);
+  const savedRuntimeBias = runtimeState?.encounterBiases?.find((bias) => bias.instanceId === instanceId);
+  const runtimeBias = skipImmediate
+    ? (savedRuntimeBias ? clone(savedRuntimeBias) : null)
+    : clone(encounterBias);
+  if (!runtimeBias) {
+    return;
+  }
+  runtimeBias.instanceId = instanceId;
   runtimeBias.families = getEncounterBiasFamilies(runtimeBias);
-  ["normal", "elite"].forEach((encounterType) => {
-    if (!runtimeBias[encounterType]) {
-      return;
-    }
+  if (!skipImmediate) {
+    ["normal", "elite"].forEach((encounterType) => {
+      if (!runtimeBias[encounterType]) {
+        return;
+      }
 
-    runtimeBias[encounterType].remaining = runtimeBias[encounterType].duration || 0;
-    runtimeBias[encounterType].misses = 0;
-  });
+      runtimeBias[encounterType].remaining = runtimeBias[encounterType].duration || 0;
+      runtimeBias[encounterType].misses = 0;
+    });
+  }
   hero.encounterBiases.push(runtimeBias);
 }
 

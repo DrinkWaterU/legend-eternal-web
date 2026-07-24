@@ -1,0 +1,321 @@
+{
+  "id": "cave",
+  "name": "海岸洞穴",
+  "contentStatus": "balanced",
+  "blessings": [
+    {
+      "id": "cave-shield-reversal",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "name": "碎盾反噬",
+      "eventTitle": "碎盾回聲",
+      "eventText": "你記下潮水撞穿護具的那一刻，順勢調整受力角度；當防線碎裂的震顫傳來，你早已準備將這股衝擊加倍奉還。",
+      "flavorText": "護盾不只是用來挨打的；撐過最沉重的一擊，才會知道反擊該從何處開始。",
+      "effectText": "戰鬥開始時獲得 4 點護盾。每場首次因敵方直接攻擊使護盾歸零後，下一次直接攻擊額外造成 6 點傷害。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 4
+        },
+        {
+          "type": "add",
+          "stat": "shieldReversalDamage",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "id": "cave-reef-edge",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "attack",
+      "name": "礁石礪鋒",
+      "eventTitle": "潮礫磨痕",
+      "eventText": "你在岩縫間摸索出一塊粗糙的沉積礫石，沿著刃口緩緩擦過，讓原本鈍化的鋒面重新咬住獵物的皮肉。",
+      "flavorText": "海岸不會為你奉上現成的名刀，但總會留下能將敵人剖開的銳利。",
+      "effectText": "攻擊 +4。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "cave-shell-bastion",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "name": "潮殼承壓",
+      "eventTitle": "礁殼厚面",
+      "eventText": "你沿著潮線辨識出最堅硬厚實的貝殼與藤壺，將它們緊緊扣在護具外側，準備用這層甲殼接下下一輪肆虐的衝擊。",
+      "flavorText": "怒濤可以一次次拍打過來，但你大可不必每次都把身軀交出去。",
+      "effectText": "防禦 +3；每場戰鬥開始獲得 10 點護盾。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 3
+        },
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "id": "cave-cavern-spring",
+      "category": "healing",
+      "rarity": "common",
+      "primaryFlow": "healing",
+      "name": "窟泉寒澤",
+      "eventTitle": "岩縫冷泉",
+      "eventText": "你在幽暗的岩縫深處聽見叮咚水聲，捧起一掬冰冷的地下泉水洗去滿臉鹽霧與積累的疲憊，才繼續踏入更深的黑暗。",
+      "flavorText": "清泉能讓你多走一段路，卻無法替你走完這座看不到盡頭的洞窟。",
+      "effectText": "最大生命 +6，並立即恢復 28 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 6
+        },
+        {
+          "type": "recoverHp",
+          "amount": 28
+        }
+      ]
+    },
+    {
+      "id": "cave-crosscurrent-shell",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "name": "逆潮孤戍",
+      "eventTitle": "交潮落腳",
+      "eventText": "兩股湍急的暗流在腳下交錯，你壓低身體重心，將護盾最堅固的一面朝向包圍上來的敵群，死死壓住最容易被突破的缺口。",
+      "flavorText": "敵人越多，越不能讓自己的陣腳先被陣陣潮水撕裂。",
+      "effectText": "面對 2 名以上敵人時，每場戰鬥開始額外獲得 9 點護盾。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "multiEnemyShieldStart",
+          "amount": 9
+        }
+      ]
+    },
+    {
+      "id": "cave-tide-scavenge",
+      "category": "healing",
+      "rarity": "common",
+      "primaryFlow": "healing",
+      "name": "退潮拾遺",
+      "eventTitle": "退潮拾遺",
+      "eventText": "戰鬥聲息漸止，你沿著退潮殘留的水線仔細摸索，將倒下者身上還能使用的草藥與資源一一收回掌心。",
+      "flavorText": "海水會帶走許多東西，但並不代表留下來的就該被白白浪費。",
+      "effectText": "每擊敗 1 名敵人恢復 10 點生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHeal",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "id": "cave-support-counter",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "attack",
+      "name": "隙光截擊",
+      "eventTitle": "掩潮破口",
+      "eventText": "你死死盯著敵人彼此掩護時暴露的死角；當對方伸手試圖支援同伴的瞬間，你已將利刃推進了那個轉瞬即逝的破口。",
+      "flavorText": "有人替敵人補上缺口，也就有人替你指明了致命反擊的位置。",
+      "effectText": "敵人成功施放支援行動後，下一次直接攻擊額外造成 8 點傷害；每場最多觸發 2 次。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "supportCounterDamage",
+          "amount": 8
+        },
+        {
+          "type": "add",
+          "stat": "supportCounterMaxUses",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "cave-frontline-break",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "attack",
+      "name": "破陣撕裂",
+      "eventTitle": "前排裂勢",
+      "eventText": "敵方前衛轟然倒下的瞬間，後方的陣形露出一片慌亂的空白；你沒有絲毫停頓，順著那道缺口將敵人的防禦徹底撕開。",
+      "flavorText": "第一道防線一旦瓦解，剩下的不過是一群引頸受戮的散兵。",
+      "effectText": "每場第一次擊敗前衛敵人後，本場攻擊 +5。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "frontlineBreakAttack",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "cave-tide-mark",
+      "category": "crit",
+      "rarity": "uncommon",
+      "primaryFlow": "crit",
+      "name": "潮痕追穴",
+      "eventTitle": "敵影留痕",
+      "eventText": "你在敵人身上劃開一道深長潮痕，暗中記下牠下一次轉身時最難防守的盲點，等待給予致命一擊。",
+      "flavorText": "這道痕跡不是警告，而是替你下一次的肆虐攻勢指引方向。",
+      "effectText": "常駐暴擊率 +3%。每場第一次命中敵人後標記該目標；下一次直接攻擊同一目標時，額外獲得 30% 暴擊率。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        },
+        {
+          "type": "add",
+          "stat": "tideMarkCritChance",
+          "amount": 0.3
+        }
+      ]
+    },
+    {
+      "id": "cave-current-paralysis",
+      "category": "debuff",
+      "rarity": "uncommon",
+      "primaryFlow": "debuff",
+      "name": "電光寄襲",
+      "eventTitle": "水線電光",
+      "eventText": "積水間竄過一縷細微電光，你順著那股麻痺感將電芒導進武器，讓刺入肌肉的瞬間帶來一陣劇烈的痙攣。",
+      "flavorText": "不需要長時間的僵直；只要那一瞬間的停頓，就足以翻轉整場攻防。",
+      "effectText": "直接攻擊命中存活敵人時，18% 機率使其麻痺 2 回合，最多累加至 3 回合。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "enemyParalysisChance",
+          "amount": 0.18
+        }
+      ]
+    },
+    {
+      "id": "cave-tide-hardening",
+      "category": "defense",
+      "rarity": "uncommon",
+      "primaryFlow": "defense",
+      "name": "濕岩硬化",
+      "eventTitle": "濕岩貼合",
+      "eventText": "你把濕冷黏濁的岩泥填滿護具縫隙，讓它沿著身形乾涸結塊，化為一層雖然沉重、卻無比堅韌的外殼。",
+      "flavorText": "厚重並非笨重；那是你在承受下一次猛烈撞擊前，為自己留下的餘裕。",
+      "effectText": "最大生命 +16；每場戰鬥開始獲得 10 點護盾。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 16
+        },
+        {
+          "type": "add",
+          "stat": "shieldStart",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "id": "cave-opening-read",
+      "category": "crit",
+      "rarity": "uncommon",
+      "primaryFlow": "crit",
+      "name": "聽潮察警",
+      "eventTitle": "洞窟回聲",
+      "eventText": "你壓低呼吸，閉上眼傾聽洞窟內細碎的水響與回波；在敵意鋪展開來的瞬間，潮聲早已替你指明了致命的盲區。",
+      "flavorText": "先一步聽懂了環境的節奏，就能先一步將攻擊精準送到該去的地方。",
+      "effectText": "常駐暴擊率 +3%。每場第一次實際攻擊額外獲得 40% 暴擊率。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        },
+        {
+          "type": "add",
+          "stat": "openingCritChance",
+          "amount": 0.4
+        }
+      ]
+    },
+    {
+      "id": "cave-paralysis-resonance",
+      "category": "debuff",
+      "rarity": "rare",
+      "primaryFlow": "debuff",
+      "name": "霆擊共鳴",
+      "eventTitle": "電痕共振",
+      "eventText": "敵人身上的電芒仍在劇烈顫抖，你抓住牠僵直失準的剎那，將攻擊沿著電流奔湧的破綻深深貫穿過去。",
+      "flavorText": "麻痺往往只有一瞬，但對懂得抓緊機會的人來說，一瞬已經太長。",
+      "effectText": "直接攻擊有 8% 機率使敵人麻痺；對已麻痺敵人的直接攻擊傷害 +20%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "enemyParalysisChance",
+          "amount": 0.08
+        },
+        {
+          "type": "add",
+          "stat": "paralysisResonanceDamageBonus",
+          "amount": 0.2
+        }
+      ]
+    },
+    {
+      "id": "cave-cavern-echo",
+      "category": "attack",
+      "rarity": "rare",
+      "primaryFlow": "attack",
+      "name": "深窟迴響",
+      "eventTitle": "裂痕反響",
+      "eventText": "你的武器反覆重擊在同一個傷口上，閉塞的洞窟將每次撞擊的迴聲加倍折返，讓下一擊比上一擊更加沉重與深邃。",
+      "flavorText": "同一道裂痕不會自己痊癒；越是反覆敲擊，這道傷口就越能變成致命的破口。",
+      "effectText": "連續直接攻擊同一目標時，從第二次攻擊開始累積迴響。每層額外造成 2 點傷害，最多 4 層；更換目標或目標死亡時重置。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "cavernEchoDamagePerStack",
+          "amount": 2
+        },
+        {
+          "type": "max",
+          "stat": "cavernEchoMaxStacks",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "cave-break-formation",
+      "category": "attack",
+      "rarity": "rare",
+      "primaryFlow": "attack",
+      "name": "怒濤貫陣",
+      "eventTitle": "受力缺口",
+      "eventText": "你看見前衛試圖用肉身替同伴擋住防線，但你並未繞開；你凝聚全身力量朝受力最重的一點貫穿過去，強行將攻勢打進後排。",
+      "flavorText": "堅固的掩護能為同伴爭取時間，卻攔不住蓄勢已久、勢不可擋的巨浪。",
+      "effectText": "角色的直接攻擊、角色追擊與箭雨，無視魚人前衛提供的「被保護減傷」。",
+      "effects": [
+        {
+          "type": "set",
+          "stat": "ignoreProtectedEnemyReduction",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

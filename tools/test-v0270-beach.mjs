@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { getBlessingPool } from "../src/data/blessings/index.js";
+import { achievementDefinitions } from "../src/data/achievements.js";
 import { applyBlessingEffects } from "../src/core/blessings.js";
 import { eventDefinitions, getEventDefinition } from "../src/data/events/index.js";
 import { regionDefinitions } from "../src/data/regions/index.js";
@@ -24,6 +25,8 @@ const silentLog = {
 
 const beach = regionDefinitions.beach;
 assert.ok(beach, "應註冊海灘地區");
+assert.equal(beach.regionName, "海岸", "海灘資料的玩家可見第三地區名稱應為海岸");
+assert.equal(beach.segmentName, "海灘", "海灘資料應保留段落名稱");
 assert.equal(beach.encounterCount, 16, "海灘應有 16 場戰鬥");
 assert.equal(beach.encounterPlan.at(-1).type, "boss", "海灘最後一場應為 Boss");
 assert.equal(beach.recommendedLevel, "Lv.20+");
@@ -32,6 +35,9 @@ assert.equal(
   "穿過森林的盡頭，迎面而來的是無邊的開闊海岸。乾涸鹽痕、噬人礁岩與莫測的漲退潮線交織成網，使每一步前行都充滿未知的變數。"
 );
 assert.equal(beach.note, undefined, "玩家地區描述不可暴露內部施工資訊");
+assert.equal(achievementDefinitions.beach_trial.displayRegionName, "海灘");
+assert.equal(achievementDefinitions.coast_trial.displayRegionName, "海岸");
+assert.equal(achievementDefinitions.coast_trial.conditionText, "擊敗海岸洞穴首領");
 assert.deepEqual(beach.preparations.map((preparation) => preparation.id), [
   "freshwater-dressing",
   "insulated-gloves",

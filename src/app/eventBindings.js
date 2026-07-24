@@ -18,6 +18,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     showRegionList,
     showFacilityList,
     showSafeAreaTravelScreen,
+    showStoryQuestScreen,
     handleSafeAreaTravel,
     restart,
     getNavigationReturnTarget,
@@ -33,7 +34,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     closeLockedCharacterHint,
     startPlayerRun,
     handleEndPrimaryAction,
-    closeEndPanel,
+    reviewEndPanelLog,
+    returnToEndPanel,
     revealStoryText,
     completePlainsStory,
     revealAnpingArrivalPage,
@@ -42,6 +44,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     tryFlee,
     continueAdventure,
     handleEventContinueButton,
+    returnToSegmentChoice,
+    confirmCampSelection,
     restAtSafeRoute,
     retreatRun,
     openAbilityInfoPanel,
@@ -65,6 +69,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     closeDeleteSaveDialog,
     closeAchievementDetailPanel,
     closeAchievementUnlockToast,
+    cancelDuelExit,
+    confirmDuelExit,
     facilityController,
     handleUserInteraction
   } = actions;
@@ -83,6 +89,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.campRegionButton.addEventListener("click", () => showRegionList("camp"));
   els.campCharacterButton.addEventListener("click", () => showCharacterList("camp"));
   els.campRecordButton.addEventListener("click", () => showStatisticsScreen("camp"));
+  els.campStoryQuestButton.addEventListener("click", showStoryQuestScreen);
   els.campStorageButton.addEventListener("click", () => showScreenInContext("storageScreen", "camp"));
   els.campPlacesButton.addEventListener("click", () => {
     if (!els.campPlacesButton.disabled) showFacilityList(uiState.safeAreaId, "camp");
@@ -93,6 +100,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     if (button && els.safeAreaTravelList.contains(button)) handleSafeAreaTravel(button.dataset.safeAreaId);
   });
   els.safeAreaTravelBackButton.addEventListener("click", () => showScreen("campScreen"));
+  els.storyQuestBackButton.addEventListener("click", () => showScreen("campScreen"));
   els.campBackButton.addEventListener("click", restart);
   els.storageBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
   els.facilityBackButton.addEventListener("click", () => showScreen(getNavigationReturnTarget()));
@@ -128,7 +136,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.startButton.addEventListener("click", startPlayerRun);
   els.restartButton.addEventListener("click", restart);
   els.retryButton.addEventListener("click", handleEndPrimaryAction);
-  els.viewLogButton.addEventListener("click", closeEndPanel);
+  els.viewLogButton.addEventListener("click", reviewEndPanelLog);
+  els.returnToEndSummaryButton.addEventListener("click", returnToEndPanel);
   els.revealStoryButton.addEventListener("click", revealStoryText);
   els.finishStoryButton.addEventListener("click", completePlainsStory);
   els.revealAnpingArrivalButton.addEventListener("click", revealAnpingArrivalPage);
@@ -137,6 +146,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.fleeButton.addEventListener("click", tryFlee);
   els.continueButton.addEventListener("click", continueAdventure);
   els.eventContinueButton.addEventListener("click", handleEventContinueButton);
+  els.campTransitionBackButton.addEventListener("click", returnToSegmentChoice);
+  els.campTransitionConfirmButton.addEventListener("click", confirmCampSelection);
   els.restButton.addEventListener("click", restAtSafeRoute);
   els.retreatButton.addEventListener("click", retreatRun);
   [els.openAbilityFromAttack, els.openAbilityFromDefense, els.openAbilityFromCrit]
@@ -162,6 +173,8 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.closeAchievementDetailButton.addEventListener("click", closeAchievementDetailPanel);
   els.achievementDetailBackdrop.addEventListener("click", closeAchievementDetailPanel);
   els.closeAchievementUnlockToastButton.addEventListener("click", () => closeAchievementUnlockToast());
+  els.confirmDuelExitButton.addEventListener("click", confirmDuelExit);
+  els.cancelDuelExitButton.addEventListener("click", cancelDuelExit);
   els.closeMerchantSaleButton.addEventListener("click", facilityController.closeMerchantSale);
   els.confirmGuildQuestAbandonButton.addEventListener("click", facilityController.confirmGuildQuestAbandon);
   els.closeGuildQuestAbandonButton.addEventListener("click", facilityController.closeGuildQuestAbandon);
@@ -175,6 +188,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
     [els.abilityInfoPanel, closeAbilityInfoPanel],
     [els.blessingInfoPanel, closeBlessingInfoPanel],
     [els.questInfoPanel, closeQuestInfoPanel],
+    [els.duelExitPanel, cancelDuelExit],
     [els.exportSaveCodePanel, closeExportSaveCodeDialog],
     [els.importSaveCodePanel, closeImportSaveCodeDialog]
   ].forEach(([panel, closePanel]) => bindBackdropClose(panel, closePanel));

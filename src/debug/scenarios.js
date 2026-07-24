@@ -4,6 +4,7 @@ import { regionDefinitions } from "../data/regions/index.js";
 import {
   DEBUG_BUILD_PROFILES,
   DEBUG_SCENARIOS,
+  COAST_CAVE_ROUTE_ID,
   GOBLIN_MID_CHOICES,
   GOBLIN_ROUTE_ENTRY_OPTIONS,
   GOBLIN_ROUTE_ID,
@@ -57,6 +58,14 @@ export function getDebugScenarioBuildSlots(scenarioId, options = {}) {
     return buildGoblinRouteTimeline(scenario, options);
   }
 
+  if (scenario.kind === "coastCampTransition") {
+    return finalizeTimeline(buildRegionAcquisitions("beach", 16, 0));
+  }
+
+  if (scenario.routeId === COAST_CAVE_ROUTE_ID) {
+    return buildCoastCaveTimeline(scenario);
+  }
+
   return [];
 }
 
@@ -71,6 +80,7 @@ export function createDebugBuildProfile(slots, profileId) {
   const selections = {};
 
   slotList.forEach((slot, slotIndex) => {
+    if (slot.stage === "campRetained") return;
     const desiredFlow = requestedFlows[slotIndex % requestedFlows.length];
     const candidates = getProfileCandidates(slot.blessings, desiredFlow, requestedFlows, slotIndex);
     if (candidates.length === 0) {
@@ -81,6 +91,16 @@ export function createDebugBuildProfile(slots, profileId) {
     selections[slot.id] = candidates[usage % candidates.length].id;
     usageByKey.set(usageKey, usage + 1);
   });
+
+  slotList
+    .filter((slot) => slot.stage === "campRetained")
+    .forEach((slot, index) => {
+      const sourceSlotId = slot.retainedFromSlotIds?.[index] || slot.retainedFromSlotIds?.[0];
+      const blessingId = selections[sourceSlotId];
+      if (blessingId && slot.blessings.some((blessing) => blessing.id === blessingId)) {
+        selections[slot.id] = blessingId;
+      }
+    });
 
   return selections;
 }
@@ -125,6 +145,34 @@ function buildGoblinRouteTimeline(scenario, options) {
   return finalizeTimeline(acquisitions);
 }
 
+function buildCoastCaveTimeline(scenario) {
+  const beachAcquisitions = buildRegionAcquisitions("beach", 16, 0)
+    .map((slot) => ({ ...slot, stage: "beach" }));
+  const beachBlessings = beachAcquisitions[0]?.blessings || [];
+  const retainedSlots = Array.from({ length: 8 }, (_, index) => createAcquisition({
+    id: `coast-camp-retained-${index + 1}`,
+    label: `扎營保留 ${index + 1}`,
+    poolKey: "coast:camp-retained",
+    blessings: beachBlessings,
+    acquiredAfterVictory: 16,
+    stage: "campRetained",
+    retainedFromSlotIds: beachAcquisitions.map((slot) => slot.id)
+  }));
+  const caveBlessings = (getBlessingPool("cave")?.blessings || []).map(simplifyBlessing);
+  const caveAcquisitions = Array.from(
+    { length: Math.max(0, Number(scenario.routeEncounterIndex) || 0) },
+    (_, index) => createAcquisition({
+      id: `coast-cave-${index + 1}`,
+      label: `洞穴第 ${index + 1} 場`,
+      poolKey: "route:coast-cave",
+      blessings: caveBlessings,
+      acquiredAfterVictory: 16 + index + 1,
+      stage: "cave"
+    })
+  );
+  return finalizeTimeline([...beachAcquisitions, ...retainedSlots, ...caveAcquisitions]);
+}
+
 function buildRegionAcquisitions(regionId, count, victoryOffset) {
   const region = regionDefinitions[regionId];
   const blessings = (region?.blessings || []).map(simplifyBlessing);
@@ -137,13 +185,15 @@ function buildRegionAcquisitions(regionId, count, victoryOffset) {
   }));
 }
 
-function createAcquisition({ id, label, poolKey, blessings, acquiredAfterVictory }) {
+function createAcquisition({ id, label, poolKey, blessings, acquiredAfterVictory, stage, retainedFromSlotIds }) {
   return {
     id,
     label,
     poolKey,
     blessings: blessings.map(simplifyBlessing),
-    acquiredAfterVictory
+    acquiredAfterVictory,
+    stage,
+    retainedFromSlotIds
   };
 }
 
@@ -151,6 +201,7 @@ function finalizeTimeline(acquisitions) {
   return acquisitions.map((slot, index) => {
     const next = acquisitions[index + 1];
     return {
+      ...slot,
       id: slot.id,
       label: slot.label,
       poolKey: slot.poolKey,

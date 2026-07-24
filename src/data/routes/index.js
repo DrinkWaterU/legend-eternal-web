@@ -4,8 +4,10 @@ import { musicDefinitions } from "../music.js";
 import { regionDefinitions } from "../regions/index.js";
 import { ROUTE_ENDING_ROLES, ROUTE_ENDING_TONES } from "./endingSemantics.js";
 import goblinCampData from "./goblinCamp.json" with { type: "json" };
+import coastCaveData from "./coastCave.json" with { type: "json" };
 
-const routeDataFiles = [goblinCampData];
+const routeDataFiles = [goblinCampData, coastCaveData];
+const ROUTE_ENCOUNTER_TYPES = new Set(["normal", "elite", "boss"]);
 
 export const routeDefinitions = buildRouteRegistry(routeDataFiles);
 
@@ -20,13 +22,13 @@ export function getRouteGroup(route, groupId) {
 function buildRouteRegistry(routes) {
   const registry = {};
   routes.forEach((route) => {
-    validateRouteDefinition(route, registry);
+    assertValidRouteDefinition(route, registry);
     registry[route.id] = route;
   });
   return Object.freeze(registry);
 }
 
-function validateRouteDefinition(route, registry) {
+export function assertValidRouteDefinition(route, registry = {}) {
   const id = String(route?.id || "").trim();
   if (!id) throw new Error("Route definition 缺少 id。");
   if (registry[id]) throw new Error(`Route id 重複：${id}`);
@@ -50,9 +52,14 @@ function validateRouteDefinition(route, registry) {
   });
 
   if (!Array.isArray(route.encounterPlan) || route.encounterPlan.length === 0) throw new Error(`Route ${id} encounterPlan 不可為空。`);
-  route.encounterPlan.forEach((entry) => {
+  route.encounterPlan.forEach((entry, index) => {
     if (!groups.has(entry?.groupId)) throw new Error(`Route ${id} encounterPlan 找不到 groupId：${entry?.groupId}`);
+    if (!ROUTE_ENCOUNTER_TYPES.has(entry?.type)) {
+      throw new Error(`Route ${id} 第 ${index + 1} 場 encounter type 無效：${entry?.type || "(empty)"}`);
+    }
   });
+
+  validateRouteFleeChance(route);
 
   validateRouteEvents(route);
   validateRouteEnding(route, "ending");
@@ -65,8 +72,8 @@ function validateRouteDefinition(route, registry) {
   }
 
   const trackId = String(route.audio?.bgmId || "").trim();
-  if (!trackId) throw new Error(`Route ${id} 缺少 BGM id。`);
-  if (!musicDefinitions[trackId]) throw new Error(`Route ${id} 找不到 BGM definition：${trackId}`);
+  if (!trackId && route.audio?.safeSilent !== true) throw new Error(`Route ${id} 缺少 BGM id。`);
+  if (trackId && !musicDefinitions[trackId]) throw new Error(`Route ${id} 找不到 BGM definition：${trackId}`);
 
   const counterEnemyIds = Array.isArray(route.counterEnemyIds) ? route.counterEnemyIds : [];
   if (counterEnemyIds.length === 0) throw new Error(`Route ${id} counterEnemyIds 不可為空。`);
@@ -81,6 +88,20 @@ function validateRouteDefinition(route, registry) {
       throw new Error(`Route ${id} background stage 範圍無效：${stage.id || "(empty)"}`);
     }
   });
+  return route;
+}
+
+function validateRouteFleeChance(route) {
+  if (route.fleeChance == null) return;
+  ["normal", "elite", "boss"].forEach((key) => {
+    const value = Number(route.fleeChance?.[key]);
+    if (!Number.isFinite(value) || value < 0 || value > 1) {
+      throw new Error(`Route ${route.id} fleeChance.${key} 必須介於 0 到 1。`);
+    }
+  });
+  if (Number(route.fleeChance.boss) !== 0) {
+    throw new Error(`Route ${route.id} fleeChance.boss 必須為 0。`);
+  }
 }
 function validateRouteEnding(route, endingKey) {
   const ending = route?.[endingKey];

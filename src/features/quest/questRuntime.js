@@ -8,7 +8,7 @@ import {
   matchEnemyObjective,
   normalizeQuestState
 } from "../../core/questRules.js";
-import { clone, toSafeInteger } from "../../utils.js";
+import { clone, sumSafeIntegers, toSafeInteger } from "../../utils.js";
 
 export function createQuestRuntime({
   saveStore,
@@ -65,7 +65,7 @@ export function createQuestRuntime({
     if (!quests.active) return { ok: false, reason: "目前沒有進行中的委託。" };
     const snapshot = clone(quests);
     quests.active = null;
-    quests.statistics.abandonedTotal = addSafeQuestIntegers(quests.statistics.abandonedTotal, 1);
+    quests.statistics.abandonedTotal = sumSafeIntegers(quests.statistics.abandonedTotal, 1);
     if (!saveGameSafe()) {
       saveStore.current.quests = snapshot;
       return { ok: false, reason: "目前無法保存放棄紀錄。" };
@@ -152,7 +152,7 @@ export function createQuestRuntime({
   }
 
   function applyRewards(reward) {
-    saveStore.current.inventory.gold = addSafeQuestIntegers(
+    saveStore.current.inventory.gold = sumSafeIntegers(
       saveStore.current.inventory.gold,
       reward.gold
     );
@@ -163,41 +163,31 @@ export function createQuestRuntime({
         name: material?.name || entry.id,
         quantity: 0
       };
-      current.quantity = addSafeQuestIntegers(current.quantity, entry.quantity);
+      current.quantity = sumSafeIntegers(current.quantity, entry.quantity);
       saveStore.current.inventory.materials[entry.id] = current;
     });
   }
 
   function completeQuestRecord(quest, reward, quests) {
-    quests.statistics.completedTotal = addSafeQuestIntegers(quests.statistics.completedTotal, 1);
-    quests.statistics.completedByRarity[quest.rarity] = addSafeQuestIntegers(
+    quests.statistics.completedTotal = sumSafeIntegers(quests.statistics.completedTotal, 1);
+    quests.statistics.completedByRarity[quest.rarity] = sumSafeIntegers(
       quests.statistics.completedByRarity[quest.rarity],
       1
     );
-    quests.statistics.rewardGoldTotal = addSafeQuestIntegers(
+    quests.statistics.rewardGoldTotal = sumSafeIntegers(
       quests.statistics.rewardGoldTotal,
       reward.gold
     );
     reward.materials.forEach((entry) => {
-      quests.statistics.rewardMaterials[entry.id] = addSafeQuestIntegers(
+      quests.statistics.rewardMaterials[entry.id] = sumSafeIntegers(
         quests.statistics.rewardMaterials[entry.id],
         entry.quantity
       );
     });
     const completion = quests.completions[quest.id] || { count: 0, lastCompletedAtCompletionCount: 0 };
-    completion.count = addSafeQuestIntegers(completion.count, 1);
+    completion.count = sumSafeIntegers(completion.count, 1);
     completion.lastCompletedAtCompletionCount = quests.statistics.completedTotal;
     quests.completions[quest.id] = completion;
-  }
-
-  function addSafeQuestIntegers(...values) {
-    let total = 0;
-    for (const value of values) {
-      const normalized = toSafeInteger(value);
-      if (normalized > Number.MAX_SAFE_INTEGER - total) return Number.MAX_SAFE_INTEGER;
-      total += normalized;
-    }
-    return total;
   }
 
   return Object.freeze({
