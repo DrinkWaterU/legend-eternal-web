@@ -81,6 +81,12 @@ export function resolveHeroAction({ hero, enemy, enemies = [], log }) {
       target: enemyName,
       amount: followUpDamage
     });
+    notifyHeroDirectAttackResolved(hero, {
+      enemy,
+      damage: followUpDamage,
+      critical: false,
+      source: "followUp"
+    });
   }
   return result;
 }
@@ -126,6 +132,12 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
   consumeCaveDirectAttackModifiers(hero, caveModifiers);
   finishCaveDirectAttack({ hero, enemy, enemyAlive: enemy.hp > 0 });
   log.template("hero-damage", "heroDamage", { actor: hero.name, target: enemyName, amount: damage });
+  notifyHeroDirectAttackResolved(hero, {
+    enemy,
+    damage,
+    critical,
+    source: "original"
+  });
 
   if (hero.poisonPower > 0 && enemy.hp > 0) {
     enemy.poison = Math.max(enemy.poison || 0, hero.poisonPower);
@@ -134,6 +146,13 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
   }
 
   return { dodged: false, critical, damage };
+}
+
+function notifyHeroDirectAttackResolved(hero, result) {
+  const callback = hero?.battleHooks?.onDirectAttackResolved;
+  if (typeof callback === "function") {
+    callback(result);
+  }
 }
 
 export function getHeroDirectAttackDamage({ hero, enemy, damageMultiplier = 1, attackMultiplier = 1 }) {

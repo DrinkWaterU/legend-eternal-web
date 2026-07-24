@@ -23,6 +23,7 @@ const RUN_STATE_DEFAULTS = Object.freeze({
   blessingInputLocked: false,
   battleSource: "main",
   battleEncounterType: null,
+  specialDuelContext: null,
   debugBuildRun: false,
   runOriginSafeAreaId: null,
   pendingAnpingArrival: false,

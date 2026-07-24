@@ -17,13 +17,17 @@ import { getSafeAreaDefinition } from "../data/safeAreas.js";
 import { buildMaterialUsageIndex } from "../ui/materialUsage.js";
 import { questDefinitions } from "../data/quests.js";
 import { createQuestRuntime } from "../features/quest/questRuntime.js";
+import { createStoryQuestRuntime } from "../features/storyQuest/storyQuestRuntime.js";
+import { createStoryQuestController } from "../features/storyQuest/storyQuestController.js";
+import { storyQuestDefinitions } from "../data/storyQuests.js";
 
 export function createWorldFeatures({
   foundation,
   els,
   documentRef = document,
   showScreen,
-  showAnpingArrivalStory
+  showAnpingArrivalStory,
+  startDuel
 }) {
   const {
     state,
@@ -46,6 +50,14 @@ export function createWorldFeatures({
   let returnButtonController;
   const setReturnButton = (...args) => returnButtonController.setReturnButton(...args);
   const materialUsageIndex = buildMaterialUsageIndex({ regionDefinitions, weaponDefinitions });
+  const storyQuestRuntime = createStoryQuestRuntime({
+    saveStore,
+    storyQuestDefinitions,
+    characterDefinitions,
+    weaponDefinitions,
+    materialDefinitions,
+    saveGameSafe
+  });
 
   const characterController = createCharacterController({
     state,
@@ -116,7 +128,8 @@ export function createWorldFeatures({
     showScreenInContext,
     setReturnButton,
     hasPhoenixBlessing,
-    showAnpingArrivalStory
+    showAnpingArrivalStory,
+    storyQuestRuntime
   });
 
   returnButtonController = createReturnButtonController({
@@ -134,7 +147,8 @@ export function createWorldFeatures({
     getCurrentSafeArea: safeAreaController.getCurrentSafeArea,
     getAvailableFacilities: safeAreaController.getAvailableFacilities,
     hasPhoenixBlessing,
-    renderCampTravelButton: safeAreaController.renderCampTravelButton
+    renderCampTravelButton: safeAreaController.renderCampTravelButton,
+    storyQuestRuntime
   });
 
   const questRuntime = createQuestRuntime({
@@ -163,7 +177,17 @@ export function createWorldFeatures({
     setNavigationContext,
     showScreen,
     saveGameSafe,
-    setDialogueStoryFlag
+    setDialogueStoryFlag,
+    startDuel
+  });
+
+  const storyQuestController = createStoryQuestController({
+    els,
+    storyQuestRuntime,
+    getCurrentSafeArea: safeAreaController.getCurrentSafeArea,
+    setNavigationContext,
+    showScreen,
+    setReturnButton
   });
 
   Object.values(facilityDefinitions).forEach((facility) => {
@@ -184,6 +208,7 @@ export function createWorldFeatures({
     campController,
     facilityController,
     questRuntime,
+    storyQuestRuntime,
     setReturnButton,
     ...characterController,
     ...audioSettingsController,
@@ -191,6 +216,7 @@ export function createWorldFeatures({
     ...storageController,
     ...safeAreaController,
     ...campController,
+    ...storyQuestController,
     ...facilityController
   });
 }

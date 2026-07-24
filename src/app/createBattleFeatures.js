@@ -22,7 +22,9 @@ export function createBattleFeatures({
   els,
   showBlessings,
   winEncounter,
-  loseRun
+  loseRun,
+  prepareEnemyAction,
+  completeEnemyAction
 }) {
   const {
     state,
@@ -36,6 +38,7 @@ export function createBattleFeatures({
     getAdventureSourceName,
     saveGameSafe,
     gainCharacterExp,
+    settleCharacterProgression,
     hasPhoenixBlessing,
     hasHeroSkill,
     applySceneContext
@@ -95,6 +98,7 @@ export function createBattleFeatures({
     addLog: battleLog.addLog,
     addFixedLog: battleLog.addFixedLog,
     gainCharacterExp,
+    settleCharacterProgression,
     recordEnemyDefeated: runRecords.recordEnemyDefeated,
     hasPhoenixBlessing,
     saveGameSafe,
@@ -133,6 +137,8 @@ export function createBattleFeatures({
     settleDefeatedEnemies: battleSettlement.settleDefeatedEnemies,
     applyEmergencyBandage: battleSkills.applyEmergencyBandage,
     tryLastStand: battleSkills.tryLastStand,
+    prepareEnemyAction,
+    completeEnemyAction,
     winEncounter,
     loseRun,
     render: combatRenderer.render

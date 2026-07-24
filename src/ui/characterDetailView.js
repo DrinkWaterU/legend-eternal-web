@@ -6,6 +6,7 @@ import {
   getWeaponRarityId,
   getWeaponRarityLabel
 } from "./weaponViewHelpers.js";
+import { applyCharacterEmblemPortrait, getCharacterPortraitPath } from "./characterPortrait.js";
 
 export function renderCharacterDetailView({
   els,
@@ -20,7 +21,7 @@ export function renderCharacterDetailView({
   onEquipmentOpen
 }) {
   els.characterDetailName.textContent = character?.name || "角色詳情";
-  renderCharacterEmblem(els.characterDetailEmblem, characterId, character?.name || "角色");
+  renderCharacterEmblem(els.characterDetailEmblem, characterId, character);
   els.characterDetailRole.textContent = character?.role || "";
   els.characterDetailRole.hidden = !character?.role;
   els.characterDetailDescription.textContent = character?.description || "尚未記錄角色介紹。";
@@ -44,11 +45,18 @@ export function renderCharacterDetailView({
   els.selectCharacterButton.disabled = selected;
 }
 
-function renderCharacterEmblem(element, characterId, characterName) {
+function renderCharacterEmblem(element, characterId, character) {
   element.replaceChildren();
+  const characterName = character?.name || "角色";
+  const portraitPath = getCharacterPortraitPath(character, characterId);
+  if (!portraitPath) {
+    element.textContent = characterName.charAt(0) || "？";
+    return;
+  }
   const image = document.createElement("img");
   image.alt = "";
-  image.src = `./assets/images/characters/${characterId}/emblem.png`;
+  image.src = portraitPath;
+  applyCharacterEmblemPortrait(image, character);
   image.addEventListener("error", () => {
     image.remove();
     element.textContent = characterName.charAt(0) || "？";

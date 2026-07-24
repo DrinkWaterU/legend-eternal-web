@@ -1,7 +1,9 @@
 import * as archerCombat from "./archer/combat.js";
+import * as kaigeCombat from "./kaige/combat.js";
 
 const CHARACTER_SKILL_RUNTIMES = Object.freeze({
-  archer: archerCombat
+  archer: archerCombat,
+  kaige: kaigeCombat
 });
 
 export function initializeCharacterBattleState(hero) {

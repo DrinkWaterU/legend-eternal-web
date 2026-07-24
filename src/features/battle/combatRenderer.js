@@ -24,6 +24,7 @@ export function createCombatRenderer({
     const inGame = state.hero && !state.ended && !state.awaitingBlessing && !state.eventInputLocked;
     const safe = state.phase === "safe";
     const canFight = inGame && hasEnemy && !safe;
+    const isDuel = state.battleSource === "duel";
     const canContinue = inGame && safe && !state.adventureProgressLocked
       && (!state.eventContext || hasPendingThreat("safeEscape"));
     const canRest = canContinue && state.canRest && !state.hasRested && state.hero.hp < state.hero.maxHp;
@@ -32,9 +33,11 @@ export function createCombatRenderer({
     els.nextButton.disabled = !canFight;
     els.nextButton.hidden = !canFight;
     els.nextButton.textContent = state.turn === 0 ? "戰鬥" : "繼續戰鬥";
-    els.fleeButton.disabled = !(canFight && !isBoss);
+    els.fleeButton.disabled = !(canFight && (isDuel || !isBoss));
     els.fleeButton.hidden = !canFight;
-    els.fleeButton.textContent = isBoss
+    els.fleeButton.textContent = isDuel
+      ? "結束切磋"
+      : isBoss
       ? "首領無法逃跑"
       : (state.hero?.fleesRemaining ?? 0) <= 0
         ? "撤離逃跑（需成功）"
@@ -47,7 +50,10 @@ export function createCombatRenderer({
     els.restButton.textContent = state.canRest && !state.hasRested ? "原地修整" : "已修整";
     els.retreatButton.hidden = !canContinue;
     els.retreatButton.disabled = !canContinue;
-    els.viewBlessingsButton.disabled = !canViewBlessings;
+    els.viewBlessingsButton.disabled = !canViewBlessings || isDuel;
+    if (els.combatHomeButton) {
+      els.combatHomeButton.hidden = isDuel;
+    }
     els.openAbilityFromAttack.disabled = !canViewAbility;
     els.openAbilityFromDefense.disabled = !canViewAbility;
     els.openAbilityFromCrit.disabled = !canViewAbility;
@@ -70,10 +76,19 @@ export function createCombatRenderer({
       }),
       characterStatusEntries: getCharacterCombatStatusEntries(hero),
       onTargetSelect: selectEnemyTarget,
-      questSnapshot: questRuntime?.getSnapshot()
+      questSnapshot: state.battleSource === "duel" ? null : questRuntime?.getSnapshot()
     });
     if (els.abilityInfoPanel.classList.contains("is-visible")) {
       renderCurrentAbilityView(els.abilityInfoList, hero);
+    }
+    if (state.battleSource === "duel") {
+      els.encounterLabel.textContent = "安平鎮｜特殊切磋";
+      els.battleLogTitle.textContent = "切磋紀錄｜對手：凱哥";
+      if (!state.ended) {
+        els.resultLabel.textContent = state.turn === 0 ? "切磋開始" : `切磋第 ${state.turn} 回合`;
+      }
+      setCombatActionState();
+      return;
     }
     const encounterTotal = getAdventureEncounterCount();
     const encounterNumber = Math.min(getAdventureEncounterIndex() + 1, encounterTotal);

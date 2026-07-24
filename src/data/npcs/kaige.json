@@ -1,0 +1,17 @@
+{
+  "id": "kaige",
+  "name": "凱哥",
+  "title": "旅行戰士",
+  "race": "human",
+  "gender": "male",
+  "ageGroup": "young-adult",
+  "portrait": "assets/images/characters/kaige/kaige.png",
+  "portraitFocus": "50% 24%",
+  "dialogueId": "kaige-challenge",
+  "identity": {
+    "unknownLabel": "陌生的壯漢",
+    "acquaintedLabel": "凱哥",
+    "metFlag": "metKaige",
+    "nameKnownFlag": "knowsKaigeName"
+  }
+}

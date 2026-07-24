@@ -488,5 +488,28 @@
       ]
     },
     "iconAssetId": "brinefang-dagger"
+  },
+  "worn-battle-axe": {
+    "id": "worn-battle-axe",
+    "name": "磨痕戰斧",
+    "categoryId": "battle-axe",
+    "rarityId": "common",
+    "allowedCharacterIds": [
+      "kaige"
+    ],
+    "effectName": "沉重斧勢",
+    "effectText": "攻擊 +2。",
+    "description": "斧刃布滿反覆打磨留下的痕跡，重量紮實，適合以雙手揮出沉重斬擊。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      }
+    ],
+    "specialEffect": null,
+    "craftable": false,
+    "recipe": null,
+    "iconAssetId": null
   }
 }

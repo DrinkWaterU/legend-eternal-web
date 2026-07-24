@@ -42,6 +42,7 @@ export function createAdventureRuntimeState({
     blessingInputLocked: false,
     battleSource: "main",
     battleEncounterType: null,
+    specialDuelContext: null,
     eventSchedule: null,
     eventContext: null,
     runEventRecords: [],

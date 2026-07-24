@@ -14,6 +14,9 @@ export function craftWeapon({
   if (inventory.weapons?.[weapon.id] === true) {
     throw new Error(`已擁有${weapon.name || weapon.id}。`);
   }
+  if (weapon.craftable === false) {
+    throw new Error(`${weapon.name || weapon.id}無法在鐵匠鋪製作。`);
+  }
   if (!weapon.recipe || typeof weapon.recipe !== "object") {
     throw new Error(`${weapon.name || weapon.id}缺少有效配方。`);
   }

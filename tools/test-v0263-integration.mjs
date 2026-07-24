@@ -12,7 +12,7 @@ import { questDefinitions } from "../src/data/quests.js";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
 
-assert.equal(SAVE_SCHEMA_VERSION, 9);
+assert.ok(SAVE_SCHEMA_VERSION >= 9);
 assert.equal(Object.keys(questDefinitions).length, 15);
 assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) => [quest.id, [quest.rarity, quest.rewards.gold]])), {
   "broad-monster-control": ["common", 20],

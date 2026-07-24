@@ -483,7 +483,10 @@ function runBeachModel() {
     const weaponCases = getWeaponCases(characterId);
     assert.ok(weaponCases.length > 1, `${characterId} 海灘模型應包含可用武器`);
     if (characterId === "adventurer" && !WEAPON_PROTOTYPE_MODE) {
-      assert.equal(weaponCases.length, Object.keys(weaponDefinitions).length + 1, "冒險者模型應涵蓋所有現有武器");
+      const compatibleWeaponCount = Object.values(weaponDefinitions)
+        .filter((weapon) => canCharacterEquipWeapon(characterDefinitions[characterId], weapon))
+        .length;
+      assert.equal(weaponCases.length, compatibleWeaponCount + 1, "冒險者模型應涵蓋所有可裝備武器與未裝備基準");
     }
 
     const levels = WEAPON_PROTOTYPE_MODE ? [25] : [20, 25];

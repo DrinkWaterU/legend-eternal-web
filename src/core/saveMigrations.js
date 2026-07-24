@@ -5,8 +5,10 @@ import {
   SAVE_SCHEMA_VERSION
 } from "../config.js";
 import { characterDefinitions } from "../data/characters/index.js";
+import { materialDefinitions } from "../data/materials.js";
 import { regionDefinitions } from "../data/regions/index.js";
 import { weaponDefinitions } from "../data/weapons.js";
+import { storyQuestDefinitions } from "../data/storyQuests.js";
 import { normalizeCharacterEquipment, normalizeWeaponInventory } from "./equipment.js";
 import { normalizeInventory } from "./rewards.js";
 import {
@@ -17,6 +19,8 @@ import {
 import { createDefaultSave } from "./saveDefaults.js";
 import { toSafeInteger } from "../utils.js";
 import { normalizeQuestState } from "./questRules.js";
+import { STORY_QUEST_STATUSES, normalizeStoryQuestState } from "./storyQuestRules.js";
+import { applyStoryQuestRewards } from "./storyQuestRewards.js";
 
 export function migrateSaveData(rawSave) {
   const save = createDefaultSave();
@@ -39,8 +43,10 @@ export function migrateSaveData(rawSave) {
   migrateAchievements(save, rawSave);
   migrateStatistics(save, rawSave, { rawSchemaVersion });
   save.quests = normalizeQuestState(rawSave.quests);
+  save.storyQuests = normalizeStoryQuestState(rawSave.storyQuests, storyQuestDefinitions);
   migrateProgression(save, rawSave, { rawSchemaVersion });
   migrateCharacterUnlocks(save);
+  migrateCompletedStoryQuestRewards(save);
   migrateCharacterEquipment(save);
   save.progression.safeAreas = migrateSafeAreaProgression(rawSave, undefined, { defaultVisitedAt: save.profile.createdAt });
   syncSafeAreaUnlocks(save);
@@ -179,6 +185,21 @@ function migrateCharacterUnlocks(save) {
     if (storyFlag && save.storyFlags[storyFlag] && progress) {
       progress.unlocked = true;
     }
+  });
+}
+
+function migrateCompletedStoryQuestRewards(save) {
+  Object.entries(storyQuestDefinitions).forEach(([questId, definition]) => {
+    if (save.storyQuests.records[questId]?.status !== STORY_QUEST_STATUSES.COMPLETED) {
+      return;
+    }
+    applyStoryQuestRewards({
+      saveData: save,
+      definition,
+      characterDefinitions,
+      weaponDefinitions,
+      materialDefinitions
+    });
   });
 }
 

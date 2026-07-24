@@ -6,6 +6,7 @@ import {
   setCurrentSafeArea
 } from "../../core/safeAreaProgression.js";
 import { getFacilityDefinition } from "../../data/facilities.js";
+import { getNpcDefinition, resolveNpcDisplayName } from "../../data/npcs.js";
 import {
   ANPING_TOWN_SAFE_AREA_ID,
   DEFAULT_SAFE_AREA_ID,
@@ -24,7 +25,8 @@ export function createSafeAreaController({
   showScreenInContext,
   setReturnButton,
   hasPhoenixBlessing,
-  showAnpingArrivalStory
+  showAnpingArrivalStory,
+  storyQuestRuntime
 }) {
   function syncSafeAreaUiFromSave() {
     uiState.safeAreaId = getCurrentSafeAreaId(saveStore.current);
@@ -157,11 +159,24 @@ export function createSafeAreaController({
   }
 
   function getAvailableFacilities(safeArea = getCurrentSafeArea()) {
+    const kaigeQuest = storyQuestRuntime.getRecord("kaige-challenge");
     const facilityIds = Array.isArray(safeArea?.facilityIds) ? safeArea.facilityIds : [];
     return facilityIds
       .map((facilityId) => getFacilityDefinition(facilityId))
       .filter(Boolean)
-      .filter((facility) => facility.id !== "traveling-merchant" || hasPhoenixBlessing());
+      .filter((facility) => facility.id !== "traveling-merchant" || hasPhoenixBlessing())
+      .filter((facility) => (
+        facility.id !== "kaige-encounter"
+        || (kaigeQuest && kaigeQuest.status !== "completed")
+      ))
+      .map((facility) => {
+        if (!facility.npcId) return facility;
+        const npc = getNpcDefinition(facility.npcId);
+        return {
+          ...facility,
+          name: resolveNpcDisplayName(npc, { storyFlags: saveStore.current.storyFlags })
+        };
+      });
   }
 
   return Object.freeze({

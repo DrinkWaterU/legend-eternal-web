@@ -35,7 +35,8 @@ export function createApplication({ documentRef = document, windowRef = window }
     els,
     documentRef,
     showScreen: (...args) => screen.showScreen(...args),
-    showAnpingArrivalStory: (...args) => adventure.showAnpingArrivalStory(...args)
+    showAnpingArrivalStory: (...args) => adventure.showAnpingArrivalStory(...args),
+    startDuel: (...args) => adventure.startDuel(...args)
   });
 
   profile = createProfileFeatures({
@@ -54,8 +55,10 @@ export function createApplication({ documentRef = document, windowRef = window }
     world,
     els,
     showBlessings: (...args) => adventure.showBlessings(...args),
-    winEncounter: (...args) => adventure.winEncounter(...args),
-    loseRun: (...args) => adventure.loseRun(...args)
+    winEncounter: (...args) => adventure.handleBattleVictory(...args),
+    loseRun: (...args) => adventure.handleBattleDefeat(...args),
+    prepareEnemyAction: (...args) => adventure.prepareDuelEnemyAction(...args),
+    completeEnemyAction: (...args) => adventure.completeDuelEnemyAction(...args)
   });
 
   adventure = createAdventureFeatures({
@@ -82,6 +85,7 @@ export function createApplication({ documentRef = document, windowRef = window }
     renderMenuScreen: world.renderMenuScreen,
     renderCampScreen: world.renderCampScreen,
     renderSafeAreaTravelScreen: world.renderSafeAreaTravelScreen,
+    renderStoryQuestScreen: world.renderStoryQuestScreen,
     renderStorageScreen: world.renderStorageScreen,
     renderFacilityScreen: world.renderFacilityScreen,
     renderRegionScreen: world.renderRegionScreen,
@@ -187,6 +191,7 @@ function createDebugDependencies({ foundation, world, profile, battle, adventure
     returnToSafeArea: adventure.returnToSafeArea,
     showAnpingArrivalStory: adventure.showAnpingArrivalStory,
     showSafeAreaTravelScreen: world.showSafeAreaTravelScreen,
+    showStoryQuestScreen: world.showStoryQuestScreen,
     showGuildQuestIntroduction: world.showGuildQuestIntroduction,
     showGuildQuestFacility: world.showGuildQuestFacility,
     syncSafeAreaUiFromSave: world.syncSafeAreaUiFromSave,
@@ -228,13 +233,14 @@ function createEventActions({ foundation, world, profile, battle, adventure, scr
     closeLockedCharacterHint: world.closeLockedCharacterHint,
     startPlayerRun: adventure.startPlayerRun,
     handleEndPrimaryAction: adventure.handleEndPrimaryAction,
-    closeEndPanel: profile.closeEndPanel,
+    reviewEndPanelLog: profile.reviewEndPanelLog,
+    returnToEndPanel: profile.returnToEndPanel,
     revealStoryText: adventure.revealStoryText,
     completePlainsStory: adventure.completePlainsStory,
     revealAnpingArrivalPage: adventure.revealAnpingArrivalPage,
     continueAnpingArrivalStory: adventure.continueAnpingArrivalStory,
     playTurn: battle.playTurn,
-    tryFlee: adventure.tryFlee,
+    tryFlee: adventure.handleEscapeAction,
     continueAdventure: adventure.continueAdventure,
     handleEventContinueButton: adventure.handleEventContinueButton,
     returnToSegmentChoice: adventure.returnToSegmentChoice,
@@ -262,6 +268,9 @@ function createEventActions({ foundation, world, profile, battle, adventure, scr
     closeDeleteSaveDialog: profile.closeDeleteSaveDialog,
     closeAchievementDetailPanel: profile.closeAchievementDetailPanel,
     closeAchievementUnlockToast: profile.closeAchievementUnlockToast,
+    requestDuelExit: adventure.requestDuelExit,
+    cancelDuelExit: adventure.cancelDuelExit,
+    confirmDuelExit: adventure.confirmDuelExit,
     facilityController: world.facilityController,
     handleUserInteraction: world.audioSettingsController.handleUserInteraction
   };

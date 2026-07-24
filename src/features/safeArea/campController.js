@@ -15,7 +15,8 @@ export function createCampController({
   getCurrentSafeArea,
   getAvailableFacilities,
   hasPhoenixBlessing,
-  renderCampTravelButton
+  renderCampTravelButton,
+  storyQuestRuntime
 }) {
   function renderMenuScreen() {
     const safeAreaHint = els.openRegionButton.querySelector("small");
@@ -31,6 +32,7 @@ export function createCampController({
   }
 
   function renderCampScreen() {
+    storyQuestRuntime.refreshAvailability();
     const region = currentRegion();
     const character = characterDefinitions[state.selectedHeroId];
     const progress = normalizeCharacterProgress(state.selectedHeroId);
@@ -66,6 +68,12 @@ export function createCampController({
       ? safeArea.placesDescription || "四處看看"
       : safeArea.placesLockedDescription || "目前沒有可前往的地方";
     els.campRecordHint.textContent = "查看過往旅程";
+    const storyQuestSnapshot = storyQuestRuntime.getSnapshot();
+    const activeQuestCount = storyQuestSnapshot.entries.filter(({ record }) => record.status !== "completed").length;
+    els.campStoryQuestButton.hidden = !storyQuestSnapshot.hasRecords;
+    els.campStoryQuestHint.textContent = activeQuestCount > 0
+      ? `${activeQuestCount} 項任務等待處理`
+      : "查看已完成任務";
     els.campStorageButton.hidden = !phoenixUnlocked;
     els.campPlacesButton.hidden = facilities.length === 0 && safeArea.id === DEFAULT_SAFE_AREA_ID;
     els.campPlacesButton.disabled = facilities.length === 0;

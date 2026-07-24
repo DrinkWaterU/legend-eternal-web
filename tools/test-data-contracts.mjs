@@ -25,11 +25,13 @@ const [npcFiles, dialogueFiles, npcAdapter, dialogueAdapter, celineSource] = awa
 
 assert.deepEqual(npcFiles.filter((name) => name.endsWith(".json")).sort(), [
   "anping-blacksmith.json",
-  "anping-guild-receptionist.json"
+  "anping-guild-receptionist.json",
+  "kaige.json"
 ]);
 assert.deepEqual(dialogueFiles.filter((name) => name.endsWith(".json")).sort(), [
   "anping-blacksmith.json",
-  "anping-guild-receptionist.json"
+  "anping-guild-receptionist.json",
+  "kaige-challenge.json"
 ]);
 
 const rawNpcs = await loadJsonFiles(npcDir, npcFiles);

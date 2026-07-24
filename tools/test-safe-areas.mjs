@@ -48,7 +48,7 @@ assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).travelOrder, 20);
 assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).travelDescription, "前往森林道路盡頭的城鎮");
 assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).audio.bgmId, "anping-town");
 assert.equal(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).audio.ambientId, "anping-coast");
-assert.deepEqual(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).facilityIds, ["blacksmith", "adventurers-guild"]);
+assert.deepEqual(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).facilityIds, ["blacksmith", "adventurers-guild", "kaige-encounter"]);
 assert.deepEqual(getSafeAreaDefinition(ANPING_TOWN_SAFE_AREA_ID).unlockCondition, {
   type: "region-route-clear",
   regionId: "forest",

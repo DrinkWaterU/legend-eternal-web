@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.7.2.1-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.7.3-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.7.2.1-alpha</p>
+            <p class="version-label">v0.2.7.3-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -101,6 +101,10 @@
                 <span>冒險紀錄</span>
                 <small id="campRecordHint">最近：尚無紀錄</small>
               </button>
+              <button id="campStoryQuestButton" class="camp-feature-button camp-feature-wide" data-feature="story-quests" type="button" hidden>
+                <span>任務紀錄</span>
+                <small id="campStoryQuestHint">查看劇情任務</small>
+              </button>
             </nav>
           </section>
 
@@ -130,6 +134,33 @@
           <div id="safeAreaTravelList" class="safe-area-travel-grid" aria-label="可前往據點"></div>
           <p id="safeAreaTravelEmpty" class="empty-state" hidden>目前沒有其他可前往的據點。</p>
           <p id="safeAreaTravelUnknownHint" class="safe-area-travel-unknown" hidden>旅途中仍有尚未發現的據點。</p>
+        </div>
+      </section>
+
+      <section id="storyQuestScreen" class="screen">
+        <div class="selection-panel story-quest-panel">
+          <div class="section-heading app-page-heading">
+            <div>
+              <p id="storyQuestAreaLabel" class="eyebrow">冒險營地</p>
+              <h2>任務紀錄</h2>
+              <p class="body-text page-heading-description">記錄旅途中已浮現的主線與支線，不包含可重複承接的公會委託。</p>
+            </div>
+            <button id="storyQuestBackButton" class="secondary-button" type="button">返回安全區</button>
+          </div>
+          <section class="story-quest-section" aria-labelledby="storyQuestActiveTitle">
+            <div class="browser-panel-heading">
+              <div><p class="eyebrow">目前目標</p><h3 id="storyQuestActiveTitle">進行中</h3></div>
+            </div>
+            <p id="storyQuestActiveEmpty" class="empty-state">目前沒有進行中的劇情任務。</p>
+            <div id="storyQuestActiveList" class="story-quest-list"></div>
+          </section>
+          <section class="story-quest-section" aria-labelledby="storyQuestCompletedTitle">
+            <div class="browser-panel-heading">
+              <div><p class="eyebrow">旅程足跡</p><h3 id="storyQuestCompletedTitle">已完成</h3></div>
+            </div>
+            <p id="storyQuestCompletedEmpty" class="empty-state">目前還沒有完成的劇情任務。</p>
+            <div id="storyQuestCompletedList" class="story-quest-list"></div>
+          </section>
         </div>
       </section>
 
@@ -863,6 +894,7 @@
                 <button id="restButton" class="secondary-button action-rest" type="button">原地修整</button>
                 <button id="continueButton" class="secondary-button action-forward" type="button">繼續前進</button>
                 <button id="retreatButton" class="secondary-button action-retreat" type="button">撤退</button>
+                <button id="returnToEndSummaryButton" class="primary-button" type="button" hidden>返回結算</button>
               </div>
             </div>
             <button
@@ -884,7 +916,7 @@
             <ol id="battleLog" class="battle-log"></ol>
           </section>
 
-          <button class="secondary-button home-button combat-home-button" type="button" data-target="menuScreen">回主選單</button>
+          <button id="combatHomeButton" class="secondary-button home-button combat-home-button" type="button" data-target="menuScreen">回主選單</button>
         </div>
 
         <section id="eventLayout" class="event-layout" aria-label="冒險事件" hidden>
@@ -964,6 +996,20 @@
               <button id="retryButton" class="primary-button" type="button">回到營地</button>
               <button id="viewLogButton" class="secondary-button" type="button">查看戰鬥紀錄</button>
               <button id="restartButton" class="secondary-button" type="button">回主選單</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="duelExitPanel" class="end-panel" aria-label="結束切磋確認" aria-modal="true">
+          <div class="end-dialog compact-confirm-dialog">
+            <div>
+              <p class="eyebrow">特殊切磋</p>
+              <h2>確定要結束這場切磋？</h2>
+              <p class="body-text">結束後視為本次落敗，不會造成等級、經驗、素材或其他永久損失。</p>
+            </div>
+            <div class="end-actions">
+              <button id="confirmDuelExitButton" class="danger-button" type="button">結束切磋</button>
+              <button id="cancelDuelExitButton" class="secondary-button" type="button">繼續戰鬥</button>
             </div>
           </div>
         </section>
@@ -1225,6 +1271,6 @@
       </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.7.2.1-alpha&amp;build=v02721-alpha-1"></script>
+    <script type="module" src="game.js?v=0.2.7.3-alpha&amp;build=v0273-alpha-1"></script>
   </body>
 </html>

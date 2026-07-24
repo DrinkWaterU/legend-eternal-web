@@ -18,6 +18,7 @@ export function createRunResultController({
   getCharacterProgress,
   hasPhoenixBlessing,
   resetCharacterProgress,
+  settleCharacterProgression,
   recordRunFinished,
   saveGameSafe,
   clearEnemyGroup,
@@ -156,6 +157,9 @@ export function createRunResultController({
     const retreated = outcome === "retreat";
     const defeated = outcome === "defeat";
     const evacuated = retreated && Boolean(state.runStats?.evacuated);
+    if (!defeated || hasPhoenixBlessing()) {
+      settleCharacterProgression();
+    }
     state.ended = true;
     state.awaitingBlessing = false;
     state.phase = "ended";
@@ -169,6 +173,7 @@ export function createRunResultController({
     els.blessingPanel.classList.remove("is-visible");
     closeAbilityInfoPanel();
     closeBlessingInfoPanel();
+    els.returnToEndSummaryButton.hidden = true;
     els.endPanel.classList.add("is-visible");
     els.endTitle.textContent = cleared ? "冒險成功" : segmentCleared ? "海灘段落完成" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
     els.endText.textContent = getEndText(outcome);

@@ -1,0 +1,41 @@
+{
+  "kaige-challenge": {
+    "id": "kaige-challenge",
+    "type": "side",
+    "order": 10,
+    "name": "以戰會友",
+    "summary": "在安平鎮遇見喜歡以戰會友的旅行戰士凱哥，接受他的切磋並證明自己的實力。",
+    "availabilityConditions": [
+      {
+        "type": "regionRouteClear",
+        "regionId": "forest",
+        "routeClearKey": "main",
+        "minimumClears": 1
+      },
+      {
+        "type": "anyUnlockedCharacterLevel",
+        "minimumLevel": 20
+      },
+      {
+        "type": "safeAreaVisited",
+        "safeAreaId": "anping-town"
+      }
+    ],
+    "stages": [
+      {
+        "id": "meet-kaige",
+        "objective": "前往安平鎮四處看看。"
+      },
+      {
+        "id": "defeat-kaige",
+        "objective": "在安平鎮的切磋中擊敗凱哥。"
+      }
+    ],
+    "completedObjective": "你在切磋中擊敗凱哥，他已成為可用角色。",
+    "rewards": {
+      "unlockCharacterId": "kaige",
+      "grantWeaponId": "worn-battle-axe",
+      "equipWeaponId": "worn-battle-axe"
+    }
+  }
+}

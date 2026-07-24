@@ -19,7 +19,7 @@ const [html, game, dom, componentsCss, responsiveCss, storage, dialogueView, dia
   readFile(new URL("src/ui/dialogueController.js", root), "utf8")
 ]);
 
-assert.equal(SAVE_SCHEMA_VERSION, 9);
+assert.ok(SAVE_SCHEMA_VERSION >= 9);
 assert.equal(getFacilityDefinition("blacksmith").npcId, "anping-blacksmith");
 assert.equal(npcDefinitions["anping-blacksmith"].name, "羅根");
 assert.equal(dialogueDefinitions["anping-blacksmith-main"].fallbackNodeId, "default-greeting");

@@ -40,7 +40,9 @@ export function buildGuildAdventureRecordModel({
         id: characterId,
         name: definition.name,
         role: definition.role || definition.summary || "冒險者",
-        level: resolveCharacterLevel(characterProgress)
+        level: resolveCharacterLevel(characterProgress),
+        portrait: definition.portrait,
+        portraitFocus: definition.portraitFocus
       };
     });
 
@@ -55,7 +57,8 @@ export function buildGuildAdventureRecordModel({
       learnedSkillCount,
       maxLevel,
       atMaxLevel: level >= maxLevel,
-      emblemPath: `./assets/images/characters/${selectedCharacterId}/emblem.png`
+      portrait: character.portrait,
+      portraitFocus: character.portraitFocus
     } : null,
     summary: {
       totalRuns: safeCount(statistics.totalRuns),

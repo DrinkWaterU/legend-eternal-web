@@ -19,6 +19,13 @@ export const facilityDefinitions = Object.freeze({
     actionId: "guild",
     npcId: "anping-guild-receptionist"
   }),
+  "kaige-encounter": Object.freeze({
+    id: "kaige-encounter",
+    name: "陌生的壯漢",
+    description: "一名肩扛雙刃戰斧的壯漢站在街旁，毫不掩飾地打量著來往的冒險者。",
+    actionId: "dialogue",
+    npcId: "kaige"
+  }),
   "guild-adventure-record": Object.freeze({
     id: "guild-adventure-record",
     name: "冒險資歷",

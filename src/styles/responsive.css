@@ -846,3 +846,13 @@
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 520px) {
+  .story-quest-card header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .story-quest-status {
+    align-self: flex-start;
+  }
+}

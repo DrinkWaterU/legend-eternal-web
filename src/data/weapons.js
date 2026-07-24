@@ -28,6 +28,10 @@ export const weaponCategoryDefinitions = Object.freeze({
   dagger: Object.freeze({
     id: "dagger",
     label: "匕首"
+  }),
+  "battle-axe": Object.freeze({
+    id: "battle-axe",
+    label: "戰斧"
   })
 });
 
@@ -96,6 +100,12 @@ export function assertWeaponDefinitions(definitions = weaponDefinitions, options
       .forEach((effect) => assertWeaponEffect(weaponId, effect));
 
     const recipe = weapon.recipe;
+    if (weapon.craftable === false) {
+      if (recipe !== null) {
+        throw new Error(`不可製作武器 ${weaponId} 的 recipe 必須是 null。`);
+      }
+      return;
+    }
     if (!recipe || !Number.isSafeInteger(recipe.goldCost) || recipe.goldCost < 0) {
       throw new Error(`Weapon ${weaponId} 的 recipe.goldCost 無效。`);
     }

@@ -30,7 +30,8 @@ export function createFacilityController({
   setNavigationContext,
   showScreen,
   saveGameSafe,
-  setDialogueStoryFlag
+  setDialogueStoryFlag,
+  startDuel
 }) {
   const merchantController = createMerchantController({
     els,
@@ -83,6 +84,7 @@ export function createFacilityController({
     getDialogueContext: () => ({ statistics: saveStore.current.statistics }),
     setStoryFlag: setDialogueStoryFlag,
     onOpenFacility: openFacilityFromDialogue,
+    onStartDuel: startDuel,
     onReturnToFacilityList: () => showFacilityList(uiState.safeAreaId, uiState.navigationContext),
     onEndDialogue: () => showFacilityList(uiState.safeAreaId, uiState.navigationContext)
   });
@@ -97,7 +99,7 @@ export function createFacilityController({
   });
 
   function supportsAction(actionId) {
-    return typeof actionHandlers[actionId] === "function";
+    return actionId === "dialogue" || typeof actionHandlers[actionId] === "function";
   }
 
   function getFacilityScreenTitle() {
@@ -203,6 +205,9 @@ export function createFacilityController({
       animateText: options.animateText !== false,
       renderAfter: false
     });
+    if (options.nodeId) {
+      dialogueController.gotoNode(options.nodeId);
+    }
     showScreen("facilityScreen");
   }
 

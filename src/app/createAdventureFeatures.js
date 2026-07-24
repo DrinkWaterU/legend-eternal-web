@@ -24,6 +24,7 @@ import { createBlessingController } from "../features/blessing/blessingControlle
 import { createEscapeController } from "../features/escape/escapeController.js";
 import { createAnpingArrivalController } from "../features/story/anpingArrivalController.js";
 import { createPlainsStoryController } from "../features/story/plainsStoryController.js";
+import { createDuelController } from "../features/duel/duelController.js";
 import { materialDefinitions } from "../data/materials.js";
 import { characterDefinitions } from "../data/characters/index.js";
 import { regionDefinitions } from "../data/regions/index.js";
@@ -103,6 +104,7 @@ export function createAdventureFeatures({
     getCharacterProgress: foundation.getCharacterProgress,
     hasPhoenixBlessing: foundation.hasPhoenixBlessing,
     resetCharacterProgress: foundation.resetCharacterProgress,
+    settleCharacterProgression: foundation.settleCharacterProgression,
     recordRunFinished: battle.recordRunFinished,
     saveGameSafe: foundation.saveGameSafe,
     clearEnemyGroup: battle.clearEnemyGroup,
@@ -260,6 +262,47 @@ export function createAdventureFeatures({
     showBlessings: blessingController.showBlessings
   });
 
+  const duelController = createDuelController({
+    state,
+    saveStore,
+    els,
+    storyQuestRuntime: world.storyQuestRuntime,
+    buildHeroFromProgression: foundation.buildHeroFromProgression,
+    resetAdventureRunRuntime: runLifecycleController.resetAdventureRunRuntime,
+    beginBattleRuntime: battle.beginBattleRuntime,
+    settleBattleVictory: battle.settleBattleVictory,
+    addFixedLog: battle.addFixedLog,
+    logCurrentEnemyGroupEncounter: battle.logCurrentEnemyGroupEncounter,
+    render: battle.render,
+    showScreen,
+    showNpcDialogue: world.showNpcDialogue,
+    setNavigationContext: foundation.setNavigationContext,
+    closeAbilityInfoPanel: profile.closeAbilityInfoPanel,
+    closeBlessingInfoPanel: profile.closeBlessingInfoPanel
+  });
+
+  function handleBattleVictory() {
+    if (duelController.handleBattleVictory()) {
+      return;
+    }
+    encounterVictoryController.winEncounter();
+  }
+
+  function handleBattleDefeat() {
+    if (duelController.handleBattleDefeat()) {
+      return;
+    }
+    runResultController.loseRun();
+  }
+
+  function handleEscapeAction() {
+    if (duelController.isDuelActive()) {
+      duelController.requestExit();
+      return;
+    }
+    escapeController.tryFlee();
+  }
+
   return Object.freeze({
     runLifecycleController,
     runResultController,
@@ -271,6 +314,7 @@ export function createAdventureFeatures({
     anpingArrivalController,
     plainsStoryController,
     encounterVictoryController,
+    duelController,
     ...runLifecycleController,
     ...runResultController,
     ...adventureAchievements,
@@ -288,6 +332,16 @@ export function createAdventureFeatures({
     showPlainsStory: plainsStoryController.showStory,
     revealStoryText: plainsStoryController.revealStoryText,
     completePlainsStory: plainsStoryController.completeStory,
-    winEncounter: encounterVictoryController.winEncounter
+    winEncounter: encounterVictoryController.winEncounter,
+    handleBattleVictory,
+    handleBattleDefeat,
+    handleEscapeAction,
+    startDuel: duelController.startDuel,
+    requestDuelExit: duelController.requestExit,
+    cancelDuelExit: duelController.cancelExit,
+    confirmDuelExit: duelController.confirmExit,
+    prepareDuelEnemyAction: duelController.prepareEnemyAction,
+    completeDuelEnemyAction: duelController.completeEnemyAction,
+    isDuelActive: duelController.isDuelActive
   });
 }

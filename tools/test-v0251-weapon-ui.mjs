@@ -62,7 +62,8 @@ assert.deepEqual(Object.keys(weaponDefinitions), [
   "adventurer-pathfinder-sword",
   "tidepiercer-shortbow",
   "reefbreaker-warhammer",
-  "brinefang-dagger"
+  "brinefang-dagger",
+  "worn-battle-axe"
 ]);
 
 assert.match(game, /const actionHandlers = Object\.freeze\(\{[\s\S]*blacksmith: showBlacksmithFacility/);

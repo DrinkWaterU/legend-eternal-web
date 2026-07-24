@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceRoot = path.join(root, "src");
 const reviewedWarningFiles = new Set([
+  "src/app/createAdventureFeatures.js", // 冒險功能組裝入口；同時維持一般冒險與獨立決鬥共享戰鬥控制器的 callback 契約。
   "src/audio/musicManager.js", // 單一 BGM 狀態機；切割會分散 transition token 與 Audio lifecycle。
   "src/features/adventure/runLifecycleController.js", // 冒險生命週期協調器；跨段 checkpoint 與既有 Run 啟動／返回責任需維持同一入口。
   "src/features/facility/facilityController.js", // 安全區設施總協調器；只負責既有子控制器 routing 與返回脈絡。

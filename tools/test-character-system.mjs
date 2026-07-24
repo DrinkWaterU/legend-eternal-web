@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { buildHeroFromProgression } from "../src/core/progression.js";
+import { buildHeroFromProgression, getExpToNextLevel } from "../src/core/progression.js";
 import { createDefaultSave, migrateSave } from "../src/core/storage.js";
 import { scheduleRegionEvent } from "../src/core/events.js";
 import { characterDefinitions } from "../src/data/characters/index.js";
 import { forestRegion } from "../src/data/regions/forest.js";
+import { weaponDefinitions } from "../src/data/weapons.js";
+import { createCharacterProgression } from "../src/features/character/characterProgression.js";
 
 function sequenceRandom(values) {
   let index = 0;
@@ -61,6 +63,50 @@ function sequenceRandom(values) {
   const hero = buildHeroFromProgression(adventurer, { level: 25, exp: 0, learnedSkills: [] });
   assert.equal(hero.critChance, 0.22, "Lv.25 冒險者應套用強化後的破綻判斷暴擊率");
   assert.equal(hero.critDamageMultiplier, 2.05, "Lv.25 冒險者應套用強化後的暴擊傷害倍率");
+}
+
+{
+  const save = createDefaultSave();
+  const character = characterDefinitions.kaige;
+  const progress = save.progression.characters.kaige;
+  progress.unlocked = true;
+  progress.level = 4;
+  progress.exp = 0;
+  progress.learnedSkills = [];
+  const state = {
+    selectedHeroId: "kaige",
+    debugBuildRun: false,
+    runStats: {
+      expGained: 0,
+      endLevel: 4,
+      levelUps: [],
+      learnedSkills: []
+    }
+  };
+  state.hero = buildHeroFromProgression(character, progress, {
+    inventory: save.inventory,
+    weaponDefinitions
+  });
+  const progression = createCharacterProgression({
+    state,
+    saveStore: { current: save },
+    characterDefinitions,
+    weaponDefinitions,
+    addLog() {},
+    saveGameSafe() { return true; }
+  });
+
+  progression.gainCharacterExp(getExpToNextLevel(4, character));
+  assert.equal(progress.level, 4, "戰鬥中取得 EXP 時不得立刻升級");
+  assert.equal(state.hero.level, 4, "戰鬥中的 Hero 等級必須維持到戰後結算");
+  assert.equal(state.hero.skills.includes("battle-fury"), false, "戰鬥中不得突然學會戰意沸騰");
+
+  const settlement = progression.settleCharacterProgression();
+  assert.equal(progress.level, 5);
+  assert.equal(state.hero.level, 5);
+  assert.equal(state.hero.skills.includes("battle-fury"), true);
+  assert.deepEqual(settlement.levelUps, [5]);
+  assert.deepEqual(settlement.learnedSkills, ["戰意沸騰"]);
 }
 
 {

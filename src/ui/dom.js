@@ -1,4 +1,5 @@
 import { getSaveTransferElements } from "./saveTransferDom.js";
+import { getStoryQuestElements } from "./storyQuestDom.js";
 
 export const els = {
   statisticsScreen: document.querySelector("#statisticsScreen"),
@@ -38,6 +39,8 @@ export const els = {
   campCharacterHint: document.querySelector("#campCharacterHint"),
   campRecordButton: document.querySelector("#campRecordButton"),
   campRecordHint: document.querySelector("#campRecordHint"),
+  campStoryQuestButton: document.querySelector("#campStoryQuestButton"),
+  campStoryQuestHint: document.querySelector("#campStoryQuestHint"),
   campStorageButton: document.querySelector("#campStorageButton"),
   campStorageHint: document.querySelector("#campStorageHint"),
   campPlacesButton: document.querySelector("#campPlacesButton"),
@@ -52,6 +55,7 @@ export const els = {
   safeAreaTravelList: document.querySelector("#safeAreaTravelList"),
   safeAreaTravelEmpty: document.querySelector("#safeAreaTravelEmpty"),
   safeAreaTravelUnknownHint: document.querySelector("#safeAreaTravelUnknownHint"),
+  ...getStoryQuestElements(document),
   facilityPanel: document.querySelector("#facilityPanel"),
   facilityListView: document.querySelector("#facilityListView"),
   merchantView: document.querySelector("#merchantView"),
@@ -290,6 +294,8 @@ export const els = {
   continueButton: document.querySelector("#continueButton"),
   restButton: document.querySelector("#restButton"),
   retreatButton: document.querySelector("#retreatButton"),
+  returnToEndSummaryButton: document.querySelector("#returnToEndSummaryButton"),
+  combatHomeButton: document.querySelector("#combatHomeButton"),
   viewBlessingsButton: document.querySelector("#viewBlessingsButton"),
   battleLogTitle: document.querySelector("#battleLogTitle"),
   encounterLabel: document.querySelector("#encounterLabel"),
@@ -325,6 +331,9 @@ export const els = {
   endTitle: document.querySelector("#endTitle"),
   endText: document.querySelector("#endText"),
   endSummary: document.querySelector("#endSummary"),
+  duelExitPanel: document.querySelector("#duelExitPanel"),
+  confirmDuelExitButton: document.querySelector("#confirmDuelExitButton"),
+  cancelDuelExitButton: document.querySelector("#cancelDuelExitButton"),
   viewLogButton: document.querySelector("#viewLogButton"),
   abilityInfoPanel: document.querySelector("#abilityInfoPanel"),
   abilityInfoList: document.querySelector("#abilityInfoList"),

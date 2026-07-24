@@ -23,6 +23,8 @@ export function createBattleTurnController({
   settleDefeatedEnemies,
   applyEmergencyBandage,
   tryLastStand,
+  prepareEnemyAction = () => {},
+  completeEnemyAction = () => {},
   winEncounter,
   loseRun,
   render
@@ -55,6 +57,7 @@ export function createBattleTurnController({
     const actingEnemies = [...getLivingEnemies(state.enemies)];
     for (const enemy of actingEnemies) {
       if (enemy.hp <= 0 || state.ended) continue;
+      prepareEnemyAction(enemy);
       const supportActed = resolveEnemySupportAction({
         enemies: state.enemies,
         actor: enemy,
@@ -64,6 +67,7 @@ export function createBattleTurnController({
       });
       if (supportActed) {
         advanceParalysis(enemy);
+        completeEnemyAction(enemy);
         continue;
       }
       const enemyAction = resolveEnemyAction({
@@ -73,6 +77,7 @@ export function createBattleTurnController({
         log,
         modifyDirectDamage: modifyIncomingDirectDamage
       });
+      completeEnemyAction(enemy);
       advanceParalysis(enemy);
       applyEmergencyBandage();
       if (state.hero.hp <= 0) {

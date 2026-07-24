@@ -15,6 +15,7 @@ export function createBattleSettlement({
   addLog,
   addFixedLog,
   gainCharacterExp,
+  settleCharacterProgression,
   recordEnemyDefeated,
   hasPhoenixBlessing,
   saveGameSafe,
@@ -72,6 +73,10 @@ export function createBattleSettlement({
 
   function settleEnemyDefeated(enemy) {
     const defeatedBoss = enemy.kind === "首領";
+    if (state.battleSource === "duel") {
+      addLog("system", "enemyDefeated", { target: getEnemyDisplayName(enemy) });
+      return;
+    }
     const hpRatioBeforeKillRewards = state.hero.maxHp > 0 ? state.hero.hp / state.hero.maxHp : 0;
     addLog("system", "enemyDefeated", { target: getEnemyDisplayName(enemy) });
     gainCharacterExp(getEnemyExpReward(enemy));
@@ -106,8 +111,12 @@ export function createBattleSettlement({
 
   function settleBattleVictory() {
     addLog("system", "battleVictory");
+    if (state.battleSource === "duel") {
+      return;
+    }
     applyVictorySkills();
     consumeBattleLimitedEffects();
+    settleCharacterProgression();
   }
 
   function finishCounterEncounterVictory() {

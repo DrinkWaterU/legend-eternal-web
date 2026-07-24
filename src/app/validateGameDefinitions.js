@@ -13,6 +13,8 @@ import { regionDefinitions } from "../data/regions/index.js";
 import { assertRegionEncounterDefinitions } from "../data/regions/regionDefinition.js";
 import { assertSafeAreaDefinitions, safeAreaDefinitions } from "../data/safeAreas.js";
 import { assertWeaponDefinitions, weaponDefinitions } from "../data/weapons.js";
+import { assertStoryQuestDefinitions, storyQuestDefinitions } from "../data/storyQuests.js";
+import { assertDuelDefinitions, duelDefinitions } from "../data/duels/index.js";
 
 export function validateGameDefinitions() {
   const storyFlagKeys = Object.freeze(Object.keys(createDefaultSave().storyFlags));
@@ -21,8 +23,10 @@ export function validateGameDefinitions() {
   assertDialogueDefinitions(dialogueDefinitions, {
     npcDefinitions,
     storyFlagKeys,
-    facilityDefinitions
+    facilityDefinitions,
+    duelDefinitions
   });
+  assertDuelDefinitions(duelDefinitions);
   assertQuestDefinitions(questDefinitions, {
     materialDefinitions,
     regionDefinitions,
@@ -30,6 +34,14 @@ export function validateGameDefinitions() {
     enemyDefinitions: buildEnemyRegistry()
   });
   assertWeaponDefinitions(weaponDefinitions, { materialDefinitions, characterDefinitions });
+  assertStoryQuestDefinitions(storyQuestDefinitions, {
+    characterDefinitions,
+    weaponDefinitions,
+    regionDefinitions,
+    safeAreaDefinitions,
+    materialDefinitions,
+    storyFlagKeys
+  });
   assertSafeAreaDefinitions(safeAreaDefinitions, facilityDefinitions);
   Object.values(regionDefinitions).forEach((region) => {
     assertRegionPreparations(region);
