@@ -47,7 +47,7 @@
     "exponent": 1.48,
     "linear": 8,
     "offset": 0,
-    "maxLevel": 25
+    "maxLevel": 30
   },
   "levelGrowth": [
     {
@@ -323,6 +323,61 @@
           "amount": 8
         }
       ]
+    },
+    {
+      "level": 26,
+      "name": "鐵血體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 14
+        }
+      ]
+    },
+    {
+      "level": 27,
+      "name": "戰斧精修",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 28,
+      "name": "死鬥耐力",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 12
+        }
+      ]
+    },
+    {
+      "level": 29,
+      "name": "狂攻鍛鍊",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 30,
+      "name": "不退體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 14
+        }
+      ]
     }
   ],
   "skills": [
@@ -366,7 +421,7 @@
       "level": 10,
       "type": "milestone",
       "name": "浴血奮戰",
-      "description": "戰意終結技結算後恢復最大生命 8%，回復後生命不高於最大生命 70%。"
+      "description": "戰意終結技成功命中後恢復最大生命 8%；回復後生命不高於最大生命 70%。"
     },
     {
       "id": "blood-rush",
@@ -410,7 +465,7 @@
       "type": "milestone",
       "targetSkillId": "blood-soaked-fight",
       "name": "不息鬥志",
-      "description": "戰意終結技回復提高至最大生命 10%，回復後生命上限維持最大生命 70%。"
+      "description": "將浴血奮戰的回復提高至最大生命 10%；回復後生命上限維持最大生命 70%。"
     },
     {
       "id": "cleave-mastery",
@@ -433,6 +488,28 @@
       "type": "milestone",
       "name": "戰無止境",
       "description": "戰意終結技改為只消耗 2 層戰意；仍須在出手前達到 3 層才會觸發。"
+    },
+    {
+      "id": "battle-hunger-mastery",
+      "level": 27,
+      "type": "minor",
+      "targetSkillId": "battle-hunger",
+      "name": "嗜戰本能精修",
+      "description": "強化嗜戰本能：擊敗敵人的回復由最大生命 8% 提高至 10%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHealRatio",
+          "amount": 0.02
+        }
+      ]
+    },
+    {
+      "id": "blood-without-retreat",
+      "level": 30,
+      "type": "rare",
+      "name": "血戰無前",
+      "description": "戰意終結技成功命中後，以主要目標與旋斧橫掃實際總生命損失的 50% 提高回復，單次請求最多為最大生命 20%；出手前生命不高於 25% 時，結算後重新補滿 3 層戰意。"
     }
   ],
   "unlock": {

@@ -1,4 +1,5 @@
 import {
+  applyEnemyPoisonDamage,
   applyEnemyDamageProtection,
   getHeroAttackDamageMultiplier,
   getHeroDirectAttackDamage,
@@ -23,6 +24,7 @@ const POISON_ARROW_CHANCE = 0.25;
 const POISON_ARROW_POWER = 3;
 const VENOMOUS_ARROW_CHANCE = 0.5;
 const VENOMOUS_ARROW_POWER = 6;
+const POISON_ARROW_MASTERY_CHANCE = 0.6;
 const KEEP_DISTANCE_MAX_CHARGES = 2;
 const DISTANCE_CONTROL_MAX_CHARGES = 3;
 
@@ -125,6 +127,17 @@ function resolveShot({ hero, enemies, target, log, kind }) {
     tryApplyPoisonArrow({ hero, enemy: target, log });
   }
 
+  if (
+    kind === "original"
+    && poisonedAtShotStart
+    && result.critical
+    && !result.dodged
+    && target.hp > 0
+    && hasSkill(hero, "weak-point-penetration")
+  ) {
+    applyWeakPointPenetration({ enemies, enemy: target, log });
+  }
+
   if (hasSkill(hero, "arrow-rain") && runtime.playerAttackCount >= ARROW_RAIN_ATTACK_INTERVAL) {
     runtime.playerAttackCount = 0;
     resolveArrowRain({ hero, enemies, log });
@@ -142,13 +155,28 @@ function tryApplyPoisonArrow({ hero, enemy, log }) {
     return;
   }
   const enhanced = hasSkill(hero, "venomous-arrowhead");
-  const chance = enhanced ? VENOMOUS_ARROW_CHANCE : POISON_ARROW_CHANCE;
+  const chance = hasSkill(hero, "poison-arrow-mastery")
+    ? POISON_ARROW_MASTERY_CHANCE
+    : enhanced
+      ? VENOMOUS_ARROW_CHANCE
+      : POISON_ARROW_CHANCE;
   const power = enhanced ? VENOMOUS_ARROW_POWER : POISON_ARROW_POWER;
   if (!roll(chance)) {
     return;
   }
   enemy.poison = Math.max(enemy.poison || 0, power);
   log.fixed("status", `${getEnemyDisplayName(enemy)} 被淬毒箭命中，中毒了。`);
+}
+
+function applyWeakPointPenetration({ enemies, enemy, log }) {
+  const damage = applyEnemyPoisonDamage({ enemy, enemies });
+  if (damage <= 0) {
+    return;
+  }
+  log.fixed(
+    "hero-damage",
+    `弱點貫穿命中${getEnemyDisplayName(enemy)}，追加 ${damage} 點中毒傷害。`
+  );
 }
 
 function resolveArrowRain({ hero, enemies, log }) {

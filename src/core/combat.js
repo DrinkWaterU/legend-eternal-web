@@ -16,6 +16,7 @@ export {
 export {
   advanceHeroCombatStatuses,
   advanceParalysis,
+  applyEnemyPoisonDamage,
   applyHeroBattleHealing,
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,

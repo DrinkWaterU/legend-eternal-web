@@ -40,7 +40,7 @@
     "exponent": 1.48,
     "linear": 8,
     "offset": 0,
-    "maxLevel": 25
+    "maxLevel": 30
   },
   "levelGrowth": [
     {
@@ -310,6 +310,61 @@
           "amount": 12
         }
       ]
+    },
+    {
+      "level": 26,
+      "name": "高階體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 27,
+      "name": "熟練攻勢",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 28,
+      "name": "高階整備",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 29,
+      "name": "遠境耐受",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 30,
+      "name": "百戰體魄",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        }
+      ]
     }
   ],
   "skills": [
@@ -423,6 +478,21 @@
       "type": "milestone",
       "name": "萬用行囊",
       "description": "每場戰鬥開始時，較容易獲得符合近期祝福流派的小加成。流派判定不只看持有數量；若沒有明確傾向，攻擊 +1。"
+    },
+    {
+      "id": "heavy-strike-mastery",
+      "level": 27,
+      "type": "minor",
+      "targetSkillId": "heavy-strike",
+      "name": "重擊精熟",
+      "description": "強化重擊：觸發率由 20% 提高至 25%，傷害由 140% 提高至 160%。"
+    },
+    {
+      "id": "versatile-mastery",
+      "level": 30,
+      "type": "rare",
+      "name": "融會貫通",
+      "description": "強化萬用行囊：每場戰鬥開始時額外再獲得一次行囊加成；若有合格的不同流派，優先取得不同流派，否則重複第一項效果。"
     }
   ]
 }

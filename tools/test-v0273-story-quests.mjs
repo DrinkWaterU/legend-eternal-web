@@ -27,7 +27,7 @@ assert.equal(
 );
 
 const save = createDefaultSave();
-assert.equal(save.schemaVersion, 10);
+assert.equal(save.schemaVersion, 11);
 assert.equal(save.progression.characters.kaige.unlocked, false);
 assert.deepEqual(save.storyQuests, { records: {} });
 
@@ -104,7 +104,7 @@ const repaired = migrateSave({
     }
   }
 });
-assert.equal(repaired.schemaVersion, 10);
+assert.equal(repaired.schemaVersion, 11);
 assert.equal(repaired.progression.characters.kaige.unlocked, true);
 assert.equal(repaired.inventory.weapons["worn-battle-axe"], true);
 assert.equal(repaired.progression.characters.kaige.equipment.weaponId, "worn-battle-axe");

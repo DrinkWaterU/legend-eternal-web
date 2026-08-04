@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
-const [html, guildRecordView, screensCss, componentsCss, responsiveCss, refreshCss] = await Promise.all([
+const [html, guildRecordView, screensCss, componentsCss, responsiveCss, refreshCss, combatCss] = await Promise.all([
   readFile(new URL("index.html", root), "utf8"),
   readFile(new URL("src/ui/guildAdventureRecordView.js", root), "utf8"),
   readFile(new URL("src/styles/screens.css", root), "utf8"),
   readFile(new URL("src/styles/components.css", root), "utf8"),
   readFile(new URL("src/styles/responsive.css", root), "utf8"),
-  readFile(new URL("src/styles/ui-refresh.css", root), "utf8")
+  readFile(new URL("src/styles/ui-refresh.css", root), "utf8"),
+  readFile(new URL("src/styles/combat.css", root), "utf8")
 ]);
 
 const combinedCss = [screensCss, componentsCss, responsiveCss, refreshCss].join("\n");
@@ -105,5 +106,8 @@ for (const className of [
 }
 
 assert.match(guildRecordView, /className = "guild-record-layout"/, "冒險履歷應建立正式 guild-record-layout");
+assert.match(combatCss, /\.hero-combat-status \.meter-text\s*\{[\s\S]*flex:\s*0 0 auto;[\s\S]*white-space:\s*nowrap;[\s\S]*font-variant-numeric:\s*tabular-nums;/, "玩家生命文字必須在 hero-combat-status 範圍內保持單行且不可縮小");
+assert.match(combatCss, /\.hero-combat-status \.combat-statuses\s*\{[\s\S]*min-width:\s*0;[\s\S]*flex:\s*1 1 auto;/, "玩家狀態列表必須在 hero-combat-status 範圍內承擔剩餘寬度");
+assert.match(combatCss, /\.combat-statuses\s*\{[\s\S]*flex-wrap:\s*wrap;/, "狀態列表仍必須保有換行能力");
 
 console.log("Historical UI CSS was removed while current UI contracts remain intact.");

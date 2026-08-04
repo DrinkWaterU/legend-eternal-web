@@ -15,6 +15,8 @@ const log = {
   fixed() {},
   template() {}
 };
+const originalRandom = Math.random;
+Math.random = () => 0.99;
 
 const level5Hero = buildKaige(5);
 initializeCharacterBattleState(level5Hero);
@@ -73,7 +75,7 @@ assert.equal(getFury(level25Hero), 1, "Lv.25 終結技只消耗 2 層戰意");
 assert.equal(level25Hero.battleAttackBonus, 1);
 assert.ok(primary.hp < 300, "終結技應命中主要目標");
 assert.ok(secondary.hp < 100, "終結技應橫掃其他存活敵人");
-assert.equal(level25Hero.hp, 122, "Lv.20 強化後應恢復最大生命 10%");
+assert.equal(level25Hero.hp, 122, "Lv.25 終結技與旋斧橫掃傷害再高仍只恢復最大生命 10%");
 
 const status = getCharacterCombatStatusEntries(level25Hero)[0];
 assert.equal(status.kind, "fury");
@@ -112,6 +114,7 @@ resolveCharacterPlayerAction({
 assert.equal(cappedHero.hp, Math.floor(cappedHero.maxHp * 0.7));
 
 console.log("v0.2.7.3 Kaige growth, Fury, finisher, sweep and healing cap tests passed.");
+Math.random = originalRandom;
 
 function buildKaige(level) {
   return buildHeroFromProgression(kaige, {

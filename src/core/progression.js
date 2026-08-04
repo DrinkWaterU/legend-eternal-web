@@ -10,11 +10,28 @@ export function getExpToNextLevel(level, character) {
   if (!curve || level >= getCharacterMaxLevel(character)) {
     return "MAX";
   }
-  return Math.floor(
-    (curve.base || 0) * level ** (curve.exponent || 1)
-    + (curve.linear || 0) * level
-    + (curve.offset || 0)
-  );
+  return getExpRequirement(level, curve);
+}
+
+export function getExpStorageLimit(level, character) {
+  const curve = character.levelCurve;
+  if (!curve) return 0;
+  const maxLevel = getCharacterMaxLevel(character);
+  const normalizedLevel = Math.max(1, Math.min(maxLevel, Math.floor(Number(level) || 1)));
+  return getExpRequirement(normalizedLevel, curve);
+}
+
+export function getCharacterExperienceLabel(progress, character) {
+  const maxLevel = getCharacterMaxLevel(character);
+  const level = Math.max(1, Math.min(maxLevel, Math.floor(Number(progress?.level) || 1)));
+  const exp = Math.max(0, Math.floor(Number(progress?.exp) || 0));
+  if (level >= maxLevel) {
+    const storageLimit = getExpStorageLimit(level, character);
+    return exp >= storageLimit
+      ? "已達目前上限｜下一級 EXP 已儲滿"
+      : `已達目前上限｜儲備 EXP ${exp}／${storageLimit}`;
+  }
+  return `經驗 ${exp} / ${getExpToNextLevel(level, character)}`;
 }
 
 export function getSkillsForLevel(character, level) {
@@ -28,6 +45,9 @@ export function getGrowthForLevel(character, level) {
 export function normalizeCharacterProgress(progress, character) {
   progress.level = Math.max(1, Math.min(getCharacterMaxLevel(character), Math.floor(progress.level || 1)));
   progress.exp = Math.max(0, Math.floor(progress.exp || 0));
+  if (progress.level >= getCharacterMaxLevel(character)) {
+    progress.exp = Math.min(progress.exp, getExpStorageLimit(progress.level, character));
+  }
   progress.learnedSkills = getSkillsForLevel(character, progress.level).map((skill) => skill.id);
   progress.equipment = {
     weaponId: typeof progress.equipment?.weaponId === "string"
@@ -44,6 +64,7 @@ export function buildHeroFromProgression(character, progress, options = {}) {
   hero.level = normalizedProgress.level;
   hero.exp = normalizedProgress.exp;
   hero.expToNext = getExpToNextLevel(normalizedProgress.level, character);
+  hero.expStatus = getCharacterExperienceLabel(normalizedProgress, character);
   hero.skills = [...normalizedProgress.learnedSkills];
   hero.skillState = createSkillState();
   hero.critDamageMultiplier = hero.critDamageMultiplier || 1.7;
@@ -87,4 +108,12 @@ export function applyProgressionEffects(hero, effects, options = {}) {
       }
     }
   });
+}
+
+function getExpRequirement(level, curve) {
+  return Math.floor(
+    (curve.base || 0) * level ** (curve.exponent || 1)
+    + (curve.linear || 0) * level
+    + (curve.offset || 0)
+  );
 }

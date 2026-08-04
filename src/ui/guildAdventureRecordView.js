@@ -98,7 +98,9 @@ function createIdentityCard(character) {
 
   const status = document.createElement("strong");
   status.className = "guild-record-status";
-  status.textContent = character.atMaxLevel ? "已達現階段上限" : `等級上限 ${character.maxLevel}`;
+  status.textContent = character.atMaxLevel
+    ? character.experienceStatus
+    : `等級上限 ${character.maxLevel}`;
   card.append(emblem, copy, status);
   return card;
 }

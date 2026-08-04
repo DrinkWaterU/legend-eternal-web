@@ -15,10 +15,28 @@ import {
 } from "../src/core/safeAreaProgression.js";
 import { createDefaultSave, migrateSave } from "../src/core/storage.js";
 import { ANPING_TOWN_SAFE_AREA_ID, DEFAULT_SAFE_AREA_ID } from "../src/data/safeAreas.js";
+import { characterDefinitions } from "../src/data/characters/index.js";
+import { getCampExperienceSummary } from "../src/features/safeArea/campController.js";
 
 const fixedCreatedAt = "2026-07-13T10:00:00.000Z";
 const fixedUnlockedAt = "2026-07-13T12:00:00.000Z";
 const fixedVisitedAt = "2026-07-13T13:00:00.000Z";
+
+assert.deepEqual(
+  getCampExperienceSummary({ level: 29, exp: 120 }, characterDefinitions.adventurer),
+  { title: "經驗", value: "120／2859" },
+  "營地未封頂 EXP 應使用簡短數值"
+);
+assert.deepEqual(
+  getCampExperienceSummary({ level: 30, exp: 0 }, characterDefinitions.adventurer),
+  { title: "經驗（已達上限）", value: "儲備 0／3003" },
+  "營地封頂 EXP 應保留可讀的儲備數值"
+);
+assert.deepEqual(
+  getCampExperienceSummary({ level: 30, exp: 3003 }, characterDefinitions.adventurer),
+  { title: "經驗（已達上限）", value: "儲備 3003／3003" },
+  "營地儲滿 EXP 仍應維持短格式"
+);
 
 const defaults = createDefaultSafeAreaProgression(undefined, { defaultVisitedAt: fixedCreatedAt });
 assert.deepEqual(defaults[DEFAULT_SAFE_AREA_ID], {
@@ -77,7 +95,7 @@ const migratedSchema6 = migrateSave({
     currentSafeAreaId: ANPING_TOWN_SAFE_AREA_ID
   }
 });
-assert.equal(migratedSchema6.schemaVersion, 10);
+assert.equal(migratedSchema6.schemaVersion, 11);
 assert.equal(isSafeAreaUnlocked(migratedSchema6, ANPING_TOWN_SAFE_AREA_ID), true, "舊存檔已完成森林主線時應補解鎖安平鎮");
 assert.equal(isSafeAreaVisited(migratedSchema6, ANPING_TOWN_SAFE_AREA_ID), false, "migration 不得跳過首次抵達演出");
 assert.equal(getCurrentSafeAreaId(migratedSchema6), DEFAULT_SAFE_AREA_ID, "未造訪安平鎮時位置應回退營地");

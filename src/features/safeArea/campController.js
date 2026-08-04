@@ -1,4 +1,8 @@
-import { getExpToNextLevel } from "../../core/progression.js";
+import {
+  getCharacterMaxLevel,
+  getExpStorageLimit,
+  getExpToNextLevel
+} from "../../core/progression.js";
 import { formatInventorySummary } from "../../core/rewards.js";
 import { DEFAULT_SAFE_AREA_ID } from "../../data/safeAreas.js";
 import { renderStatList } from "../../ui/renderHelpers.js";
@@ -36,7 +40,7 @@ export function createCampController({
     const region = currentRegion();
     const character = characterDefinitions[state.selectedHeroId];
     const progress = normalizeCharacterProgress(state.selectedHeroId);
-    const expToNext = getExpToNextLevel(progress.level, character);
+    const experienceSummary = getCampExperienceSummary(progress, character);
     const lastResult = state.lastRunSummary
       ? `${state.lastRunSummary.sourceName} ${state.lastRunSummary.reachedEncounter} / ${state.lastRunSummary.encounterTotal} 場${state.lastRunSummary.result}`
       : "尚無紀錄";
@@ -48,7 +52,7 @@ export function createCampController({
     const campStats = [
       ["目前角色", `${character.name} Lv.${progress.level}`],
       ["目前地區", regionName],
-      ["經驗", `${progress.exp} / ${expToNext}`],
+      [experienceSummary.title, experienceSummary.value],
       phoenixUnlocked ? ["目前金幣", inventorySummary.gold] : ["最近冒險", lastResult]
     ];
 
@@ -88,4 +92,23 @@ export function createCampController({
   }
 
   return Object.freeze({ renderMenuScreen, renderCampScreen });
+}
+
+export function getCampExperienceSummary(progress, character) {
+  const level = Math.max(1, Math.min(
+    getCharacterMaxLevel(character),
+    Math.floor(Number(progress?.level) || 1)
+  ));
+  const exp = Math.max(0, Math.floor(Number(progress?.exp) || 0));
+  if (level >= getCharacterMaxLevel(character)) {
+    const storageLimit = getExpStorageLimit(level, character);
+    return {
+      title: "經驗（已達上限）",
+      value: `儲備 ${Math.min(exp, storageLimit)}／${storageLimit}`
+    };
+  }
+  return {
+    title: "經驗",
+    value: `${exp}／${getExpToNextLevel(level, character)}`
+  };
 }

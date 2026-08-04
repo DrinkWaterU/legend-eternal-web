@@ -125,7 +125,7 @@ export function renderQuestCombatDetails({ els, snapshot }) {
 export function renderCurrentAbilityView(element, hero) {
   renderStatList(element, [
     ["角色等級", `Lv. ${hero.level || 1}`],
-    ["經驗", `${hero.exp || 0} / ${hero.expToNext || "-"}`],
+    ["經驗", hero.expStatus || `${hero.exp || 0} / ${hero.expToNext || "-"}`],
     ["攻擊", getHeroRuntimeAttack(hero)],
     ["防禦", hero.defense],
     ["暴擊", `${Math.round(getHeroRuntimeCritChance(hero) * 100)}%`],

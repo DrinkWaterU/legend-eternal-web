@@ -49,7 +49,7 @@ function sequenceRandom(values) {
   assert.equal(hero.defense, 6);
   assert.equal(hero.critChance, 0.17);
   assert.equal(hero.skills.length, 12);
-  assert.equal(archer.levelCurve.maxLevel, 25);
+  assert.equal(archer.levelCurve.maxLevel, 30);
   assert.equal(archer.unlock?.storyFlag, "archerRescued", "弓箭手解鎖 migration 應由角色 definition 宣告故事旗標");
   assert.equal(archer.skills.find((skill) => skill.id === "venomous-arrowhead")?.targetSkillId, "poison-arrow");
   assert.equal(archer.skills.find((skill) => skill.id === "distance-control")?.targetSkillId, "keep-distance");

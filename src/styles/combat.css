@@ -139,11 +139,22 @@
   font-size: 0.86rem;
 }
 
+.hero-combat-status .meter-text {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .combat-statuses {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 6px;
+}
+
+.hero-combat-status .combat-statuses {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .combat-status {

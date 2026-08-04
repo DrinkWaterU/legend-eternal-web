@@ -1,8 +1,7 @@
 import { DEFAULT_CHARACTER_ID, DEFAULT_REGION_ID } from "../../config.js";
 import { resolveEquippedWeapon } from "../../core/equipment.js";
 import {
-  getCharacterMaxLevel,
-  getExpToNextLevel
+  getCharacterExperienceLabel
 } from "../../core/progression.js";
 import { renderCharacterSkills } from "../../ui/characterSkillsView.js";
 import { renderCharacterDetailView } from "../../ui/characterDetailView.js";
@@ -162,10 +161,7 @@ export function createCharacterController({
   }
 
   function renderCharacterDetail(characterId, character, progress, preview, equippedWeapon) {
-    const maxLevel = getCharacterMaxLevel(character);
-    const experienceLabel = progress.level >= maxLevel
-      ? "經驗 MAX"
-      : `經驗 ${progress.exp} / ${getExpToNextLevel(progress.level, character)}`;
+    const experienceLabel = getCharacterExperienceLabel(progress, character);
     renderCharacterDetailView({
       els,
       characterId,

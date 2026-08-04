@@ -12,6 +12,8 @@ import { roll } from "../utils.js";
 
 const HEAVY_STRIKE_CHANCE = 0.2;
 const HEAVY_STRIKE_MULTIPLIER = 1.4;
+const HEAVY_STRIKE_MASTERY_CHANCE = 0.25;
+const HEAVY_STRIKE_MASTERY_MULTIPLIER = 1.6;
 const FOLLOW_UP_CHANCE = 0.25;
 const FOLLOW_UP_ATTACK_RATIO = 0.5;
 const FOLLOW_UP_PLUS_CHANCE = 0.4;
@@ -105,8 +107,13 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
   const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
   const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
   let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier: damageMultiplier * caveModifiers.damageMultiplier, attackMultiplier }) + caveModifiers.extraDamage;
-  if (allowHeavyStrike && hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
-    damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
+  const heavyStrikeMastered = hasSkill(hero, "heavy-strike-mastery");
+  const heavyStrikeChance = heavyStrikeMastered ? HEAVY_STRIKE_MASTERY_CHANCE : HEAVY_STRIKE_CHANCE;
+  const heavyStrikeMultiplier = heavyStrikeMastered
+    ? HEAVY_STRIKE_MASTERY_MULTIPLIER
+    : HEAVY_STRIKE_MULTIPLIER;
+  if (allowHeavyStrike && hasSkill(hero, "heavy-strike") && roll(heavyStrikeChance)) {
+    damage = Math.max(1, Math.round(damage * heavyStrikeMultiplier));
     log.template("skill", "heavyStrike", { actor: hero.name });
   }
   const critChance = hero.critChance

@@ -22,6 +22,20 @@ export function getEnemyPendingHpLoss(enemy) {
   return Math.max(0, Number(enemy.poison) || 0);
 }
 
+export function applyEnemyPoisonDamage({ enemy, enemies = [] }) {
+  const poisonDamage = getEnemyPendingHpLoss(enemy);
+  if (poisonDamage <= 0) {
+    return 0;
+  }
+  const effectiveDamage = applyEnemyDamageProtection({
+    enemy,
+    enemies,
+    damage: poisonDamage
+  }).damage;
+  enemy.hp = Math.max(0, enemy.hp - effectiveDamage);
+  return effectiveDamage;
+}
+
 export function applySaltErosion(hero, log) {
   if (!hero) return 0;
   const currentTurns = Math.max(0, Number(hero.saltErosion?.remainingTurns) || 0);
@@ -122,16 +136,10 @@ export function applyHeroEndOfTurnNegativeEffects({ hero, log, modifyPoisonDamag
 }
 
 export function applyEnemyEndOfTurnNegativeEffects({ enemy, enemies = [], log }) {
-  const poisonDamage = getEnemyPendingHpLoss(enemy);
-  if (poisonDamage <= 0) {
+  const effectiveDamage = applyEnemyPoisonDamage({ enemy, enemies });
+  if (effectiveDamage <= 0) {
     return;
   }
-  const effectiveDamage = applyEnemyDamageProtection({
-    enemy,
-    enemies,
-    damage: poisonDamage
-  }).damage;
-  enemy.hp = Math.max(0, enemy.hp - effectiveDamage);
   log.template("hero-damage", "poisonTick", {
     target: getEnemyDisplayName(enemy),
     amount: effectiveDamage

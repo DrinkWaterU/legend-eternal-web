@@ -1,4 +1,5 @@
 import {
+  applyEnemyDamageProtection,
   getHeroBattleHealingAmount,
   getHeroDirectAttackDamage,
   resolveHeroStrike
@@ -12,6 +13,8 @@ const SWEEP_MULTIPLIER = 0.4;
 const SWEEP_PLUS_MULTIPLIER = 0.6;
 const FINISHER_HEAL_RATIO = 0.08;
 const FINISHER_HEAL_PLUS_RATIO = 0.1;
+const FINISHER_DAMAGE_HEAL_RATIO = 0.5;
+const FINISHER_REQUESTED_HEAL_CAP_RATIO = 0.2;
 const FINISHER_HEAL_CAP_RATIO = 0.7;
 
 export function initializeBattleState({ hero }) {
@@ -39,6 +42,10 @@ export function resolvePlayerAction({ hero, enemies, targetEnemyId, log }) {
 
   const runtime = getRuntime(hero);
   const finisher = hasSkill(hero, "formation-breaking-cleave") && runtime.fury >= FURY_MAX;
+  const bloodWithoutRetreat = finisher
+    && hasSkill(hero, "blood-without-retreat")
+    && hero.hp <= hero.maxHp * 0.25;
+  const primaryHpBefore = target.hp;
   const result = resolveHeroStrike({
     hero,
     enemy: target,
@@ -60,11 +67,15 @@ export function resolvePlayerAction({ hero, enemies, targetEnemyId, log }) {
 
   if (!result.dodged) {
     log.fixed("skill", `${hero.name} 將戰意灌入斧刃，揮出破陣重斬。`);
-    applySweep({ hero, enemies, target, log });
-    applyFinisherHealing(hero, log);
+    const primaryActualDamage = getActualHpLoss(primaryHpBefore, target.hp);
+    const sweepActualDamage = applySweep({ hero, enemies, target, log });
+    applyFinisherHealing(hero, log, primaryActualDamage + sweepActualDamage);
   }
   const consumed = hasSkill(hero, "battle-without-end") ? 2 : runtime.fury;
   setFury(hero, Math.max(0, runtime.fury - consumed), "consume");
+  if (bloodWithoutRetreat && !result.dodged) {
+    setFury(hero, FURY_MAX, "full");
+  }
   return { handled: true };
 }
 
@@ -105,45 +116,60 @@ export function getStatusEntries(hero) {
 
 function applySweep({ hero, enemies, target, log }) {
   if (!hasSkill(hero, "spinning-axe-sweep")) {
-    return;
+    return 0;
   }
   const multiplier = hasSkill(hero, "cleave-mastery")
     ? SWEEP_PLUS_MULTIPLIER
     : SWEEP_MULTIPLIER;
-  getLivingEnemies(enemies)
+  return getLivingEnemies(enemies)
     .filter((enemy) => enemy.runtimeId !== target.runtimeId)
-    .forEach((enemy) => {
-      const damage = getHeroDirectAttackDamage({
+    .reduce((totalActualDamage, enemy) => {
+      const hpBefore = enemy.hp;
+      const rawDamage = getHeroDirectAttackDamage({
         hero,
         enemy,
         damageMultiplier: multiplier
       });
+      const damage = applyEnemyDamageProtection({ enemy, enemies, damage: rawDamage }).damage;
       enemy.hp = Math.max(0, enemy.hp - damage);
       log.fixed(
         "hero-damage",
         `旋斧橫掃命中${getEnemyDisplayName(enemy)}，造成 ${damage} 點傷害。`
       );
-    });
+      return totalActualDamage + getActualHpLoss(hpBefore, enemy.hp);
+    }, 0);
 }
 
-function applyFinisherHealing(hero, log) {
+function applyFinisherHealing(hero, log, actualFinisherAndSweepDamage) {
   if (!hasSkill(hero, "blood-soaked-fight") || hero.hp <= 0) {
     return;
   }
   const ratio = hasSkill(hero, "unyielding-fighting-spirit")
     ? FINISHER_HEAL_PLUS_RATIO
     : FINISHER_HEAL_RATIO;
-  const cap = Math.floor(hero.maxHp * FINISHER_HEAL_CAP_RATIO);
-  if (hero.hp >= cap) {
+  const postHealCap = Math.floor(hero.maxHp * FINISHER_HEAL_CAP_RATIO);
+  if (hero.hp >= postHealCap) {
     return;
   }
-  const effectiveAmount = getHeroBattleHealingAmount(hero, hero.maxHp * ratio, { minimum: 1 });
+  const baseRecovery = hero.maxHp * ratio;
+  const hasDamageLifesteal = hasSkill(hero, "blood-without-retreat");
+  const requestedRecovery = hasDamageLifesteal
+    ? Math.min(
+      hero.maxHp * FINISHER_REQUESTED_HEAL_CAP_RATIO,
+      Math.max(baseRecovery, actualFinisherAndSweepDamage * FINISHER_DAMAGE_HEAL_RATIO)
+    )
+    : baseRecovery;
+  const effectiveAmount = getHeroBattleHealingAmount(hero, requestedRecovery);
   const before = hero.hp;
-  hero.hp = Math.min(cap, hero.hp + effectiveAmount);
+  hero.hp = Math.min(postHealCap, hero.hp + effectiveAmount);
   const healed = hero.hp - before;
   if (healed > 0) {
     log.fixed("heal", `${hero.name}藉著浴血奮戰恢復 ${healed} 點生命。`);
   }
+}
+
+function getActualHpLoss(before, after) {
+  return Math.max(0, (Number(before) || 0) - (Number(after) || 0));
 }
 
 function setFury(hero, nextFury, changeKind) {

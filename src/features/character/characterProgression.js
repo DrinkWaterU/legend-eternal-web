@@ -1,7 +1,9 @@
 import {
   applyProgressionEffects,
   buildHeroFromProgression as buildHeroFromProgressionCore,
+  getCharacterExperienceLabel,
   getCharacterMaxLevel,
+  getExpStorageLimit,
   getExpToNextLevel,
   getGrowthForLevel,
   getSkillsForLevel,
@@ -46,8 +48,13 @@ export function createCharacterProgression({
       return;
     }
 
-    const progress = getCharacterProgress();
-    progress.exp += amount;
+    const character = getCharacterDefinition();
+    const progress = normalizeCharacterProgress();
+    const currentExp = progress.exp;
+    const expLimit = progress.level >= getCharacterMaxLevel(character)
+      ? getExpStorageLimit(progress.level, character)
+      : Number.POSITIVE_INFINITY;
+    progress.exp = Math.min(expLimit, currentExp + Math.floor(amount));
     state.runStats.expGained += amount;
     addLog("system", "expGain", { amount });
     saveGameSafe();
@@ -60,6 +67,7 @@ export function createCharacterProgression({
 
     const character = getCharacterDefinition();
     const progress = getCharacterProgress();
+    normalizeCharacterProgressCore(progress, character);
     const previousLevelUpCount = state.runStats?.levelUps.length || 0;
     const previousSkillCount = state.runStats?.learnedSkills.length || 0;
     applyCharacterLevelUps(character, progress);
@@ -109,6 +117,7 @@ export function createCharacterProgression({
     state.hero.level = progress.level;
     state.hero.exp = progress.exp;
     state.hero.expToNext = getExpToNextLevel(progress.level, character);
+    state.hero.expStatus = getCharacterExperienceLabel(progress, character);
     state.hero.skills = [...progress.learnedSkills];
     if (state.runStats) {
       state.runStats.endLevel = progress.level;

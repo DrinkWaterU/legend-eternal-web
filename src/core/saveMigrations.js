@@ -21,6 +21,9 @@ import { toSafeInteger } from "../utils.js";
 import { normalizeQuestState } from "./questRules.js";
 import { STORY_QUEST_STATUSES, normalizeStoryQuestState } from "./storyQuestRules.js";
 import { applyStoryQuestRewards } from "./storyQuestRewards.js";
+import { getExpStorageLimit } from "./progression.js";
+
+export const LV25_EXP_CAP_MIGRATION_SCHEMA_VERSION = 11;
 
 export function migrateSaveData(rawSave) {
   const save = createDefaultSave();
@@ -148,6 +151,7 @@ function migrateStatistics(save, rawSave, options = {}) {
 }
 
 function migrateProgression(save, rawSave, options = {}) {
+  const { rawSchemaVersion = 0 } = options;
   const shouldResetLegacyCharacterGrowth = (options.rawSchemaVersion || 0) < 5;
   Object.keys(regionDefinitions).forEach((regionId) => {
     const progress = save.progression.regions[regionId];
@@ -174,6 +178,12 @@ function migrateProgression(save, rawSave, options = {}) {
     }
     progress.level = Math.max(1, toSafeInteger(rawProgress.level, 1));
     progress.exp = toSafeInteger(rawProgress.exp);
+    if (rawSchemaVersion < LV25_EXP_CAP_MIGRATION_SCHEMA_VERSION && progress.level === 25) {
+      progress.exp = Math.min(
+        progress.exp,
+        getExpStorageLimit(progress.level, characterDefinitions[characterId])
+      );
+    }
     progress.learnedSkills = Array.isArray(rawProgress.learnedSkills) ? rawProgress.learnedSkills : [];
   });
 }

@@ -43,7 +43,7 @@
     "exponent": 1.48,
     "linear": 8,
     "offset": 0,
-    "maxLevel": 25
+    "maxLevel": 30
   },
   "levelGrowth": [
     {
@@ -308,6 +308,61 @@
           "amount": 10
         }
       ]
+    },
+    {
+      "level": 26,
+      "name": "長程耐力",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 8
+        }
+      ]
+    },
+    {
+      "level": 27,
+      "name": "強弓掌握",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "attack",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 28,
+      "name": "輕甲精修",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "defense",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "level": 29,
+      "name": "精準直覺",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "critChance",
+          "amount": 0.03
+        }
+      ]
+    },
+    {
+      "level": 30,
+      "name": "百戰耐力",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "maxHp",
+          "amount": 10
+        }
+      ]
     }
   ],
   "skills": [
@@ -398,6 +453,21 @@
       "type": "milestone",
       "name": "百步穿楊",
       "description": "原始精準射擊造成爆擊時，本次一般追擊機率提高至 80%。"
+    },
+    {
+      "id": "poison-arrow-mastery",
+      "level": 27,
+      "type": "minor",
+      "targetSkillId": "poison-arrow",
+      "name": "淬毒精熟",
+      "description": "強化淬毒箭：最終觸發率由 50% 提高至 60%，中毒傷害維持 6。"
+    },
+    {
+      "id": "weak-point-penetration",
+      "level": 30,
+      "type": "rare",
+      "name": "弱點貫穿",
+      "description": "原始射擊命中射擊開始前已中毒且造成爆擊的敵人時，追加一次等同目前中毒值的中毒傷害。"
     }
   ],
   "unlock": {
