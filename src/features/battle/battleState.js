@@ -93,6 +93,7 @@ export function createBattleState({
     state.hero.entangle = null;
     state.hero.saltErosion = null;
     state.hero.paralysis = null;
+    state.hero.guardState = null;
     state.hero.battleAttackBonus = 0;
     state.hero.battleCritBonus = 0;
     state.hero.hasAttackedThisBattle = false;

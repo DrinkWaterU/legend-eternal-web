@@ -32,7 +32,11 @@ export function createCombatRenderer({
     const canViewAbility = Boolean(state.hero) && state.phase !== "event";
     els.nextButton.disabled = !canFight;
     els.nextButton.hidden = !canFight;
-    els.nextButton.textContent = state.turn === 0 ? "戰鬥" : "繼續戰鬥";
+    els.nextButton.textContent = "攻擊";
+    if (els.guardButton) {
+      els.guardButton.disabled = !canFight;
+      els.guardButton.hidden = !canFight;
+    }
     els.fleeButton.disabled = !(canFight && (isDuel || !isBoss));
     els.fleeButton.hidden = !canFight;
     els.fleeButton.textContent = isDuel
@@ -78,6 +82,7 @@ export function createCombatRenderer({
       onTargetSelect: selectEnemyTarget,
       questSnapshot: state.battleSource === "duel" ? null : questRuntime?.getSnapshot()
     });
+    renderCombatActionHint();
     if (els.abilityInfoPanel.classList.contains("is-visible")) {
       renderCurrentAbilityView(els.abilityInfoList, hero);
     }
@@ -114,6 +119,22 @@ export function createCombatRenderer({
       }
     }
     setCombatActionState();
+  }
+
+  function renderCombatActionHint() {
+    if (!els.combatActionHint) return;
+    if (state.lastPlayerAction === "guard") {
+      els.combatActionHint.textContent = "上回合採取守勢；本回合可重新選擇行動。";
+      els.combatActionHint.dataset.action = "guard";
+      return;
+    }
+    if (state.turn === 0) {
+      els.combatActionHint.textContent = "選擇攻擊或守勢；守勢會放棄本回合攻擊。";
+      els.combatActionHint.dataset.action = "ready";
+      return;
+    }
+    els.combatActionHint.textContent = "選擇本回合行動，或點擊敵人卡片切換目標。";
+    els.combatActionHint.dataset.action = "attack";
   }
 
   function renderLog() {

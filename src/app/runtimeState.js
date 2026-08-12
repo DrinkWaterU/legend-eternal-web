@@ -36,6 +36,7 @@ export function createAdventureRuntimeState({
     canRest: false,
     hasRested: false,
     ambushAdvantage: false,
+    lastPlayerAction: null,
     pendingThreat: null,
     blessingContext: "normal",
     blessingPoolOverrideId: null,

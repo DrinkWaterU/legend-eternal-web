@@ -5,6 +5,20 @@
   color: #f7d992;
 }
 
+.secondary-button.action-guard {
+  border-color: rgba(112, 191, 205, 0.62);
+  background:
+    linear-gradient(180deg, rgba(35, 91, 104, 0.96), rgba(20, 46, 53, 0.96));
+  color: #a6e6e6;
+}
+
+.secondary-button.action-guard:hover,
+.secondary-button.action-guard:focus-visible {
+  border-color: rgba(153, 232, 231, 0.88);
+  background:
+    linear-gradient(180deg, rgba(48, 116, 129, 0.98), rgba(24, 59, 68, 0.98));
+}
+
 .secondary-button.action-forward {
   border-color: rgba(122, 205, 139, 0.58);
   background:

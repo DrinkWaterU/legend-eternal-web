@@ -1,5 +1,12 @@
 export { buildEnemy, buildEnemyGroup, buildScaledEnemy } from "./enemyBuilder.js";
 export {
+  applyGuardToDirectDamage,
+  beginGuard,
+  clearGuard,
+  DEFAULT_GUARD_DAMAGE_REDUCTION,
+  getGuardState
+} from "./guard.js";
+export {
   getHeroAttackDamageMultiplier,
   getHeroDirectAttackDamage,
   resolveHeroAction,

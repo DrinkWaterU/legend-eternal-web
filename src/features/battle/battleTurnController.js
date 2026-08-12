@@ -9,6 +9,7 @@ import {
   resolveEnemySupportAction,
   resolveHeroEntangle
 } from "../../core/combat.js";
+import { beginGuard, clearGuard, DEFAULT_GUARD_DAMAGE_REDUCTION } from "../../core/guard.js";
 import { getLivingEnemies } from "../../core/enemyGroups.js";
 
 export function createBattleTurnController({
@@ -29,12 +30,15 @@ export function createBattleTurnController({
   loseRun,
   render
 }) {
-  function playTurn() {
+  function playTurn(action = "attack") {
     if (state.ended || state.awaitingBlessing || getLivingEnemies(state.enemies).length === 0 || state.phase === "safe") return;
 
+    const playerAction = action === "guard" ? "guard" : "attack";
     const log = createCombatLogger();
     state.phase = "combat";
     state.turn += 1;
+    state.lastPlayerAction = playerAction;
+    clearGuard(state.hero);
     advanceHeroCombatStatuses(state.hero);
     state.hero.activeEnemyCount = getLivingEnemies(state.enemies).length;
     const heroEntangled = resolveHeroEntangle({
@@ -44,11 +48,22 @@ export function createBattleTurnController({
       onRetryResult: recordEntangleRetryResult
     });
     if (!heroEntangled) {
+      if (playerAction === "guard") {
+        const guard = beginGuard(state.hero, DEFAULT_GUARD_DAMAGE_REDUCTION);
+        log.fixed(
+          "status",
+          `你採取守勢，本回合直接傷害降低 ${Math.round(guard.damageReduction * 100)}%。`
+        );
+      }
+
       const target = currentTargetEnemy();
-      if (!target) return;
-      runHeroPlayerAction({ target, log });
+      if (playerAction === "attack") {
+        if (!target) return;
+        runHeroPlayerAction({ target, log });
+      }
       settleDefeatedEnemies();
       if (getLivingEnemies(state.enemies).length === 0) {
+        clearGuard(state.hero);
         winEncounter();
         return;
       }
@@ -83,6 +98,7 @@ export function createBattleTurnController({
       if (state.hero.hp <= 0) {
         state.deathCause = enemyAction;
         if (!tryLastStand()) {
+          clearGuard(state.hero);
           loseRun();
           return;
         }
@@ -105,6 +121,7 @@ export function createBattleTurnController({
     if (state.hero.hp <= 0) {
       state.deathCause = endOfTurn.heroDeathCause || { type: "other", label: "回合結束效果" };
       if (!tryLastStand()) {
+        clearGuard(state.hero);
         loseRun();
         return;
       }
@@ -112,9 +129,11 @@ export function createBattleTurnController({
 
     settleDefeatedEnemies();
     if (getLivingEnemies(state.enemies).length === 0) {
+      clearGuard(state.hero);
       winEncounter();
       return;
     }
+    clearGuard(state.hero);
     render();
   }
 

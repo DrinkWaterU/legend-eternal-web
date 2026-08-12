@@ -5,6 +5,7 @@ export function clearHeroBattleRuntimeState(hero) {
   hero.entangle = null;
   hero.saltErosion = null;
   hero.paralysis = null;
+  hero.guardState = null;
   hero.battleAttackBonus = 0;
   hero.battleCritBonus = 0;
   hero.hasAttackedThisBattle = false;

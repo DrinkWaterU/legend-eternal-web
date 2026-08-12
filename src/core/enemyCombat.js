@@ -2,6 +2,7 @@ import { getEnemyDisplayName } from "./enemyGroups.js";
 import { applyParalysis, applySaltErosion, getParalysisDamageMultiplier } from "./combatStatusEffects.js";
 import { roll } from "../utils.js";
 import { registerShieldDepletedByDirectAttack } from "./caveBlessingEffects.js";
+import { applyGuardToDirectDamage } from "./guard.js";
 
 const DEFAULT_CHARGE_MULTIPLIER = 1.6;
 const ENEMY_CRIT_MULTIPLIER = 1.6;
@@ -66,6 +67,7 @@ function resolveStandardEnemyAttack({ hero, enemy, turn, log, modifyDirectDamage
     log,
     modifyDirectDamage
   });
+  damage = applyGuardToDirectDamage({ hero, damage, log }).damage;
   applyEnemyDamageSegment({ hero, enemyName, damage, log });
   return damageSource;
 }
@@ -116,6 +118,7 @@ function resolveMultiHitSpecialAttack({ hero, enemy, specialAttack, log, modifyD
         }
       });
     }
+    damage = applyGuardToDirectDamage({ hero, damage, log }).damage;
 
     applyEnemyDamageSegment({
       hero,

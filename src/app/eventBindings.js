@@ -143,6 +143,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.revealAnpingArrivalButton.addEventListener("click", revealAnpingArrivalPage);
   els.continueAnpingArrivalButton.addEventListener("click", continueAnpingArrivalStory);
   els.nextButton.addEventListener("click", playTurn);
+  els.guardButton?.addEventListener("click", () => playTurn("guard"));
   els.fleeButton.addEventListener("click", tryFlee);
   els.continueButton.addEventListener("click", continueAdventure);
   els.eventContinueButton.addEventListener("click", handleEventContinueButton);

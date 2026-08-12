@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.7.4-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.7.5-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -37,7 +37,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.7.4-alpha</p>
+            <p class="version-label">v0.2.7.5-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -889,13 +889,15 @@
             <div class="log-header">
               <h2 id="battleLogTitle">戰鬥紀錄</h2>
               <div class="combat-actions">
-                <button id="nextButton" class="secondary-button action-combat" type="button">下一回合</button>
+                <button id="nextButton" class="secondary-button action-combat" type="button">攻擊</button>
+                <button id="guardButton" class="secondary-button action-guard" type="button">守勢</button>
                 <button id="fleeButton" class="secondary-button action-flee" type="button">嘗試逃跑</button>
                 <button id="restButton" class="secondary-button action-rest" type="button">原地修整</button>
                 <button id="continueButton" class="secondary-button action-forward" type="button">繼續前進</button>
                 <button id="retreatButton" class="secondary-button action-retreat" type="button">撤退</button>
                 <button id="returnToEndSummaryButton" class="primary-button" type="button" hidden>返回結算</button>
               </div>
+              <p id="combatActionHint" class="combat-action-hint" aria-live="polite">選擇攻擊或守勢；守勢會放棄本回合攻擊。</p>
             </div>
             <button
               id="questCombatToggle"
@@ -1271,6 +1273,6 @@
       </aside>
     </main>
 
-  <script type="module" src="game.js?v=0.2.7.4-alpha&amp;build=v0274-alpha-1"></script>
+  <script type="module" src="game.js?v=0.2.7.5-alpha&amp;build=v0275-alpha-1"></script>
   </body>
 </html>

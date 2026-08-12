@@ -5,6 +5,7 @@ const BATTLE_ENTRY_DEFAULTS = Object.freeze({
   canRest: false,
   hasRested: false,
   ambushAdvantage: false,
+  lastPlayerAction: null,
   battleSource: "main",
   battleEncounterType: null
 });

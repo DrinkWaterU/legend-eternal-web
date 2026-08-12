@@ -1,5 +1,6 @@
 import { getSaveTransferElements } from "./saveTransferDom.js";
 import { getStoryQuestElements } from "./storyQuestDom.js";
+import { getCombatElements } from "./combatDom.js";
 
 export const els = {
   statisticsScreen: document.querySelector("#statisticsScreen"),
@@ -289,17 +290,7 @@ export const els = {
   campTransitionReadyText: document.querySelector("#campTransitionReadyText"),
   eventTransition: document.querySelector("#eventTransition"),
   eventTransitionText: document.querySelector("#eventTransitionText"),
-  nextButton: document.querySelector("#nextButton"),
-  fleeButton: document.querySelector("#fleeButton"),
-  continueButton: document.querySelector("#continueButton"),
-  restButton: document.querySelector("#restButton"),
-  retreatButton: document.querySelector("#retreatButton"),
-  returnToEndSummaryButton: document.querySelector("#returnToEndSummaryButton"),
-  combatHomeButton: document.querySelector("#combatHomeButton"),
-  viewBlessingsButton: document.querySelector("#viewBlessingsButton"),
-  battleLogTitle: document.querySelector("#battleLogTitle"),
-  encounterLabel: document.querySelector("#encounterLabel"),
-  resultLabel: document.querySelector("#resultLabel"),
+  ...getCombatElements(document),
   musicToggleButton: document.querySelector("#musicToggleButton"),
   musicVolumeInput: document.querySelector("#musicVolumeInput"),
   musicVolumeValue: document.querySelector("#musicVolumeValue"),

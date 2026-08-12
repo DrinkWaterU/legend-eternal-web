@@ -604,16 +604,24 @@
 }
 
 .log-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  row-gap: 8px;
   flex: 0 0 auto;
   align-items: flex-start;
   margin-bottom: 13px;
 }
 
 .log-header h2 {
+  grid-column: 1;
+  grid-row: 1;
   font-size: 1rem;
 }
 
 .combat-actions {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -623,6 +631,21 @@
 .combat-actions .secondary-button {
   flex: 0 1 auto;
   min-width: 112px;
+}
+
+.combat-action-hint {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.combat-action-hint[data-action="guard"] {
+  color: #a6e6e6;
 }
 
 .quest-combat-toggle {
@@ -984,6 +1007,14 @@
 
   .combat-actions .secondary-button {
     min-width: 0;
+  }
+
+  .combat-actions .action-flee {
+    grid-column: 1 / -1;
+  }
+
+  .combat-action-hint {
+    text-align: left;
   }
 
   .battle-log {
