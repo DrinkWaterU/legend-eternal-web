@@ -3,7 +3,8 @@ import {
   createDefaultSave,
   deleteStoredSave,
   isImportableSave,
-  migrateSave
+  migrateSave,
+  saveGame
 } from "../../core/storage.js";
 import {
   copyText,
@@ -148,9 +149,9 @@ export function createSaveTransferController({
         els.importSaveCodeNotice,
         `存檔碼可匯入。來源版本：${payload.gameVersion || "未知"}。確認後會覆蓋目前存檔。`
       );
-    } catch {
+    } catch (error) {
       if (requestId !== importCheckRequestId) return;
-      setSaveCodeNotice(els.importSaveCodeNotice, "存檔碼無法匯入，請確認是否完整複製。", "error");
+      setSaveCodeNotice(els.importSaveCodeNotice, error instanceof Error ? error.message : "存檔碼無法匯入，請確認是否完整複製。", "error");
     }
   }
 
@@ -160,7 +161,14 @@ export function createSaveTransferController({
       return;
     }
 
-    saveStore.replace(migrateSave(pendingSaveCodeImport, { persist: true }));
+    let imported;
+    try {
+      imported = migrateSave(pendingSaveCodeImport, { persist: true, replaceProtected: true });
+    } catch (error) {
+      setSaveCodeNotice(els.importSaveCodeNotice, error.message, "error");
+      return;
+    }
+    saveStore.replace(imported);
     pendingSaveCodeImport = null;
     resetRuntimeAfterSaveReplacement();
     closeImportSaveCodeDialog();
@@ -195,16 +203,18 @@ export function createSaveTransferController({
   }
 
   function deleteSave() {
+    const emptySave = createDefaultSave();
     try {
       deleteStoredSave();
     } catch {
-      // The in-memory reset still keeps the page usable if storage is blocked.
+      setSaveNotice("無法刪除瀏覽器中的存檔，原有進度未變更。", "error");
+      return;
     }
-    saveStore.replace(createDefaultSave());
+    const persisted = saveGame(emptySave);
+    saveStore.replace(emptySave);
     resetRuntimeAfterSaveReplacement();
-    saveGameSafe();
     closeDeleteSaveDialog();
-    setSaveNotice("存檔已刪除，新的空白存檔已建立。");
+    setSaveNotice(persisted ? "存檔已刪除，新的空白存檔已建立。" : "舊存檔已刪除，但瀏覽器無法保存新的空白進度。", persisted ? "status" : "error");
     els.resultLabel.textContent = "存檔已刪除";
     els.encounterLabel.textContent = "統計數據";
   }

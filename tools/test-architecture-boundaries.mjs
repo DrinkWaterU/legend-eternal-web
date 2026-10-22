@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceRoot = path.join(root, "src");
 const reviewedWarningFiles = new Set([
+  "src/adventure/eventRuntime.js", // 事件選擇、結果與恢復視圖共用同一個 eventContext；保持恢復不重跑獎勵的單一流程。
   "src/app/createAdventureFeatures.js", // 冒險功能組裝入口；同時維持一般冒險與獨立決鬥共享戰鬥控制器的 callback 契約。
   "src/audio/musicManager.js", // 單一 BGM 狀態機；切割會分散 transition token 與 Audio lifecycle。
   "src/features/adventure/runLifecycleController.js", // 冒險生命週期協調器；跨段 checkpoint 與既有 Run 啟動／返回責任需維持同一入口。
@@ -33,6 +34,15 @@ for (const filePath of sourceFiles) {
   assert.ok(lines <= 400, `${relativePath} 超過 400 行硬性上限：${lines}`);
   assert.doesNotMatch(source, /(?:from|import\s*)\s*["'][^"']*game\.js["']/,
     `${relativePath} 不得反向 import game.js`);
+  if (relativePath.startsWith("src/core/")) {
+    const imports = [...source.matchAll(/(?:from\s+|import\s*\(?\s*)["']([^"']+)["']/g)];
+    for (const [, specifier] of imports) {
+      if (!specifier.startsWith(".")) continue;
+      const dependency = path.relative(sourceRoot, path.resolve(path.dirname(filePath), specifier)).replaceAll(path.sep, "/");
+      assert.doesNotMatch(dependency, /^(?:ui|app|features)\//,
+        `${relativePath} 核心規則不得依賴 ${dependency}`);
+    }
+  }
   if (lines > 300) warningFiles.push(relativePath);
 }
 

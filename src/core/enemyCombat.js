@@ -3,6 +3,7 @@ import { applyParalysis, applySaltErosion, getParalysisDamageMultiplier } from "
 import { roll } from "../utils.js";
 import { registerShieldDepletedByDirectAttack } from "./caveBlessingEffects.js";
 import { applyGuardToDirectDamage } from "./guard.js";
+import { getScheduledSpecialAttack } from "./enemyIntent.js";
 
 const DEFAULT_CHARGE_MULTIPLIER = 1.6;
 const ENEMY_CRIT_MULTIPLIER = 1.6;
@@ -231,20 +232,9 @@ function applyEnemyAttackStatusEffects({ hero, enemy, log }) {
   return enemyName;
 }
 
-function getScheduledSpecialAttack(enemy, turn) {
-  const specialAttack = enemy?.specialAttack;
-  const everyTurns = Math.max(0, Math.floor(Number(specialAttack?.everyTurns) || 0));
-  return everyTurns > 0 && turn % everyTurns === 0
-    ? specialAttack
-    : null;
-}
-
 function logUpcomingSpecialAttack({ enemy, turn, log }) {
-  const specialAttack = enemy?.specialAttack;
-  const everyTurns = Math.max(0, Math.floor(Number(specialAttack?.everyTurns) || 0));
-  if (everyTurns <= 0 || (turn + 1) % everyTurns !== 0) {
-    return;
-  }
+  const specialAttack = getScheduledSpecialAttack(enemy, turn + 1);
+  if (!specialAttack) return;
 
   const telegraphText = String(specialAttack.telegraphText || "").trim();
   if (telegraphText) {

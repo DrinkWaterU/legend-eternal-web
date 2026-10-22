@@ -19,6 +19,7 @@ export function createScreenController({
   renderStatistics
 }) {
   function showScreen(screenId) {
+    const previousScreenId = documentRef.querySelector(".screen.is-active")?.id;
     syncRootScreenContext(screenId);
     applySceneContext(screenId);
     documentRef.querySelectorAll(".screen").forEach((screen) => {
@@ -66,6 +67,7 @@ export function createScreenController({
       els.encounterLabel.textContent = "統計數據";
       renderStatistics();
     }
+    if (previousScreenId !== screenId) documentRef.defaultView?.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }
 
   return Object.freeze({ showScreen });

@@ -24,11 +24,11 @@ export function createGuildBulkSaleController({
   npcDefinition,
   dialogueDefinition,
   getInventory,
-  saveInventory = () => true
+  commitInventoryChange
 } = {}) {
   if (!els || typeof els !== "object") throw new Error("Guild Bulk Sale Controller 需要有效的 els。");
   if (typeof getInventory !== "function") throw new Error("Guild Bulk Sale Controller 需要 getInventory()。");
-  if (typeof saveInventory !== "function") throw new Error("Guild Bulk Sale Controller 需要 saveInventory()。");
+  if (typeof commitInventoryChange !== "function") throw new Error("Guild Bulk Sale Controller 需要 commitInventoryChange()。");
 
   const state = {
     quantities: {},
@@ -188,36 +188,26 @@ export function createGuildBulkSaleController({
       return;
     }
 
-    const inventory = getInventory();
-    const snapshot = {
-      gold: inventory.gold,
-      materials: structuredClone(inventory.materials || {})
-    };
-    let mutated = false;
     try {
-      const result = sellMaterials({
-        inventory,
-        materialDefinitions,
-        sales: plan.items.map(({ materialId, quantity }) => ({ materialId, quantity })),
-        policyId: MATERIAL_SALE_POLICIES.GUILD_BULK
+      let result;
+      commitInventoryChange((inventory) => {
+        result = sellMaterials({
+          inventory,
+          materialDefinitions,
+          sales: plan.items.map(({ materialId, quantity }) => ({ materialId, quantity })),
+          policyId: MATERIAL_SALE_POLICIES.GUILD_BULK
+        });
+      }, () => {
+        state.quantities = {};
+        state.tiers = {};
+        state.pendingPlan = null;
+        state.notice = `已交付 ${result.items.length} 種素材，共 ${result.totalQuantity} 件，取得 ${result.totalGold} 金幣。`;
+        state.noticeType = "status";
+        showMessage("bulk-sale-success");
+        closeGuildBulkConfirmPanel(els);
+        render();
       });
-      mutated = true;
-      if (!saveInventory()) {
-        throw new Error("瀏覽器無法保存交付結果，金幣與素材已回復。請再試一次。");
-      }
-      state.quantities = {};
-      state.tiers = {};
-      state.pendingPlan = null;
-      state.notice = `已交付 ${result.items.length} 種素材，共 ${result.totalQuantity} 件，取得 ${result.totalGold} 金幣。`;
-      state.noticeType = "status";
-      showMessage("bulk-sale-success");
-      closeGuildBulkConfirmPanel(els);
-      render();
     } catch (error) {
-      if (mutated) {
-        inventory.gold = snapshot.gold;
-        inventory.materials = snapshot.materials;
-      }
       state.notice = error instanceof Error ? error.message : "物資交付失敗。";
       state.noticeType = "error";
       closeGuildBulkConfirmPanel(els);

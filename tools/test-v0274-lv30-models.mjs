@@ -1,21 +1,14 @@
+import { createBattleTurnController } from "../src/features/battle/battleTurnController.js";
 import assert from "node:assert/strict";
 
 import { applyBlessingEffects } from "../src/core/blessings.js";
 import { resetBlessingBattleState } from "../src/core/caveBlessingEffects.js";
 import {
-  advanceHeroCombatStatuses,
-  advanceParalysis,
-  applyEnemyEndOfTurnNegativeEffects,
-  applyEnemyEndOfTurnRecoveryEffects,
-  applyHeroEndOfTurnNegativeEffects,
-  applyHeroEndOfTurnRecoveryEffects,
   buildEnemy,
   buildEnemyGroup,
   getHeroBattleHealingAmount,
   getHeroBattleHealingMultiplier,
-  resolveEnemyAction,
-  resolveHeroAction,
-  resolveHeroEntangle
+  resolveHeroAction
 } from "../src/core/combat.js";
 import { createRuntimeEnemyGroup, getLivingEnemies } from "../src/core/enemyGroups.js";
 import {
@@ -131,6 +124,9 @@ console.log("MODEL_JSON", JSON.stringify({
   assumptions: {
     sameSeedPerLevelPair: true,
     encounterEvents: false,
+    officialBattleTurnController: true,
+    actionPolicy: "attack-first-living-enemy",
+    guardPolicy: false,
     officialRegions: true,
     officialCharacterRuntime: true,
     officialWeapons: true,
@@ -326,21 +322,13 @@ function simulateEncounter({ hero, enemies, preparation, battleSkills, runMetric
   const logger = createModelLogger(runMetrics);
   const settledEnemyIds = new Set();
   let statusExposureTurns = 0;
-
-  for (let turn = 1; turn <= MAX_TURNS; turn += 1) {
-    statusExposureTurns += countActiveStatuses(hero, enemies);
-    advanceHeroCombatStatuses(hero);
-    hero.activeEnemyCount = getLivingEnemies(enemies).length;
-    const heroEntangled = resolveHeroEntangle({
-      hero,
-      log: logger,
-      retryOnFailure: () => consumePreparationEntangleRetry(preparation),
-      onRetryResult: ({ success }) => recordPreparationEntangleRetryResult({ preparation, success })
-    });
-
-    if (!heroEntangled) {
-      const target = getLivingEnemies(enemies)[0];
-      if (target) {
+  let won = false;
+  const state = { hero, enemies, phase: "danger", turn: 0, ended: false };
+  const controller = createBattleTurnController({
+    state,
+    createCombatLogger: () => logger,
+    currentTargetEnemy: () => getLivingEnemies(enemies)[0],
+    runHeroPlayerAction: ({ target }) => {
         if (hero.characterId === "archer") {
           hero.modelPoisonedTargetsAtActionStart = new Set(
             getLivingEnemies(enemies)
@@ -371,62 +359,26 @@ function simulateEncounter({ hero, enemies, preparation, battleSkills, runMetric
           }
         });
         recordKaigeActionMetrics(hero, kaigeBefore, runMetrics);
-      }
-      settleDefeatedEnemies(hero, enemies, settledEnemyIds, runMetrics);
-      if (getLivingEnemies(enemies).length === 0) {
-        return { won: true, statusExposureTurns };
-      }
-    }
-
-    for (const enemy of [...getLivingEnemies(enemies)]) {
-      if (hero.hp <= 0) break;
-      resolveEnemyAction({
-        hero,
-        enemy,
-        turn,
-        log: logger,
-        modifyDirectDamage: (context) => {
-          const characterDamage = modifyCharacterIncomingDirectDamage(context);
-          return resolvePreparationIncomingDirectDamage({
-            preparation,
-            enemy: context.enemy,
-            damage: characterDamage
-          }).damage;
-        }
-      });
-      advanceParalysis(enemy);
-      battleSkills.applyEmergencyBandage();
-      if (hero.hp <= 0 && !battleSkills.tryLastStand()) {
-        return { won: false, statusExposureTurns };
-      }
-    }
-
-    applyHeroEndOfTurnNegativeEffects({
-      hero,
-      log: logger,
-      modifyPoisonDamage: ({ damage }) => resolvePreparationPoisonDamage({
-        preparation,
-        damage
-      }).damage
-    });
-    getLivingEnemies(enemies).forEach((enemy) => {
-      applyEnemyEndOfTurnNegativeEffects({ enemy, enemies, log: logger });
-    });
-    applyHeroEndOfTurnRecoveryEffects({ hero, turn, log: logger });
-    getLivingEnemies(enemies).forEach((enemy) => {
-      applyEnemyEndOfTurnRecoveryEffects({ enemy, turn, log: logger });
-    });
-
-    if (hero.hp <= 0 && !battleSkills.tryLastStand()) {
-      return { won: false, statusExposureTurns };
-    }
-    settleDefeatedEnemies(hero, enemies, settledEnemyIds, runMetrics);
-    if (getLivingEnemies(enemies).length === 0) {
-      return { won: true, statusExposureTurns };
-    }
+    },
+    consumeEntangleRetry: () => consumePreparationEntangleRetry(preparation),
+    recordEntangleRetryResult: ({ success }) => recordPreparationEntangleRetryResult({ preparation, success }),
+    modifyIncomingDirectDamage: (context) => resolvePreparationIncomingDirectDamage({
+      preparation, enemy: context.enemy, damage: modifyCharacterIncomingDirectDamage(context)
+    }).damage,
+    modifyPoisonDamage: (damage) => resolvePreparationPoisonDamage({ preparation, damage }).damage,
+    settleDefeatedEnemies: () => settleDefeatedEnemies(hero, enemies, settledEnemyIds, runMetrics),
+    applyEmergencyBandage: battleSkills.applyEmergencyBandage,
+    tryLastStand: battleSkills.tryLastStand,
+    winEncounter: () => { won = true; state.ended = true; },
+    loseRun: () => { state.ended = true; },
+    render: () => {}
+  });
+  for (let turn = 1; turn <= MAX_TURNS; turn += 1) {
+    statusExposureTurns += countActiveStatuses(hero, enemies);
+    controller.playTurn("attack");
+    if (state.ended) return { won, statusExposureTurns };
   }
-
-  throw new Error("v0.2.7.4 隔離模型單場戰鬥超過最大回合數。\n");
+  throw new Error("Model encounter exceeded maximum turns.");
 }
 
 function buildEncounterGroup({ region, encounterIndex, hero, boss }) {

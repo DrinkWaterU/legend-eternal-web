@@ -62,7 +62,10 @@ export function createCampController({
     els.campFeatureTitle.textContent = safeArea.featureTitle || "安全區功能";
     els.campFeatureTitle.closest("section")?.setAttribute("aria-label", safeArea.featureTitle || "安全區功能");
     renderStatList(els.campStatusList, campStats);
-    els.campStartHint.textContent = phoenixUnlocked
+    const pendingJourney = Boolean(saveStore.current.activeRun);
+    const startLabel = els.campStartButton.querySelector("span");
+    if (startLabel) startLabel.textContent = pendingJourney ? "繼續冒險" : "出發冒險";
+    els.campStartHint.textContent = pendingJourney ? "接續最後保存的旅程；如要重新出發，請先結束該次冒險。" : phoenixUnlocked
       ? `前往${regionName}，確認本輪準備並繼續旅程`
       : `前往${regionName}開始旅程`;
     els.campRegionHint.textContent = `目前：${regionName}`;

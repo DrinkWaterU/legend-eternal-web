@@ -1,0 +1,177 @@
+/* A「旅途場景」：保留正式功能與解鎖判定，場景留白、出發卡與戰場分層。 */
+.run-resume-panel {
+  padding: 22px;
+  border: 1px solid var(--gold);
+  border-radius: 9px;
+  background: rgba(20, 34, 29, .96);
+  box-shadow: var(--shadow);
+}
+.run-resume-panel[hidden] { display: none; }
+.run-resume-panel h3 { margin: 0 0 10px; color: var(--gold); }
+.run-resume-detail { line-height: 1.8; color: var(--muted); overflow-wrap: anywhere; }
+.run-resume-panel button { min-height: 48px; margin: 5px 8px 0 0; padding: 10px 20px; }
+.run-resume-panel button:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+#gameScreen .log-header { grid-template-columns: minmax(0, 1fr); }
+#gameScreen .log-header h2 { grid-column: 1; grid-row: 1; line-height: 1.5; }
+#gameScreen .combat-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#gameScreen .combat-actions .secondary-button { min-width: 0; min-height: 48px; }
+#gameScreen .combat-actions .action-flee { grid-column: 1 / -1; }
+#gameScreen .combat-action-hint { grid-column: 1; grid-row: 3; text-align: left; }
+
+@media (min-width: 960px) {
+  #campScreen { padding: 32px 24px 55px; }
+  #campScreen .camp-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(340px, .9fr);
+    grid-template-areas: "intro departure" "stats resume" "warning facilities" "back travel";
+    gap: 20px 56px;
+    max-width: 1120px;
+    padding: 20px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+  #campScreen .run-resume-panel { grid-area: resume; }
+  #campScreen .camp-copy { grid-area: intro; text-align: left; padding: 18px 0; }
+  #campScreen .camp-copy h2 { font-size: clamp(2rem, 3.8vw, 3.6rem); line-height: 1.25; text-wrap: balance; }
+  #campScreen .camp-copy .body-text { max-width: 460px; line-height: 1.9; }
+  #campScreen .camp-status { grid-area: stats; align-self: start; }
+  #campScreen .camp-warning { grid-area: warning; }
+  #campScreen .camp-primary-action {
+    grid-area: departure;
+    min-height: 165px;
+    padding: 30px;
+    align-self: center;
+    text-align: left;
+    background: linear-gradient(135deg, rgba(51, 68, 48, .96), rgba(22, 34, 29, .96));
+    border: 1px solid var(--gold);
+    box-shadow: var(--shadow);
+  }
+  #campScreen .camp-primary-action > span { font-size: 1.8rem; color: var(--gold); }
+  #campScreen .camp-feature-section { grid-area: facilities; margin: 0; padding: 20px; background: rgba(15, 25, 23, .88); border-radius: 9px; }
+  #campScreen .camp-menu-return { grid-area: back; justify-self: start; }
+  #campScreen .camp-travel-button { grid-area: travel; }
+  #gameScreen .combat-layout { grid-template-columns: minmax(0, 1.7fr) minmax(300px, .85fr); max-width: 1280px; gap: 26px; }
+  #gameScreen .status-panel { padding: 24px; background: rgba(16, 28, 25, .9); }
+  #gameScreen .log-panel { background: rgba(17, 25, 23, .94); }
+  #gameScreen .enemy-roster { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; align-content: start; }
+  #gameScreen .enemy-card { align-self: start; min-width: 0; }
+}
+@media (max-width: 959px) {
+  #campScreen .camp-layout { max-width: 620px; padding: 22px 18px; background: rgba(14, 24, 21, .88); }
+  #campScreen .camp-copy { text-align: left; }
+  #campScreen .camp-copy h2 { font-size: clamp(1.8rem, 7vw, 2.6rem); }
+  .run-resume-panel { margin-bottom: 20px; padding: 18px; }
+  .run-resume-panel button { display: block; width: 100%; margin-right: 0; }
+  #gameScreen .status-panel, #gameScreen .log-panel { background: rgba(17, 28, 25, .94); }
+}
+
+/* Keep the scene in view: utility controls belong behind an explicit disclosure. */
+.topbar { position: relative; flex-direction: row; justify-content: space-between; gap: 20px; padding: 0 4px 20px; text-align: left; }
+.topbar > div:first-child { width: auto; flex-shrink: 0; }
+.topbar h1 { font-size: 1.55rem; line-height: 1.2; letter-spacing: .08em; }
+.topbar .eyebrow { font-size: .68rem; margin-bottom: 4px; }
+.topbar-status { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 14px; }
+.topbar .run-summary { justify-content: flex-end; margin: 0; }
+.music-settings { position: relative; flex-shrink: 0; z-index: 20; }
+.music-settings summary { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); font-size: .82rem; cursor: pointer; list-style: none; background: rgba(13, 23, 22, .94); }
+.music-settings summary::-webkit-details-marker { display: none; }
+.music-settings summary::after { content: "＋"; margin-left: 8px; color: var(--gold); }
+.music-settings[open] summary::after { content: "−"; }
+.music-settings .music-controls { position: absolute; right: 0; top: calc(100% + 8px); width: min(320px, calc(100vw - 32px)); padding: 16px; gap: 12px; border: 1px solid var(--line); border-radius: 10px; background: #101d19; box-shadow: var(--shadow); }
+.music-settings .music-toggle-button { min-height: 44px; width: 100%; }
+.music-settings .music-volume-control { width: 100%; min-height: 44px; }
+.music-settings .music-volume-control > span { white-space: nowrap; }
+.music-settings input { min-height: 28px; }
+.music-settings summary:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+body:has(#menuScreen.is-active) .topbar h1 { font-size: clamp(1.8rem, 4vw, 3rem); }
+
+/* The camp has one departure action. The saved journey card supplies context
+   and the deliberate discard control, rather than another competing CTA. */
+#campScreen .resume-run-button { display: none; }
+#campScreen .run-resume-panel { padding: 16px 18px; border-color: var(--line); border-left: 3px solid var(--gold); box-shadow: none; }
+#campScreen .run-resume-panel h3 { font-size: .95rem; margin-bottom: 6px; }
+#campScreen .run-resume-detail { font-size: .86rem; margin: 0 0 8px; }
+#campScreen .run-resume-panel .discard-run-button { margin: 0; min-height: 44px; font-size: .82rem; }
+#campScreen .camp-status { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+#campScreen .camp-status div { min-height: 72px; padding: 12px 8px; background: rgba(12, 22, 19, .7); border: 0; border-radius: 0; box-shadow: none; }
+#campScreen .camp-status dd { font-size: 1.05rem; line-height: 1.5; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+#campScreen .camp-status dt { font-size: .78rem; }
+#campScreen .camp-feature-button { border-color: rgba(173, 148, 102, .2); background: rgba(24, 34, 29, .92); }
+#campScreen .camp-warning { align-self: start; margin: 0; font-weight: 500; }
+#campScreen .camp-feature-section { align-self: start; }
+
+#gameScreen .status-panel, #gameScreen .log-panel { height: auto; min-height: 0; }
+#gameScreen .enemy-zone { flex: 0 1 auto; }
+#gameScreen .enemy-roster { max-height: 410px; flex: 0 1 auto; }
+#gameScreen .combat-command-panel { flex: 0 0 auto; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--line); }
+#gameScreen .combat-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+#gameScreen .combat-actions .action-flee { grid-column: auto; }
+#gameScreen .combat-actions button { min-height: 48px; font-size: 1rem; border-radius: 6px; }
+#gameScreen .combat-actions .action-combat { background: linear-gradient(135deg, #d9b767, #ba8e3f); color: #171b12; border-color: #e4c87c; font-weight: 800; }
+#gameScreen .combat-actions .action-flee, #gameScreen .combat-actions .action-retreat { color: #d7bfaa; border-color: var(--line); background: #1c2521; }
+#gameScreen .combat-action-hint { margin: 10px 0 0; font-size: .8rem; line-height: 1.7; color: var(--muted); }
+#gameScreen .log-header { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+#gameScreen .log-header h2 { font-size: 1rem; color: var(--gold); }
+#gameScreen .battle-log { max-height: 600px; }
+#gameScreen .battle-log li { border-left-width: 2px; border-radius: 4px; line-height: 1.8; }
+#gameScreen .summary-tile { min-height: 48px; }
+#gameScreen .summary-label, #gameScreen .enemy-stats small { font-size: .75rem; }
+#gameScreen .enemy-card.is-target .enemy-name-line strong { white-space: normal; overflow: visible; overflow-wrap: anywhere; line-height: 1.5; }
+#gameScreen .combat-status, #gameScreen .summary-heading small, #gameScreen .enemy-section-heading span { font-size: .75rem; }
+#gameScreen .hero-combat-status:has(.meter-text.is-critical) { border-color: var(--danger); }
+#gameScreen .hero-combat-status .meter-text.is-critical { color: #ffb4a8; font-weight: 800; }
+#gameScreen .hero-combat-status:has(.meter-text.is-critical) .hp { background: var(--danger); }
+#gameScreen button:focus-visible, #campScreen button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+@media (min-width: 960px) {
+  #campScreen .camp-layout { padding-top: 32px; }
+  #campScreen .camp-copy { padding: 0; }
+  #campScreen .camp-copy h2 { margin-bottom: 16px; font-size: clamp(2rem, 3.3vw, 3rem); }
+  #campScreen .camp-copy .body-text { margin-bottom: 0; }
+  #campScreen .camp-primary-action { align-self: start; }
+  #campScreen .camp-feature-section { padding: 18px; }
+  #gameScreen .combat-layout { grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr); gap: 20px; align-items: start; }
+  #gameScreen .status-panel { padding: 22px; }
+}
+@media (max-width: 959px) {
+  .app-shell { padding-top: 12px; }
+  .topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding-bottom: 16px; }
+  .topbar > div:first-child { grid-area: 1 / 1; }
+  .topbar h1 { font-size: 1.35rem; }
+  .topbar .eyebrow { display: none; }
+  .topbar-status { display: contents; }
+  .topbar .run-summary { grid-area: 2 / 1 / 3 / 3; gap: 4px; justify-content: flex-start; }
+  .music-settings { grid-area: 1 / 2; }
+  .topbar .run-summary span { min-height: 26px; padding: 4px 8px; font-size: .72rem; }
+  .music-settings summary { min-height: 44px; padding: 8px 10px; font-size: .75rem; }
+  body:has(#menuScreen.is-active) .topbar h1 { font-size: 1.65rem; }
+  #campScreen { padding: 8px 8px 28px; }
+  #campScreen .camp-layout { display: flex; flex-direction: column; gap: 18px; padding: 22px 18px; border-color: rgba(173, 148, 102, .28); }
+  #campScreen .camp-copy { order: 0; }
+  #campScreen .camp-copy h2 { font-size: clamp(1.6rem, 6vw, 2.2rem); line-height: 1.4; margin: 8px 0 12px; }
+  #campScreen .camp-copy .body-text { font-size: .9rem; line-height: 1.85; margin-bottom: 0; }
+  #campScreen .camp-status { order: 1; }
+  #campScreen .camp-warning { order: 2; width: 100%; padding: 10px 12px; font-size: .82rem; }
+  #campScreen .camp-primary-action { order: 3; min-height: 96px; margin: 0; padding: 18px 20px; border-color: var(--gold); background: linear-gradient(135deg, #354830, #1a2c23); }
+  #campScreen .camp-primary-action > span { color: var(--gold); font-size: 1.35rem; }
+  #campScreen .run-resume-panel { order: 4; width: 100%; margin: 0; }
+  #campScreen .camp-feature-section { order: 5; width: 100%; margin: 4px 0 0; }
+  #campScreen .camp-travel-button { order: 6; }
+  #campScreen .camp-menu-return { order: 7; min-height: 44px; }
+  .selection-panel { padding: 22px 18px; }
+  .section-heading { text-align: left; }
+  .section-heading h2 { font-size: 1.4rem; }
+  .section-heading .body-text { font-size: .9rem; line-height: 1.8; }
+  .section-heading .secondary-button { min-height: 44px; }
+  #gameScreen .combat-layout { gap: 16px; }
+  #gameScreen .status-panel { padding: 14px; }
+  #gameScreen .combat-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #gameScreen .combat-actions .action-flee { grid-column: 1 / -1; }
+  #gameScreen .combat-command-panel { margin-top: 12px; padding-top: 12px; }
+  #gameScreen .enemy-name-line strong { font-size: .92rem; }
+  #gameScreen .enemy-kind, #gameScreen .enemy-intro { font-size: .75rem; }
+  #gameScreen .enemy-roster { grid-template-columns: minmax(0, 1fr); max-height: none; overflow: visible; }
+  #gameScreen .battle-log { max-height: 420px; }
+}

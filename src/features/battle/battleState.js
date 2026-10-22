@@ -1,4 +1,5 @@
 import { resetBattleEntryState } from "../../adventure/battleLifecycle.js";
+import { canTakeBattleAction } from "../../core/battleActions.js";
 import { initializeCharacterBattleState } from "../../characters/skills/index.js";
 import { createSkillState } from "../../core/progression.js";
 import { beginPreparationBattle } from "../../core/preparations.js";
@@ -24,7 +25,8 @@ export function createBattleState({
   addLog,
   addFixedLog,
   applyBattleStartSkills,
-  render
+  render,
+  runSaveOperation = (action) => action()
 }) {
   function clearEnemyGroup() {
     state.enemies = [];
@@ -46,8 +48,12 @@ export function createBattleState({
   }
 
   function selectEnemyTarget(runtimeId) {
+    return runSaveOperation(() => selectEnemyTargetOperation(runtimeId));
+  }
+
+  function selectEnemyTargetOperation(runtimeId) {
     const target = getLivingEnemies(state.enemies).find((enemy) => enemy.runtimeId === runtimeId);
-    if (!target || state.ended || state.awaitingBlessing || state.phase === "safe") return;
+    if (!target || !canTakeBattleAction(state)) return;
     state.targetEnemyId = target.runtimeId;
     render();
   }

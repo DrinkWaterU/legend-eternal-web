@@ -1065,3 +1065,17 @@
     display: none;
   }
 }
+.enemy-intent {
+  display: block;
+  padding: 6px 8px;
+  border-left: 3px solid #dca660;
+  color: #ffe1a3;
+  background: rgba(122, 77, 26, 0.22);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.enemy-intent[hidden] { display: none; }

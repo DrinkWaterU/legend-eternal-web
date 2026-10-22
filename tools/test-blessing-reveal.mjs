@@ -99,7 +99,8 @@ try {
 
 const blessingControllerSource = await readFile(new URL("../src/features/blessing/blessingController.js", import.meta.url), "utf8");
 assert.match(blessingControllerSource, /state\.blessingInputLocked = true;[\s\S]*renderBlessingChoices\(/, "showBlessings 應先鎖定祝福輸入");
-assert.match(blessingControllerSource, /function chooseBlessing\(blessing\) \{\s*if \(state\.blessingInputLocked\) return;\s*state\.blessingInputLocked = true;/, "chooseBlessing 應具備 runtime lock guard 與雙擊防護");
+assert.match(blessingControllerSource, /function chooseBlessingOperation\(blessing\) \{\s*if \(state\.blessingInputLocked\) return;\s*state\.blessingInputLocked = true;/, "chooseBlessing 應具備 runtime lock guard 與雙擊防護");
+assert.match(blessingControllerSource, /runSaveOperation\(\(\) => chooseBlessingOperation\(blessing\)\)/);
 assert.match(blessingControllerSource, /instance\?\.blessingId/, "祝福持有數量應依 blessingId 計算");
 assert.match(blessingControllerSource, /ownedCounts: getOwnedBlessingCounts\(\)/, "祝福三選一應傳入目前持有數量");
 

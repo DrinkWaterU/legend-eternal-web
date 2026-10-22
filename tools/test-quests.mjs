@@ -1,3 +1,4 @@
+import { createTestTransactions } from "./save-transaction-test-helper.mjs";
 import assert from "node:assert/strict";
 
 import { validateGameDefinitions } from "../src/app/validateGameDefinitions.js";
@@ -143,18 +144,19 @@ assert.equal(matchClearObjective(questDefinitions["beach-route-survey"].objectiv
 }), false);
 
 const migrated = migrateSave({ schemaVersion: 8, inventory: { gold: 7 }, storyFlags: {} });
-assert.equal(migrated.schemaVersion, 11);
+assert.equal(migrated.schemaVersion, 12);
 assert.deepEqual(migrated.quests, createDefaultSave().quests);
 assert.equal(migrated.storyFlags.guildQuestIntroductionSeen, false);
 
-const saveStore = { current: createDefaultSave() };
 let saveCalls = 0;
+const tx = createTestTransactions(createDefaultSave(), () => { saveCalls++; return true; });
+const saveStore = tx.saveStore;
 const runtime = createQuestRuntime({
   saveStore,
   questDefinitions,
   materialDefinitions,
   random: sequenceRandom([0.99, 0, 0.1, 0.3, 0.5, 0.7, 0.9]),
-  saveGameSafe: () => { saveCalls += 1; return true; }
+  commitSaveChange: tx.commitSaveChange
 });
 saveStore.current.quests.board.questIds = [
   "broad-monster-control",
@@ -209,7 +211,8 @@ assert.equal(saveStore.current.inventory.gold, 75);
 assert.equal(saveStore.current.quests.statistics.completedByRarity.rare, 1);
 assert.ok(saveCalls >= 6);
 
-const saturatedStore = { current: createDefaultSave() };
+const saturatedTx = createTestTransactions(createDefaultSave());
+const saturatedStore = saturatedTx.saveStore;
 saturatedStore.current.inventory.gold = Number.MAX_SAFE_INTEGER - 10;
 saturatedStore.current.quests.board.questIds = [
   "broad-monster-control",
@@ -234,7 +237,7 @@ const saturatedRuntime = createQuestRuntime({
   questDefinitions,
   materialDefinitions,
   random: () => 0.99,
-  saveGameSafe: () => true
+  commitSaveChange: saturatedTx.commitSaveChange
 });
 assert.equal(saturatedRuntime.reportQuest().ok, true);
 assert.equal(saturatedStore.current.inventory.gold, Number.MAX_SAFE_INTEGER);
@@ -243,13 +246,14 @@ assert.equal(saturatedStore.current.quests.statistics.completedByRarity.common, 
 assert.equal(saturatedStore.current.quests.statistics.rewardGoldTotal, Number.MAX_SAFE_INTEGER);
 assert.equal(saturatedStore.current.quests.completions["broad-monster-control"].count, Number.MAX_SAFE_INTEGER);
 
-const failingStore = { current: createDefaultSave() };
+const failingTx = createTestTransactions(createDefaultSave(), () => false);
+const failingStore = failingTx.saveStore;
 const failingRuntime = createQuestRuntime({
   saveStore: failingStore,
   questDefinitions,
   materialDefinitions,
   random: () => 0,
-  saveGameSafe: () => false
+  commitSaveChange: failingTx.commitSaveChange
 });
 const failedAccept = failingRuntime.acceptQuest("forest-insect-control");
 assert.equal(failedAccept.ok, false);

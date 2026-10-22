@@ -26,7 +26,8 @@ export function createCampTransitionController({
   clearPendingThreat,
   render,
   finishRun,
-  enterAdventureRoute
+  enterAdventureRoute,
+  runSaveOperation = (action) => action()
 }) {
   function getAvailableBlessingInstances() {
     return sortBlessingInstancesByAcquisition(state.blessingInstances);
@@ -52,6 +53,10 @@ export function createCampTransitionController({
   }
 
   function openCampSelection() {
+    return runSaveOperation(openCampSelectionOperation);
+  }
+
+  function openCampSelectionOperation() {
     if (state.phase !== "segmentChoice" || state.ended || !state.coastSegmentCheckpoint) return false;
     const instances = getAvailableBlessingInstances();
     syncBlessingInstancesRuntime(instances, state.hero);
@@ -70,6 +75,10 @@ export function createCampTransitionController({
   }
 
   function toggleCampBlessing(instanceId) {
+    return runSaveOperation(() => toggleCampBlessingOperation(instanceId));
+  }
+
+  function toggleCampBlessingOperation(instanceId) {
     if (state.phase !== "campSelection" || state.campSelection?.locked) return false;
     const instances = getAvailableBlessingInstances();
     if (!instances.some((instance) => instance.instanceId === instanceId)) return false;
@@ -91,6 +100,10 @@ export function createCampTransitionController({
   }
 
   function returnToSegmentChoice() {
+    return runSaveOperation(returnToSegmentChoiceOperation);
+  }
+
+  function returnToSegmentChoiceOperation() {
     if (state.phase !== "campSelection" || state.campSelection?.locked) return false;
     state.campSelection = null;
     state.phase = "segmentChoice";
@@ -101,6 +114,10 @@ export function createCampTransitionController({
   }
 
   function confirmCampSelection() {
+    return runSaveOperation(confirmCampSelectionOperation);
+  }
+
+  function confirmCampSelectionOperation() {
     if (state.phase !== "campSelection" || state.campSelection?.locked) return false;
     const selectedIds = state.campSelection.selectedInstanceIds;
     if (selectedIds.length !== CAMP_BLESSING_COUNT) {
@@ -210,6 +227,7 @@ export function createCampTransitionController({
   }
 
   return Object.freeze({
+    renderCampSelection,
     showBeachSegmentChoice,
     finishBeachSegment,
     openCampSelection,

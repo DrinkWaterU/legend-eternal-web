@@ -1,6 +1,9 @@
 import { createAdventureRuntimeState, createUiState } from "./runtimeState.js";
 import { createSaveStore } from "./saveStore.js";
 import { createSaveActions } from "./saveActions.js";
+import { createSaveTransactions } from "./saveTransactions.js";
+import { createAdventureSaveActions } from "./adventureSaveActions.js";
+import { createSaveTransactionView } from "../ui/saveTransactionView.js";
 import { createNavigationContext } from "./navigationContext.js";
 import { createSceneController } from "./sceneController.js";
 import { createAdventureSource } from "../features/adventure/adventureSource.js";
@@ -15,6 +18,7 @@ import { getEnemyDefinition } from "../data/enemies/index.js";
 import { getBlessingPool } from "../data/blessings/index.js";
 import { musicDefinitions } from "../data/music.js";
 import { ambientAudioDefinitions } from "../data/ambientAudio.js";
+import { createSaveRecoveryNotice } from "../ui/saveRecoveryView.js";
 import { DEFAULT_SAFE_AREA_ID } from "../data/safeAreas.js";
 
 export function createFoundation({
@@ -27,8 +31,11 @@ export function createFoundation({
   const state = createAdventureRuntimeState({ regionDefinitions, characterDefinitions });
   const uiState = createUiState();
   const currentRegion = () => regionDefinitions[state.selectedRegionId];
-  const saveStore = createSaveStore({ initialSave: loadSave(), persistSave: saveGame });
-  const saveActions = createSaveActions({ state, saveStore, addFixedLog });
+  const showSaveError = createSaveRecoveryNotice(documentRef);
+  const saveStore = createSaveStore({ initialSave: loadSave({ onError: showSaveError }), persistSave: saveGame });
+  const saveActions = createSaveActions({ state, saveStore, addFixedLog, showSaveError });
+  const saveTransactions = createSaveTransactions({ saveStore, pendingView: createSaveTransactionView(documentRef) });
+  const adventureSaveActions = createAdventureSaveActions({ saveStore, ...saveTransactions, state });
 
   const characterProgression = createCharacterProgression({
     state,
@@ -75,6 +82,8 @@ export function createFoundation({
     saveStore,
     currentRegion,
     ...saveActions,
+    ...saveTransactions,
+    ...adventureSaveActions,
     ...characterProgression,
     musicManager,
     ambientManager,

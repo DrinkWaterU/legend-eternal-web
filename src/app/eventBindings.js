@@ -7,6 +7,8 @@ function bindBackdropClose(panel, closePanel) {
 export function bindApplicationEvents({ els, documentRef = document, state, uiState, actions }) {
   const {
     showScreen,
+    hasActiveRun,
+    resumeActiveRun,
     showScreenInContext,
     showCharacterList,
     showStatisticsScreen,
@@ -83,6 +85,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.musicVolumeInput.addEventListener("input", previewMusicVolume);
   els.musicVolumeInput.addEventListener("change", commitMusicVolume);
   els.campStartButton.addEventListener("click", () => {
+    if (hasActiveRun?.()) { resumeActiveRun(); return; }
     setNavigationContext("camp");
     showRegionDetail(state.selectedRegionId);
   });

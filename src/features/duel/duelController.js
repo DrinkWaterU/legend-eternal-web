@@ -22,9 +22,16 @@ export function createDuelController({
   showNpcDialogue,
   setNavigationContext,
   closeAbilityInfoPanel,
-  closeBlessingInfoPanel
+  closeBlessingInfoPanel,
+  afterAdventureSaved = (effect) => effect(),
+  runSaveOperation = (action) => action()
 }) {
   function startDuel(duelId) {
+    return runSaveOperation(() => startDuelOperation(duelId));
+  }
+
+  function startDuelOperation(duelId) {
+    if (saveStore.current.activeRun) return { ok: false, message: "請先繼續或結束目前的旅程。" };
     const duel = getDuelDefinition(duelId);
     if (!duel || duel.id !== KAIGE_QUEST_ID) {
       return { ok: false, message: "目前找不到這場切磋。" };
@@ -136,7 +143,8 @@ export function createDuelController({
     }
     settleBattleVictory();
     const completed = storyQuestRuntime.completeQuest(KAIGE_QUEST_ID);
-    finishDuel(completed ? "victory" : "save-failed");
+    state.runResumeFinished = completed;
+    afterAdventureSaved(() => finishDuel(completed ? "victory" : "save-failed"));
     return true;
   }
 
@@ -161,6 +169,10 @@ export function createDuelController({
   }
 
   function confirmExit() {
+    return runSaveOperation(confirmExitOperation);
+  }
+
+  function confirmExitOperation() {
     if (!isDuelActive()) {
       cancelExit();
       return false;
@@ -170,6 +182,7 @@ export function createDuelController({
   }
 
   function finishDuel(nodeId) {
+    saveStore.current.activeRun = null;
     const npcId = state.specialDuelContext?.npcId || KAIGE_NPC_ID;
     if (state.hero) {
       delete state.hero.battleHooks;
@@ -198,6 +211,7 @@ export function createDuelController({
     requestExit,
     cancelExit,
     confirmExit,
-    isDuelActive
+    isDuelActive,
+    restoreDuelRuntime() { if (isDuelActive()) installDirectHitHook(); }
   });
 }

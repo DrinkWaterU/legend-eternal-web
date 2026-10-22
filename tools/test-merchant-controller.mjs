@@ -1,3 +1,4 @@
+import { createTestTransactions } from "./save-transaction-test-helper.mjs";
 import assert from "node:assert/strict";
 
 import { createMerchantController } from "../src/ui/merchantController.js";
@@ -52,7 +53,7 @@ assert.throws(() => createMerchantController({ els: {} }), /getInventory/);
 
 {
   const els = createMerchantElements();
-  const inventory = {
+  let inventory = {
     gold: 5,
     materials: {
       gel: { quantity: 6 },
@@ -60,14 +61,13 @@ assert.throws(() => createMerchantController({ els: {} }), /getInventory/);
     }
   };
   let saveCount = 0;
+  const tx = createTestTransactions({ inventory }, () => { saveCount++; return true; });
   const controller = createMerchantController({
     els,
     materialDefinitions,
     getInventory: () => inventory,
     getSafeArea: () => ({ placesTitle: "營地去處" }),
-    saveInventory: () => {
-      saveCount += 1;
-    }
+    commitInventoryChange: (mutate, done) => tx.commitSaveChange(draft => mutate(draft.inventory), () => { inventory = tx.saveStore.current.inventory; done(); })
   });
 
   controller.render();
@@ -105,7 +105,7 @@ assert.throws(() => createMerchantController({ els: {} }), /getInventory/);
 
 {
   const els = createMerchantElements();
-  const inventory = {
+  let inventory = {
     gold: 5,
     materials: {
       gel: { quantity: 6 },
@@ -113,14 +113,13 @@ assert.throws(() => createMerchantController({ els: {} }), /getInventory/);
     }
   };
   let saveCount = 0;
+  const tx = createTestTransactions({ inventory }, () => { saveCount++; return true; });
   const controller = createMerchantController({
     els,
     materialDefinitions,
     getInventory: () => inventory,
     getSafeArea: () => null,
-    saveInventory: () => {
-      saveCount += 1;
-    }
+    commitInventoryChange: (mutate, done) => tx.commitSaveChange(draft => mutate(draft.inventory), () => { inventory = tx.saveStore.current.inventory; done(); })
   });
 
   controller.render();
@@ -149,17 +148,19 @@ assert.throws(() => createMerchantController({ els: {} }), /getInventory/);
 
 {
   const els = createMerchantElements();
-  const inventory = {
+  let inventory = {
     gold: 0,
     materials: {
       gel: { quantity: 2 },
       core: { quantity: 1 }
     }
   };
+  const tx = createTestTransactions({ inventory });
   const controller = createMerchantController({
     els,
     materialDefinitions,
-    getInventory: () => inventory
+    getInventory: () => inventory,
+    commitInventoryChange: (mutate, done) => tx.commitSaveChange(draft => mutate(draft.inventory), () => { inventory = tx.saveStore.current.inventory; done(); })
   });
 
   controller.render();
@@ -171,4 +172,31 @@ assert.throws(() => createMerchantController({ els: {} }), /getInventory/);
   assert.equal(els.confirmMerchantBatchButton.disabled, true);
 }
 
-console.log("Merchant controller single sale, atomic batch sale, reset, and selection normalization tests passed.");
+for (const batch of [false, true]) {
+  const els = createMerchantElements();
+  const original = { inventory: { gold: 5, materials: { gel: { quantity: 6 }, core: { quantity: 1 } } } };
+  let succeeds = false;
+  let saves = 0;
+  const tx = createTestTransactions(original, () => { saves++; if (!succeeds) throw new Error('quota'); return true; });
+  const controller = createMerchantController({ els, materialDefinitions,
+    getInventory: () => tx.saveStore.current.inventory,
+    commitInventoryChange: (mutate, done) => tx.commitSaveChange(draft => mutate(draft.inventory), done)
+  });
+  controller.render();
+  if (batch) els.merchantBatchToggleButton.onclick();
+  findMaterialButton(els, "凝膠").onclick();
+  if (batch) { findMaterialButton(els, "核心").onclick(); els.confirmMerchantBatchButton.onclick(); }
+  els.confirmMerchantSaleButton.onclick();
+  assert.deepEqual(tx.saveStore.current, original);
+  assert.doesNotMatch(els.merchantNotice.textContent, /已出售/);
+  tx.retry();
+  assert.equal(saves, 2);
+  succeeds = true;
+  tx.retry();
+  assert.equal(saves, 3);
+  assert.match(els.merchantNotice.textContent, /已出售/);
+  assert.equal(tx.saveStore.current.inventory.gold, batch ? 27 : 7);
+  tx.retry();
+  assert.equal(saves, 3);
+}
+console.log("Merchant controller single/batch sale, retry isolation, reset, and selection normalization tests passed.");

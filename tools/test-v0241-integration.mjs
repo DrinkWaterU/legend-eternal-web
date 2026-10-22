@@ -48,7 +48,7 @@ assert.match(game, /import \{ createMerchantController \} from "\.\.\/\.\.\/ui\/
 assert.match(game, /const merchantController = createMerchantController\(\{/);
 assert.match(game, /getInventory: \(\) => saveStore\.current\.inventory/);
 assert.match(game, /getSafeArea: getCurrentSafeArea/);
-assert.match(game, /saveInventory: saveGameSafe/);
+assert.match(game, /commitInventoryChange:/);
 assert.match(game, /merchantController\.reset\(\)/);
 assert.match(game, /merchantController\.render\(\)/);
 assert.match(game, /merchantController\.closeSaleDialog/);
@@ -73,7 +73,7 @@ const controllerBatchConfirmStart = merchantController.indexOf("function confirm
 const controllerBatchConfirmEnd = merchantController.indexOf("function resetSaleDialogState()", controllerBatchConfirmStart);
 const controllerBatchConfirmSource = merchantController.slice(controllerBatchConfirmStart, controllerBatchConfirmEnd);
 assert.match(controllerBatchConfirmSource, /sellMaterials\(/);
-assert.match(controllerBatchConfirmSource, /saveInventory\(\)/);
+assert.match(controllerBatchConfirmSource, /commitInventoryChange\(/);
 assert.match(controllerBatchConfirmSource, /state\.batchMaterialIds = new Set\(\)/);
 assert.match(controllerBatchConfirmSource, /result\.totalQuantity/);
 assert.match(controllerBatchConfirmSource, /result\.totalGold/);
@@ -104,6 +104,6 @@ const domIds = [...dom.matchAll(/document\.querySelector\("#([^"]+)"\)/g)].map((
 const missingIds = domIds.filter((id) => !htmlIds.has(id));
 assert.deepEqual(missingIds, [], `dom.js 不可引用不存在的 HTML id：${missingIds.join(", ")}`);
 
-assert.match(config, /SAVE_SCHEMA_VERSION = 11/);
+assert.match(config, /SAVE_SCHEMA_VERSION = 12/);
 
 console.log("v0.2.4.1 merchant quantity and atomic batch sale integration tests passed.");

@@ -17,6 +17,7 @@ export function createDefaultSave() {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: GAME_VERSION,
+    activeRun: null,
     profile: {
       createdAt: now,
       updatedAt: now,

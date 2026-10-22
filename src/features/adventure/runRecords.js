@@ -19,7 +19,9 @@ export function createRunRecords({
     regionStats.runs += 1;
     characterStats.runs += 1;
     characterProgress.runs += 1;
-    saveGameSafe();
+    if (saveGameSafe() === false) {
+      throw new Error("瀏覽器無法保存出發紀錄，這次冒險尚未開始。");
+    }
   }
 
   function captureRunStartPermanentState() {

@@ -41,6 +41,8 @@ export function createRunLifecycleController({
   restoreRunStartPermanentState,
   recordRunStarted,
   saveGameSafe,
+  runSaveOperation = (action) => action(),
+  afterAdventureSaved = (effect) => effect(),
   syncSelectionFromSave,
   resetPreparationUiState,
   resetFacilityUiState,
@@ -152,6 +154,10 @@ export function createRunLifecycleController({
   }
 
   function openBeachSegmentCheckpoint() {
+    return runSaveOperation(openBeachSegmentCheckpointOperation);
+  }
+
+  function openBeachSegmentCheckpointOperation() {
     const checkpoint = createBeachSegmentCheckpoint({
       state,
       encounterCount: currentRegion().encounterCount
@@ -199,7 +205,16 @@ export function createRunLifecycleController({
   }
 
   function startPlayerRun() {
+    return runSaveOperation(startPlayerRunOperation);
+  }
+
+  function startPlayerRunOperation() {
     if (uiState.runStartLocked) return;
+    if (saveStore.current.activeRun) {
+      uiState.runStartNotice = "已有待續的旅程，請先繼續或結束該次冒險。";
+      renderRegionScreen();
+      return;
+    }
 
     uiState.runStartLocked = true;
     uiState.runStartNotice = "";
@@ -224,7 +239,7 @@ export function createRunLifecycleController({
       closeTransientUiPanels();
       els.nextButton.disabled = false;
       startEncounter();
-      showScreen("gameScreen");
+      afterAdventureSaved(() => showScreen("gameScreen"));
       runStarted = true;
     } catch (error) {
       if (permanentMutationStarted) {

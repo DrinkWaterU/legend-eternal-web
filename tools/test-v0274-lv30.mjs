@@ -114,7 +114,7 @@ try {
       schemaVersion: 10,
       progression: { characters: { adventurer: { level: 25, exp } } }
     });
-    assert.equal(migrated.schemaVersion, 11);
+    assert.equal(migrated.schemaVersion, 12);
     assert.equal(migrated.progression.characters.adventurer.exp, expectedExp);
   }
 
@@ -122,7 +122,7 @@ try {
     schemaVersion: 9,
     progression: { characters: { adventurer: { level: 25, exp: 12909 } } }
   });
-  assert.equal(schema9Overflow.schemaVersion, 11);
+  assert.equal(schema9Overflow.schemaVersion, 12);
   assert.equal(schema9Overflow.progression.characters.adventurer.exp, 2309);
 
   const schema9State = {

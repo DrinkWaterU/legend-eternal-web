@@ -1,10 +1,11 @@
 import { getEnemyPendingHpLoss, getEnemyProtectionState } from "../core/combat.js";
 import { getEnemyDisplayName, getLivingEnemies } from "../core/enemyGroups.js";
 import { renderLayeredMeter, renderStatusChips } from "./combatMeterView.js";
+import { getEnemyIntent } from "../core/enemyIntent.js";
 
 const rosterTargetState = new WeakMap();
 
-export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, onTargetSelect }) {
+export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, turn = 0, onTargetSelect }) {
   const livingEnemies = getLivingEnemies(enemies);
   countLabel.textContent = livingEnemies.length > 0 ? `${livingEnemies.length} 名敵人` : "暫無遭遇";
   const existingCards = new Map(
@@ -40,6 +41,9 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
   orderedCards.forEach(({ enemy, card }) => {
     card._onTargetSelect = onTargetSelect;
     updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies);
+    const intent = card.querySelector("[data-enemy-intent]");
+    intent.textContent = (phase === "danger" || phase === "combat") ? getEnemyIntent(enemy, turn) || "" : "";
+    intent.hidden = !intent.textContent;
   });
   keepTargetVisible(roster, targetEnemyId);
 }
@@ -60,6 +64,7 @@ function createEnemyCard(runtimeId) {
       <span class="meter-layer shield" data-enemy-shield></span>
     </span>
     <span class="meter-text" data-enemy-health-text></span>
+    <span class="enemy-intent" data-enemy-intent hidden></span>
     <span class="enemy-card-detail"><span class="enemy-card-detail-inner"><span class="enemy-detail-content">
       <span class="enemy-stats">
         <span><small>攻擊</small><b data-enemy-attack></b></span>
@@ -76,6 +81,7 @@ function createEnemyCard(runtimeId) {
 
 function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
   card.classList.toggle("is-target", isTarget);
+  card.setAttribute("aria-pressed", String(isTarget));
   card.classList.toggle("is-single", enemyCount === 1);
   card.disabled = enemy.hp <= 0;
   card.querySelector("[data-enemy-name]").textContent = getEnemyDisplayName(enemy);

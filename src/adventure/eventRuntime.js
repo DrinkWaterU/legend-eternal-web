@@ -45,7 +45,9 @@ export function createEventRuntime(host) {
     loseRun,
     startEncounter,
     enterAdventureRoute,
-    showBlessings
+    showBlessings,
+    runSaveOperation = (action) => action(),
+    afterAdventureSaved = (effect) => effect()
   } = host;
 
   const eventRewards = createEventRewards({
@@ -129,6 +131,10 @@ export function createEventRuntime(host) {
   }
 
   function chooseEventChoice(choiceId) {
+    return runSaveOperation(() => chooseEventChoiceOperation(choiceId));
+  }
+
+  function chooseEventChoiceOperation(choiceId) {
     if (!state.eventContext || state.eventInputLocked || state.ended) return;
 
     const event = getEventDefinition(state.eventContext.eventId);
@@ -208,7 +214,12 @@ export function createEventRuntime(host) {
       resultIds: result.resultIds
     });
     state.eventContext.defaultTarget = result.defaultTarget;
-    renderEventResult(event, result, effectResult);
+    state.eventContext.result = { result, effectResult };
+    state.phase = "event";
+    clearEnemyGroup();
+    state.battleSource = "main";
+    state.battleEncounterType = null;
+    afterAdventureSaved(() => renderEventResult(event, result, effectResult));
   }
 
   function renderEventResult(event, result, effectResult) {
@@ -243,6 +254,10 @@ export function createEventRuntime(host) {
   }
 
   function chooseEventFollowUp(choice) {
+    return runSaveOperation(() => chooseEventFollowUpOperation(choice));
+  }
+
+  function chooseEventFollowUpOperation(choice) {
     if (state.eventInputLocked || state.ended) return;
     state.eventInputLocked = true;
     state.adventureProgressLocked = true;
@@ -251,6 +266,10 @@ export function createEventRuntime(host) {
   }
 
   function continueEventResult() {
+    return runSaveOperation(continueEventResultOperation);
+  }
+
+  function continueEventResultOperation() {
     if (!state.eventContext || state.eventInputLocked || state.ended) return;
     state.eventInputLocked = true;
     state.adventureProgressLocked = true;
@@ -285,6 +304,14 @@ export function createEventRuntime(host) {
   }
 
   return {
+    restoreEventView() {
+      hideEventTransition(els);
+      const event = getEventDefinition(state.eventContext?.eventId);
+      if (!event) throw new Error("找不到待續的事件。");
+      const saved = state.eventContext.result;
+      if (saved) renderEventResult(event, saved.result, saved.effectResult);
+      else renderEventChoices(event);
+    },
     resetEventRunState,
     beginScheduledEvent,
     finishEventBattleVictory,

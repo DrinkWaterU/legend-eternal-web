@@ -101,7 +101,7 @@ const cacheVersion = GAME_VERSION.slice(1);
 assert.match(html, new RegExp(`styles\\.css\\?v=${escapeRegExp(cacheVersion)}`));
 assert.match(html, new RegExp(`game\\.js\\?v=${escapeRegExp(cacheVersion)}`));
 assert.doesNotMatch(html, /目前登記身分維持展開|其餘紀錄可按標題查看/);
-assert.equal([...styles.matchAll(new RegExp(escapeRegExp(cacheVersion), "g"))].length, 7);
+assert.equal([...styles.matchAll(new RegExp(escapeRegExp(cacheVersion), "g"))].length, 8);
 assert.match(components, /\.guild-quest-board\s*\{/);
 assert.match(components, /grid-template-columns:\s*repeat\(2/);
 assert.match(responsive, /\.guild-quest-board\s*\{\s*grid-template-columns:\s*1fr/);

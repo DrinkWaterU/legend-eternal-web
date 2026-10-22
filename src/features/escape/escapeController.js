@@ -38,7 +38,8 @@ export function createEscapeController({
   resumePendingThreat,
   getAdventureEncounterIndex,
   getEventRuntime,
-  startEncounter
+  startEncounter,
+  runSaveOperation = (action) => action()
 }) {
   function resolveFleeFailure() {
     const attacker = randomItem(getLivingEnemies(state.enemies));
@@ -109,6 +110,10 @@ export function createEscapeController({
   }
 
   function tryFlee() {
+    return runSaveOperation(tryFleeOperation);
+  }
+
+  function tryFleeOperation() {
     const livingEnemies = getLivingEnemies(state.enemies);
     if (!state.hero || livingEnemies.length === 0 || state.ended || state.awaitingBlessing || state.phase === "safe") return;
     const threatKind = getEnemyGroupThreatKind(livingEnemies);
@@ -139,6 +144,10 @@ export function createEscapeController({
   }
 
   function continueAdventure() {
+    return runSaveOperation(continueAdventureOperation);
+  }
+
+  function continueAdventureOperation() {
     if (state.phase !== "safe" || state.ended || state.adventureProgressLocked) return;
     state.adventureProgressLocked = true;
     setCombatActionState();
@@ -158,6 +167,10 @@ export function createEscapeController({
   }
 
   function restAtSafeRoute() {
+    return runSaveOperation(restAtSafeRouteOperation);
+  }
+
+  function restAtSafeRouteOperation() {
     if (state.phase !== "safe" || !state.canRest || state.hasRested || state.ended) return;
     const amount = Math.max(1, Math.round(state.hero.maxHp * restHealRatio));
     const before = state.hero.hp;
@@ -169,6 +182,10 @@ export function createEscapeController({
   }
 
   function retreatRun() {
+    return runSaveOperation(retreatRunOperation);
+  }
+
+  function retreatRunOperation() {
     if (state.phase !== "safe" || state.ended) return;
     state.runStats.retreated = true;
     clearPendingThreat();

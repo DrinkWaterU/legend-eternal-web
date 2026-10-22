@@ -300,6 +300,7 @@ globalThis.Audio = FakeAudio;
 Object.defineProperty(globalThis, "navigator", {
   configurable: true,
   value: {
+    locks: { request(name, options, action) { void action({ name }); return Promise.resolve(); } },
     clipboard: {
       async writeText() {}
     }

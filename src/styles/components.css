@@ -4719,3 +4719,40 @@
     transform: none;
   }
 }
+.save-recovery-notice {
+  position: relative;
+  z-index: 100;
+  padding: 12px 18px;
+  border: 1px solid #dca660;
+  background: #30251b;
+  color: #fff1d3;
+  overflow-wrap: anywhere;
+}
+
+.save-recovery-notice p { margin: 0 0 8px; }
+
+.save-transaction-dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  background: #18221f;
+  color: var(--ink);
+}
+.save-transaction-dialog::backdrop { background: rgba(4, 10, 8, .82); }
+.save-transaction-dialog p { line-height: 1.75; overflow-wrap: anywhere; }
+.save-transaction-dialog button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #24342d;
+  color: var(--ink);
+  cursor: pointer;
+}
+.save-transaction-dialog .save-transaction-retry { background: var(--gold); color: #18221f; font-weight: 700; }
+.save-transaction-dialog button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }

@@ -1,3 +1,4 @@
+import { createTestTransactions } from "./save-transaction-test-helper.mjs";
 import assert from "node:assert/strict";
 
 import { createGuildBulkSaleController } from "../src/ui/guildBulkSaleController.js";
@@ -30,7 +31,7 @@ const definitions = {
 };
 
 {
-  const inventory = {
+  let inventory = {
     gold: 10,
     materials: { gel: { name: "凝膠", quantity: 20 }, shard: { name: "碎片", quantity: 10 } }
   };
@@ -46,19 +47,20 @@ const definitions = {
 
 {
   const els = createElements();
-  const inventory = {
+  let inventory = {
     gold: 10,
     materials: { gel: { name: "凝膠", quantity: 20 }, shard: { name: "碎片", quantity: 10 } }
   };
   let saveCalls = 0;
   let saveSucceeds = true;
+  const tx = createTestTransactions({ inventory }, () => { saveCalls++; return saveSucceeds; });
   const controller = createGuildBulkSaleController({
     els,
     materialDefinitions: definitions,
     npcDefinition: { name: "瑟琳", title: "冒險者公會資深接待員", portrait: "celine.png" },
     dialogueDefinition: dialogueDefinitions["anping-guild-receptionist-main"],
     getInventory: () => inventory,
-    saveInventory: () => { saveCalls += 1; return saveSucceeds; }
+    commitInventoryChange: (mutate, done) => tx.commitSaveChange(draft => mutate(draft.inventory), () => { inventory = tx.saveStore.current.inventory; done(); })
   });
   controller.reset();
   controller.render();
@@ -89,16 +91,18 @@ const definitions = {
   assert.deepEqual(inventory, beforeFailure, "保存失敗必須回復金幣與素材");
   assert.equal(controller.getState().quantities.gel, 20, "保存失敗應保留草稿");
   assert.equal(saveCalls, 1);
-  assert.match(controller.getState().notice, /已回復/);
+  assert.equal(tx.saveStore.hasPendingTransaction, true);
+  assert.notEqual(controller.getState().messageNodeId, "bulk-sale-success");
 
   const throwingSnapshot = structuredClone(inventory);
+  const throwingTx = createTestTransactions({ inventory }, () => { throw new Error("storage unavailable"); });
   const throwingController = createGuildBulkSaleController({
     els: createElements(),
     materialDefinitions: definitions,
     npcDefinition: { name: "瑟琳", title: "冒險者公會資深接待員", portrait: "celine.png" },
     dialogueDefinition: dialogueDefinitions["anping-guild-receptionist-main"],
     getInventory: () => inventory,
-    saveInventory: () => { throw new Error("storage unavailable"); }
+    commitInventoryChange: (mutate, done) => throwingTx.commitSaveChange(draft => mutate(draft.inventory), done)
   });
   throwingController.setQuantity("gel", 20);
   throwingController.requestConfirm();
@@ -106,9 +110,10 @@ const definitions = {
   assert.deepEqual(inventory, throwingSnapshot, "保存函式拋錯時也必須回復金幣與素材");
   assert.equal(throwingController.getState().quantities.gel, 20, "保存拋錯時應保留草稿");
 
-  saveSucceeds = true;
-  controller.requestConfirm();
   controller.confirmSale();
+  assert.equal(saveCalls, 1);
+  saveSucceeds = true;
+  tx.retry();
   assert.equal(saveCalls, 2);
   assert.equal(inventory.gold, 89);
   assert.equal("gel" in inventory.materials, false);

@@ -12,6 +12,7 @@ export function renderCombatView({
   enemies,
   targetEnemyId,
   phase,
+  turn = 0,
   preparationStatus = null,
   characterStatusEntries = [],
   onTargetSelect,
@@ -26,6 +27,7 @@ export function renderCombatView({
     enemies,
     targetEnemyId,
     phase,
+    turn,
     onTargetSelect
   });
   renderStatusSummary(els, hero);
@@ -158,7 +160,9 @@ function renderHeroStatus(els, hero, characterStatusEntries) {
     pendingLoss: getHeroPendingHpLoss(hero),
     shield: hero.shield || 0
   });
-  els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}`;
+  const criticalHealth = hero.hp > 0 && hero.hp / hero.maxHp <= 0.25;
+  els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}${criticalHealth ? " · 生命危急" : ""}`;
+  els.heroHealthText.classList.toggle("is-critical", criticalHealth);
   const statuses = [];
   if (hero.shield > 0) statuses.push({ label: `護盾 ${hero.shield}`, className: "is-shield" });
   if (hero.poison > 0) {

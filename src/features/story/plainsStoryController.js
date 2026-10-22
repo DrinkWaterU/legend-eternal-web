@@ -18,6 +18,8 @@ export function createPlainsStoryController({
   returnToRunOriginSafeArea,
   queueAchievementUnlock,
   saveGameSafe,
+  runSaveOperation = (action) => action(),
+  afterAdventureSaved = (effect) => effect(),
   render
 }) {
   function getStoryDefinition() {
@@ -63,6 +65,10 @@ export function createPlainsStoryController({
   }
 
   function showStory() {
+    return runSaveOperation(showStoryOperation);
+  }
+
+  function showStoryOperation() {
     const story = getStoryDefinition();
     if (!story?.lines?.length) throw new Error("平原通關劇情資料不存在。");
     setNavigationContext("story");
@@ -72,17 +78,19 @@ export function createPlainsStoryController({
     clearPendingThreat();
     state.blessingContext = "normal";
     recordRunFinished("clear");
-    els.nextButton.disabled = true;
-    els.blessingPanel.classList.remove("is-visible");
-    els.endPanel.classList.remove("is-visible");
-    closeAbilityInfoPanel();
-    closeBlessingInfoPanel();
-    els.storyPanel.classList.add("is-visible");
-    els.finishStoryButton.textContent = `回到${getRunOriginSafeAreaName()}`;
-    els.resultLabel.textContent = story.resultLabel || "命運覺醒";
-    els.encounterLabel.textContent = story.encounterLabel || "星穹之外";
-    renderText(false);
-    render();
+    afterAdventureSaved(() => {
+      els.nextButton.disabled = true;
+      els.blessingPanel.classList.remove("is-visible");
+      els.endPanel.classList.remove("is-visible");
+      closeAbilityInfoPanel();
+      closeBlessingInfoPanel();
+      els.storyPanel.classList.add("is-visible");
+      els.finishStoryButton.textContent = `回到${getRunOriginSafeAreaName()}`;
+      els.resultLabel.textContent = story.resultLabel || "命運覺醒";
+      els.encounterLabel.textContent = story.encounterLabel || "星穹之外";
+      renderText(false);
+      render();
+    });
   }
 
   function unlockPhoenixBlessing() {
@@ -94,12 +102,25 @@ export function createPlainsStoryController({
   }
 
   function completeStory() {
-    if (!state.debugBuildRun) unlockPhoenixBlessing();
-    els.storyPanel.classList.remove("is-visible");
-    returnToRunOriginSafeArea();
+    return runSaveOperation(() => {
+      if (state.phase !== "story") return;
+      if (!state.debugBuildRun) unlockPhoenixBlessing();
+      state.runResumeFinished = true;
+      afterAdventureSaved(() => {
+        els.storyPanel.classList.remove("is-visible");
+        returnToRunOriginSafeArea();
+      });
+    });
   }
 
   return Object.freeze({
+    restoreStoryView() {
+      els.storyPanel.classList.add("is-visible");
+      els.finishStoryButton.textContent = `回到${getRunOriginSafeAreaName()}`;
+      els.resultLabel.textContent = getStoryDefinition()?.resultLabel || "命運覺醒";
+      renderText(true);
+      render();
+    },
     shouldTriggerStory,
     closePanel,
     showStory,

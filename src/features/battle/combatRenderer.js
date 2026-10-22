@@ -1,5 +1,6 @@
 import { canFleeBattle } from "../../core/fleeRules.js";
-import { getLivingEnemies, resolveTargetEnemyId } from "../../core/enemyGroups.js";
+import { canTakeBattleAction } from "../../core/battleActions.js";
+import { resolveTargetEnemyId } from "../../core/enemyGroups.js";
 import { getPreparationCombatStatus } from "../../core/preparations.js";
 import { getCharacterCombatStatusEntries } from "../../characters/skills/index.js";
 import { getEventDefinition } from "../../data/events/index.js";
@@ -18,12 +19,10 @@ export function createCombatRenderer({
   questRuntime
 }) {
   function setCombatActionState() {
-    const livingEnemies = getLivingEnemies(state.enemies);
-    const hasEnemy = livingEnemies.length > 0;
     const isBoss = !canFleeBattle(state.battleEncounterType);
     const inGame = state.hero && !state.ended && !state.awaitingBlessing && !state.eventInputLocked;
     const safe = state.phase === "safe";
-    const canFight = inGame && hasEnemy && !safe;
+    const canFight = canTakeBattleAction(state);
     const isDuel = state.battleSource === "duel";
     const canContinue = inGame && safe && !state.adventureProgressLocked
       && (!state.eventContext || hasPendingThreat("safeEscape"));
@@ -73,6 +72,7 @@ export function createCombatRenderer({
       enemies: state.enemies,
       targetEnemyId: state.targetEnemyId,
       phase: state.phase,
+      turn: state.turn,
       preparationStatus: getPreparationCombatStatus({
         preparation: state.runPreparation,
         encounterType: state.battleEncounterType,

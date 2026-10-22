@@ -1,4 +1,7 @@
 const RUN_STATE_DEFAULTS = Object.freeze({
+  runRandomState: null,
+  runResumeFinished: false,
+  blessingChoices: [],
   encounterIndex: 0,
   turn: 0,
   hero: null,

@@ -32,6 +32,9 @@ export function migrateSaveData(rawSave) {
   }
 
   const rawSchemaVersion = toSafeInteger(rawSave.schemaVersion, 0);
+  if (rawSchemaVersion > SAVE_SCHEMA_VERSION) {
+    throw new Error("這份存檔來自較新的遊戲版本，請更新遊戲後再開啟。");
+  }
   const shouldMarkMigration = rawSchemaVersion !== SAVE_SCHEMA_VERSION;
   save.gameVersion = GAME_VERSION;
   save.profile.createdAt = rawSave.profile?.createdAt || save.profile.createdAt;
@@ -54,6 +57,9 @@ export function migrateSaveData(rawSave) {
   save.progression.safeAreas = migrateSafeAreaProgression(rawSave, undefined, { defaultVisitedAt: save.profile.createdAt });
   syncSafeAreaUnlocks(save);
   migrateSettings(save, rawSave);
+  // Preserve opaque incompatible snapshots for export/discard in the UI.
+  // Never replay one or silently erase it during permanent-progress migration.
+  save.activeRun = rawSave.activeRun ? structuredClone(rawSave.activeRun) : null;
   return save;
 }
 

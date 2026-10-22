@@ -26,17 +26,17 @@ const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 assert.match(officialVersion, /^v\d+\.\d+\.\d+(?:\.\d+){0,2}-[a-z0-9.-]+$/i, "VERSION 格式無效");
 assert.equal(GAME_VERSION, officialVersion, "src/config.js 的 GAME_VERSION 必須與 VERSION 一致");
 assert.equal(toolsVersionFile.trim(), officialVersion, "tools/VERSION 必須與 VERSION 一致");
-assert.equal(SAVE_SCHEMA_VERSION, 11, "v0.2.7.5 應延續 Lv.30 成長與封頂 EXP migration schema");
+assert.equal(SAVE_SCHEMA_VERSION, 12, "v0.2.7.6 加入 activeRun，舊 Lv.30 migration 契約維持不變");
 assert.match(readme, new RegExp("目前版本：`" + escapeRegExp(officialVersion) + "`"), "README 目前版本未同步");
 assert.match(html, new RegExp(`<p class="version-label">${escapeRegExp(officialVersion)}</p>`), "主選單版本標籤未同步");
 
 const htmlCacheVersions = [...html.matchAll(/(?:styles\.css|game\.js)\?v=([^"'&]+)/g)].map((match) => match[1]);
 assert.equal(htmlCacheVersions.length, 2, "index.html 應有 styles.css 與 game.js 兩個 cache version");
 assert.deepEqual([...new Set(htmlCacheVersions)], [cacheVersion], "index.html cache version 未同步");
-assert.match(html, /game\.js\?v=[^"']+&amp;build=v0275-alpha-1/, "v0.2.7.5 開發入口應提供獨立 build cache-buster");
+assert.match(html, /game\.js\?v=[^"']+&amp;build=v0276-alpha-1/, "v0.2.7.6 開發入口應提供獨立 build cache-buster");
 
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
-assert.equal(styleCacheVersions.length, 7, "styles.css 應維持 7 個內部樣式 import");
+assert.equal(styleCacheVersions.length, 8, "styles.css 應包含既有樣式及 A 版旅途場景樣式");
 assert.deepEqual([...new Set(styleCacheVersions)], [cacheVersion], "內部 CSS cache version 未同步");
 
 const editorVersion = editorSource.match(/const DEFAULT_GAME_VERSION = "([^"]+)"/)?.[1] || null;

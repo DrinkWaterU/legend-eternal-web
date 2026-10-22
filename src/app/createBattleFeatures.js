@@ -82,6 +82,7 @@ export function createBattleFeatures({
 
   battleState = createBattleState({
     state,
+    runSaveOperation: foundation.runSaveOperation,
     counterEscapeScalingOffset: COUNTER_ESCAPE_SCALING_OFFSET,
     currentRoute,
     getAdventureEncounterType,
@@ -127,7 +128,9 @@ export function createBattleFeatures({
 
   const battleTurnController = createBattleTurnController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
     createCombatLogger: battleLog.createCombatLogger,
+    withLogBatch: battleLog.withLogBatch,
     currentTargetEnemy: battleState.currentTargetEnemy,
     runHeroPlayerAction: preparationBattleEffects.runHeroPlayerAction,
     modifyIncomingDirectDamage: preparationBattleEffects.modifyIncomingDirectDamage,

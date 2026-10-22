@@ -11,6 +11,7 @@ import { isDebugModeEnabled } from "./debugMode.js";
 import { PLAINS_TRIAL_ACHIEVEMENT_ID, RUN_STARTING_FLEES } from "./runtimeConstants.js";
 import { els } from "../ui/dom.js";
 import { initDebugPanel } from "../ui/debugPanel.js";
+import { createRunResumeController } from "./runResumeController.js";
 
 export function createApplication({ documentRef = document, windowRef = window } = {}) {
   validateGameDefinitions();
@@ -107,6 +108,8 @@ export function createApplication({ documentRef = document, windowRef = window }
     })
   });
   eventRuntime = integrations.eventRuntime;
+  const runResumeController = createRunResumeController({ foundation, battle, adventure, eventRuntime,
+    screen, els, documentRef, windowRef });
 
   function start() {
     world.syncSafeAreaUiFromSave();
@@ -117,13 +120,14 @@ export function createApplication({ documentRef = document, windowRef = window }
       documentRef,
       state: foundation.state,
       uiState: foundation.uiState,
-      actions: createEventActions({ foundation, world, profile, battle, adventure, screen })
+      actions: createEventActions({ foundation, world, profile, battle, adventure, screen, runResumeController })
     });
     initDebugPanel({
       enabled: isDebugModeEnabled(windowRef),
       actions: integrations.debugActions
     });
     foundation.applySceneContext("menuScreen");
+    runResumeController.start();
   }
 
   return Object.freeze({ start });
@@ -131,6 +135,8 @@ export function createApplication({ documentRef = document, windowRef = window }
 
 function createEventDependencies({ foundation, battle, adventure }) {
   return {
+    runSaveOperation: foundation.runSaveOperation,
+    afterAdventureSaved: foundation.afterAdventureSaved,
     state: foundation.state,
     els,
     getSaveData: () => foundation.saveStore.current,
@@ -204,8 +210,10 @@ function createDebugDependencies({ foundation, world, profile, battle, adventure
   };
 }
 
-function createEventActions({ foundation, world, profile, battle, adventure, screen }) {
+function createEventActions({ foundation, world, profile, battle, adventure, screen, runResumeController }) {
   return {
+    hasActiveRun: () => Boolean(foundation.saveStore.current.activeRun),
+    resumeActiveRun: runResumeController.resume,
     showScreen: screen.showScreen,
     showScreenInContext: foundation.showScreenInContext,
     showCharacterList: world.showCharacterList,

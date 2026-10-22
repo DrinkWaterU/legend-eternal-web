@@ -101,6 +101,7 @@ export function createAchievementController({
   }
 
   function flushAchievementUnlockQueue() {
+    if (saveStore.hasPendingTransaction) return;
     if (state.activeAchievementToastId || state.pendingAchievementUnlocks.length === 0) return;
     const achievementId = state.pendingAchievementUnlocks.shift();
     const definition = achievementDefinitions[achievementId];

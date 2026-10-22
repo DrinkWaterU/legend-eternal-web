@@ -31,6 +31,7 @@ export function createFacilityController({
   showScreen,
   saveGameSafe,
   setDialogueStoryFlag,
+  commitSaveChange,
   startDuel
 }) {
   const merchantController = createMerchantController({
@@ -38,7 +39,7 @@ export function createFacilityController({
     materialDefinitions,
     getInventory: () => saveStore.current.inventory,
     getSafeArea: getCurrentSafeArea,
-    saveInventory: saveGameSafe
+    commitInventoryChange: (mutate, onSaved) => commitSaveChange((draft) => mutate(draft.inventory), onSaved)
   });
 
   const blacksmithController = createBlacksmithController({
@@ -48,7 +49,7 @@ export function createFacilityController({
     materialDefinitions,
     getInventory: () => saveStore.current.inventory,
     getSafeArea: getCurrentSafeArea,
-    saveInventory: saveGameSafe
+    commitInventoryChange: (mutate, onSaved) => commitSaveChange((draft) => mutate(draft.inventory), onSaved)
   });
 
   const guildAdventureRecordController = createGuildAdventureRecordController({
@@ -73,7 +74,7 @@ export function createFacilityController({
     npcDefinition: npcDefinitions[GUILD_RECEPTIONIST_ID],
     dialogueDefinition: dialogueDefinitions["anping-guild-receptionist-main"],
     getInventory: () => saveStore.current.inventory,
-    saveInventory: saveGameSafe
+    commitInventoryChange: (mutate, onSaved) => commitSaveChange((draft) => mutate(draft.inventory), onSaved)
   });
 
   const dialogueController = createDialogueController({
@@ -175,7 +176,7 @@ export function createFacilityController({
     uiState.facilityView = "guild-quests";
     els.guildQuestAreaLabel.textContent = getCurrentSafeArea()?.name || "安平鎮";
     guildQuestController.reset();
-    questRuntime.ensureBoard();
+    questRuntime.ensureBoard({ onSaved: () => guildQuestController.render() });
     showScreen("facilityScreen");
   }
 

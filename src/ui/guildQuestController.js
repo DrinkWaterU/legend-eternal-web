@@ -55,17 +55,21 @@ export function createGuildQuestController({
   }
 
   function acceptQuest(questId) {
-    const result = questRuntime.acceptQuest(questId);
-    setResult(result, result.ok ? "委託已承接。" : result.reason);
-    if (result.ok) speechOverride = SPEECH.accepted;
-    render();
+    const result = questRuntime.acceptQuest(questId, (saved) => {
+      setResult(saved, "委託已承接。");
+      speechOverride = SPEECH.accepted;
+      render();
+    });
+    showRuleError(result);
   }
 
   function reportQuest() {
-    const result = questRuntime.reportQuest();
-    setResult(result, result.ok ? `委託完成，獲得 ${result.reward.gold} G。` : result.reason);
-    if (result.ok) speechOverride = SPEECH.completed;
-    render();
+    const result = questRuntime.reportQuest((saved) => {
+      setResult(saved, `委託完成，獲得 ${saved.reward.gold} G。`);
+      speechOverride = SPEECH.completed;
+      render();
+    });
+    showRuleError(result);
   }
 
   function openAbandonConfirm(questId) {
@@ -78,10 +82,19 @@ export function createGuildQuestController({
 
   function confirmAbandon() {
     if (!pendingAbandonQuestId) return;
-    const result = questRuntime.abandonQuest();
-    closeAbandonConfirm();
-    setResult(result, result.ok ? "已放棄目前委託。" : result.reason);
-    if (result.ok) speechOverride = SPEECH.abandoned;
+    const result = questRuntime.abandonQuest((saved) => {
+      closeAbandonConfirm();
+      setResult(saved, "已放棄目前委託。");
+      speechOverride = SPEECH.abandoned;
+      render();
+    });
+    if (!result.ok && !result.pending) closeAbandonConfirm();
+    showRuleError(result);
+  }
+
+  function showRuleError(result) {
+    if (result.ok || result.pending) return;
+    setResult(result, result.reason);
     render();
   }
 

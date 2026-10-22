@@ -50,23 +50,25 @@ const runtimeState = {
 const calls = [];
 const questRuntime = {
   getSnapshot: () => structuredClone(runtimeState),
-  acceptQuest(questId) {
+  acceptQuest(questId, done) {
     calls.push(["accept", questId]);
     const quest = questDefinitions[questId];
     runtimeState.active = { questId, progress: 0 };
     runtimeState.activeQuest = quest;
     runtimeState.activeProgress = 0;
+    done?.({ ok: true, quest });
     return { ok: true, quest };
   },
-  abandonQuest() {
+  abandonQuest(done) {
     calls.push(["abandon"]);
     runtimeState.active = null;
     runtimeState.activeQuest = null;
     runtimeState.activeProgress = 0;
     runtimeState.statistics.abandonedTotal += 1;
+    done?.({ ok: true });
     return { ok: true };
   },
-  reportQuest() {
+  reportQuest(done) {
     calls.push(["report"]);
     const quest = runtimeState.activeQuest;
     runtimeState.active = null;
@@ -76,7 +78,9 @@ const questRuntime = {
     runtimeState.statistics.completedByRarity[quest.rarity] += 1;
     runtimeState.statistics.rewardGoldTotal += quest.rewards.gold;
     save.inventory.gold += quest.rewards.gold;
-    return { ok: true, quest, reward: { gold: quest.rewards.gold, materials: [] } };
+    const result = { ok: true, quest, reward: { gold: quest.rewards.gold, materials: [] } };
+    done?.(result);
+    return result;
   }
 };
 

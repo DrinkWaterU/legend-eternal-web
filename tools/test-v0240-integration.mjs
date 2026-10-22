@@ -74,7 +74,8 @@ assert.match(prepareRunStartSource, /getRegionPreparation\(region, requestedPrep
 assert.match(prepareRunStartSource, /createRunPreparation\(region, requestedPreparationId,[\s\S]*enhanced: requestedEnhanced/);
 assert.doesNotMatch(prepareRunStartSource, /preparationDetailId|preparationDetailExpanded/, "Run Start 不得讀 detail preview state");
 
-const startPlayerRunSource = game.match(/function startPlayerRun\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+assert.match(game, /runSaveOperation\(startPlayerRunOperation\)/);
+const startPlayerRunSource = game.match(/function startPlayerRunOperation\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 const runStartOrder = [
   "captureRunStartPermanentState()",
   "initializeRunRuntime({ hero: startContext.hero, preparation: startContext.preparation })",
@@ -144,7 +145,8 @@ assert.match(game, /facilityBackButton\.addEventListener\("click", \(\) => showS
 
 const routeEntry = game.match(/function enterAdventureRoute\([\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(routeEntry, /runPreparation\s*=\s*null/, "Route 切換不可清除整備 runtime");
-const routeCompletion = game.match(/function completeRoute\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+assert.match(game, /runSaveOperation\(completeRouteOperation\)/);
+const routeCompletion = game.match(/function completeRouteOperation\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.match(routeCompletion, /canCompleteRouteEncounter/);
 assert.match(routeCompletion, /applyRouteCompletionPolicy\(route\)/);
 assert.match(routeCompletion, /showRouteEnding\(route, \{ endingKey \}\)/);

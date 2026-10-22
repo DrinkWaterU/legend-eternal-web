@@ -13,7 +13,8 @@ export function createBlessingController({
   hasPendingThreat,
   resumePendingThreat,
   enterSafeState,
-  onBeachBossBlessingChosen
+  onBeachBossBlessingChosen,
+  runSaveOperation = (action) => action()
 }) {
   function getWeightedBlessingIndex(pool) {
     const totalWeight = pool.reduce((total, blessing) => total + getBlessingRarity(blessing.rarity).weight, 0);
@@ -73,10 +74,15 @@ export function createBlessingController({
   }
 
   function chooseBlessing(blessing) {
+    return runSaveOperation(() => chooseBlessingOperation(blessing));
+  }
+
+  function chooseBlessingOperation(blessing) {
     if (state.blessingInputLocked) return;
     state.blessingInputLocked = true;
     const context = state.blessingContext;
     grantBlessing(blessing);
+    state.blessingChoices = [];
     if (context === "beachBoss") {
       state.awaitingBlessing = false;
       state.blessingContext = "normal";
@@ -119,8 +125,16 @@ export function createBlessingController({
     els.nextButton.disabled = true;
     els.blessingPanel.classList.add("is-visible");
     els.resultLabel.textContent = context === "beachBoss" ? "選擇 Boss 後祝福" : "選擇祝福";
-    renderBlessingChoices(els.blessingChoices, getBlessingChoices(count, poolId, rarity), chooseBlessing, {
-      reveal: true,
+    state.blessingChoices = getBlessingChoices(count, poolId, rarity);
+    restoreBlessingChoices(true);
+  }
+
+  function restoreBlessingChoices(reveal = false) {
+    els.resultLabel.textContent = state.blessingContext === "beachBoss" ? "選擇 Boss 後祝福" : "選擇祝福";
+    state.blessingInputLocked = reveal;
+    els.blessingPanel.classList.add("is-visible");
+    renderBlessingChoices(els.blessingChoices, state.blessingChoices, chooseBlessing, {
+      reveal,
       ownedCounts: getOwnedBlessingCounts(),
       onRevealComplete: () => {
         state.blessingInputLocked = false;
@@ -128,5 +142,5 @@ export function createBlessingController({
     });
   }
 
-  return Object.freeze({ showBlessings, grantBlessing });
+  return Object.freeze({ showBlessings, grantBlessing, restoreBlessingChoices });
 }

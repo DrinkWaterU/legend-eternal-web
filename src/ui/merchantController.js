@@ -30,7 +30,7 @@ export function createMerchantController({
   materialDefinitions = {},
   getInventory,
   getSafeArea = () => null,
-  saveInventory = () => {}
+  commitInventoryChange
 } = {}) {
   if (!els || typeof els !== "object") {
     throw new Error("Merchant Controller 需要有效的 els。");
@@ -41,8 +41,8 @@ export function createMerchantController({
   if (typeof getSafeArea !== "function") {
     throw new Error("Merchant Controller 的 getSafeArea 必須是函式。");
   }
-  if (typeof saveInventory !== "function") {
-    throw new Error("Merchant Controller 的 saveInventory 必須是函式。");
+  if (typeof commitInventoryChange !== "function") {
+    throw new Error("Merchant Controller 的 commitInventoryChange 必須是函式。");
   }
 
   const state = createMerchantState();
@@ -238,17 +238,20 @@ export function createMerchantController({
     }
 
     try {
-      const result = sellMaterial({
-        inventory: getInventory(),
-        materialDefinitions,
-        materialId: state.saleMaterialId,
-        quantity
+      let result;
+      commitInventoryChange((inventory) => {
+        result = sellMaterial({
+          inventory,
+          materialDefinitions,
+          materialId: state.saleMaterialId,
+          quantity
+        });
+      }, () => {
+        state.notice = `已出售${result.name} x${result.quantity}，取得 ${result.totalGold} 金幣。`;
+        state.noticeType = "status";
+        closeSaleDialog();
+        render();
       });
-      saveInventory();
-      state.notice = `已出售${result.name} x${result.quantity}，取得 ${result.totalGold} 金幣。`;
-      state.noticeType = "status";
-      closeSaleDialog();
-      render();
     } catch (error) {
       state.notice = error instanceof Error ? error.message : "交易失敗。";
       state.noticeType = "error";
@@ -281,21 +284,24 @@ export function createMerchantController({
     }
 
     try {
-      const result = sellMaterials({
-        inventory: getInventory(),
-        materialDefinitions,
-        sales: preview.items.map((item) => ({
-          materialId: item.materialId,
-          quantity: item.quantity
-        }))
+      let result;
+      commitInventoryChange((inventory) => {
+        result = sellMaterials({
+          inventory,
+          materialDefinitions,
+          sales: preview.items.map((item) => ({
+            materialId: item.materialId,
+            quantity: item.quantity
+          }))
+        });
+      }, () => {
+        state.notice = `已出售 ${result.items.length} 種素材，共 ${result.totalQuantity} 件，取得 ${result.totalGold} 金幣。`;
+        state.noticeType = "status";
+        closeSaleDialog();
+        state.batchMode = false;
+        state.batchMaterialIds = new Set();
+        render();
       });
-      saveInventory();
-      state.notice = `已出售 ${result.items.length} 種素材，共 ${result.totalQuantity} 件，取得 ${result.totalGold} 金幣。`;
-      state.noticeType = "status";
-      closeSaleDialog();
-      state.batchMode = false;
-      state.batchMaterialIds = new Set();
-      render();
     } catch (error) {
       state.notice = error instanceof Error ? error.message : "批次交易失敗。";
       state.noticeType = "error";

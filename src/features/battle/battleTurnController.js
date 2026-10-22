@@ -11,6 +11,7 @@ import {
 } from "../../core/combat.js";
 import { beginGuard, clearGuard, DEFAULT_GUARD_DAMAGE_REDUCTION } from "../../core/guard.js";
 import { getLivingEnemies } from "../../core/enemyGroups.js";
+import { canTakeBattleAction } from "../../core/battleActions.js";
 
 export function createBattleTurnController({
   state,
@@ -26,12 +27,18 @@ export function createBattleTurnController({
   tryLastStand,
   prepareEnemyAction = () => {},
   completeEnemyAction = () => {},
+  withLogBatch = (action) => action(),
+  runSaveOperation = (action) => action(),
   winEncounter,
   loseRun,
   render
 }) {
   function playTurn(action = "attack") {
-    if (state.ended || state.awaitingBlessing || getLivingEnemies(state.enemies).length === 0 || state.phase === "safe") return;
+    if (!canTakeBattleAction(state)) return;
+    return runSaveOperation(() => withLogBatch(() => resolveTurn(action)));
+  }
+
+  function resolveTurn(action) {
 
     const playerAction = action === "guard" ? "guard" : "attack";
     const log = createCombatLogger();

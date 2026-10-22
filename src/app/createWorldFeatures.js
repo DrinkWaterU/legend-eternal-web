@@ -36,6 +36,7 @@ export function createWorldFeatures({
     currentRegion,
     saveGameSafe,
     setDialogueStoryFlag,
+    commitSaveChange,
     musicManager,
     ambientManager,
     setNavigationContext,
@@ -155,7 +156,7 @@ export function createWorldFeatures({
     saveStore,
     questDefinitions,
     materialDefinitions,
-    saveGameSafe
+    commitSaveChange
   });
 
   const facilityController = createFacilityController({
@@ -178,6 +179,7 @@ export function createWorldFeatures({
     showScreen,
     saveGameSafe,
     setDialogueStoryFlag,
+    commitSaveChange,
     startDuel
   });
 

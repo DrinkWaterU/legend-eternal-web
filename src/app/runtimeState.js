@@ -7,6 +7,9 @@ export function createAdventureRuntimeState({
 }) {
   return {
     run: 0,
+    runRandomState: null,
+    runResumeFinished: false,
+    blessingChoices: [],
     selectedRegionId: DEFAULT_REGION_ID,
     selectedHeroId: DEFAULT_CHARACTER_ID,
     selectedRegion: regionDefinitions[DEFAULT_REGION_ID].name,

@@ -15,118 +15,118 @@ export function createQuestRuntime({
   questDefinitions,
   materialDefinitions,
   random = Math.random,
-  saveGameSafe
+  commitSaveChange
 }) {
   function normalize() {
-    saveStore.current.quests = normalizeQuestState(saveStore.current.quests, questDefinitions);
-    return saveStore.current.quests;
+    return normalizeQuestState(saveStore.current.quests, questDefinitions);
   }
 
-  function populateBoard(quests, { persist = true } = {}) {
+  function populateBoard(quests) {
     if (quests.board.questIds.length === 4) return [...quests.board.questIds];
-    const previousBoard = clone(quests.board);
     quests.board.questIds = generateQuestBoard(questDefinitions, {
       random,
       excludedQuestId: quests.board.excludedQuestId
     });
     quests.board.generatedAtCompletionCount = quests.statistics.completedTotal;
-    if (persist && !saveGameSafe()) {
-      quests.board = previousBoard;
-      return [];
-    }
     return [...quests.board.questIds];
   }
 
-  function ensureBoard({ persist = true } = {}) {
-    return populateBoard(normalize(), { persist });
+  function transactQuest(change, onSaved) {
+    let result;
+    try {
+      const transaction = commitSaveChange((draft) => {
+        draft.quests = normalizeQuestState(draft.quests, questDefinitions);
+        result = change(draft);
+      }, () => onSaved?.(result));
+      return transaction.status === "saved" ? result : { ok: false, pending: true, reason: "請先完成待保存的操作。" };
+    } catch (error) {
+      return { ok: false, reason: error.message || "委託操作失敗。" };
+    }
   }
 
-  function acceptQuest(questId) {
+  function ensureBoard({ onSaved } = {}) {
     const quests = normalize();
-    const snapshot = clone(quests);
-    populateBoard(quests, { persist: false });
-    if (quests.active || !quests.board.questIds.includes(questId) || !questDefinitions[questId]) {
-      return { ok: false, reason: quests.active ? "已有進行中的委託。" : "這項委託目前不在看板上。" };
-    }
-    quests.active = {
-      questId,
-      progress: 0,
-      acceptedAtCompletionCount: quests.statistics.completedTotal
-    };
-    if (!saveGameSafe()) {
-      saveStore.current.quests = snapshot;
-      return { ok: false, reason: "目前無法保存委託進度。" };
-    }
-    return { ok: true, quest: questDefinitions[questId] };
+    if (quests.board.questIds.length === 4) return [...quests.board.questIds];
+    const result = transactQuest((draft) => ({ ok: true, ids: populateBoard(draft.quests) }), onSaved);
+    return result.ok ? result.ids : [];
   }
 
-  function abandonQuest() {
-    const quests = normalize();
-    if (!quests.active) return { ok: false, reason: "目前沒有進行中的委託。" };
-    const snapshot = clone(quests);
-    quests.active = null;
-    quests.statistics.abandonedTotal = sumSafeIntegers(quests.statistics.abandonedTotal, 1);
-    if (!saveGameSafe()) {
-      saveStore.current.quests = snapshot;
-      return { ok: false, reason: "目前無法保存放棄紀錄。" };
-    }
-    return { ok: true };
+  function acceptQuest(questId, onSaved) {
+    return transactQuest((draft) => {
+      const quests = draft.quests;
+      populateBoard(quests);
+      if (quests.active || !quests.board.questIds.includes(questId) || !questDefinitions[questId]) {
+        throw new Error(quests.active ? "已有進行中的委託。" : "這項委託目前不在看板上。");
+      }
+      quests.active = {
+        questId,
+        progress: 0,
+        acceptedAtCompletionCount: quests.statistics.completedTotal
+      };
+      return { ok: true, quest: questDefinitions[questId] };
+    }, onSaved);
+  }
+
+  function abandonQuest(onSaved) {
+    return transactQuest((draft) => {
+      const quests = draft.quests;
+      if (!quests.active) throw new Error("目前沒有進行中的委託。");
+      quests.active = null;
+      quests.statistics.abandonedTotal = sumSafeIntegers(quests.statistics.abandonedTotal, 1);
+      return { ok: true };
+    }, onSaved);
   }
 
   function recordEnemyDefeated(event) {
+    if (saveStore.hasPendingTransaction) return false;
     const quests = normalize();
     const quest = questDefinitions[quests.active?.questId];
     if (!quest || !matchEnemyObjective(quest.objective, event)) return false;
     const target = quest.objective.target;
     const previous = quests.active.progress;
     quests.active.progress = Math.min(target, previous + 1);
+    saveStore.current.quests = quests;
     return quests.active.progress !== previous;
   }
 
   function recordRunCleared(event) {
+    if (saveStore.hasPendingTransaction) return false;
     const quests = normalize();
     const quest = questDefinitions[quests.active?.questId];
     if (!quest || !matchClearObjective(quest.objective, event)) return false;
     const target = quest.objective.target;
     const previous = quests.active.progress;
     quests.active.progress = Math.min(target, previous + 1);
+    saveStore.current.quests = quests;
     return quests.active.progress !== previous;
   }
 
-  function reportQuest() {
-    const quests = normalize();
-    const quest = questDefinitions[quests.active?.questId];
-    if (!quest) return { ok: false, reason: "目前沒有可回報的委託。" };
-    const context = { quest, active: quests.active, inventory: saveStore.current.inventory };
-    const missing = getMissingDeliveryMaterials(context);
-    if (!isQuestComplete(context) || missing.length > 0) {
-      return { ok: false, reason: missing.length > 0 ? "交付素材尚未備齊。" : "委託目標尚未完成。" };
-    }
+  function reportQuest(onSaved) {
+    return transactQuest((draft) => {
+      const quests = draft.quests;
+      const quest = questDefinitions[quests.active?.questId];
+      if (!quest) throw new Error("目前沒有可回報的委託。");
+      const context = { quest, active: quests.active, inventory: draft.inventory };
+      const missing = getMissingDeliveryMaterials(context);
+      if (!isQuestComplete(context) || missing.length > 0) {
+        throw new Error(missing.length > 0 ? "交付素材尚未備齊。" : "委託目標尚未完成。");
+      }
 
-    const snapshot = {
-      quests: clone(quests),
-      inventory: clone(saveStore.current.inventory)
-    };
-    const reward = buildQuestRewardPlan(quest);
-    consumeDeliveryMaterials(quest);
-    applyRewards(reward);
-    completeQuestRecord(quest, reward, quests);
-    quests.active = null;
-    quests.board.excludedQuestId = quest.id;
-    quests.board.questIds = generateQuestBoard(questDefinitions, { random, excludedQuestId: quest.id });
-    quests.board.generatedAtCompletionCount = quests.statistics.completedTotal;
+      const reward = buildQuestRewardPlan(quest);
+      consumeDeliveryMaterials(quest, draft.inventory);
+      applyRewards(reward, draft.inventory);
+      completeQuestRecord(quest, reward, quests);
+      quests.active = null;
+      quests.board.excludedQuestId = quest.id;
+      quests.board.questIds = generateQuestBoard(questDefinitions, { random, excludedQuestId: quest.id });
+      quests.board.generatedAtCompletionCount = quests.statistics.completedTotal;
 
-    if (!saveGameSafe()) {
-      saveStore.current.quests = snapshot.quests;
-      saveStore.current.inventory = snapshot.inventory;
-      return { ok: false, reason: "目前無法完成委託回報。" };
-    }
-    return { ok: true, quest, reward };
+      return { ok: true, quest, reward };
+    }, onSaved);
   }
 
   function getSnapshot() {
     const quests = normalize();
-    populateBoard(quests);
     const activeQuest = questDefinitions[quests.active?.questId] || null;
     return {
       boardQuestIds: [...quests.board.questIds],
@@ -142,29 +142,29 @@ export function createQuestRuntime({
     };
   }
 
-  function consumeDeliveryMaterials(quest) {
+  function consumeDeliveryMaterials(quest, inventory) {
     if (quest.objective.type !== "deliverMaterials") return;
     quest.objective.materials.forEach((entry) => {
-      const item = saveStore.current.inventory.materials[entry.id];
+      const item = inventory.materials[entry.id];
       item.quantity -= entry.quantity;
-      if (item.quantity <= 0) delete saveStore.current.inventory.materials[entry.id];
+      if (item.quantity <= 0) delete inventory.materials[entry.id];
     });
   }
 
-  function applyRewards(reward) {
-    saveStore.current.inventory.gold = sumSafeIntegers(
-      saveStore.current.inventory.gold,
+  function applyRewards(reward, inventory) {
+    inventory.gold = sumSafeIntegers(
+      inventory.gold,
       reward.gold
     );
     reward.materials.forEach((entry) => {
       const material = materialDefinitions[entry.id];
-      const current = saveStore.current.inventory.materials[entry.id] || {
+      const current = inventory.materials[entry.id] || {
         id: entry.id,
         name: material?.name || entry.id,
         quantity: 0
       };
       current.quantity = sumSafeIntegers(current.quantity, entry.quantity);
-      saveStore.current.inventory.materials[entry.id] = current;
+      inventory.materials[entry.id] = current;
     });
   }
 

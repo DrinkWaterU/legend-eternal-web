@@ -21,6 +21,8 @@ export function createRunResultController({
   settleCharacterProgression,
   recordRunFinished,
   saveGameSafe,
+  runSaveOperation = (action) => action(),
+  afterAdventureSaved = (effect) => effect(),
   clearEnemyGroup,
   clearPendingThreat,
   addLog,
@@ -152,6 +154,10 @@ export function createRunResultController({
   }
 
   function finishRun(outcome, options = {}) {
+    return runSaveOperation(() => finishRunOperation(outcome, options));
+  }
+
+  function finishRunOperation(outcome, options) {
     const cleared = outcome === "clear";
     const segmentCleared = outcome === "segmentClear";
     const retreated = outcome === "retreat";
@@ -169,23 +175,25 @@ export function createRunResultController({
     clearPendingThreat();
     state.blessingContext = "normal";
     state.blessingPoolOverrideId = null;
-    els.nextButton.disabled = true;
-    els.blessingPanel.classList.remove("is-visible");
-    closeAbilityInfoPanel();
-    closeBlessingInfoPanel();
-    els.returnToEndSummaryButton.hidden = true;
-    els.endPanel.classList.add("is-visible");
-    els.endTitle.textContent = cleared ? "冒險成功" : segmentCleared ? "海灘段落完成" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
-    els.endText.textContent = getEndText(outcome);
-    els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
-    renderEndSummary(outcome);
-    els.retryButton.textContent = state.pendingAnpingArrival ? "繼續前行" : `回到${getRunOriginSafeAreaName()}`;
-    els.resultLabel.textContent = cleared
-      ? `${getAdventureSourceName()}突破`
-      : segmentCleared ? `${getAdventureSourceName()}段落完成`
-      : evacuated ? "撤離成功" : retreated ? "返回據點" : "本輪結束";
-    render();
-    if (!state.pendingAnpingArrival) windowRef.requestAnimationFrame(flushAchievementUnlockQueue);
+    afterAdventureSaved(() => {
+      els.nextButton.disabled = true;
+      els.blessingPanel.classList.remove("is-visible");
+      closeAbilityInfoPanel();
+      closeBlessingInfoPanel();
+      els.returnToEndSummaryButton.hidden = true;
+      els.endPanel.classList.add("is-visible");
+      els.endTitle.textContent = cleared ? "冒險成功" : segmentCleared ? "海灘段落完成" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
+      els.endText.textContent = getEndText(outcome);
+      els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
+      renderEndSummary(outcome);
+      els.retryButton.textContent = state.pendingAnpingArrival ? "繼續前行" : `回到${getRunOriginSafeAreaName()}`;
+      els.resultLabel.textContent = cleared
+        ? `${getAdventureSourceName()}突破`
+        : segmentCleared ? `${getAdventureSourceName()}段落完成`
+        : evacuated ? "撤離成功" : retreated ? "返回據點" : "本輪結束";
+      render();
+      if (!state.pendingAnpingArrival) windowRef.requestAnimationFrame(flushAchievementUnlockQueue);
+    });
   }
 
   function loseRun() {

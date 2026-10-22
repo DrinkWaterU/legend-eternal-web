@@ -22,6 +22,8 @@ export function createAnpingArrivalController({
   closeAbilityInfoPanel,
   closeBlessingInfoPanel,
   saveGameSafe,
+  runSaveOperation = (action) => action(),
+  afterAdventureSaved = (effect) => effect(),
   returnToSafeArea
 }) {
   function clearTimers() {
@@ -131,6 +133,10 @@ export function createAnpingArrivalController({
   }
 
   function completeStory() {
+    return runSaveOperation(completeStoryOperation);
+  }
+
+  function completeStoryOperation() {
     if (!state.anpingArrivalContext || state.anpingArrivalInputLocked === "saving") return false;
     state.anpingArrivalInputLocked = "saving";
     els.continueAnpingArrivalButton.disabled = true;
@@ -152,9 +158,11 @@ export function createAnpingArrivalController({
       els.anpingArrivalUnlock.textContent = "瀏覽器無法保存目前進度，請重新嘗試。";
       return false;
     }
-    state.pendingAnpingArrival = false;
-    closePanel();
-    returnToSafeArea(ANPING_TOWN_SAFE_AREA_ID);
+    afterAdventureSaved(() => {
+      state.pendingAnpingArrival = false;
+      closePanel();
+      returnToSafeArea(ANPING_TOWN_SAFE_AREA_ID);
+    });
     return true;
   }
 
