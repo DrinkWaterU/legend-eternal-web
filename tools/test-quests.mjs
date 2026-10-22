@@ -16,7 +16,7 @@ import { questDefinitions } from "../src/data/quests.js";
 import { createQuestRuntime } from "../src/features/quest/questRuntime.js";
 
 validateGameDefinitions();
-assert.equal(Object.keys(questDefinitions).length, 15);
+assert.equal(Object.keys(questDefinitions).length, 20);
 
 assert.equal(
   formatQuestObjective(questDefinitions["plains-slime-suppression"]),

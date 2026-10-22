@@ -9,7 +9,10 @@
     "source": "平原 / 史萊姆系",
     "sellPrice": 1,
     "sortOrder": 100,
-    "tags": ["plains", "slime"]
+    "tags": [
+      "plains",
+      "slime"
+    ]
   },
   "clear_slime_core": {
     "id": "clear_slime_core",
@@ -21,7 +24,10 @@
     "source": "平原 / 史萊姆、變異史萊姆",
     "sellPrice": 3,
     "sortOrder": 120,
-    "tags": ["plains", "slime"]
+    "tags": [
+      "plains",
+      "slime"
+    ]
   },
   "toxic_slime_drop": {
     "id": "toxic_slime_drop",
@@ -33,7 +39,11 @@
     "source": "平原 / 毒史萊姆、變異史萊姆",
     "sellPrice": 3,
     "sortOrder": 130,
-    "tags": ["plains", "slime", "poison"]
+    "tags": [
+      "plains",
+      "slime",
+      "poison"
+    ]
   },
   "soft_hide": {
     "id": "soft_hide",
@@ -45,7 +55,11 @@
     "source": "平原 / 野獸系",
     "sellPrice": 1,
     "sortOrder": 200,
-    "tags": ["plains", "beast", "hide"]
+    "tags": [
+      "plains",
+      "beast",
+      "hide"
+    ]
   },
   "sharp_fang": {
     "id": "sharp_fang",
@@ -57,7 +71,11 @@
     "source": "平原 / 草原狼、尖角兔",
     "sellPrice": 1,
     "sortOrder": 210,
-    "tags": ["plains", "beast", "fang"]
+    "tags": [
+      "plains",
+      "beast",
+      "fang"
+    ]
   },
   "hard_tusk": {
     "id": "hard_tusk",
@@ -69,7 +87,11 @@
     "source": "平原 / 野豬、巨大野豬",
     "sellPrice": 3,
     "sortOrder": 220,
-    "tags": ["plains", "beast", "tusk"]
+    "tags": [
+      "plains",
+      "beast",
+      "tusk"
+    ]
   },
   "thick_boar_hide": {
     "id": "thick_boar_hide",
@@ -81,7 +103,11 @@
     "source": "平原 / 巨大野豬、魔化野豬王",
     "sellPrice": 4,
     "sortOrder": 230,
-    "tags": ["plains", "beast", "hide"]
+    "tags": [
+      "plains",
+      "beast",
+      "hide"
+    ]
   },
   "tainted_tusk": {
     "id": "tainted_tusk",
@@ -93,7 +119,12 @@
     "source": "平原 / 魔化野豬王",
     "sellPrice": 8,
     "sortOrder": 300,
-    "tags": ["plains", "beast", "tusk", "tainted"]
+    "tags": [
+      "plains",
+      "beast",
+      "tusk",
+      "tainted"
+    ]
   },
   "forest_pelt": {
     "id": "forest_pelt",
@@ -105,7 +136,11 @@
     "source": "森林 / 森林狼、迷霧獵狼",
     "sellPrice": 2,
     "sortOrder": 400,
-    "tags": ["forest", "beast", "hide"]
+    "tags": [
+      "forest",
+      "beast",
+      "hide"
+    ]
   },
   "spider_silk": {
     "id": "spider_silk",
@@ -117,7 +152,11 @@
     "source": "森林 / 蜘蛛、毒蜘蛛",
     "sellPrice": 2,
     "sortOrder": 410,
-    "tags": ["forest", "insect", "silk"]
+    "tags": [
+      "forest",
+      "insect",
+      "silk"
+    ]
   },
   "vine_fiber": {
     "id": "vine_fiber",
@@ -129,7 +168,11 @@
     "source": "森林 / 藤蔓怪、古藤守衛",
     "sellPrice": 2,
     "sortOrder": 420,
-    "tags": ["forest", "plant", "fiber"]
+    "tags": [
+      "forest",
+      "plant",
+      "fiber"
+    ]
   },
   "mushroom_cap": {
     "id": "mushroom_cap",
@@ -141,7 +184,11 @@
     "source": "森林 / 蘑菇怪",
     "sellPrice": 2,
     "sortOrder": 430,
-    "tags": ["forest", "plant", "mushroom"]
+    "tags": [
+      "forest",
+      "plant",
+      "mushroom"
+    ]
   },
   "bee_wing": {
     "id": "bee_wing",
@@ -153,7 +200,11 @@
     "source": "森林 / 蜜蜂、毒巢蜂后",
     "sellPrice": 2,
     "sortOrder": 440,
-    "tags": ["forest", "insect", "wing"]
+    "tags": [
+      "forest",
+      "insect",
+      "wing"
+    ]
   },
   "venom_sac": {
     "id": "venom_sac",
@@ -165,7 +216,11 @@
     "source": "森林 / 毒蜘蛛、毒巢蜂后",
     "sellPrice": 5,
     "sortOrder": 500,
-    "tags": ["forest", "insect", "poison"]
+    "tags": [
+      "forest",
+      "insect",
+      "poison"
+    ]
   },
   "amber_honey": {
     "id": "amber_honey",
@@ -177,7 +232,11 @@
     "source": "森林 / 蜜蜂、毒巢蜂后",
     "sellPrice": 5,
     "sortOrder": 510,
-    "tags": ["forest", "insect", "honey"]
+    "tags": [
+      "forest",
+      "insect",
+      "honey"
+    ]
   },
   "bark_shell": {
     "id": "bark_shell",
@@ -189,7 +248,12 @@
     "source": "森林 / 樹皮甲蟲、古藤守衛、古木守衛",
     "sellPrice": 6,
     "sortOrder": 520,
-    "tags": ["forest", "insect", "plant", "shell"]
+    "tags": [
+      "forest",
+      "insect",
+      "plant",
+      "shell"
+    ]
   },
   "glowing_spore": {
     "id": "glowing_spore",
@@ -201,7 +265,11 @@
     "source": "森林 / 蘑菇怪、翠影鹿王",
     "sellPrice": 6,
     "sortOrder": 530,
-    "tags": ["forest", "plant", "spore"]
+    "tags": [
+      "forest",
+      "plant",
+      "spore"
+    ]
   },
   "ancient_wood_core": {
     "id": "ancient_wood_core",
@@ -213,7 +281,12 @@
     "source": "森林 / 古木守衛",
     "sellPrice": 14,
     "sortOrder": 600,
-    "tags": ["forest", "plant", "boss", "core"]
+    "tags": [
+      "forest",
+      "plant",
+      "boss",
+      "core"
+    ]
   },
   "verdant_antler": {
     "id": "verdant_antler",
@@ -225,7 +298,12 @@
     "source": "森林 / 翠影鹿王",
     "sellPrice": 14,
     "sortOrder": 610,
-    "tags": ["forest", "beast", "boss", "antler"]
+    "tags": [
+      "forest",
+      "beast",
+      "boss",
+      "antler"
+    ]
   },
   "goblin_scrap": {
     "id": "goblin_scrap",
@@ -237,7 +315,11 @@
     "source": "森林 / 哥布林系",
     "sellPrice": 2,
     "sortOrder": 700,
-    "tags": ["forest", "goblin", "metal"]
+    "tags": [
+      "forest",
+      "goblin",
+      "metal"
+    ]
   },
   "oily_leather_cord": {
     "id": "oily_leather_cord",
@@ -249,7 +331,11 @@
     "source": "森林 / 哥布林系",
     "sellPrice": 2,
     "sortOrder": 710,
-    "tags": ["forest", "goblin", "leather"]
+    "tags": [
+      "forest",
+      "goblin",
+      "leather"
+    ]
   },
   "crude_venom": {
     "id": "crude_venom",
@@ -261,7 +347,11 @@
     "source": "森林 / 哥布林毒鏢手、血骨薩滿",
     "sellPrice": 5,
     "sortOrder": 720,
-    "tags": ["forest", "goblin", "poison"]
+    "tags": [
+      "forest",
+      "goblin",
+      "poison"
+    ]
   },
   "bloodbone_charm": {
     "id": "bloodbone_charm",
@@ -273,7 +363,12 @@
     "source": "森林 / 血骨薩滿",
     "sellPrice": 14,
     "sortOrder": 730,
-    "tags": ["forest", "goblin", "boss", "ritual"]
+    "tags": [
+      "forest",
+      "goblin",
+      "boss",
+      "ritual"
+    ]
   },
   "reef_shell": {
     "id": "reef_shell",
@@ -285,7 +380,11 @@
     "source": "海灘 / 礁甲蟹、潮汐巨蟹",
     "sellPrice": 3,
     "sortOrder": 800,
-    "tags": ["beach", "beast", "shell"]
+    "tags": [
+      "beach",
+      "beast",
+      "shell"
+    ]
   },
   "jelly_membrane": {
     "id": "jelly_membrane",
@@ -297,7 +396,11 @@
     "source": "海灘 / 鹽霧水母、腐潮水母",
     "sellPrice": 3,
     "sortOrder": 810,
-    "tags": ["beach", "slime", "jellyfish"]
+    "tags": [
+      "beach",
+      "slime",
+      "jellyfish"
+    ]
   },
   "salt_crystal": {
     "id": "salt_crystal",
@@ -309,7 +412,11 @@
     "source": "海灘 / 鹽霧水母、魚人鹽矛手、腐潮水母",
     "sellPrice": 7,
     "sortOrder": 820,
-    "tags": ["beach", "salt", "defense"]
+    "tags": [
+      "beach",
+      "salt",
+      "defense"
+    ]
   },
   "shore_hide": {
     "id": "shore_hide",
@@ -321,7 +428,11 @@
     "source": "海灘 / 沙痕獵獸",
     "sellPrice": 3,
     "sortOrder": 830,
-    "tags": ["beach", "beast", "hide"]
+    "tags": [
+      "beach",
+      "beast",
+      "hide"
+    ]
   },
   "tidewing_membrane": {
     "id": "tidewing_membrane",
@@ -333,7 +444,11 @@
     "source": "海灘 / 潮翼掠食者",
     "sellPrice": 3,
     "sortOrder": 840,
-    "tags": ["beach", "beast", "membrane"]
+    "tags": [
+      "beach",
+      "beast",
+      "membrane"
+    ]
   },
   "fishman_scale": {
     "id": "fishman_scale",
@@ -345,7 +460,11 @@
     "source": "海灘 / 魚人斥候、魚人鹽矛手",
     "sellPrice": 3,
     "sortOrder": 850,
-    "tags": ["beach", "fishman", "scale"]
+    "tags": [
+      "beach",
+      "fishman",
+      "scale"
+    ]
   },
   "reef_claw_core": {
     "id": "reef_claw_core",
@@ -357,7 +476,12 @@
     "source": "海灘 / 巨鉗礁甲蟹、潮汐巨蟹",
     "sellPrice": 7,
     "sortOrder": 860,
-    "tags": ["beach", "beast", "elite", "core"]
+    "tags": [
+      "beach",
+      "beast",
+      "elite",
+      "core"
+    ]
   },
   "brine_core": {
     "id": "brine_core",
@@ -369,7 +493,12 @@
     "source": "海灘 / 腐潮水母",
     "sellPrice": 7,
     "sortOrder": 870,
-    "tags": ["beach", "slime", "elite", "core"]
+    "tags": [
+      "beach",
+      "slime",
+      "elite",
+      "core"
+    ]
   },
   "tidal_claw_core": {
     "id": "tidal_claw_core",
@@ -381,7 +510,12 @@
     "source": "海灘 / 潮汐巨蟹",
     "sellPrice": 18,
     "sortOrder": 880,
-    "tags": ["beach", "beast", "boss", "core"]
+    "tags": [
+      "beach",
+      "beast",
+      "boss",
+      "core"
+    ]
   },
   "cave_shell_fragment": {
     "id": "cave_shell_fragment",
@@ -393,7 +527,12 @@
     "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮祭司、深潮魚人首領",
     "sellPrice": 3,
     "sortOrder": 900,
-    "tags": ["coast", "cave", "fishman", "shell"]
+    "tags": [
+      "coast",
+      "cave",
+      "fishman",
+      "shell"
+    ]
   },
   "tidebone_fragment": {
     "id": "tidebone_fragment",
@@ -405,7 +544,12 @@
     "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮咒師、深潮魚人首領",
     "sellPrice": 3,
     "sortOrder": 910,
-    "tags": ["coast", "cave", "fishman", "bone"]
+    "tags": [
+      "coast",
+      "cave",
+      "fishman",
+      "bone"
+    ]
   },
   "tide_mark_shard": {
     "id": "tide_mark_shard",
@@ -417,7 +561,13 @@
     "source": "海岸洞穴 / 魚人潮祭司、魚人潮咒師、精英魚人礁衛、深潮魚人首領",
     "sellPrice": 7,
     "sortOrder": 920,
-    "tags": ["coast", "cave", "fishman", "tide", "status"]
+    "tags": [
+      "coast",
+      "cave",
+      "fishman",
+      "tide",
+      "status"
+    ]
   },
   "deep_tide_core": {
     "id": "deep_tide_core",
@@ -429,6 +579,96 @@
     "source": "海岸洞穴 / 深潮魚人首領",
     "sellPrice": 18,
     "sortOrder": 930,
-    "tags": ["coast", "cave", "fishman", "boss", "core"]
+    "tags": [
+      "coast",
+      "cave",
+      "fishman",
+      "boss",
+      "core"
+    ]
+  },
+  "highland_hide": {
+    "id": "highland_hide",
+    "name": "高地韌皮",
+    "rarity": "common",
+    "category": "material",
+    "description": "岩羊與獵犬留下的厚韌皮革，乾燥後仍有彈性。",
+    "usage": "可用於高地武器鍛造、整備強化或公會交付；販售前可先比較用途。",
+    "source": "斷風高地 / 當地魔物與探索",
+    "sellPrice": 4,
+    "sortOrder": 1000,
+    "tags": [
+      "highlands"
+    ]
+  },
+  "slate_shard": {
+    "id": "slate_shard",
+    "name": "層岩薄片",
+    "rarity": "common",
+    "category": "material",
+    "description": "沿著風蝕層剝落的石片，薄而不易折斷。",
+    "usage": "可用於高地武器鍛造、整備強化或公會交付；販售前可先比較用途。",
+    "source": "斷風高地 / 當地魔物與探索",
+    "sellPrice": 4,
+    "sortOrder": 1010,
+    "tags": [
+      "highlands"
+    ]
+  },
+  "gale_feather": {
+    "id": "gale_feather",
+    "name": "逆風翎羽",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "脊羽鷹用來抵禦強風的硬翎，羽軸輕而結實。",
+    "usage": "可用於高地武器鍛造、整備強化或公會交付；販售前可先比較用途。",
+    "source": "斷風高地 / 當地魔物與探索",
+    "sellPrice": 7,
+    "sortOrder": 1020,
+    "tags": [
+      "highlands"
+    ]
+  },
+  "watcher_knot": {
+    "id": "watcher_knot",
+    "name": "守望繩結",
+    "rarity": "uncommon",
+    "category": "material",
+    "description": "哨衛交接時留下的繩結，纖維中混有細碎岩粉。",
+    "usage": "可用於高地武器鍛造、整備強化或公會交付；販售前可先比較用途。",
+    "source": "斷風高地 / 當地魔物與探索",
+    "sellPrice": 8,
+    "sortOrder": 1030,
+    "tags": [
+      "highlands"
+    ]
+  },
+  "ram_horn_core": {
+    "id": "ram_horn_core",
+    "name": "裂嶺角髓",
+    "rarity": "rare",
+    "category": "material",
+    "description": "裂嶺角王角根中緻密的髓質，能承受極強的撞擊。",
+    "usage": "可用於高地武器鍛造、整備強化或公會交付；販售前可先比較用途。",
+    "source": "斷風高地 / 當地魔物與探索",
+    "sellPrice": 22,
+    "sortOrder": 1040,
+    "tags": [
+      "highlands"
+    ]
+  },
+  "windheart_core": {
+    "id": "windheart_core",
+    "name": "斷風心核",
+    "rarity": "rare",
+    "category": "material",
+    "description": "古老守望者胸口的石核，裂隙間還留著規律的風鳴。",
+    "usage": "可用於高地武器鍛造、整備強化或公會交付；販售前可先比較用途。",
+    "source": "斷風高地 / 當地魔物與探索",
+    "sellPrice": 24,
+    "sortOrder": 1050,
+    "tags": [
+      "highlands"
+    ]
   }
 }

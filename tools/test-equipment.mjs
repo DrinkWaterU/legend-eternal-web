@@ -24,7 +24,7 @@ import {
 import { formatWeaponEffects } from "../src/ui/weaponViewHelpers.js";
 
 assert.equal(assertWeaponDefinitions(weaponDefinitions, { materialDefinitions }), true);
-assert.equal(Object.keys(weaponDefinitions).length, 13, "v0.2.7.3 應保留十二把既有武器並新增凱哥破舊戰斧");
+assert.equal(Object.keys(weaponDefinitions).length, 18, "v0.2.8 保留十三把既有武器並新增五把高地武器");
 assert.deepEqual(Object.keys(weaponRarityDefinitions), ["common", "uncommon", "rare"]);
 assert.equal(getWeaponRarityDefinition("common").label, "普通");
 assert.equal(getWeaponRarityDefinition("uncommon").label, "精良");
@@ -44,7 +44,8 @@ assert.deepEqual(
     "tidepiercer-shortbow": "uncommon",
     "reefbreaker-warhammer": "uncommon",
     "brinefang-dagger": "uncommon",
-    "worn-battle-axe": "common"
+    "worn-battle-axe": "common",
+    "windbreak-sword": "uncommon", "ridgewind-bow": "uncommon", "cairn-warhammer": "uncommon", "gale-dagger": "uncommon", "stormsplit-axe": "uncommon"
   }
 );
 assert.equal(

@@ -13,7 +13,10 @@
       "enemyKinds": [],
       "enemyFamilies": []
     },
-    "rewards": { "gold": 20, "materials": [] },
+    "rewards": {
+      "gold": 20,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -30,7 +33,10 @@
       "routeIds": [],
       "clearSourceIds": []
     },
-    "rewards": { "gold": 20, "materials": [] },
+    "rewards": {
+      "gold": 20,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -46,10 +52,15 @@
       "regionIds": [],
       "routeIds": [],
       "enemyIds": [],
-      "enemyKinds": ["精英"],
+      "enemyKinds": [
+        "精英"
+      ],
       "enemyFamilies": []
     },
-    "rewards": { "gold": 25, "materials": [] },
+    "rewards": {
+      "gold": 25,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -62,13 +73,20 @@
     "objective": {
       "type": "defeatEnemies",
       "target": 18,
-      "regionIds": ["forest"],
+      "regionIds": [
+        "forest"
+      ],
       "routeIds": [],
       "enemyIds": [],
       "enemyKinds": [],
-      "enemyFamilies": ["insect"]
+      "enemyFamilies": [
+        "insect"
+      ]
     },
-    "rewards": { "gold": 35, "materials": [] },
+    "rewards": {
+      "gold": 35,
+      "materials": []
+    },
     "weight": 70,
     "repeatable": true,
     "enabled": true
@@ -84,10 +102,15 @@
       "regionIds": [],
       "routeIds": [],
       "enemyIds": [],
-      "enemyKinds": ["首領"],
+      "enemyKinds": [
+        "首領"
+      ],
       "enemyFamilies": []
     },
-    "rewards": { "gold": 30, "materials": [] },
+    "rewards": {
+      "gold": 30,
+      "materials": []
+    },
     "weight": 70,
     "repeatable": true,
     "enabled": true
@@ -100,10 +123,16 @@
     "objective": {
       "type": "deliverMaterials",
       "materials": [
-        { "id": "tainted_tusk", "quantity": 3 }
+        {
+          "id": "tainted_tusk",
+          "quantity": 3
+        }
       ]
     },
-    "rewards": { "gold": 55, "materials": [] },
+    "rewards": {
+      "gold": 55,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -116,13 +145,20 @@
     "objective": {
       "type": "defeatEnemies",
       "target": 20,
-      "regionIds": ["plains"],
+      "regionIds": [
+        "plains"
+      ],
       "routeIds": [],
       "enemyIds": [],
       "enemyKinds": [],
-      "enemyFamilies": ["slime"]
+      "enemyFamilies": [
+        "slime"
+      ]
     },
-    "rewards": { "gold": 20, "materials": [] },
+    "rewards": {
+      "gold": 20,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -135,13 +171,20 @@
     "objective": {
       "type": "defeatEnemies",
       "target": 15,
-      "regionIds": ["forest"],
+      "regionIds": [
+        "forest"
+      ],
       "routeIds": [],
       "enemyIds": [],
       "enemyKinds": [],
-      "enemyFamilies": ["plant"]
+      "enemyFamilies": [
+        "plant"
+      ]
     },
-    "rewards": { "gold": 25, "materials": [] },
+    "rewards": {
+      "gold": 25,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -154,11 +197,20 @@
     "objective": {
       "type": "clearAdventure",
       "target": 1,
-      "regionIds": ["forest"],
-      "routeIds": ["goblin-camp"],
-      "clearSourceIds": ["goblinCamp"]
+      "regionIds": [
+        "forest"
+      ],
+      "routeIds": [
+        "goblin-camp"
+      ],
+      "clearSourceIds": [
+        "goblinCamp"
+      ]
     },
-    "rewards": { "gold": 35, "materials": [] },
+    "rewards": {
+      "gold": 35,
+      "materials": []
+    },
     "weight": 70,
     "repeatable": true,
     "enabled": true
@@ -171,10 +223,16 @@
     "objective": {
       "type": "deliverMaterials",
       "materials": [
-        { "id": "ancient_wood_core", "quantity": 1 }
+        {
+          "id": "ancient_wood_core",
+          "quantity": 1
+        }
       ]
     },
-    "rewards": { "gold": 45, "materials": [] },
+    "rewards": {
+      "gold": 45,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -187,10 +245,16 @@
     "objective": {
       "type": "deliverMaterials",
       "materials": [
-        { "id": "verdant_antler", "quantity": 1 }
+        {
+          "id": "verdant_antler",
+          "quantity": 1
+        }
       ]
     },
-    "rewards": { "gold": 45, "materials": [] },
+    "rewards": {
+      "gold": 45,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -203,10 +267,16 @@
     "objective": {
       "type": "deliverMaterials",
       "materials": [
-        { "id": "bloodbone_charm", "quantity": 1 }
+        {
+          "id": "bloodbone_charm",
+          "quantity": 1
+        }
       ]
     },
-    "rewards": { "gold": 45, "materials": [] },
+    "rewards": {
+      "gold": 45,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -219,13 +289,18 @@
     "objective": {
       "type": "defeatEnemies",
       "target": 20,
-      "regionIds": ["beach"],
+      "regionIds": [
+        "beach"
+      ],
       "routeIds": [],
       "enemyIds": [],
       "enemyKinds": [],
       "enemyFamilies": []
     },
-    "rewards": { "gold": 30, "materials": [] },
+    "rewards": {
+      "gold": 30,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
@@ -238,11 +313,18 @@
     "objective": {
       "type": "clearAdventure",
       "target": 1,
-      "regionIds": ["beach"],
+      "regionIds": [
+        "beach"
+      ],
       "routeIds": [],
-      "clearSourceIds": ["main"]
+      "clearSourceIds": [
+        "main"
+      ]
     },
-    "rewards": { "gold": 40, "materials": [] },
+    "rewards": {
+      "gold": 40,
+      "materials": []
+    },
     "weight": 70,
     "repeatable": true,
     "enabled": true
@@ -255,12 +337,137 @@
     "objective": {
       "type": "deliverMaterials",
       "materials": [
-        { "id": "tidal_claw_core", "quantity": 1 }
+        {
+          "id": "tidal_claw_core",
+          "quantity": 1
+        }
       ]
     },
-    "rewards": { "gold": 55, "materials": [] },
+    "rewards": {
+      "gold": 55,
+      "materials": []
+    },
     "weight": 100,
     "repeatable": true,
     "enabled": true
+  },
+  {
+    "id": "highlands-patrol",
+    "name": "高地山路清剿",
+    "rarity": "common",
+    "description": "清除高地山路的威脅，為往返旅人保留一條通路。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 18,
+      "regionIds": [
+        "highlands"
+      ]
+    },
+    "rewards": {
+      "gold": 45,
+      "materials": []
+    },
+    "weight": 90,
+    "repeatable": true,
+    "enabled": true,
+    "requiredRegionId": "highlands"
+  },
+  {
+    "id": "highlands-signals",
+    "name": "隘口哨聲調查",
+    "rarity": "advanced",
+    "description": "優先處理結繩哨衛，記下它們支援同伴的方式。",
+    "objective": {
+      "type": "defeatEnemies",
+      "target": 4,
+      "regionIds": [
+        "highlands"
+      ],
+      "enemyIds": [
+        "highland-signal-keeper"
+      ]
+    },
+    "rewards": {
+      "gold": 55,
+      "materials": []
+    },
+    "weight": 90,
+    "repeatable": true,
+    "enabled": true,
+    "requiredRegionId": "highlands"
+  },
+  {
+    "id": "highlands-survey",
+    "name": "穿越斷風隘口",
+    "rarity": "advanced",
+    "description": "完成高地路線，確認守望者後方的通行情況。",
+    "objective": {
+      "type": "clearAdventure",
+      "target": 1,
+      "regionIds": [
+        "highlands"
+      ],
+      "clearSourceIds": [
+        "highlandsAscent"
+      ]
+    },
+    "rewards": {
+      "gold": 75,
+      "materials": []
+    },
+    "weight": 90,
+    "repeatable": true,
+    "enabled": true,
+    "requiredRegionId": "highlands"
+  },
+  {
+    "id": "highlands-supplies",
+    "name": "高地護具試材",
+    "rarity": "common",
+    "description": "交付韌皮與薄岩，供公會測試能承受隘口強風的護具。",
+    "objective": {
+      "type": "deliverMaterials",
+      "materials": [
+        {
+          "id": "highland_hide",
+          "quantity": 4
+        },
+        {
+          "id": "slate_shard",
+          "quantity": 3
+        }
+      ]
+    },
+    "rewards": {
+      "gold": 55,
+      "materials": []
+    },
+    "weight": 90,
+    "repeatable": true,
+    "enabled": true,
+    "requiredRegionId": "highlands"
+  },
+  {
+    "id": "highlands-windheart",
+    "name": "守望心核研究",
+    "rarity": "rare",
+    "description": "公會希望研究心核裡規律的風鳴；交付前請先考慮鍛造需求。",
+    "objective": {
+      "type": "deliverMaterials",
+      "materials": [
+        {
+          "id": "windheart_core",
+          "quantity": 1
+        }
+      ]
+    },
+    "rewards": {
+      "gold": 80,
+      "materials": []
+    },
+    "weight": 90,
+    "repeatable": true,
+    "enabled": true,
+    "requiredRegionId": "highlands"
   }
 ]

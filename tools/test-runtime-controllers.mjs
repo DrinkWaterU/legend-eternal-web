@@ -177,14 +177,14 @@ assert.equal(typeof debugActions.clearActiveQuest, "function");
 assert.equal(typeof debugActions.resetQuestData, "function");
 
 const blacksmithResourcesMessage = debugActions.giveBlacksmithResources();
-assert.match(blacksmithResourcesMessage, /2680 金幣/);
-assert.equal(debugSaveData.inventory.gold, 2680);
+assert.match(blacksmithResourcesMessage, /4280 金幣/);
+assert.equal(debugSaveData.inventory.gold, 4280);
 assert.ok(debugSaveData.inventory.materials.goblin_scrap.quantity >= 8);
 assert.ok(debugSaveData.inventory.materials.spider_silk.quantity >= 5);
 
 const giveWeaponsMessage = debugActions.giveAllWeapons();
-assert.match(giveWeaponsMessage, /全部 13 把武器/);
-assert.equal(Object.keys(debugSaveData.inventory.weapons).length, 13, "Debug 應可一次取得全部正式武器");
+assert.match(giveWeaponsMessage, /全部 18 把武器/);
+assert.equal(Object.keys(debugSaveData.inventory.weapons).length, 18, "Debug 應可一次取得全部正式武器");
 debugSaveData.progression.characters.adventurer.equipment.weaponId = "iron-longsword";
 debugSaveData.progression.characters.archer.equipment.weaponId = "hunter-shortbow";
 const clearWeaponsMessage = debugActions.clearAllWeapons();

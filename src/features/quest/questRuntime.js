@@ -9,6 +9,8 @@ import {
   normalizeQuestState
 } from "../../core/questRules.js";
 import { clone, sumSafeIntegers, toSafeInteger } from "../../utils.js";
+import { getRegionAccess } from "../../core/regionAccess.js";
+import { regionDefinitions } from "../../data/regions/index.js";
 
 export function createQuestRuntime({
   saveStore,
@@ -21,9 +23,14 @@ export function createQuestRuntime({
     return normalizeQuestState(saveStore.current.quests, questDefinitions);
   }
 
+  function availableDefinitions(save = saveStore.current) {
+    return Object.fromEntries(Object.entries(questDefinitions).filter(([, quest]) =>
+      !quest.requiredRegionId || getRegionAccess(regionDefinitions[quest.requiredRegionId], save).unlocked));
+  }
+
   function populateBoard(quests) {
     if (quests.board.questIds.length === 4) return [...quests.board.questIds];
-    quests.board.questIds = generateQuestBoard(questDefinitions, {
+    quests.board.questIds = generateQuestBoard(availableDefinitions(), {
       random,
       excludedQuestId: quests.board.excludedQuestId
     });
@@ -55,7 +62,7 @@ export function createQuestRuntime({
     return transactQuest((draft) => {
       const quests = draft.quests;
       populateBoard(quests);
-      if (quests.active || !quests.board.questIds.includes(questId) || !questDefinitions[questId]) {
+      if (quests.active || !quests.board.questIds.includes(questId) || !availableDefinitions(draft)[questId]) {
         throw new Error(quests.active ? "已有進行中的委託。" : "這項委託目前不在看板上。");
       }
       quests.active = {
@@ -118,7 +125,7 @@ export function createQuestRuntime({
       completeQuestRecord(quest, reward, quests);
       quests.active = null;
       quests.board.excludedQuestId = quest.id;
-      quests.board.questIds = generateQuestBoard(questDefinitions, { random, excludedQuestId: quest.id });
+      quests.board.questIds = generateQuestBoard(availableDefinitions(draft), { random, excludedQuestId: quest.id });
       quests.board.generatedAtCompletionCount = quests.statistics.completedTotal;
 
       return { ok: true, quest, reward };

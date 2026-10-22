@@ -1,10 +1,12 @@
 import beachData from "./beach.json" with { type: "json" };
 import caveData from "./cave.json" with { type: "json" };
 import goblinData from "./goblin.json" with { type: "json" };
+import highlandsData from "./highlands.json" with { type: "json" };
 
 export const goblinBlessings = goblinData.blessings;
 
 export const blessingPoolDefinitions = Object.freeze({
+  highlands: { id: "highlands", name: highlandsData.name, blessings: highlandsData.blessings, ownerType: "region", ownerId: "highlands", regionId: "highlands" },
   [goblinData.id]: {
     id: goblinData.id,
     name: goblinData.name,

@@ -8,6 +8,7 @@ import { DEFAULT_SAFE_AREA_ID } from "../../data/safeAreas.js";
 import { getRouteDefinition } from "../../data/routes/index.js";
 import { showCombatLayout } from "../../ui/eventView.js";
 import { clone } from "../../utils.js";
+import { getRegionAccess } from "../../core/regionAccess.js";
 import {
   captureAdventureRouteState,
   createAdventureRouteHandoff,
@@ -112,9 +113,11 @@ export function createRunLifecycleController({
     state.debugBuildRun = Boolean(debugBuildRun);
     state.run += 1;
     state.encounterIndex = encounterIndex;
+    state.activeRouteId = currentRegion().startRouteId || null;
+    state.routeEncounterIndex = encounterIndex;
     state.hero = hero;
     state.hero.fleesRemaining = runStartingFlees;
-    state.selectedBoss = selectRunBoss(currentRegion(), bossId);
+    state.selectedBoss = state.activeRouteId ? getRouteBossDefinition() : selectRunBoss(currentRegion(), bossId);
     state.phase = "danger";
     state.ended = false;
     state.defeatedEnemies = encounterIndex;
@@ -261,6 +264,8 @@ export function createRunLifecycleController({
   function prepareRunStart() {
     syncSelectionFromSave();
     const region = currentRegion();
+    const access = getRegionAccess(region, saveStore.current);
+    if (!access.unlocked) throw new Error(access.reason);
     const requestedPreparationId = hasPhoenixBlessing()
       ? uiState.selectedPreparationId
       : null;

@@ -9,7 +9,8 @@ export const QUEST_RARE_BOARD_CHANCE = 0.35;
 const REGION_LABELS = Object.freeze({
   plains: "平原",
   forest: "森林",
-  beach: "海灘"
+  beach: "海灘",
+  highlands: "斷風高地"
 });
 
 const ENEMY_FAMILY_LABELS = Object.freeze({
@@ -101,9 +102,9 @@ export function generateQuestBoard(
   const rare = candidates.filter((quest) => quest.rarity === "rare");
   const selected = [];
   const includeRare = rare.length > 0 && clampRandom(random()) < rareChance;
-  const eligibleCandidates = includeRare
-    ? candidates
-    : candidates.filter((quest) => quest.rarity !== "rare");
+  // The optional rare slot is selected above. Filling ordinary slots must not
+  // draw a second rare quest as the content pool grows.
+  const eligibleCandidates = candidates.filter((quest) => quest.rarity !== "rare");
 
   if (advanced.length === 0) throw new Error("委託看板缺少可用的進階委託。");
   if (includeRare) selected.push(weightedPick(rare, random));

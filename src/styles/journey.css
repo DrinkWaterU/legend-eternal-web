@@ -59,6 +59,17 @@
   #gameScreen .enemy-card { align-self: start; min-width: 0; }
 }
 @media (max-width: 959px) {
+  /* On narrow screens opaque combat cards conceal nearly the entire scene.
+     A small decorative vista retains the current stage's geographic identity. */
+  body[data-region="highlands"] #combatLayout::before {
+    content: "";
+    display: block;
+    flex: 0 0 84px;
+    height: 84px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: linear-gradient(rgba(12, 20, 19, .12), rgba(12, 20, 19, .24)), var(--region-bg-desktop) center 55% / cover no-repeat;
+  }
   #campScreen .camp-layout { max-width: 620px; padding: 22px 18px; background: rgba(14, 24, 21, .88); }
   #campScreen .camp-copy { text-align: left; }
   #campScreen .camp-copy h2 { font-size: clamp(1.8rem, 7vw, 2.6rem); }
@@ -123,6 +134,16 @@ body:has(#menuScreen.is-active) .topbar h1 { font-size: clamp(1.8rem, 4vw, 3rem)
 #gameScreen .hero-combat-status:has(.meter-text.is-critical) { border-color: var(--danger); }
 #gameScreen .hero-combat-status .meter-text.is-critical { color: #ffb4a8; font-weight: 800; }
 #gameScreen .hero-combat-status:has(.meter-text.is-critical) .hp { background: var(--danger); }
+
+@media (min-width: 821px) and (max-width: 959px) {
+  body[data-region="highlands"] #combatLayout::before { display: none; }
+}
+@media (max-width: 820px) and (max-height: 860px) {
+  body[data-region="highlands"] #combatLayout::before { flex-basis: 44px; height: 44px; }
+  body[data-region="highlands"] #gameScreen .status-panel { padding: 10px; }
+  body[data-region="highlands"] #gameScreen .enemy-card { padding: 7px; }
+  body[data-region="highlands"] #gameScreen .combat-command-panel { margin-top: 8px; padding-top: 8px; }
+}
 #gameScreen button:focus-visible, #campScreen button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
 @media (min-width: 960px) {

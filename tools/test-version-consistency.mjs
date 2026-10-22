@@ -33,7 +33,7 @@ assert.match(html, new RegExp(`<p class="version-label">${escapeRegExp(officialV
 const htmlCacheVersions = [...html.matchAll(/(?:styles\.css|game\.js)\?v=([^"'&]+)/g)].map((match) => match[1]);
 assert.equal(htmlCacheVersions.length, 2, "index.html 應有 styles.css 與 game.js 兩個 cache version");
 assert.deepEqual([...new Set(htmlCacheVersions)], [cacheVersion], "index.html cache version 未同步");
-assert.match(html, /game\.js\?v=[^"']+&amp;build=v0276-alpha-1/, "v0.2.7.6 開發入口應提供獨立 build cache-buster");
+assert.match(html, /game\.js\?v=[^"']+&amp;build=v028-alpha-1/, "v0.2.7.6 開發入口應提供獨立 build cache-buster");
 
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
 assert.equal(styleCacheVersions.length, 8, "styles.css 應包含既有樣式及 A 版旅途場景樣式");

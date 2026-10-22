@@ -1,0 +1,70 @@
+{
+  "generator": "Built-in image_gen tool",
+  "date": "2026-10-22",
+  "assets": [
+    {
+      "id": "outer-desktop",
+      "file": "assets/images/regions/highlands/outer-desktop.png",
+      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "transparentBackground": false,
+      "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. LANDSCAPE 16:9. Outer ascending trail, leaning stone cairns and broad low flat-topped ridges. Open horizon."
+    },
+    {
+      "id": "outer-mobile",
+      "file": "assets/images/regions/highlands/outer-mobile.png",
+      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "transparentBackground": false,
+      "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. PORTRAIT 9:16, independently composed vertical ascending upland trail. Leaning cairn in upper left, a strong terraced slate cliff on right edge, distant open ridges above center. Top and side silhouettes readable around mobile game cards."
+    },
+    {
+      "id": "summit-desktop",
+      "file": "assets/images/regions/highlands/summit-desktop.png",
+      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "transparentBackground": false,
+      "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. LANDSCAPE 16:9. Inner summit pass: two tall weathered slate rock pillars frame a narrow ridge path, lowered clouds and a distant broken stone windbreak wall at upper right. More enclosed than outer area; not a duplicate layout."
+    },
+    {
+      "id": "summit-mobile",
+      "file": "assets/images/regions/highlands/summit-mobile.png",
+      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "transparentBackground": false,
+      "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. PORTRAIT 9:16. Summit pass in vertical composition: tall tiered slate pillar rises up left edge, a narrow rocky ridge ascends from lower right to upper center, distant broken windbreak wall at upper right under low pale clouds. Enclosed imposing terrain."
+    },
+    {
+      "id": "windbreak-sword-v2",
+      "file": "assets/images/icons/weapons/windbreak-sword-v2.png",
+      "reference": "rejected first sword candidate; style originally based on assets/images/icons/weapons/adventurer-pathfinder-sword.png",
+      "transparentBackground": true,
+      "prompt": "A decorative fantasy game inventory icon, stylized non-realistic coarse pixel art. One slender curved silver ceremonial saber, a narrow blade with a distinctive large enclosed D-shaped hand guard and brown wrapped grip. The long narrow profile and rounded hand guard must clearly differ from the reference's broad symmetrical profile. Place diagonally lower left to upper right. Thick dark pixel outlines, limited gray and white metal shades with a small pale sage accent, crisp square stair steps, no smooth painting. Entire object inside the square with clear margins, readable at a very small icon size. Transparent background, no text, frame, particles, people or action."
+    },
+    {
+      "id": "ridgewind-bow",
+      "prompt": "Replace the reference weapon with ONE new Windbreak Highlands weapon icon for the SAME pixel-art RPG inventory. Keep the reference's thick dark outline, hard square pixel stair steps, chunky 3-5 shade metal ramps, gray silver light, brown leather, same upper-right diagonal and handle lower-left. Transparent background with real alpha, no magenta, no panel, no frame, no words, no rarity glow or particles. Single centered whole weapon fits with 10% clear margin. Large unmistakable silhouette readable at 31 pixels, simple restrained cool slate stone and small pale sage accents. Not realistic, no smooth vector edges.A recurved hunting BOW only, two clearly separated dark slate-and-wood curved arms, visible taut BOWSTRING and wide transparent negative space, small pale feather near grip. No sword parts, no arrow.",
+      "file": "assets/images/icons/weapons/ridgewind-bow.png",
+      "reference": "assets/images/icons/weapons/adventurer-pathfinder-sword.png",
+      "transparentBackground": true
+    },
+    {
+      "id": "cairn-warhammer",
+      "prompt": "Replace the reference weapon with ONE new Windbreak Highlands weapon icon for the SAME pixel-art RPG inventory. Keep the reference's thick dark outline, hard square pixel stair steps, chunky 3-5 shade metal ramps, gray silver light, brown leather, same upper-right diagonal and handle lower-left. Transparent background with real alpha, no magenta, no panel, no frame, no words, no rarity glow or particles. Single centered whole weapon fits with 10% clear margin. Large unmistakable silhouette readable at 31 pixels, simple restrained cool slate stone and small pale sage accents. Not realistic, no smooth vector edges.A WARHAMMER only with a massive rectangular slate stone hammerhead bound by two gray iron bands and a brown leather handle. Clearly a heavy hammer, not a shield or axe.",
+      "file": "assets/images/icons/weapons/cairn-warhammer.png",
+      "reference": "assets/images/icons/weapons/adventurer-pathfinder-sword.png",
+      "transparentBackground": true
+    },
+    {
+      "id": "gale-dagger",
+      "prompt": "Replace the reference weapon with ONE new Windbreak Highlands weapon icon for the SAME pixel-art RPG inventory. Keep the reference's thick dark outline, hard square pixel stair steps, chunky 3-5 shade metal ramps, gray silver light, brown leather, same upper-right diagonal and handle lower-left. Transparent background with real alpha, no magenta, no panel, no frame, no words, no rarity glow or particles. Single centered whole weapon fits with 10% clear margin. Large unmistakable silhouette readable at 31 pixels, simple restrained cool slate stone and small pale sage accents. Not realistic, no smooth vector edges.A SHORT DAGGER only, compact hooked leaf-shaped silver blade, wide spine and short brown grip, blade roughly same length as grip plus guard, one small pale feather knot. Definitely shorter proportions than a sword.",
+      "file": "assets/images/icons/weapons/gale-dagger.png",
+      "reference": "assets/images/icons/weapons/adventurer-pathfinder-sword.png",
+      "transparentBackground": true
+    },
+    {
+      "id": "stormsplit-axe",
+      "prompt": "Replace the reference weapon with ONE new Windbreak Highlands weapon icon for the SAME pixel-art RPG inventory. Keep the reference's thick dark outline, hard square pixel stair steps, chunky 3-5 shade metal ramps, gray silver light, brown leather, same upper-right diagonal and handle lower-left. Transparent background with real alpha, no magenta, no panel, no frame, no words, no rarity glow or particles. Single centered whole weapon fits with 10% clear margin. Large unmistakable silhouette readable at 31 pixels, simple restrained cool slate stone and small pale sage accents. Not realistic, no smooth vector edges.A TWO-HANDED BATTLE AXE only with a single broad crescent steel axe blade, opposing short counterweight, long leather-bound shaft, slate stone collar. Clearly an axe silhouette, not a hammer or sword.",
+      "file": "assets/images/icons/weapons/stormsplit-axe.png",
+      "reference": "assets/images/icons/weapons/adventurer-pathfinder-sword.png",
+      "transparentBackground": true
+    }
+  ],
+  "review": "The first environment and first sword candidates were rejected; this manifest lists selected outputs. See local review record for issues, repairs and verification."
+}

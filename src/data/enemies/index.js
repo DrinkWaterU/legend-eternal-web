@@ -1,7 +1,8 @@
 import goblinEnemyData from "./goblin.json" with { type: "json" };
 import caveEnemyData from "./cave.json" with { type: "json" };
+import highlandsEnemyData from "./highlands.json" with { type: "json" };
 
-const enemyDataFiles = [goblinEnemyData, caveEnemyData];
+const enemyDataFiles = [goblinEnemyData, caveEnemyData, highlandsEnemyData];
 const COMBAT_ROLES = new Set(["frontline", "output", "support", "control"]);
 
 export const sharedEnemyDefinitions = buildDefinitionRegistry(

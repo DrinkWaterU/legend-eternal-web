@@ -15,7 +15,7 @@ import { createSaveTransferCode, parseSaveTransferCode } from "../src/ui/saveToo
 
 const route = getRouteDefinition("goblin-camp");
 assert.ok(route, "哥布林營地 Route 應存在");
-assert.equal(Object.keys(routeDefinitions).length, 2, "海岸洞穴啟用後應有兩條獨立 Route definition");
+assert.equal(Object.keys(routeDefinitions).length, 3, "高地啟用後應有三條獨立 Route definition");
 assert.equal(route.regionId, "forest");
 assert.equal(route.clearSourceId, "goblinCamp");
 assert.equal(route.blessingPoolId, "goblin");

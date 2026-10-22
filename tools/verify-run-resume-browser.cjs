@@ -171,7 +171,7 @@ async function main() {
           await page.click('#combatHomeButton');
           await page.click('#openRegionButton');
           await page.click('#campRegionButton');
-          await page.locator('#regionChoiceList button').last().click();
+          await page.locator('#regionChoiceList button').filter({ hasText: '海岸' }).click();
           await page.click('#startButton');
           assert.deepEqual((await save(page)).activeRun, before.activeRun);
           assert.match(await page.locator('#regionStartNotice').innerText(), /已有待續/);

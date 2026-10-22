@@ -2,7 +2,7 @@ import questData from "./quests.json" with { type: "json" };
 import { QUEST_RARITIES } from "./questRarities.js";
 
 const OBJECTIVE_TYPES = new Set(["defeatEnemies", "clearAdventure", "deliverMaterials"]);
-const EXPECTED_QUEST_DEFINITION_COUNT = 15;
+const EXPECTED_QUEST_DEFINITION_COUNT = 20;
 
 function deepFreeze(value) {
   if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;

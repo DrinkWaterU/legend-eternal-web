@@ -1,0 +1,784 @@
+{
+  "id": "windbreak-ascent",
+  "regionId": "highlands",
+  "clearSourceId": "highlandsAscent",
+  "name": "斷風高地",
+  "audio": {
+    "bgmId": "forest"
+  },
+  "visual": {
+    "background": {
+      "desktop": "assets/images/regions/highlands/outer-desktop.png",
+      "mobile": "assets/images/regions/highlands/outer-mobile.png",
+      "tone": "highlands"
+    },
+    "backgroundStages": [
+      {
+        "id": "outer",
+        "fromEncounter": 1,
+        "toEncounter": 10,
+        "desktop": "assets/images/regions/highlands/outer-desktop.png",
+        "mobile": "assets/images/regions/highlands/outer-mobile.png",
+        "tone": "highlands-outer"
+      },
+      {
+        "id": "summit",
+        "fromEncounter": 11,
+        "toEncounter": 20,
+        "desktop": "assets/images/regions/highlands/summit-desktop.png",
+        "mobile": "assets/images/regions/highlands/summit-mobile.png",
+        "tone": "highlands-summit"
+      }
+    ]
+  },
+  "blessingPoolId": "highlands",
+  "encounterPlan": [
+    {
+      "type": "normal",
+      "groupId": "ram"
+    },
+    {
+      "type": "normal",
+      "groupId": "hound"
+    },
+    {
+      "type": "normal",
+      "groupId": "signal"
+    },
+    {
+      "type": "normal",
+      "groupId": "guard"
+    },
+    {
+      "type": "normal",
+      "groupId": "formation"
+    },
+    {
+      "type": "normal",
+      "groupId": "hawk"
+    },
+    {
+      "type": "normal",
+      "groupId": "pack"
+    },
+    {
+      "type": "normal",
+      "groupId": "chime"
+    },
+    {
+      "type": "elite",
+      "groupId": "elite-ram"
+    },
+    {
+      "type": "boss",
+      "groupId": "king"
+    },
+    {
+      "type": "normal",
+      "groupId": "moss"
+    },
+    {
+      "type": "normal",
+      "groupId": "flock"
+    },
+    {
+      "type": "normal",
+      "groupId": "trio"
+    },
+    {
+      "type": "elite",
+      "groupId": "captain"
+    },
+    {
+      "type": "normal",
+      "groupId": "chime"
+    },
+    {
+      "type": "normal",
+      "groupId": "crosswind"
+    },
+    {
+      "type": "elite",
+      "groupId": "storm"
+    },
+    {
+      "type": "normal",
+      "groupId": "formation"
+    },
+    {
+      "type": "normal",
+      "groupId": "lastguard"
+    },
+    {
+      "type": "boss",
+      "groupId": "warden"
+    }
+  ],
+  "groups": [
+    {
+      "id": "ram",
+      "name": "坡道角羊",
+      "members": [
+        {
+          "enemyId": "highland-ram",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "hound",
+      "name": "灰脊追獵",
+      "members": [
+        {
+          "enemyId": "highland-hound",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "hawk",
+      "name": "風中獵影",
+      "members": [
+        {
+          "enemyId": "highland-hawk",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "name": "層岩擋路",
+      "members": [
+        {
+          "enemyId": "highland-slate-guard",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "signal",
+      "name": "初見哨衛",
+      "members": [
+        {
+          "enemyId": "highland-signal-keeper",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "pack",
+      "name": "岩背獵隊",
+      "members": [
+        {
+          "enemyId": "highland-ram",
+          "statScale": 0.85,
+          "rewardScale": 0.85
+        },
+        {
+          "enemyId": "highland-hound",
+          "statScale": 0.7,
+          "rewardScale": 0.7
+        }
+      ]
+    },
+    {
+      "id": "formation",
+      "name": "結繩護陣",
+      "members": [
+        {
+          "enemyId": "highland-slate-guard",
+          "statScale": 0.85,
+          "rewardScale": 0.85
+        },
+        {
+          "enemyId": "highland-signal-keeper",
+          "statScale": 0.8,
+          "rewardScale": 0.8
+        }
+      ]
+    },
+    {
+      "id": "chime",
+      "name": "風口鳴石",
+      "members": [
+        {
+          "enemyId": "highland-wind-chime",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "elite-ram",
+      "name": "領羊擋道",
+      "members": [
+        {
+          "enemyId": "highland-veteran-ram",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "king",
+      "name": "裂嶺之王",
+      "members": [
+        {
+          "enemyId": "highland-horn-king",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "moss",
+      "name": "苔背緩行",
+      "members": [
+        {
+          "enemyId": "highland-moss-carrier",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "flock",
+      "name": "隘口掠影",
+      "members": [
+        {
+          "enemyId": "highland-hawk",
+          "statScale": 0.8,
+          "rewardScale": 0.8
+        },
+        {
+          "enemyId": "highland-hound",
+          "statScale": 0.75,
+          "rewardScale": 0.75
+        }
+      ]
+    },
+    {
+      "id": "trio",
+      "name": "哨聲獵陣",
+      "members": [
+        {
+          "enemyId": "highland-slate-guard",
+          "statScale": 0.8,
+          "rewardScale": 0.8
+        },
+        {
+          "enemyId": "highland-hound",
+          "statScale": 0.65,
+          "rewardScale": 0.65
+        },
+        {
+          "enemyId": "highland-signal-keeper",
+          "statScale": 0.65,
+          "rewardScale": 0.65
+        }
+      ]
+    },
+    {
+      "id": "captain",
+      "name": "岩衛精銳",
+      "members": [
+        {
+          "enemyId": "highland-ridge-captain",
+          "statScale": 0.9,
+          "rewardScale": 0.9
+        },
+        {
+          "enemyId": "highland-signal-keeper",
+          "statScale": 0.65,
+          "rewardScale": 0.65
+        }
+      ]
+    },
+    {
+      "id": "storm",
+      "name": "暴風獵影",
+      "members": [
+        {
+          "enemyId": "highland-storm-hawk",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    },
+    {
+      "id": "crosswind",
+      "name": "交錯風刃",
+      "members": [
+        {
+          "enemyId": "highland-moss-carrier",
+          "statScale": 0.8,
+          "rewardScale": 0.8
+        },
+        {
+          "enemyId": "highland-wind-chime",
+          "statScale": 0.7,
+          "rewardScale": 0.7
+        }
+      ]
+    },
+    {
+      "id": "lastguard",
+      "name": "隘口守軍",
+      "members": [
+        {
+          "enemyId": "highland-slate-guard",
+          "statScale": 0.75,
+          "rewardScale": 0.75
+        },
+        {
+          "enemyId": "highland-hawk",
+          "statScale": 0.65,
+          "rewardScale": 0.65
+        },
+        {
+          "enemyId": "highland-signal-keeper",
+          "statScale": 0.65,
+          "rewardScale": 0.65
+        }
+      ]
+    },
+    {
+      "id": "warden",
+      "name": "斷風守望",
+      "members": [
+        {
+          "enemyId": "highland-windwarden",
+          "statScale": 1,
+          "rewardScale": 1
+        }
+      ]
+    }
+  ],
+  "counterEnemyIds": [
+    "highland-ram",
+    "highland-hound",
+    "highland-hawk",
+    "highland-slate-guard",
+    "highland-signal-keeper",
+    "highland-wind-chime",
+    "highland-moss-carrier"
+  ],
+  "fleeChance": {
+    "normal": 0.75,
+    "elite": 0.55,
+    "boss": 0
+  },
+  "events": {
+    "scheduleChance": 1,
+    "triggerBeforeEncounters": [
+      4,
+      8,
+      12,
+      15,
+      18
+    ],
+    "pool": [
+      "highlands-cairn",
+      "highlands-cache",
+      "highlands-spring",
+      "highlands-nest",
+      "highlands-wall"
+    ]
+  },
+  "eventDefinitions": [
+    {
+      "id": "highlands-cairn",
+      "weight": 100,
+      "triggerBeforeEncounter": 4,
+      "eyebrow": "高地見聞",
+      "title": "被風吹歪的路標",
+      "transitionText": [
+        "山路在前方轉了一個彎……",
+        "被風吹歪的路標出現在背風處。"
+      ],
+      "narrative": [
+        "一座石塔倒在岔路旁。底石上還留著前人刻下的痕跡。",
+        "重新堆好石塔需要力氣，卻也能讀懂藏在風裡的方向。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "read",
+          "meta": "損失 12 生命，取得額外祝福三選一。",
+          "title": "扶正石塔",
+          "description": "你把倒下的石塊重新堆回路口。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你把倒下的石塊重新堆回路口。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "loseHp",
+                "amount": 12
+              }
+            ],
+            "defaultTarget": {
+              "type": "chooseBlessing",
+              "poolId": "highlands",
+              "count": 3
+            },
+            "resultIds": [
+              "cairn-read"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        },
+        {
+          "id": "rest",
+          "meta": "恢復最大生命 12%，不取得祝福。",
+          "title": "靠岩休息",
+          "description": "你靠著岩背坐下，慢慢調整呼吸。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你靠著岩背坐下，慢慢調整呼吸。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "recoverHp",
+                "maxHpRatio": 0.12
+              }
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "cairn-rest"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        }
+      ]
+    },
+    {
+      "id": "highlands-cache",
+      "weight": 100,
+      "triggerBeforeEncounter": 8,
+      "eyebrow": "高地見聞",
+      "title": "哨衛留下的繩袋",
+      "transitionText": [
+        "山路在前方轉了一個彎……",
+        "哨衛留下的繩袋出現在背風處。"
+      ],
+      "narrative": [
+        "繩袋掛在斷掉的木樁上，袋底離山路還有一段距離。",
+        "裡頭的繩結仍能使用，但你必須探身越過風口。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "reach",
+          "meta": "損失 16 生命，取得守望繩結 ×2。",
+          "title": "取下繩袋",
+          "description": "你沿著木樁探身，抓住仍算結實的繩索。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你沿著木樁探身，抓住仍算結實的繩索。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "loseHp",
+                "amount": 16
+              },
+              {
+                "type": "grantMaterials",
+                "materials": [
+                  {
+                    "id": "watcher_knot",
+                    "quantity": 2
+                  }
+                ]
+              }
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "cache-reach"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        },
+        {
+          "id": "leave",
+          "meta": "不獲得物資，安全離開。",
+          "title": "記下位置",
+          "description": "你記下木樁的位置，讓風替你帶走猶豫。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你記下木樁的位置，讓風替你帶走猶豫。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "cache-leave"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        }
+      ]
+    },
+    {
+      "id": "highlands-spring",
+      "weight": 100,
+      "triggerBeforeEncounter": 12,
+      "eyebrow": "高地見聞",
+      "title": "層岩下的細泉",
+      "transitionText": [
+        "山路在前方轉了一個彎……",
+        "層岩下的細泉出現在背風處。"
+      ],
+      "narrative": [
+        "細小水流沿著岩縫滲出，泉邊散落幾片尚未碎裂的薄岩。",
+        "你可以留在這裡處理傷口，也可以趁風稍弱多帶一些材料。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "drink",
+          "meta": "恢復最大生命 20%。",
+          "title": "清理傷口",
+          "description": "你用細泉清理傷口，留到刺痛稍微退去。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你用細泉清理傷口，留到刺痛稍微退去。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "recoverHp",
+                "maxHpRatio": 0.2
+              }
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "spring-drink"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        },
+        {
+          "id": "gather",
+          "meta": "取得層岩薄片 ×3，放棄休息。",
+          "title": "收集薄岩",
+          "description": "你挑出幾片完整薄岩，用布仔細包好。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你挑出幾片完整薄岩，用布仔細包好。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "grantMaterials",
+                "materials": [
+                  {
+                    "id": "slate_shard",
+                    "quantity": 3
+                  }
+                ]
+              }
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "spring-gather"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        }
+      ]
+    },
+    {
+      "id": "highlands-nest",
+      "weight": 100,
+      "triggerBeforeEncounter": 15,
+      "eyebrow": "高地見聞",
+      "title": "空下來的鷹巢",
+      "transitionText": [
+        "山路在前方轉了一個彎……",
+        "空下來的鷹巢出現在背風處。"
+      ],
+      "narrative": [
+        "鷹巢裡沒有幼鳥，只有幾根未被風帶走的硬翎。",
+        "坡面上還有新鮮爪痕，停留太久並不安全。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "feathers",
+          "meta": "取得逆風翎羽 ×2。",
+          "title": "拾取硬翎",
+          "description": "你只拾起已脫落的翎羽，沒有碰動巢體。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你只拾起已脫落的翎羽，沒有碰動巢體。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "grantMaterials",
+                "materials": [
+                  {
+                    "id": "gale_feather",
+                    "quantity": 2
+                  }
+                ]
+              }
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "nest-feathers"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        },
+        {
+          "id": "observe",
+          "meta": "損失 18 生命，取得額外祝福三選一。",
+          "title": "觀察飛行",
+          "description": "你看著鷹影在風中轉向，記住牠們改變重心的時刻。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你看著鷹影在風中轉向，記住牠們改變重心的時刻。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "loseHp",
+                "amount": 18
+              }
+            ],
+            "defaultTarget": {
+              "type": "chooseBlessing",
+              "poolId": "highlands",
+              "count": 3
+            },
+            "resultIds": [
+              "nest-observe"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        }
+      ]
+    },
+    {
+      "id": "highlands-wall",
+      "weight": 100,
+      "triggerBeforeEncounter": 18,
+      "eyebrow": "高地見聞",
+      "title": "仍在擋風的矮牆",
+      "transitionText": [
+        "山路在前方轉了一個彎……",
+        "仍在擋風的矮牆出現在背風處。"
+      ],
+      "narrative": [
+        "牆體早已崩去一半，背風面卻仍是一小塊安靜的地方。",
+        "石縫裡的舊刻痕，記著一次次在隘口停下又出發的腳步。"
+      ],
+      "prompt": "你打算怎麼做？",
+      "choices": [
+        {
+          "id": "read",
+          "meta": "損失 22 生命，稀有祝福三選一。",
+          "title": "追讀舊刻痕",
+          "description": "你用手指沿著舊刻痕摸索，直到散亂的痕跡連成一段路。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你用手指沿著舊刻痕摸索，直到散亂的痕跡連成一段路。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "loseHp",
+                "amount": 22
+              }
+            ],
+            "defaultTarget": {
+              "type": "chooseBlessing",
+              "poolId": "highlands",
+              "count": 3,
+              "rarity": "rare"
+            },
+            "resultIds": [
+              "wall-read"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        },
+        {
+          "id": "shelter",
+          "meta": "恢復最大生命 18%，放棄祝福。",
+          "title": "留在牆後",
+          "description": "你把背包放在牆後，讓雙手暫時鬆開。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你把背包放在牆後，讓雙手暫時鬆開。",
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+            ],
+            "effects": [
+              {
+                "type": "recoverHp",
+                "maxHpRatio": 0.18
+              }
+            ],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "wall-shelter"
+            ],
+            "continueLabel": "繼續攀登"
+          }
+        }
+      ]
+    }
+  ],
+  "ending": {
+    "title": "風口之外",
+    "pages": [
+      {
+        "tone": "warm",
+        "lines": [
+          {
+            "role": "narration",
+            "text": "守望者胸口的風鳴慢了下來。你沒有推倒它，只沿著石甲讓開的缺口走過隘口。"
+          },
+          {
+            "role": "narration",
+            "text": "遠處仍是連綿的山脊。你把一塊鬆動的石頭放回路標頂上，讓下一個經過這裡的人，也能看見回去的方向。"
+          }
+        ]
+      }
+    ]
+  }
+}

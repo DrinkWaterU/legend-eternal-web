@@ -11,7 +11,8 @@ export function getEnemyProtectionState({
 } = {}) {
   const normalizedReduction = normalizeReductionRatio(reductionRatio);
   const protectedEnemy = isProtectedRearEnemy(enemy)
-    && getLivingEnemies(enemies).some((candidate) => isLivingFishmanFrontline(candidate));
+    && getLivingEnemies(enemies).some((candidate) => isLivingFormationFrontline(candidate)
+      && formationId(candidate) === formationId(enemy));
 
   return {
     protected: protectedEnemy,
@@ -50,13 +51,17 @@ export function applyEnemyDamageProtection({
 }
 
 function isProtectedRearEnemy(enemy) {
-  return enemy?.family === "fishman" && PROTECTED_REAR_ROLES.has(enemy.combatRole);
+  return Boolean(formationId(enemy)) && PROTECTED_REAR_ROLES.has(enemy.combatRole);
 }
 
-function isLivingFishmanFrontline(enemy) {
+function isLivingFormationFrontline(enemy) {
   return enemy?.hp > 0
-    && enemy.family === "fishman"
+    && Boolean(formationId(enemy))
     && enemy.combatRole === "frontline";
+}
+
+function formationId(enemy) {
+  return enemy?.formationId || (enemy?.family === "fishman" ? "fishman" : null);
 }
 
 function normalizeReductionRatio(value) {

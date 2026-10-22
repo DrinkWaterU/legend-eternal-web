@@ -24,7 +24,7 @@ const actions = createDebugQuestActions({
   random: () => 0
 });
 
-assert.equal(actions.getQuestOptions().length, 15);
+assert.equal(actions.getQuestOptions().length, 20);
 assert.equal(actions.getQuestOptions()[0].id, "broad-monster-control");
 assert.equal(typeof actions.getQuestDebugSnapshot, "function");
 

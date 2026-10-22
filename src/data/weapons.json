@@ -511,5 +511,193 @@
     "craftable": false,
     "recipe": null,
     "iconAssetId": null
+  },
+  "windbreak-sword": {
+    "id": "windbreak-sword",
+    "name": "斷風守隘劍",
+    "categoryId": "sword",
+    "rarityId": "uncommon",
+    "effectName": "斷風守隘劍",
+    "effectText": "攻擊 +2，開場護盾 +10。",
+    "description": "細長彎刃讓過重的鋒面退到一旁，封閉護手由薄岩與角髓補強。它不追求最沉重的斬擊，而是讓握劍的手在風口裡穩下來。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      },
+      {
+        "type": "add",
+        "stat": "shieldStart",
+        "amount": 10
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 320,
+      "materialCosts": [
+        {
+          "materialId": "slate_shard",
+          "quantity": 5
+        },
+        {
+          "materialId": "ram_horn_core",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "windbreak-sword-v2"
+  },
+  "ridgewind-bow": {
+    "id": "ridgewind-bow",
+    "name": "脊風獵弓",
+    "categoryId": "bow",
+    "rarityId": "uncommon",
+    "effectName": "脊風獵弓",
+    "effectText": "攻擊 +2，對半血以下目標額外 +20% 暴擊率。",
+    "description": "逆風翎羽固定在弓臂受力最深的位置，守望繩結則繫住了容易鬆脫的接點。這把弓擅長追住已經動搖的獵物；若要在第一箭決勝，仍有更合適的獵弓。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      },
+      {
+        "type": "add",
+        "stat": "woundedTargetCritChance",
+        "amount": 0.2
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 320,
+      "materialCosts": [
+        {
+          "materialId": "gale_feather",
+          "quantity": 4
+        },
+        {
+          "materialId": "watcher_knot",
+          "quantity": 2
+        }
+      ]
+    },
+    "iconAssetId": "ridgewind-bow"
+  },
+  "cairn-warhammer": {
+    "id": "cairn-warhammer",
+    "name": "鎮隘岩鎚",
+    "categoryId": "mace",
+    "rarityId": "uncommon",
+    "effectName": "鎮隘岩鎚",
+    "effectText": "攻擊 +2；多敵人戰鬥開場額外護盾 +24。",
+    "description": "方形層岩以角髓作心，鐵帶將每一層牢牢束住。它的重量適合頂住敵群初次圍攻；面對獨行的首領，那份額外護盾便無從發揮。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      },
+      {
+        "type": "add",
+        "stat": "multiEnemyShieldStart",
+        "amount": 24
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 320,
+      "materialCosts": [
+        {
+          "materialId": "slate_shard",
+          "quantity": 6
+        },
+        {
+          "materialId": "ram_horn_core",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "cairn-warhammer"
+  },
+  "gale-dagger": {
+    "id": "gale-dagger",
+    "name": "掠風短刃",
+    "categoryId": "dagger",
+    "rarityId": "uncommon",
+    "effectName": "掠風短刃",
+    "effectText": "攻擊 +1，暴擊率 +8%，暴擊傷害 +20%。",
+    "description": "短而厚實的彎刃藏在掌側，硬翎繫帶只在出手時掠過護手。它犧牲一些正面力道，換來更頻繁的要害命中；不必依賴毒性，也不擅長一擊劈開厚甲。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 1
+      },
+      {
+        "type": "add",
+        "stat": "critChance",
+        "amount": 0.08
+      },
+      {
+        "type": "add",
+        "stat": "critDamageMultiplier",
+        "amount": 0.2
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 320,
+      "materialCosts": [
+        {
+          "materialId": "gale_feather",
+          "quantity": 3
+        },
+        {
+          "materialId": "watcher_knot",
+          "quantity": 3
+        }
+      ]
+    },
+    "iconAssetId": "gale-dagger"
+  },
+  "stormsplit-axe": {
+    "id": "stormsplit-axe",
+    "name": "破隘長斧",
+    "categoryId": "battle-axe",
+    "rarityId": "uncommon",
+    "effectName": "破隘長斧",
+    "effectText": "凱哥專用。攻擊 +2，對半血以下目標額外 +15% 暴擊率。",
+    "description": "長柄讓斧刃越過岩甲外緣，心核則穩住了揮擊時的重心。這把斧頭等待的是敵人腳步開始凌亂的時刻，對仍然站穩的對手沒有額外優勢。",
+    "statEffects": [
+      {
+        "type": "add",
+        "stat": "attack",
+        "amount": 2
+      },
+      {
+        "type": "add",
+        "stat": "woundedTargetCritChance",
+        "amount": 0.15
+      }
+    ],
+    "specialEffect": null,
+    "recipe": {
+      "goldCost": 320,
+      "materialCosts": [
+        {
+          "materialId": "slate_shard",
+          "quantity": 5
+        },
+        {
+          "materialId": "windheart_core",
+          "quantity": 1
+        }
+      ]
+    },
+    "iconAssetId": "stormsplit-axe",
+    "allowedCharacterIds": [
+      "kaige"
+    ]
   }
 }
