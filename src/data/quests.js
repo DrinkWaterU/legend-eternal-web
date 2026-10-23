@@ -1,8 +1,8 @@
 import questData from "./quests.json" with { type: "json" };
 import { QUEST_RARITIES } from "./questRarities.js";
 
-const OBJECTIVE_TYPES = new Set(["defeatEnemies", "clearAdventure", "deliverMaterials"]);
-const EXPECTED_QUEST_DEFINITION_COUNT = 20;
+const OBJECTIVE_TYPES = new Set(["defeatEnemies", "clearAdventure", "deliverMaterials", "performHighlandTactic"]);
+const EXPECTED_QUEST_DEFINITION_COUNT = 22;
 
 function deepFreeze(value) {
   if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
@@ -60,6 +60,7 @@ function assertObjective(questId, objective, references) {
   }
   validateIds(questId, objective.regionIds, references.regionDefinitions, "地區");
   validateIds(questId, objective.routeIds, references.routeDefinitions, "路線");
+  if (objective.type === "performHighlandTactic" && !["breakRock", "inducedCollision"].includes(objective.tactic)) throw new Error(`Quest ${questId} 高地行動無效。`);
   if (objective.type === "defeatEnemies") {
     validateEnemyReferences(questId, objective, references.enemyDefinitions || {});
   }

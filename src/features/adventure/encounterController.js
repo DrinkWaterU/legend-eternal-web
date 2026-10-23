@@ -1,3 +1,4 @@
+import { getPendingHighlandPaths, getChosenHighlandPath } from "../../data/highlandPaths.js";
 import { buildEnemy, buildEnemyGroup, buildScaledEnemy } from "../../core/combat.js";
 import { createRuntimeEnemyGroup, getEnemyDisplayName, getLivingEnemies } from "../../core/enemyGroups.js";
 import { getEnemyDefinition } from "../../data/enemies/index.js";
@@ -19,7 +20,8 @@ export function createEncounterController({
   addLog,
   addFixedLog,
   logCurrentEnemyGroupEncounter,
-  render
+  render,
+  runSaveOperation = action => action()
 }) {
   function applyEnemyAmbushes() {
     getLivingEnemies(state.enemies).forEach((enemy) => {
@@ -41,15 +43,26 @@ export function createEncounterController({
     showCombatLayout(els);
     applySceneContext("gameScreen");
 
+    state.battleSource = "main";
+    const paths = getPendingHighlandPaths(state);
+    if (paths.length) {
+      state.phase = "highlandChoice";
+      state.highlandBattle = null;
+      state.enemies = [];
+      render();
+      return;
+    }
     let battleEnemies;
     let restoreEnemies = false;
     if (route) {
-      const group = getRouteGroup(route, encounterEntry?.groupId);
+      const chosenPath = getChosenHighlandPath(state);
+      const isForkEncounter = state.routeEncounterIndex % 4 === 0;
+      const group = getRouteGroup(route, isForkEncounter && chosenPath ? chosenPath.groupId : encounterEntry?.groupId);
       if (!group) throw new Error(`找不到 Route enemy group：${encounterEntry?.groupId || "(empty)"}`);
       const entries = group.members.map((member) => {
         const enemy = buildScaledEnemy(getEnemyDefinition(member.enemyId), region, state.encounterIndex);
         enemy.poison = 0;
-        return { enemy, statScale: member.statScale, rewardScale: member.rewardScale };
+        return { enemy, statScale: member.statScale, rewardScale: member.rewardScale * (chosenPath?.rewardScale || 1) };
       });
       battleEnemies = createRuntimeEnemyGroup(entries);
       restoreEnemies = true;
@@ -80,5 +93,12 @@ export function createEncounterController({
     render();
   }
 
-  return Object.freeze({ startEncounter, applyEnemyAmbushes });
+  function chooseHighlandPath(id) {
+    if (state.phase !== "highlandChoice" || !getPendingHighlandPaths(state).some(p => p.id === id)) return;
+    return runSaveOperation(() => {
+      state.highlandChoices = { ...(state.highlandChoices || {}), [state.routeEncounterIndex]: id };
+      startEncounter();
+    });
+  }
+  return Object.freeze({ startEncounter, applyEnemyAmbushes, chooseHighlandPath });
 }

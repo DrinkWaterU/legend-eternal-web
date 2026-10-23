@@ -1,142 +1,115 @@
-// Fixed-level isolated model using the production turn controller and skills.
-// EXP growth, events and retreat are excluded; results are not player telemetry.
+// Fixed-level model: real battle entry, turn controller, native skills and settlement.
+// No EXP, events, preparations or retreats; heuristic reads visible intents, never future RNG.
 import assert from "node:assert/strict";
-import { writeFileSync, mkdirSync } from "node:fs";
-import { createBattleTurnController } from "../src/features/battle/battleTurnController.js";
-import { createBattleSkills } from "../src/features/battle/battleSkills.js";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { remakeHarness } from "./highland-remake-harness.mjs";
+import { highlandActions, highlandIntents, projectHighlandWind, canReachHighlandTarget } from "../src/core/highlandBattle.js";
+import { getWeaponActions, getWeaponTechnique } from "../src/core/weaponTechniques.js";
 import { highlandsRegion as region } from "../src/data/regions/highlands.js";
 import { getRouteDefinition, getRouteGroup } from "../src/data/routes/index.js";
 import { getEnemyDefinition } from "../src/data/enemies/index.js";
-import { characterDefinitions } from "../src/data/characters/index.js";
-import { weaponDefinitions } from "../src/data/weapons.js";
-import { getBlessingRarity } from "../src/data/rarities.js";
-import { buildHeroFromProgression, createSkillState } from "../src/core/progression.js";
-import { buildScaledEnemy, resolveHeroAction, getHeroBattleHealingAmount } from "../src/core/combat.js";
-import { createRuntimeEnemyGroup, getLivingEnemies } from "../src/core/enemyGroups.js";
+import { buildScaledEnemy } from "../src/core/combat.js";
 import { applyBlessingEffects } from "../src/core/blessings.js";
-import { initializeCharacterBattleState, resolveCharacterPlayerAction, modifyCharacterIncomingDirectDamage } from "../src/characters/skills/index.js";
-import { applyEquippedWeaponBattleStart } from "../src/core/weaponBattleEffects.js";
-import { resetBlessingBattleState, registerFrontlineDefeat } from "../src/core/caveBlessingEffects.js";
-import { applyEnemyDefeatReactions } from "../src/core/enemyReactions.js";
-import { getEnemyIntent } from "../src/core/enemyIntent.js";
+import { highlandPathChoices } from "../src/data/highlandPaths.js";
+import { getBlessingRarity } from "../src/data/rarities.js";
 import { withSeed, seedFromText, weightedPick } from "./model-test-helpers.mjs";
 
-const rounds = Number(process.argv[2]) || 120;
-const route = getRouteDefinition("windbreak-ascent");
-const noop = () => {};
-const log = { template: noop, fixed: noop };
-const results = [];
+const rounds = Number(process.argv[2]) || 100;
 const equipment = {
-  adventurer: ["guard-short-sword", "adventurer-pathfinder-sword", "reefbreaker-warhammer", "brinefang-dagger", "windbreak-sword", "cairn-warhammer", "gale-dagger"],
-  archer: ["verdant-pursuit-bow", "tidepiercer-shortbow", "ridgewind-bow"],
-  kaige: ["worn-battle-axe", "stormsplit-axe"]
+ adventurer: ["adventurer-pathfinder-sword", "reefbreaker-warhammer", "brinefang-dagger", "windbreak-sword", "cairn-warhammer", "gale-dagger"],
+ archer: ["tidepiercer-shortbow", "ridgewind-bow"], kaige: ["worn-battle-axe", "stormsplit-axe"]
 };
-function heal(hero, value) {
-  if (hero.hp > 0) hero.hp = Math.min(hero.maxHp, hero.hp + getHeroBattleHealingAmount(hero, value, { minimum: 1 }));
+const route = getRouteDefinition("windbreak-ascent");
+function chooseBlessing(h, owned, tactical) {
+ const pool = region.blessings.filter(b => !b.maxStacks || (owned[b.id] || 0) < b.maxStacks), choices = [];
+ for (let i = 0; i < 3 && pool.length; i++) { const b = weightedPick(pool, b => getBlessingRarity(b.rarity).weight); choices.push(b); pool.splice(pool.indexOf(b), 1); }
+ const value = b => b.effects.reduce((s,e) => s + (e.stat === "maxHp" ? e.amount*.7 : e.stat === "killHeal" ? e.amount*4 : e.stat === "shieldStart" ? e.amount : e.stat === "highlandMoveShield" ? e.amount*1.7 : e.stat === "highlandShelterHeal" ? e.amount*1.4 : e.stat === "highlandSlipToken" ? 14 : e.stat === "highlandDemolish" ? 8 : e.stat?.endsWith("Attack") ? e.amount*.8 : e.stat === "openingCritChance" ? e.amount*45 : e.amount || 4), 0);
+ const chosen = tactical ? choices.sort((a,b) => value(b)-value(a))[0] : choices[Math.floor(Math.random()*choices.length)];
+ owned[chosen.id] = (owned[chosen.id] || 0)+1; applyBlessingEffects(h, chosen);
 }
-function chooseTarget(enemies, tactical) {
-  const living = getLivingEnemies(enemies);
-  if (!tactical) return living[0];
-  return living.find(e => e.combatRole === "support") || living.find(e => e.combatRole === "output") || living[0];
-}
-function chooseBlessing(hero, tactical) {
-  const pool = [...region.blessings];
-  const choices = [];
-  for (let i = 0; i < 3 && pool.length; i++) {
-    const picked = weightedPick(pool, b => getBlessingRarity(b.rarity).weight);
-    choices.push(picked); pool.splice(pool.indexOf(picked), 1);
+export function heuristicAction(state, tactical = true) {
+ const h = state.hero, enemies = state.enemies.filter(e => e.hp>0);
+ const targets = enemies.filter(e => canReachHighlandTarget(state,e)).sort((a,b) => (a.hp - (a.combatRole === "support" ? 22 : 0)) - (b.hp - (b.combatRole === "support" ? 22 : 0)));
+ const target = targets[0] || enemies[0]; state.targetEnemyId = target.runtimeId;
+ if (!tactical) return targets.length ? {type:"attack"} : {type:"move",column:1};
+ const intents = highlandIntents(state), r = h.weaponRuntime, kind = getWeaponTechnique(h);
+ const candidates = [{type:"guard"}, ...highlandActions(state), ...getWeaponActions(h)];
+ if (targets.length) candidates.push({type:"attack"});
+ let best, bestValue = -Infinity;
+ for (const a of candidates) {
+  if (["sweep","cleave","breach"].includes(a.type) && !targets.length) continue;
+  if (kind === "weight" && a.type === "sweep" && enemies.length === 1 && r.weight < 4) continue;
+  if (a.type === "breach" && (target.weaponBreach || state.turn+1 <= (target.breachCooldownUntil??-1))) continue;
+  const projection = projectHighlandWind(state,a,intents), mine = projection[0];
+  const base = Math.max(1,h.attack + (h.battleAttackBonus||0) - target.defense) * (h.characterId === "archer" ? 1.55 : 1.15);
+  let outgoing = ["attack","lunge","sweep","cleave","breach"].includes(a.type) ? Math.min(target.hp,base) : 0;
+  if (a.type === "attack" && r.riposte) outgoing += base*.7;
+  if (a.type === "attack" && r.charge) outgoing += base*(enemies.length===1 ? 1.1 : .8+.5*(enemies.length-1));
+  if (a.type === "sweep") outgoing += enemies.reduce((s,e)=>s+Math.min(e.hp,Math.max(1,h.attack*r.weight*.35-e.defense)),0);
+  if (a.type === "cleave") outgoing += Math.min(Math.max(0,target.hp-base),h.attack*1.5);
+  if (a.type === "breach") outgoing += Math.min(target.hp-base,h.attack*r.impact*.2) + Math.min(target.hp, target.defense*.25*r.impact*(r.impact===3?2:1));
+  if (a.type === "charge") outgoing += h.attack*(enemies.length===1 ? .25 : .45+.25*(enemies.length-1));
+  let incoming = 0, collateral=0;
+  for (const p of projection.slice(1)) {
+   const i = intents.find(i=>i.id===p.unit.runtimeId); if (!i) continue;
+   if (i.kind === "charge") {
+    if (mine.destination===i.column) incoming += Math.max(1,p.unit.attack*1.5-h.defense);
+    else collateral += projection.slice(1).filter(q=>q.unit!==p.unit && q.destination===i.column).reduce((s,q)=>s+Math.min(q.unit.hp,Math.max(1,p.unit.attack*1.2-q.unit.defense)),0);
+   } else if (["track","flurry"].includes(i.kind) && Math.abs(p.destination-mine.destination)<=(i.range??2)) incoming += Math.max(1,p.unit.attack-h.defense)*(i.kind==="flurry"?1.3:1);
   }
-  if (!tactical) return choices[Math.floor(Math.random() * choices.length)];
-  const score = b => b.effects.reduce((sum, e) => sum + (
-    e.type === "recoverHp" ? Math.min(hero.maxHp - hero.hp, e.amount) * .3
-    : e.stat === "attack" ? e.amount * 3
-    : e.stat === "defense" ? e.amount * (hero.defense < 28 ? 4 : 2)
-    : e.stat === "killHeal" ? e.amount * (hero.killHeal < 12 ? 3 : 1)
-    : e.stat === "shieldStart" ? e.amount * .8
-    : e.stat === "multiEnemyShieldStart" ? e.amount * .45
-    : e.stat === "critChance" ? e.amount * 100
-    : e.stat === "ignoreProtectedEnemyReduction" ? 8
-    : e.stat === "maxHp" ? e.amount * .3 : 4), 0);
-  return choices.sort((a, b) => score(b) - score(a))[0];
-}
-function simulate(characterId, weaponId, level, tactical) {
-  const hero = buildHeroFromProgression(characterDefinitions[characterId], {
-    level, exp: 0, unlocked: true, learnedSkills: [], equipment: { weaponId }
-  }, { inventory: { weapons: { [weaponId]: true } }, weaponDefinitions });
-  let turns = 0, guards = 0;
-  for (let index = 0; index < route.encounterPlan.length; index++) {
-    const entry = route.encounterPlan[index];
-    Object.assign(hero, { poison: 0, entangle: null, saltErosion: null, paralysis: null,
-      battleAttackBonus: 0, battleCritBonus: 0, hasAttackedThisBattle: false,
-      weaponBattleStartApplied: false, weaponBattleMode: null, shield: hero.shieldStart,
-      skillState: createSkillState(), statusFamiliarityLimitBonus: 0, victoryHealBonusRatio: 0 });
-    resetBlessingBattleState(hero); initializeCharacterBattleState(hero);
-    const enemies = createRuntimeEnemyGroup(getRouteGroup(route, entry.groupId).members.map(m => ({
-      enemy: buildScaledEnemy(getEnemyDefinition(m.enemyId), region, index),
-      statScale: m.statScale, rewardScale: m.rewardScale
-    })));
-    hero.activeEnemyCount = enemies.length;
-    const skills = createBattleSkills({ state: { hero }, hasHeroSkill: id => hero.skills.includes(id), addLog: noop, addFixedLog: noop, lastBagFlowWeightMultiplier: .6 });
-    skills.applyBattleStartSkills();
-    applyEquippedWeaponBattleStart(hero, { enemyCount: enemies.length, encounterType: entry.type });
-    if (enemies.length > 1) hero.shield += Number(hero.multiEnemyShieldStart) || 0;
-    const state = { hero, enemies, phase: "danger", turn: 0, ended: false };
-    const settled = new Set();
-    let won = false;
-    const controller = createBattleTurnController({
-      state, createCombatLogger: () => log, currentTargetEnemy: () => chooseTarget(enemies, tactical),
-      runHeroPlayerAction: ({ target }) => {
-        const result = resolveCharacterPlayerAction({ hero, enemies, targetEnemyId: target.runtimeId, log });
-        if (!result.handled) resolveHeroAction({ hero, enemy: target, enemies, log });
-      },
-      modifyIncomingDirectDamage: modifyCharacterIncomingDirectDamage,
-      consumeEntangleRetry: () => false, recordEntangleRetryResult: noop,
-      modifyPoisonDamage: damage => damage,
-      settleDefeatedEnemies: () => {
-        for (const enemy of enemies.filter(e => e.hp <= 0 && !settled.has(e.runtimeId))) {
-          settled.add(enemy.runtimeId);
-          registerFrontlineDefeat(hero, enemy);
-          applyEnemyDefeatReactions({ hero, enemies, defeatedEnemy: enemy, log });
-          hero.battleAttackBonus += Number(hero.killAttackGain) || 0;
-          if (hero.hp / hero.maxHp < .5) heal(hero, Number(hero.lowHpKillHeal) || 0);
-          heal(hero, (Number(hero.killHeal) || 0) + Math.round(hero.maxHp * (Number(hero.killHealRatio) || 0)));
-        }
-      },
-      applyEmergencyBandage: skills.applyEmergencyBandage, tryLastStand: skills.tryLastStand,
-      winEncounter: () => { won = true; state.ended = true; }, loseRun: () => { state.ended = true; }, render: noop
-    });
-    while (!state.ended && state.turn < 180) {
-      const target = chooseTarget(enemies, tactical);
-      const threat = enemies.some(e => e.hp > 0 && getEnemyIntent(e, state.turn));
-      // Guard only telegraphed boss strikes when immediate defeat is unlikely.
-      const guard = tactical && entry.type === "boss" && threat && target.hp > hero.attack * 2 && hero.hp < hero.maxHp * .65;
-      if (guard) guards++;
-      controller.playTurn(guard ? "guard" : "attack");
-    }
-    turns += state.turn;
-    if (!won) return { won: false, reached: index + 1, turns, guards };
-    skills.applyVictorySkills(); skills.consumeBattleLimitedEffects();
-    if (index < route.encounterPlan.length - 1) applyBlessingEffects(hero, chooseBlessing(hero, tactical));
+  if (a.type === "guard") incoming *= h.highlandFirmStance ? .8 : .65;
+  if (mine.stagger) incoming += 8;
+  const immediateKill = outgoing>=target.hp && ["attack","lunge","sweep","cleave","breach"].includes(a.type);
+  if(immediateKill) incoming *= enemies.length===1 ? 0 : .7;
+  let value = outgoing + collateral*.7 - incoming*(h.hp<h.maxHp*.35 ? .9 : .5);
+  if (["move","ride"].includes(a.type)) {
+   if ((state.highlandBattle.moveShieldUses||0)<2) value += h.highlandMoveShield||0;
+   value += (a.type==="ride"?h.highlandRideAttack||0:0)*.7;
   }
-  return { won: true, reached: 20, turns, guards, hp: hero.hp / hero.maxHp };
+  if (a.type==="guard" && kind==="riposte" && !r.riposte && incoming>0) value += h.attack*.6;
+  if (a.type==="slip") value -= 8; // Free action still spends a once-per-battle option.
+  if (!targets.length && mine.destination===1) value += h.attack*.8;
+  if (mine.sheltered && (state.highlandBattle.shelterHealUses||0)<2) value += Math.min(h.maxHp-h.hp,h.highlandShelterHeal||0);
+  if (value>bestValue) {bestValue=value;best=a;}
+ }
+ return best;
 }
-for (const level of [28, 30]) for (const [characterId, weapons] of Object.entries(equipment)) for (const weaponId of weapons) {
-  for (const tactical of [true, false]) {
-    let wins = 0, reached = 0, turns = 0, guards = 0;
-    const defeats = {};
-    for (let i = 0; i < rounds; i++) {
-      const r = withSeed(seedFromText(`highlands:${characterId}:${level}:${i}`), () => simulate(characterId, weaponId, level, tactical));
-      wins += Number(r.won); reached += r.reached; turns += r.turns; guards += r.guards;
-      if (!r.won) defeats[r.reached] = (defeats[r.reached] || 0) + 1;
-    }
-    const result = { characterId, weaponId, level, tactical, rounds, winRatio: wins / rounds, averageReached: reached / rounds, averageTurns: turns / rounds, averageGuards: guards / rounds, defeats };
-    results.push(result); console.log(JSON.stringify(result));
-    assert.ok(turns / rounds < 180, "Highlands should not become a repetitive endurance wall");
+function simulate(character,weapon,level,tactical,path) {
+ const x=remakeHarness({character,weapon,level,index:0,quiet:true}), s=x.state, owned={}, actions={};
+ let total=0;
+ for(let index=0;index<12;index++) {
+  s.ended=false; s.outcome=null; s.encounterIndex=index; s.routeEncounterIndex=index;
+  s.highlandChoices=path === "mixed" ? {0:"shelter",4:"gale",8:"shelter"} : {0:path,4:path,8:path};
+  const entry=route.encounterPlan[index], choice=highlandPathChoices[index]?.find(p=>p.id===s.highlandChoices[index]);
+  x.battle.beginBattleRuntime({ enemies:getRouteGroup(route,choice?.groupId||entry.groupId).members.map(m=>({enemy:buildScaledEnemy(getEnemyDefinition(m.enemyId),region,index),statScale:m.statScale,rewardScale:m.rewardScale})),encounterType:entry.type });
+  let attempts=0;
+  while(!s.ended && s.turn<100 && attempts++<130) {
+   const a=heuristicAction(s,tactical); actions[a.type]=(actions[a.type]||0)+1;
+   x.controller.playTurn(a);
   }
+  total+=s.turn;
+  if(s.outcome!=="victory") return {won:false,reached:index+1,turns:total,actions,stalled:!s.ended};
+  x.skills.applyVictorySkills(); x.skills.consumeBattleLimitedEffects();
+  if(index<11) chooseBlessing(s.hero,owned,tactical);
+ }
+ return {won:true,reached:12,turns:total,actions,hp:s.hero.hp/s.hero.maxHp};
 }
-mkdirSync("tools/verification-artifacts/highlands", { recursive: true });
-writeFileSync("tools/verification-artifacts/highlands/model-results.json", JSON.stringify({ rounds, limitations: ["Fixed level; no EXP growth, events or preparations", "Isolated production turn controller; not player win rates"], results }, null, 2));
-if (rounds >= 100) for (const characterId of Object.keys(equipment)) {
-  const baseline = results.filter(r => r.characterId === characterId && r.level === 30 && r.tactical);
-  assert.ok(baseline.some(r => r.winRatio >= .55), `${characterId} needs a viable level 30 build`);
+const results=[];
+for(const level of [28,30]) for(const [character,weapons] of Object.entries(equipment)) for(const weapon of weapons) for(const path of ["shelter","gale","mixed"]) for(const tactical of [false,true]) {
+ let wins=0,reached=0,turns=0,stalls=0;const defeats={},actions={};
+ for(let n=0;n<rounds;n++) {
+  const r=withSeed(seedFromText(`remake:${character}:${level}:${n}`),()=>simulate(character,weapon,level,tactical,path));
+  wins+=Number(r.won); reached+=r.reached; turns+=r.turns;stalls+=Number(r.stalled||false);
+  if(!r.won) defeats[r.reached]=(defeats[r.reached]||0)+1;
+  for(const [a,count] of Object.entries(r.actions)) actions[a]=(actions[a]||0)+count;
+ }
+ const row={character,weapon,level,path,tactical,rounds,winRatio:wins/rounds,averageReached:reached/rounds,averageTurns:turns/rounds,stalls,defeats,actions};
+ results.push(row); console.log(JSON.stringify(row)); assert.equal(stalls,0,"A policy must finish without a no-op/guard loop");
+}
+mkdirSync("tools/verification-artifacts/highlands",{recursive:true});
+writeFileSync("tools/verification-artifacts/highlands/model-results.json",JSON.stringify({rounds,limitations:["Fixed level; no EXP, events, preparations or retreat","Actual battle entry/controller/settlement; heuristic is not a human player","Both policies get blessings; tactical policy also selects blessings by a fixed score","No future random outcome search; results are policy diagnostics, not player win rates"],results},null,2));
+
+if(rounds>=100) for(const character of Object.keys(equipment)) for(const path of ["shelter","gale","mixed"]) {
+ const older=results.filter(r=>r.character===character && r.path===path && r.level===30 && r.tactical && !["windbreak-sword","ridgewind-bow","cairn-warhammer","gale-dagger","stormsplit-axe"].includes(r.weapon));
+ assert.ok(older.some(r=>r.winRatio>=.55), `${character}/${path} needs a viable existing weapon`);
 }

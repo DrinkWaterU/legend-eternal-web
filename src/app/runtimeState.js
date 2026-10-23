@@ -8,8 +8,12 @@ export function createAdventureRuntimeState({
   return {
     run: 0,
     runRandomState: null,
+    highlandBattle: null,
+    highlandChoices: {},
+    turnActionId: 0,
     runResumeFinished: false,
     blessingChoices: [],
+    blessingFallbackNote: "",
     selectedRegionId: DEFAULT_REGION_ID,
     selectedHeroId: DEFAULT_CHARACTER_ID,
     selectedRegion: regionDefinitions[DEFAULT_REGION_ID].name,

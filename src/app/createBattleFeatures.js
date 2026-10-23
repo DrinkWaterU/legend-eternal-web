@@ -54,6 +54,7 @@ export function createBattleFeatures({
   });
   const bossSelection = createBossSelection({ state });
   let battleState;
+  let encounterController;
 
   const combatRenderer = createCombatRenderer({
     state,
@@ -64,6 +65,7 @@ export function createBattleFeatures({
     getAdventureSourceName,
     hasPendingThreat: (...args) => battleState.hasPendingThreat(...args),
     selectEnemyTarget: (...args) => battleState.selectEnemyTarget(...args),
+    choosePath: id => encounterController.chooseHighlandPath(id),
     questRuntime: world?.questRuntime
   });
 
@@ -109,7 +111,8 @@ export function createBattleFeatures({
     showBlessings
   });
 
-  const encounterController = createEncounterController({
+  encounterController = createEncounterController({
+    runSaveOperation: foundation.runSaveOperation,
     state,
     els,
     currentRegion,
@@ -140,6 +143,7 @@ export function createBattleFeatures({
     settleDefeatedEnemies: battleSettlement.settleDefeatedEnemies,
     applyEmergencyBandage: battleSkills.applyEmergencyBandage,
     tryLastStand: battleSkills.tryLastStand,
+    recordTactic: event => world?.questRuntime?.recordHighlandTactic(event),
     prepareEnemyAction,
     completeEnemyAction,
     winEncounter,

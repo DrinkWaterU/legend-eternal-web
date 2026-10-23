@@ -28,12 +28,13 @@ assert.equal(getRegionAccess(region, data).unlocked, true);
 assert.equal(migrateSave(data).statistics.regions.beach.clears, 1);
 assert.ok(migrateSave({ schemaVersion: 11 }).statistics.regions.highlands);
 assert.equal(route.regionId, region.id);
-assert.equal(route.encounterPlan.length, 20);
+assert.equal(route.encounterPlan.length, 12);
 assert.equal(route.encounterPlan.at(-1).type, "boss");
 assert.equal(route.encounterPlan.filter(e => e.type === "boss").length, 2);
 assert.equal(route.eventDefinitions.length, 5);
-assert.equal(region.blessings.length, 15);
-assert.equal(new Set(region.blessings.map(b => b.id)).size, 15);
+assert.equal(region.blessings.length, 18);
+assert.equal(new Set(region.blessings.map(b => b.id)).size, 18);
+assert.ok(region.blessings.every(b => b.eventText !== b.flavorText && ["attack", "defense", "healing", "debuff", "crit"].includes(b.primaryFlow)));
 assert.ok(region.blessings.filter(b => b.rarity === "rare").length >= 3);
 const enemyIds = new Set();
 for (const entry of route.encounterPlan) {
@@ -50,6 +51,9 @@ for (const entry of route.encounterPlan) {
   }
 }
 assert.equal(enemyIds.size, 12, "All twelve enemies must actually appear");
+for (const enemy of [...region.enemies, ...region.elites, ...region.bosses, region.boss]) {
+  assert.deepEqual(enemy, getEnemyDefinition(enemy.id), "Region display/debug mirrors must match production route enemies");
+}
 for (const b of region.blessings) {
   const hero = { hp: 60, maxHp: 100 };
   applyBlessingEffects(hero, b);
@@ -58,27 +62,25 @@ for (const b of region.blessings) {
 for (const event of route.eventDefinitions) {
   assert.ok(event.choices.length >= 2);
   assert.ok(event.choices.some(c => !(c.result.effects || []).some(e => e.type === "loseHp")), "Every event needs a safe option");
-  assert.ok(event.triggerBeforeEncounter < 20);
+  assert.ok(event.triggerBeforeEncounter < 12);
 }
-const front = { ...getEnemyDefinition("highland-slate-guard"), hp: 100 };
-const support = { ...getEnemyDefinition("highland-signal-keeper"), hp: 88 };
+const front = { ...getEnemyDefinition("highland-slate-guard"), hp: 100, formationId: "test-guard" };
+const support = { ...getEnemyDefinition("highland-signal-keeper"), hp: 88, formationId: "test-guard" };
 assert.equal(getEnemyProtectionState({ enemy: support, enemies: [front, support] }).protected, true);
 assert.equal(getEnemyProtectionState({ enemy: support, enemies: [{ ...front, hp: 0 }, support] }).protected, false);
 assert.equal(getEnemyProtectionState({ enemy: support, enemies: [{ ...front, formationId: "other" }, support] }).protected, false, "Unrelated formations cannot grant protection");
 const logger = { fixed() {}, template() {} };
-assert.equal(resolveEnemySupportAction({ enemies: [front, support], actor: support, turn: 1, log: logger }), false);
-for (const turn of [2, 4]) assert.equal(resolveEnemySupportAction({ enemies: [front, support], actor: support, turn, log: logger }), true);
-assert.equal(resolveEnemySupportAction({ enemies: [front, support], actor: support, turn: 6, log: logger }), false);
+assert.equal(support.supportAction, undefined, "Highlands use visible wind-role intents, not legacy automatic support");
 for (const enhanced of [false, true]) {
   for (const p of region.preparations) assert.ok(createRunPreparation(region, p.id, { enhanced }));
-  const prep = createRunPreparation(region, "ridge-anchor", { enhanced });
-  beginPreparationBattle(prep, { enemyCount: 2 });
-  assert.ok(resolvePreparationIncomingDirectDamage({ preparation: prep, enemy: front, damage: 100 }).damage < 100);
-  assert.equal(resolvePreparationIncomingDirectDamage({ preparation: prep, enemy: front, damage: 100 }).damage, 100);
-  const opening = createRunPreparation(region, "ridge-whetstone", { enhanced });
-  const hero = { battleAttackBonus: 0 };
-  assert.ok(runPreparationOpeningAction({ preparation: opening, hero, encounterType: "boss", action: () => hero.battleAttackBonus }).result > 0);
-  assert.equal(hero.battleAttackBonus, 0);
+  for (const p of region.preparations) {
+    const prep = createRunPreparation(region, p.id, { enhanced });
+    assert.equal(prep.effect.type, "highlandTool");
+    assert.equal(prep.remainingCharges, enhanced ? 3 : 2);
+    prep.remainingCharges--;
+    beginPreparationBattle(prep, { enemyCount: 3 });
+    assert.equal(prep.remainingCharges, enhanced ? 2 : 1, "Tools never refill between battles");
+  }
 }
 const newWeapons = ["windbreak-sword", "ridgewind-bow", "cairn-warhammer", "gale-dagger", "stormsplit-axe"];
 assert.equal(new Set(newWeapons.map(id => weaponDefinitions[id].categoryId)).size, 5);
@@ -88,7 +90,7 @@ for (const id of newWeapons) {
   assert.ok(w.recipe.materialCosts.every(m => materialDefinitions[m.materialId]));
   assert.ok(w.recipe.materialCosts.some(m => m.materialId.startsWith("slate") || m.materialId.startsWith("gale")));
 }
-assert.deepEqual(weaponDefinitions["stormsplit-axe"].allowedCharacterIds, ["kaige"]);
+assert.equal(weaponDefinitions["stormsplit-axe"].allowedCharacterIds, undefined);
 assert.equal(matchClearObjective(questDefinitions["highlands-survey"].objective, { regionId: "highlands", clearSourceId: "main" }), false);
 assert.equal(matchClearObjective(questDefinitions["highlands-survey"].objective, { regionId: "highlands", clearSourceId: "highlandsAscent" }), true);
 assert.equal(matchEnemyObjective(questDefinitions["highlands-signals"].objective, { regionId: "highlands", enemyId: "highland-signal-keeper" }), true);

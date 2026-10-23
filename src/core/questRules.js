@@ -179,6 +179,7 @@ export function buildQuestRewardPlan(quest) {
 
 export function formatQuestObjective(quest, materialDefinitions = {}) {
   const objective = quest?.objective || {};
+  if (objective.type === "performHighlandTactic") return objective.tactic === "breakRock" ? `在高地主動拆岩 ${objective.target} 次` : `在高地誘導衝撞命中其他敵人 ${objective.target} 次`;
   if (objective.type === "deliverMaterials") {
     return objective.materials.map((entry) => (
       `${materialDefinitions[entry.id]?.name || entry.id} ×${entry.quantity}`

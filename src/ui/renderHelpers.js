@@ -48,13 +48,14 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
     button.type = "button";
     button.innerHTML = `
       <small>
-        <span>${blessing.eventTitle}</span>
+        <span>${blessing.eventTitle !== blessing.name ? blessing.eventTitle || "" : ""}</span>
         <i>${rarity.label}</i>
       </small>
       <strong>${blessing.name}</strong>
       <span>${blessing.eventText}</span>
-      <em>${blessing.flavorText}</em>
-      <b>${blessing.effectText}</b>
+      ${blessing.flavorText && blessing.flavorText !== blessing.eventText ? `<em>${blessing.flavorText}</em>` : ""}
+      <b>${blessing.effectText.split("；")[0]}</b>
+      ${blessing.effectText.includes("；") ? `<span class="blessing-trigger-rules">${blessing.effectText.split("；").slice(1).join("；")}</span>` : ""}
     `;
     const ownedCount = Math.max(0, Math.floor(Number(ownedCounts?.[blessing.id]) || 0));
     button.setAttribute(
@@ -128,7 +129,8 @@ export function renderCampBlessingChoices(element, instances, selectedIds, onTog
     const effect = document.createElement("b");
     name.textContent = blessing.name || "未命名祝福";
     eventText.textContent = blessing.eventText || "";
-    flavor.textContent = blessing.flavorText || "";
+    flavor.textContent = blessing.flavorText !== blessing.eventText ? blessing.flavorText || "" : "";
+    flavor.hidden = !flavor.textContent;
     effect.textContent = blessing.effectText || "";
     button.append(meta, name, eventText, flavor, effect);
     button.addEventListener("click", () => onToggle(instance.instanceId));

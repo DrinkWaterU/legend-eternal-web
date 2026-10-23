@@ -469,5 +469,49 @@
     "repeatable": true,
     "enabled": true,
     "requiredRegionId": "highlands"
+  },
+  {
+    "id": "highlands-rockwork",
+    "name": "風口拆岩勘察",
+    "title": "風口拆岩勘察",
+    "rarity": "advanced",
+    "enabled": true,
+    "weight": 100,
+    "requiredRegionId": "highlands",
+    "description": "在正式高地冒險中實踐地形戰術，已完成行動即保留；不計Debug。",
+    "objective": {
+      "type": "performHighlandTactic",
+      "regionIds": [
+        "highlands"
+      ],
+      "tactic": "breakRock",
+      "target": 2
+    },
+    "rewards": {
+      "gold": 55,
+      "materials": []
+    }
+  },
+  {
+    "id": "highlands-bait",
+    "name": "借敵破陣",
+    "title": "借敵破陣",
+    "rarity": "advanced",
+    "enabled": true,
+    "weight": 100,
+    "requiredRegionId": "highlands",
+    "description": "在正式高地冒險中實踐地形戰術，已完成行動即保留；不計Debug。",
+    "objective": {
+      "type": "performHighlandTactic",
+      "regionIds": [
+        "highlands"
+      ],
+      "tactic": "inducedCollision",
+      "target": 2
+    },
+    "rewards": {
+      "gold": 65,
+      "materials": []
+    }
   }
 ]

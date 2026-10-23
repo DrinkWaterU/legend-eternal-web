@@ -81,6 +81,16 @@ export function formatWeaponEffects(weapon) {
     : "沒有額外效果";
 }
 
+export function createWeaponTechniqueRules(weapon) {
+  const rules = document.createElement("details");
+  const title = document.createElement("summary");
+  title.textContent = "觸發與計數細則";
+  const text = document.createElement("p");
+  text.textContent = weapon.effectText;
+  rules.append(title, text);
+  return rules;
+}
+
 export function getWeaponRarityId(weapon) {
   return getWeaponRarityDefinition(weapon?.rarityId || DEFAULT_WEAPON_RARITY).id;
 }

@@ -177,6 +177,7 @@ export function createAdventureFeatures({
   });
 
   const escapeController = createEscapeController({
+    resolveHighlandFleeFailure: () => battle.playTurn("flee-failure"),
     state,
     runSaveOperation: foundation.runSaveOperation,
     normalFleeChance: NORMAL_FLEE_CHANCE,

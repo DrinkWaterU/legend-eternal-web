@@ -27,9 +27,8 @@
           }
         ]
       },
-      "intro": "角羊壓低頭顱，厚角在岩面拖出兩道白痕。每三回合的衝撞前，牠會先停步蓄力。",
-      "chargeEvery": 3,
-      "chargeMultiplier": 1.5
+      "intro": "衝刺鎖定欄位、不追蹤人物；可誘導它撞傷落點的同伴。",
+      "windRole": "ram"
     },
     {
       "id": "highland-hound",
@@ -58,7 +57,7 @@
         ]
       },
       "intro": "獵犬繞開正面的岩甲，緊盯你步伐變慢的一側。",
-      "formationId": "highland-watch"
+      "windRole": "hunter"
     },
     {
       "id": "highland-hawk",
@@ -87,20 +86,7 @@
         ]
       },
       "intro": "脊羽鷹在風裡短暫懸停，接著沿著山壁俯衝。",
-      "specialAttack": {
-        "id": "dive",
-        "name": "掠脊俯衝",
-        "everyTurns": 3,
-        "telegraphText": "脊羽鷹收攏翅膀，下一回合將沿山壁俯衝。",
-        "hits": [
-          {
-            "label": "俯衝",
-            "attackRatio": 1.55,
-            "allowDirectDamageModifier": true
-          }
-        ]
-      },
-      "formationId": "highland-watch"
+      "windRole": "hawk"
     },
     {
       "id": "highland-slate-guard",
@@ -128,8 +114,8 @@
           }
         ]
       },
-      "intro": "層岩衛把成片石甲架在同伴身前；先打開正面，後排就會失去掩護。",
-      "formationId": "highland-watch"
+      "intro": "錨定時放棄進攻，只保護風後同欄的隊友。",
+      "windRole": "guard"
     },
     {
       "id": "highland-signal-keeper",
@@ -157,15 +143,8 @@
           }
         ]
       },
-      "intro": "哨衛撥動繩結，準備在第二回合替前排加固石甲。增援有次數上限。",
-      "supportAction": {
-        "everyTurns": 2,
-        "maxUses": 2,
-        "targetCombatRole": "frontline",
-        "attackGain": 2,
-        "defenseGain": 2
-      },
-      "formationId": "highland-watch"
+      "intro": "最多兩次替其他隊友增強攻防；留意它換位後的位置。",
+      "windRole": "signal"
     },
     {
       "id": "highland-wind-chime",
@@ -193,21 +172,8 @@
           }
         ]
       },
-      "intro": "石孔隨風鳴響；第三回合會吐出一道集中的風刃。",
-      "specialAttack": {
-        "id": "wind-edge",
-        "name": "聚風刃",
-        "everyTurns": 3,
-        "telegraphText": "鳴石的孔隙同時亮起，下一回合將噴出聚風刃。",
-        "hits": [
-          {
-            "label": "風刃",
-            "attackRatio": 1.55,
-            "allowDirectDamageModifier": true
-          }
-        ]
-      },
-      "formationId": "highland-watch"
+      "intro": "蓄風時不進攻，會明示改變下一回合風向。",
+      "windRole": "chime"
     },
     {
       "id": "highland-moss-carrier",
@@ -235,7 +201,8 @@
           }
         ]
       },
-      "intro": "搬石獸步伐緩慢，背上的碎岩卻幾乎沒有縫隙。它守得住，追不上。"
+      "intro": "攜帶一塊岩石，可在空岩台架設一次；這塊岩也能替你擋風。",
+      "windRole": "carrier"
     },
     {
       "id": "highland-veteran-ram",
@@ -263,9 +230,8 @@
           }
         ]
       },
-      "intro": "領羊在碎岩上站穩，衝撞的節奏比幼獸更沉重。",
-      "chargeEvery": 3,
-      "chargeMultiplier": 1.55
+      "intro": "更頻繁地鎖欄衝刺，仍遵守預告落點。",
+      "windRole": "veteran"
     },
     {
       "id": "highland-ridge-captain",
@@ -293,8 +259,8 @@
           }
         ]
       },
-      "intro": "岩衛長橫過石刃，先護住身後的哨衛。",
-      "formationId": "highland-watch"
+      "intro": "可錨定護衛，也能有限支援；不能隔欄保護後排。",
+      "windRole": "captain"
     },
     {
       "id": "highland-storm-hawk",
@@ -322,25 +288,8 @@
           }
         ]
       },
-      "intro": "巨鷹貼著斷崖飛行，雙翼的陰影先一步越過你。",
-      "specialAttack": {
-        "id": "double-dive",
-        "name": "迴旋掠擊",
-        "everyTurns": 4,
-        "telegraphText": "巨鷹拉高高度，下一回合將接連兩次掠擊。",
-        "hits": [
-          {
-            "label": "左翼",
-            "attackRatio": 0.75,
-            "allowDirectDamageModifier": true
-          },
-          {
-            "label": "右翼",
-            "attackRatio": 0.75,
-            "allowDirectDamageModifier": true
-          }
-        ]
-      }
+      "intro": "連斬明示兩段，兩段都會計算防禦；它也會換位。",
+      "windRole": "storm"
     },
     {
       "id": "highland-horn-king",
@@ -349,9 +298,9 @@
       "family": "beast",
       "combatRole": "frontline",
       "weight": 100,
-      "maxHp": 355,
-      "attack": 34,
-      "defense": 8,
+      "maxHp": 240,
+      "attack": 28,
+      "defense": 6,
       "critChance": 0,
       "expReward": 220,
       "rewards": {
@@ -368,20 +317,8 @@
           }
         ]
       },
-      "intro": "角王站在最後一層緩坡上。牠抬起頭，碎裂的角尖正對著狹窄山路。",
-      "specialAttack": {
-        "id": "ridge-charge",
-        "name": "裂嶺衝撞",
-        "everyTurns": 4,
-        "telegraphText": "角王後退兩步，刨開地面；下一回合將全力衝撞。",
-        "hits": [
-          {
-            "label": "角撞",
-            "attackRatio": 1.8,
-            "allowDirectDamageModifier": true
-          }
-        ]
-      }
+      "intro": "體型抵消一格風，仍會被兩格風推移；衝刺會傷及同伴。",
+      "windRole": "boss"
     },
     {
       "id": "highland-windwarden",
@@ -390,9 +327,9 @@
       "family": "construct",
       "combatRole": "frontline",
       "weight": 100,
-      "maxHp": 690,
-      "attack": 44,
-      "defense": 12,
+      "maxHp": 330,
+      "attack": 32,
+      "defense": 8,
       "critChance": 0,
       "expReward": 220,
       "rewards": {
@@ -409,25 +346,8 @@
           }
         ]
       },
-      "intro": "古老石甲沿著胸口的風孔一片片展開。它沒有追逐你，只守著仍在鳴響的隘口。",
-      "specialAttack": {
-        "id": "windbreak-sweep",
-        "name": "斷風連斬",
-        "everyTurns": 4,
-        "telegraphText": "守望者合攏雙臂，胸口風孔正在蓄壓；下一回合將連斬兩次。",
-        "hits": [
-          {
-            "label": "橫斬",
-            "attackRatio": 0.8,
-            "allowDirectDamageModifier": true
-          },
-          {
-            "label": "下壓",
-            "attackRatio": 1,
-            "allowDirectDamageModifier": true
-          }
-        ]
-      }
+      "intro": "輪流蓄風、雙段斬與鎖欄衝刺；先看預告，再決定借風或抵風。",
+      "windRole": "warden"
     }
   ]
 }

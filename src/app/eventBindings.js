@@ -145,7 +145,12 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.finishStoryButton.addEventListener("click", completePlainsStory);
   els.revealAnpingArrivalButton.addEventListener("click", revealAnpingArrivalPage);
   els.continueAnpingArrivalButton.addEventListener("click", continueAnpingArrivalStory);
-  els.nextButton.addEventListener("click", playTurn);
+  els.nextButton.addEventListener("click", () => playTurn("attack"));
+  els.tacticalActions?.addEventListener("click", event => {
+    const button = event.target.closest("button[data-action-type]");
+    if (!button || button.disabled) return;
+    playTurn({ type: button.dataset.actionType, column: button.dataset.column === undefined ? undefined : Number(button.dataset.column) });
+  });
   els.guardButton?.addEventListener("click", () => playTurn("guard"));
   els.fleeButton.addEventListener("click", tryFlee);
   els.continueButton.addEventListener("click", continueAdventure);

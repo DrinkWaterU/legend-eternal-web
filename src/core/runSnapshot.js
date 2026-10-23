@@ -1,7 +1,7 @@
 import { GAME_VERSION } from "../config.js";
 
 const TRANSIENT = new Set(["storyTimer", "anpingArrivalTimerIds", "achievementToastTimer", "activeAchievementToastId", "eventTransitionToken"]);
-const PHASES = new Set(["danger", "combat", "safe", "event", "segmentChoice", "campSelection", "campReady", "story", "routeEnding"]);
+const PHASES = new Set(["danger", "combat", "safe", "event", "segmentChoice", "campSelection", "campReady", "story", "routeEnding", "highlandChoice"]);
 const replacer = (key, value) => key === "battleHooks" ? undefined : value instanceof Set ? { $runSet: [...value] } : value;
 const reviver = (key, value) => value && Object.keys(value).length === 1 && Array.isArray(value.$runSet) ? new Set(value.$runSet) : value;
 
@@ -20,7 +20,7 @@ export function readRunSnapshot(snapshot, { regions, characters, routes, events 
     const text = JSON.stringify(snapshot.state);
     if (text.length > 2000000) throw new Error();
     const s = JSON.parse(text, reviver);
-    if (!s || !PHASES.has(s.phase) || !s.hero || (!s.runStats && s.battleSource !== "duel") || !Array.isArray(s.enemies)
+    if (!s || !PHASES.has(s.phase) || !s.hero || !validTacticalState(s) || (!s.runStats && s.battleSource !== "duel") || !Array.isArray(s.enemies)
       || !Number.isFinite(s.hero.hp) || !Number.isFinite(s.hero.maxHp) || s.hero.maxHp <= 0
       || !Number.isInteger(s.encounterIndex) || s.encounterIndex < 0 || !Number.isInteger(s.turn) || s.turn < 0
       || !Number.isInteger(s.runRandomState) || s.runRandomState < 0 || s.runRandomState > 0xffffffff
@@ -46,6 +46,34 @@ export function readRunSnapshot(snapshot, { regions, characters, routes, events 
   } catch {
     return { ok: false, reason: "這段旅程的資料不完整。請先匯出備份，再結束旅程；永久進度會保留。" };
   }
+}
+
+function validTacticalState(s) {
+  const col = n => Number.isInteger(n) && n >= 0 && n <= 2;
+  const battleValid = (b, heroColumn, enemies) => !b || (
+    Array.isArray(b.rocks) && b.rocks.length === 3 && b.rocks.every(n => Number.isInteger(n) && n >= 0 && n <= 3)
+    && Array.isArray(b.pattern) && b.pattern.length > 0 && b.pattern.length <= 12
+    && b.pattern.every(n => Number.isInteger(n) && n >= -2 && n <= 2)
+    && col(heroColumn) && Array.isArray(enemies) && enemies.every(e => col(e.battleColumn))
+    && (!b.intents || (Array.isArray(b.intents) && b.intents.length <= 3 && b.intents.every(i => i && typeof i.id === "string"
+      && ["track", "move", "charge", "anchor", "gust", "build", "rally", "flurry"].includes(i.kind)
+      && (!["move", "charge", "build"].includes(i.kind) || col(i.column))
+      && (i.kind !== "track" || [1, 2].includes(i.range))
+      && (i.kind !== "gust" || [-2, 2].includes(i.direction)))))
+    && (!b.windOverrides || (typeof b.windOverrides === "object" && !Array.isArray(b.windOverrides)
+      && Object.entries(b.windOverrides).every(([key, value]) => /^\d+$/.test(key) && [-2, -1, 0, 1, 2].includes(value)))));
+  if (!battleValid(s.highlandBattle, s.hero?.battleColumn, s.enemies)) return false;
+  if (s.pendingThreat && !battleValid(s.pendingThreat.highlandBattle, s.pendingThreat.heroBattleColumn, s.pendingThreat.enemies)) return false;
+  const r = s.hero?.weaponRuntime;
+  if (r && ![[r.charge, 3], [r.weight, 4], [r.impact, 3], [r.chain, 2]].every(([n, max]) => Number.isInteger(n) && n >= 0 && n <= max)) return false;
+  for (const h of [s.hero, s.pendingThreat?.heroCombat].filter(Boolean)) {
+    if (h.highlandOpportunities && (Array.isArray(h.highlandOpportunities) || typeof h.highlandOpportunities !== "object"
+      || !Object.entries(h.highlandOpportunities).every(([key, value]) => ["wind", "ride", "break"].includes(key) && Number.isFinite(value) && value >= 0 && value <= 16))) return false;
+  }
+  if (s.highlandChoices && (Array.isArray(s.highlandChoices) || typeof s.highlandChoices !== "object"
+    || !Object.entries(s.highlandChoices).every(([key, value]) => ["0", "4", "8"].includes(key) && ["shelter", "gale"].includes(value)))) return false;
+  return s.phase !== "highlandChoice" || (s.selectedRegionId === "highlands" && [0, 4, 8].includes(s.routeEncounterIndex)
+    && !s.highlandChoices?.[s.routeEncounterIndex]);
 }
 
 export function restoreRunSnapshot(target, snapshot, definitions) {

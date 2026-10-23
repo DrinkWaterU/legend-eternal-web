@@ -1,3 +1,5 @@
+import { renderTacticalBattle } from "../../ui/tacticalBattleView.js";
+import { canReachHighlandTarget } from "../../core/highlandBattle.js";
 import { canFleeBattle } from "../../core/fleeRules.js";
 import { canTakeBattleAction } from "../../core/battleActions.js";
 import { resolveTargetEnemyId } from "../../core/enemyGroups.js";
@@ -16,7 +18,8 @@ export function createCombatRenderer({
   getAdventureSourceName,
   hasPendingThreat,
   selectEnemyTarget,
-  questRuntime
+  questRuntime,
+  choosePath
 }) {
   function setCombatActionState() {
     const isBoss = !canFleeBattle(state.battleEncounterType);
@@ -32,6 +35,9 @@ export function createCombatRenderer({
     els.nextButton.disabled = !canFight;
     els.nextButton.hidden = !canFight;
     els.nextButton.textContent = "攻擊";
+    if (canFight && state.highlandBattle && !canReachHighlandTarget(state, state.enemies.find(e => e.runtimeId === state.targetEnemyId))) {
+      els.nextButton.disabled = true; els.nextButton.textContent = "距離不足・請移位";
+    }
     if (els.guardButton) {
       els.guardButton.disabled = !canFight;
       els.guardButton.hidden = !canFight;
@@ -60,6 +66,7 @@ export function createCombatRenderer({
     els.openAbilityFromAttack.disabled = !canViewAbility;
     els.openAbilityFromDefense.disabled = !canViewAbility;
     els.openAbilityFromCrit.disabled = !canViewAbility;
+    renderTacticalBattle({ state, els, canFight, choosePath });
   }
 
   function render() {
@@ -123,6 +130,11 @@ export function createCombatRenderer({
 
   function renderCombatActionHint() {
     if (!els.combatActionHint) return;
+    if (state.phase === "highlandChoice") {
+      els.combatActionHint.textContent = "先選擇山路，再開始下一段旅程。";
+      els.combatActionHint.dataset.action = "path";
+      return;
+    }
     if (state.lastPlayerAction === "guard") {
       els.combatActionHint.textContent = "上回合採取守勢；本回合可重新選擇行動。";
       els.combatActionHint.dataset.action = "guard";

@@ -119,6 +119,7 @@ function resolveShot({ hero, enemies, target, log, kind }) {
     options: {
       critChanceBonus,
       damageMultiplier: kind === "original" ? 1 : FOLLOW_UP_DAMAGE_RATIO,
+      source: kind === "original" ? "original" : "characterFollowUp",
       allowHeavyStrike: false
     }
   });

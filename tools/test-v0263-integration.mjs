@@ -13,7 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) => readFile(path.join(root, relativePath), "utf8");
 
 assert.ok(SAVE_SCHEMA_VERSION >= 9);
-assert.equal(Object.keys(questDefinitions).length, 20);
+assert.equal(Object.keys(questDefinitions).length, 22);
 assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) => [quest.id, [quest.rarity, quest.rewards.gold]])), {
   "broad-monster-control": ["common", 20],
   "route-patrol": ["common", 20],
@@ -30,7 +30,8 @@ assert.deepEqual(Object.fromEntries(Object.values(questDefinitions).map((quest) 
   "beach-threat-control": ["common", 30],
   "beach-route-survey": ["advanced", 40],
   "tidal-claw-core-research": ["rare", 55],
-  "highlands-patrol": ["common",45], "highlands-signals": ["advanced",55], "highlands-survey": ["advanced",75], "highlands-supplies": ["common",55], "highlands-windheart": ["rare",80]
+  "highlands-patrol": ["common",45], "highlands-signals": ["advanced",55], "highlands-survey": ["advanced",75], "highlands-supplies": ["common",55], "highlands-windheart": ["rare",80],
+  "highlands-rockwork": ["advanced",55], "highlands-bait": ["advanced",65]
 });
 assert.equal(questDefinitions["broad-monster-control"].objective.target, 30);
 assert.equal(questDefinitions["route-patrol"].objective.target, 2);

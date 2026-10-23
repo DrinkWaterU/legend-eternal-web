@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.8-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.9-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -40,7 +40,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.8-alpha</p>
+            <p class="version-label">v0.2.9-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -854,6 +854,8 @@
               <small id="combatPreparationCharges"></small>
             </section>
 
+            <section id="highlandBattlePanel" class="highland-battle-panel" aria-label="風與地形" hidden></section>
+
             <section class="enemy-zone" aria-label="敵群">
               <div class="enemy-section-heading">
                 <h3>敵群</h3>
@@ -863,6 +865,8 @@
             </section>
 
             <section class="combat-command-panel" aria-label="本回合行動">
+              <p id="weaponTechniqueStatus" class="weapon-technique-status" hidden></p>
+              <div id="tacticalActions" class="tactical-actions" hidden></div>
               <div class="combat-actions">
                 <button id="nextButton" class="secondary-button action-combat" type="button">攻擊</button>
                 <button id="guardButton" class="secondary-button action-guard" type="button">守勢</button>
@@ -1279,6 +1283,6 @@
       </aside>
     </main>
 
-  <script type="module" src="game.js?v=0.2.8-alpha&amp;build=v028-alpha-1"></script>
+  <script type="module" src="game.js?v=0.2.9-alpha&amp;build=v029-alpha-1"></script>
   </body>
 </html>

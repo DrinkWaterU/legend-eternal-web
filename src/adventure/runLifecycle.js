@@ -1,7 +1,11 @@
 const RUN_STATE_DEFAULTS = Object.freeze({
   runRandomState: null,
+  highlandBattle: null,
+  highlandChoices: null,
+  turnActionId: 0,
   runResumeFinished: false,
   blessingChoices: [],
+  blessingFallbackNote: "",
   encounterIndex: 0,
   turn: 0,
   hero: null,

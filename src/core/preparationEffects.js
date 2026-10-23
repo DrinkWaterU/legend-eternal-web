@@ -1,5 +1,8 @@
 export function initializePreparationRuntime(preparation) {
   switch (preparation.effect.type) {
+    case "highlandTool":
+      preparation.remainingCharges = preparation.effect.charges;
+      break;
     case "postEncounterLowHpHeal":
       preparation.remainingCharges = preparation.effect.charges;
       preparation.healing = 0;

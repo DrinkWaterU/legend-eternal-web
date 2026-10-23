@@ -1,4 +1,5 @@
 const SUPPORTED_EFFECT_TYPES = new Set([
+  "highlandTool",
   "postEncounterLowHpHeal",
   "poisonDamageReduction",
   "firstFamilyDirectDamageReduction",
@@ -89,6 +90,10 @@ function validateChangedFragments(changedFragments, description, preparationId) 
 
 function validateEffect(effect, preparationId) {
   switch (effect.type) {
+    case "highlandTool":
+      validateCharges(effect.charges, preparationId);
+      if (!["brace", "rock", "step"].includes(effect.tool)) throw new Error(`整備 ${preparationId} 高地工具無效。`);
+      break;
     case "postEncounterLowHpHeal":
       if (!isRatio(effect.hpThresholdRatio) || !isPositiveRatio(effect.healMaxHpRatio)) {
         throw new Error(`整備 ${preparationId} 的低生命治療參數無效。`);

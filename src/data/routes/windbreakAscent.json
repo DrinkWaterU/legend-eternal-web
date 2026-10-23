@@ -16,15 +16,15 @@
       {
         "id": "outer",
         "fromEncounter": 1,
-        "toEncounter": 10,
+        "toEncounter": 6,
         "desktop": "assets/images/regions/highlands/outer-desktop.png",
         "mobile": "assets/images/regions/highlands/outer-mobile.png",
         "tone": "highlands-outer"
       },
       {
         "id": "summit",
-        "fromEncounter": 11,
-        "toEncounter": 20,
+        "fromEncounter": 7,
+        "toEncounter": 12,
         "desktop": "assets/images/regions/highlands/summit-desktop.png",
         "mobile": "assets/images/regions/highlands/summit-mobile.png",
         "tone": "highlands-summit"
@@ -43,35 +43,7 @@
     },
     {
       "type": "normal",
-      "groupId": "signal"
-    },
-    {
-      "type": "normal",
-      "groupId": "guard"
-    },
-    {
-      "type": "normal",
       "groupId": "formation"
-    },
-    {
-      "type": "normal",
-      "groupId": "hawk"
-    },
-    {
-      "type": "normal",
-      "groupId": "pack"
-    },
-    {
-      "type": "normal",
-      "groupId": "chime"
-    },
-    {
-      "type": "elite",
-      "groupId": "elite-ram"
-    },
-    {
-      "type": "boss",
-      "groupId": "king"
     },
     {
       "type": "normal",
@@ -79,7 +51,11 @@
     },
     {
       "type": "normal",
-      "groupId": "flock"
+      "groupId": "chime"
+    },
+    {
+      "type": "boss",
+      "groupId": "king"
     },
     {
       "type": "normal",
@@ -87,27 +63,19 @@
     },
     {
       "type": "elite",
+      "groupId": "elite-ram"
+    },
+    {
+      "type": "elite",
       "groupId": "captain"
     },
     {
       "type": "normal",
-      "groupId": "chime"
-    },
-    {
-      "type": "normal",
-      "groupId": "crosswind"
+      "groupId": "flock"
     },
     {
       "type": "elite",
       "groupId": "storm"
-    },
-    {
-      "type": "normal",
-      "groupId": "formation"
-    },
-    {
-      "type": "normal",
-      "groupId": "lastguard"
     },
     {
       "type": "boss",
@@ -122,7 +90,7 @@
         {
           "enemyId": "highland-ram",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -133,7 +101,7 @@
         {
           "enemyId": "highland-hound",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -144,7 +112,7 @@
         {
           "enemyId": "highland-hawk",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -155,7 +123,7 @@
         {
           "enemyId": "highland-slate-guard",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -166,7 +134,7 @@
         {
           "enemyId": "highland-signal-keeper",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -177,12 +145,12 @@
         {
           "enemyId": "highland-ram",
           "statScale": 0.85,
-          "rewardScale": 0.85
+          "rewardScale": 1.02
         },
         {
           "enemyId": "highland-hound",
           "statScale": 0.7,
-          "rewardScale": 0.7
+          "rewardScale": 0.84
         }
       ]
     },
@@ -193,12 +161,12 @@
         {
           "enemyId": "highland-slate-guard",
           "statScale": 0.85,
-          "rewardScale": 0.85
+          "rewardScale": 1.02
         },
         {
           "enemyId": "highland-signal-keeper",
           "statScale": 0.8,
-          "rewardScale": 0.8
+          "rewardScale": 0.96
         }
       ]
     },
@@ -209,7 +177,7 @@
         {
           "enemyId": "highland-wind-chime",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -220,7 +188,7 @@
         {
           "enemyId": "highland-veteran-ram",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -231,7 +199,7 @@
         {
           "enemyId": "highland-horn-king",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -242,7 +210,7 @@
         {
           "enemyId": "highland-moss-carrier",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -253,12 +221,12 @@
         {
           "enemyId": "highland-hawk",
           "statScale": 0.8,
-          "rewardScale": 0.8
+          "rewardScale": 0.96
         },
         {
           "enemyId": "highland-hound",
           "statScale": 0.75,
-          "rewardScale": 0.75
+          "rewardScale": 0.9
         }
       ]
     },
@@ -269,17 +237,17 @@
         {
           "enemyId": "highland-slate-guard",
           "statScale": 0.8,
-          "rewardScale": 0.8
+          "rewardScale": 0.96
         },
         {
           "enemyId": "highland-hound",
           "statScale": 0.65,
-          "rewardScale": 0.65
+          "rewardScale": 0.78
         },
         {
           "enemyId": "highland-signal-keeper",
           "statScale": 0.65,
-          "rewardScale": 0.65
+          "rewardScale": 0.78
         }
       ]
     },
@@ -290,12 +258,12 @@
         {
           "enemyId": "highland-ridge-captain",
           "statScale": 0.9,
-          "rewardScale": 0.9
+          "rewardScale": 1.08
         },
         {
           "enemyId": "highland-signal-keeper",
           "statScale": 0.65,
-          "rewardScale": 0.65
+          "rewardScale": 0.78
         }
       ]
     },
@@ -306,7 +274,7 @@
         {
           "enemyId": "highland-storm-hawk",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
         }
       ]
     },
@@ -317,12 +285,12 @@
         {
           "enemyId": "highland-moss-carrier",
           "statScale": 0.8,
-          "rewardScale": 0.8
+          "rewardScale": 0.96
         },
         {
           "enemyId": "highland-wind-chime",
           "statScale": 0.7,
-          "rewardScale": 0.7
+          "rewardScale": 0.84
         }
       ]
     },
@@ -333,17 +301,17 @@
         {
           "enemyId": "highland-slate-guard",
           "statScale": 0.75,
-          "rewardScale": 0.75
+          "rewardScale": 0.9
         },
         {
           "enemyId": "highland-hawk",
           "statScale": 0.65,
-          "rewardScale": 0.65
+          "rewardScale": 0.78
         },
         {
           "enemyId": "highland-signal-keeper",
           "statScale": 0.65,
-          "rewardScale": 0.65
+          "rewardScale": 0.78
         }
       ]
     },
@@ -354,7 +322,12 @@
         {
           "enemyId": "highland-windwarden",
           "statScale": 1,
-          "rewardScale": 1
+          "rewardScale": 1.2
+        },
+        {
+          "enemyId": "highland-signal-keeper",
+          "statScale": 0.6,
+          "rewardScale": 0.72
         }
       ]
     }
@@ -376,11 +349,11 @@
   "events": {
     "scheduleChance": 1,
     "triggerBeforeEncounters": [
-      4,
+      3,
+      5,
       8,
-      12,
-      15,
-      18
+      10,
+      11
     ],
     "pool": [
       "highlands-cairn",
@@ -388,13 +361,14 @@
       "highlands-spring",
       "highlands-nest",
       "highlands-wall"
-    ]
+    ],
+    "eventsPerRun": 2
   },
   "eventDefinitions": [
     {
       "id": "highlands-cairn",
       "weight": 100,
-      "triggerBeforeEncounter": 4,
+      "triggerBeforeEncounter": 3,
       "eyebrow": "高地見聞",
       "title": "被風吹歪的路標",
       "transitionText": [
@@ -409,19 +383,24 @@
       "choices": [
         {
           "id": "read",
-          "meta": "損失 12 生命，取得額外祝福三選一。",
+          "meta": "損失 12 生命，取得額外祝福三選一。；下一場雙岩全毀",
           "title": "扶正石塔",
           "description": "你把倒下的石塊重新堆回路口。",
           "action": "選擇",
           "result": {
             "narrative": [
               "你把倒下的石塊重新堆回路口。",
-              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。",
+              "你移開了擋風的殘岩。下一場將沒有遮蔽，這條缺口會由你自己承擔。"
             ],
             "effects": [
               {
                 "type": "loseHp",
                 "amount": 12
+              },
+              {
+                "type": "highlandTerrain",
+                "mode": "exposed"
               }
             ],
             "defaultTarget": {
@@ -466,7 +445,7 @@
     {
       "id": "highlands-cache",
       "weight": 100,
-      "triggerBeforeEncounter": 8,
+      "triggerBeforeEncounter": 5,
       "eyebrow": "高地見聞",
       "title": "哨衛留下的繩袋",
       "transitionText": [
@@ -481,14 +460,15 @@
       "choices": [
         {
           "id": "reach",
-          "meta": "損失 16 生命，取得守望繩結 ×2。",
+          "meta": "損失 16 生命，取得守望繩結 ×2。；下一場強風交錯",
           "title": "取下繩袋",
           "description": "你沿著木樁探身，抓住仍算結實的繩索。",
           "action": "選擇",
           "result": {
             "narrative": [
               "你沿著木樁探身，抓住仍算結實的繩索。",
-              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。",
+              "你拉開風道旁的舊繩結，接下來的風將從兩側交錯灌入。"
             ],
             "effects": [
               {
@@ -503,6 +483,10 @@
                     "quantity": 2
                   }
                 ]
+              },
+              {
+                "type": "highlandTerrain",
+                "mode": "draft"
               }
             ],
             "defaultTarget": {
@@ -540,7 +524,7 @@
     {
       "id": "highlands-spring",
       "weight": 100,
-      "triggerBeforeEncounter": 12,
+      "triggerBeforeEncounter": 8,
       "eyebrow": "高地見聞",
       "title": "層岩下的細泉",
       "transitionText": [
@@ -555,19 +539,24 @@
       "choices": [
         {
           "id": "drink",
-          "meta": "恢復最大生命 20%。",
+          "meta": "恢復最大生命 20%。；下一場左右岩耐久3",
           "title": "清理傷口",
           "description": "你用細泉清理傷口，留到刺痛稍微退去。",
           "action": "選擇",
           "result": {
             "narrative": [
               "你用細泉清理傷口，留到刺痛稍微退去。",
-              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。",
+              "你把鬆動的岩層壓緊，為下一段路留下更耐用的遮蔽。"
             ],
             "effects": [
               {
                 "type": "recoverHp",
                 "maxHpRatio": 0.2
+              },
+              {
+                "type": "highlandTerrain",
+                "mode": "reinforced"
               }
             ],
             "defaultTarget": {
@@ -615,7 +604,7 @@
     {
       "id": "highlands-nest",
       "weight": 100,
-      "triggerBeforeEncounter": 15,
+      "triggerBeforeEncounter": 10,
       "eyebrow": "高地見聞",
       "title": "空下來的鷹巢",
       "transitionText": [
@@ -630,14 +619,15 @@
       "choices": [
         {
           "id": "feathers",
-          "meta": "取得逆風翎羽 ×2。",
+          "meta": "取得逆風翎羽 ×2。；下一場雙岩全毀",
           "title": "拾取硬翎",
           "description": "你只拾起已脫落的翎羽，沒有碰動巢體。",
           "action": "選擇",
           "result": {
             "narrative": [
               "你只拾起已脫落的翎羽，沒有碰動巢體。",
-              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。",
+              "你移開了擋風的殘岩。下一場將沒有遮蔽，這條缺口會由你自己承擔。"
             ],
             "effects": [
               {
@@ -648,6 +638,10 @@
                     "quantity": 2
                   }
                 ]
+              },
+              {
+                "type": "highlandTerrain",
+                "mode": "exposed"
               }
             ],
             "defaultTarget": {
@@ -661,19 +655,24 @@
         },
         {
           "id": "observe",
-          "meta": "損失 18 生命，取得額外祝福三選一。",
+          "meta": "損失 18 生命，取得額外祝福三選一。；下一場左右岩耐久3",
           "title": "觀察飛行",
           "description": "你看著鷹影在風中轉向，記住牠們改變重心的時刻。",
           "action": "選擇",
           "result": {
             "narrative": [
               "你看著鷹影在風中轉向，記住牠們改變重心的時刻。",
-              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。",
+              "你把鬆動的岩層壓緊，為下一段路留下更耐用的遮蔽。"
             ],
             "effects": [
               {
                 "type": "loseHp",
                 "amount": 18
+              },
+              {
+                "type": "highlandTerrain",
+                "mode": "reinforced"
               }
             ],
             "defaultTarget": {
@@ -686,13 +685,33 @@
             ],
             "continueLabel": "繼續攀登"
           }
+        },
+        {
+          "id": "leave-nest",
+          "title": "繞開鳥巢",
+          "meta": "不拿物資、不改變下一場地形。",
+          "description": "你把腳步放輕，讓翼影留在山路另一側。",
+          "action": "選擇",
+          "result": {
+            "narrative": [
+              "你沿著原路繼續前進，沒有驚動鳥巢。"
+            ],
+            "effects": [],
+            "defaultTarget": {
+              "type": "returnAdventure"
+            },
+            "resultIds": [
+              "nest-leave"
+            ],
+            "continueLabel": "繼續攀登"
+          }
         }
       ]
     },
     {
       "id": "highlands-wall",
       "weight": 100,
-      "triggerBeforeEncounter": 18,
+      "triggerBeforeEncounter": 11,
       "eyebrow": "高地見聞",
       "title": "仍在擋風的矮牆",
       "transitionText": [
@@ -707,19 +726,24 @@
       "choices": [
         {
           "id": "read",
-          "meta": "損失 22 生命，稀有祝福三選一。",
+          "meta": "損失 22 生命，稀有祝福三選一。；下一場強風交錯；稀有已集齊時改選其他祝福",
           "title": "追讀舊刻痕",
           "description": "你用手指沿著舊刻痕摸索，直到散亂的痕跡連成一段路。",
           "action": "選擇",
           "result": {
             "narrative": [
               "你用手指沿著舊刻痕摸索，直到散亂的痕跡連成一段路。",
-              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。"
+              "山風仍在。你收好物品，沿著路標指向的方向繼續前進。",
+              "你拉開風道旁的舊繩結，接下來的風將從兩側交錯灌入。"
             ],
             "effects": [
               {
                 "type": "loseHp",
                 "amount": 22
+              },
+              {
+                "type": "highlandTerrain",
+                "mode": "draft"
               }
             ],
             "defaultTarget": {

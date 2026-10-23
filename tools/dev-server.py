@@ -15,6 +15,12 @@ DEFAULT_PORT = 4173
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
+class DevelopmentHTTPServer(ThreadingHTTPServer):
+    # The ES-module graph opens many connections together. Python's default
+    # backlog of 5 rejects these bursts on Windows before a handler can accept.
+    request_queue_size = 128
+
+
 class NoCacheHTTPRequestHandler(SimpleHTTPRequestHandler):
     """Serve static files while forcing every request to read fresh content."""
 
@@ -93,7 +99,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     handler = partial(NoCacheHTTPRequestHandler, directory=str(directory))
 
     try:
-        server = ThreadingHTTPServer((args.bind, args.port), handler)
+        server = DevelopmentHTTPServer((args.bind, args.port), handler)
     except OSError as exc:
         print(
             f"錯誤：無法啟動 http://{args.bind}:{args.port}/：{exc}",

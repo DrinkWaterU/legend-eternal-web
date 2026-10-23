@@ -1,5 +1,8 @@
 export function getCombatElements(document) {
   return {
+    highlandBattlePanel: document.querySelector("#highlandBattlePanel"),
+    tacticalActions: document.querySelector("#tacticalActions"),
+    weaponTechniqueStatus: document.querySelector("#weaponTechniqueStatus"),
     nextButton: document.querySelector("#nextButton"),
     guardButton: document.querySelector("#guardButton"),
     fleeButton: document.querySelector("#fleeButton"),

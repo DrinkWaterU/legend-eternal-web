@@ -494,9 +494,6 @@
     "name": "磨痕戰斧",
     "categoryId": "battle-axe",
     "rarityId": "common",
-    "allowedCharacterIds": [
-      "kaige"
-    ],
     "effectName": "沉重斧勢",
     "effectText": "攻擊 +2。",
     "description": "斧刃布滿反覆打磨留下的痕跡，重量紮實，適合以雙手揮出沉重斬擊。",
@@ -517,22 +514,20 @@
     "name": "斷風守隘劍",
     "categoryId": "sword",
     "rarityId": "uncommon",
-    "effectName": "斷風守隘劍",
-    "effectText": "攻擊 +2，開場護盾 +10。",
-    "description": "細長彎刃讓過重的鋒面退到一旁，封閉護手由薄岩與角髓補強。它不追求最沉重的斬擊，而是讓握劍的手在風口裡穩下來。",
+    "effectName": "架勢反攻",
+    "effectText": "攻擊 +1。守勢確實減輕敵方直接傷害後取得一次反攻；下一次主攻命中追加攻擊力70%＋4傷害（仍計敵防禦與護衛）。",
+    "description": "以山隘守衛的斜面護手架開攻勢，再沿著短暫的空隙還擊；離開高地，仍適合願意先守一拍的劍士。",
     "statEffects": [
       {
         "type": "add",
         "stat": "attack",
-        "amount": 2
-      },
-      {
-        "type": "add",
-        "stat": "shieldStart",
-        "amount": 10
+        "amount": 1
       }
     ],
-    "specialEffect": null,
+    "specialEffect": {
+      "type": "weaponTechnique",
+      "technique": "riposte"
+    },
     "recipe": {
       "goldCost": 320,
       "materialCosts": [
@@ -546,29 +541,28 @@
         }
       ]
     },
-    "iconAssetId": "windbreak-sword-v2"
+    "iconAssetId": "windbreak-sword-v2",
+    "effectSummary": "有效守勢取得一次反攻；下次主擊命中追加傷害。"
   },
   "ridgewind-bow": {
     "id": "ridgewind-bow",
     "name": "脊風獵弓",
     "categoryId": "bow",
     "rarityId": "uncommon",
-    "effectName": "脊風獵弓",
-    "effectText": "攻擊 +2，對半血以下目標額外 +20% 暴擊率。",
-    "description": "逆風翎羽固定在弓臂受力最深的位置，守望繩結則繫住了容易鬆脫的接點。這把弓擅長追住已經動搖的獵物；若要在第一箭決勝，仍有更合適的獵弓。",
+    "effectName": "穿風蓄射",
+    "effectText": "攻擊 +1。可花一回合蓄射，兩回合內主攻命中後追加80%攻擊力，並對其餘敵人各追加50%；開戰只有一敵時改為集中追加30%。副包不暴擊或觸發追擊。",
+    "description": "弓臂以風紋石校準，拉滿後的箭勢能穿入敵群；孤身強敵面前則將餘力集中在同一處。",
     "statEffects": [
       {
         "type": "add",
         "stat": "attack",
-        "amount": 2
-      },
-      {
-        "type": "add",
-        "stat": "woundedTargetCritChance",
-        "amount": 0.2
+        "amount": 1
       }
     ],
-    "specialEffect": null,
+    "specialEffect": {
+      "type": "weaponTechnique",
+      "technique": "charge"
+    },
     "recipe": {
       "goldCost": 320,
       "materialCosts": [
@@ -582,29 +576,28 @@
         }
       ]
     },
-    "iconAssetId": "ridgewind-bow"
+    "iconAssetId": "ridgewind-bow",
+    "effectSummary": "花一回合蓄射，兩回合內主攻命中可追加穿透；單敵時集中餘力。"
   },
   "cairn-warhammer": {
     "id": "cairn-warhammer",
     "name": "鎮隘岩鎚",
     "categoryId": "mace",
     "rarityId": "uncommon",
-    "effectName": "鎮隘岩鎚",
-    "effectText": "攻擊 +2；多敵人戰鬥開場額外護盾 +24。",
-    "description": "方形層岩以角髓作心，鐵帶將每一層牢牢束住。它的重量適合頂住敵群初次圍攻；面對獨行的首領，那份額外護盾便無從發揮。",
+    "effectName": "震岩破勢",
+    "effectText": "主擊命中累積衝擊1，最多3。破勢消耗全部衝擊：主擊後追加攻擊×20%×衝擊的基礎傷害，並令後續主擊增加目標防禦×25%×衝擊（至少3）傷害；此加值可暴擊，追擊不觸發。1／2層提供1次、至多2回合；3層提供2次、至多3回合。破綻結束後需隔一回合才能再次施加；追加傷害不暴擊、不觸發技能。",
+    "description": "鎚首每次落實都會積起衝擊。持有者可以提早震開一道破綻，也能冒險留到三層，換取更長的進攻窗口。",
     "statEffects": [
       {
         "type": "add",
         "stat": "attack",
-        "amount": 2
-      },
-      {
-        "type": "add",
-        "stat": "multiEnemyShieldStart",
-        "amount": 24
+        "amount": 1
       }
     ],
-    "specialEffect": null,
+    "specialEffect": {
+      "type": "weaponTechnique",
+      "technique": "breach"
+    },
     "recipe": {
       "goldCost": 320,
       "materialCosts": [
@@ -618,34 +611,28 @@
         }
       ]
     },
-    "iconAssetId": "cairn-warhammer"
+    "iconAssetId": "cairn-warhammer",
+    "effectSummary": "主擊命中蓄衝擊，最多3層；破勢全耗，製造後續主擊增傷窗口。"
   },
   "gale-dagger": {
     "id": "gale-dagger",
     "name": "掠風短刃",
     "categoryId": "dagger",
     "rarityId": "uncommon",
-    "effectName": "掠風短刃",
-    "effectText": "攻擊 +1，暴擊率 +8%，暴擊傷害 +20%。",
-    "description": "短而厚實的彎刃藏在掌側，硬翎繫帶只在出手時掠過護手。它犧牲一些正面力道，換來更頻繁的要害命中；不必依賴毒性，也不擅長一擊劈開厚甲。",
+    "effectName": "換手與收割",
+    "effectText": "攻擊 +1。放棄仍存活的前目標轉攻另一活敵，命中追加45%攻擊力並重置連斬；連續三次主攻命中同敵，追加90%攻擊力並重置。兩者不雙拿。",
+    "description": "短刃適合在仍存活的敵手之間換手突襲，也容得下盯住一個目標的三連收割；兩條節奏無法同時累積。",
     "statEffects": [
       {
         "type": "add",
         "stat": "attack",
         "amount": 1
-      },
-      {
-        "type": "add",
-        "stat": "critChance",
-        "amount": 0.08
-      },
-      {
-        "type": "add",
-        "stat": "critDamageMultiplier",
-        "amount": 0.2
       }
     ],
-    "specialEffect": null,
+    "specialEffect": {
+      "type": "weaponTechnique",
+      "technique": "feint"
+    },
     "recipe": {
       "goldCost": 320,
       "materialCosts": [
@@ -659,29 +646,28 @@
         }
       ]
     },
-    "iconAssetId": "gale-dagger"
+    "iconAssetId": "gale-dagger",
+    "effectSummary": "換活目標可突襲；持續攻擊同一目標則在第三次收割，兩種節奏擇一。"
   },
   "stormsplit-axe": {
     "id": "stormsplit-axe",
     "name": "破隘長斧",
     "categoryId": "battle-axe",
     "rarityId": "uncommon",
-    "effectName": "破隘長斧",
-    "effectText": "凱哥專用。攻擊 +2，對半血以下目標額外 +15% 暴擊率。",
-    "description": "長柄讓斧刃越過岩甲外緣，心核則穩住了揮擊時的重心。這把斧頭等待的是敵人腳步開始凌亂的時刻，對仍然站穩的對手沒有額外優勢。",
+    "effectName": "蓄重開隘",
+    "effectText": "攻擊 +1。普通主攻每次出手累積1重量，上限4；可全耗2～4層橫掃，或4層重劈。釋放不回充，副包不計入角色終結回血。",
+    "description": "長柄讓每一次普攻都能蓄起重量；持斧者自行決定提早橫掃敵群，或等到滿勢重劈強敵。",
     "statEffects": [
       {
         "type": "add",
         "stat": "attack",
-        "amount": 2
-      },
-      {
-        "type": "add",
-        "stat": "woundedTargetCritChance",
-        "amount": 0.15
+        "amount": 1
       }
     ],
-    "specialEffect": null,
+    "specialEffect": {
+      "type": "weaponTechnique",
+      "technique": "weight"
+    },
     "recipe": {
       "goldCost": 320,
       "materialCosts": [
@@ -696,8 +682,6 @@
       ]
     },
     "iconAssetId": "stormsplit-axe",
-    "allowedCharacterIds": [
-      "kaige"
-    ]
+    "effectSummary": "普攻蓄重量，最多4層；2層起可全耗橫掃，滿層也可單體重劈。"
   }
 }

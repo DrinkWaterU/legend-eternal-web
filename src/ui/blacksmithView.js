@@ -1,6 +1,7 @@
 import { getInventoryCostStatus } from "../core/commerce.js";
 import {
   createWeaponIcon,
+  createWeaponTechniqueRules,
   formatWeaponCategory,
   formatWeaponEffect,
   formatWeaponEffects,
@@ -109,7 +110,7 @@ export function renderBlacksmithView({
     const effect = document.createElement("span");
     name.textContent = weapon.name;
     meta.textContent = `${formatWeaponCategory(weapon, weaponCategoryDefinitions)}｜${getWeaponRarityLabel(weapon)}品級`;
-    effect.textContent = formatWeaponEffects(weapon);
+    effect.textContent = weapon.effectSummary || formatWeaponEffects(weapon);
     copy.append(name, meta, effect);
 
     const status = document.createElement("b");
@@ -254,7 +255,7 @@ export function renderBlacksmithDetail({
     const label = document.createElement("small");
     const value = document.createElement("strong");
     label.textContent = weapon.effectName || "特殊效果";
-    value.textContent = weapon.effectText;
+    value.textContent = weapon.effectSummary || weapon.effectText;
     item.append(label, value);
     effectList.append(item);
   } else {
@@ -266,6 +267,7 @@ export function renderBlacksmithDetail({
       label.textContent = effect.stat === "attack" ? "基礎能力" : "特殊效果";
       value.textContent = formatWeaponEffect(effect);
       item.append(label, value);
+      if (weapon.effectSummary) item.append(createWeaponTechniqueRules(weapon));
       effectList.append(item);
     });
   }

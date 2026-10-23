@@ -3,317 +3,346 @@
   "name": "斷風高地",
   "blessings": [
     {
-      "id": "highlands-edge",
-      "name": "風礫磨鋒",
+      "id": "highlands-wind-step",
+      "name": "乘風一步",
       "category": "attack",
       "rarity": "common",
       "primaryFlow": "attack",
-      "eventTitle": "風礫磨鋒",
-      "eventText": "你順著石材的紋理磨去刃上的捲口，沒有多費一點力氣。",
-      "flavorText": "你順著石材的紋理磨去刃上的捲口，沒有多費一點力氣。",
-      "effectText": "攻擊 +3。",
+      "eventTitle": "乘風一步",
+      "eventText": "風吹過岩脊，你把踉蹌接成下一次出手。",
+      "flavorText": "",
+      "effectText": "實際隨風移動後，下一次主攻命中追加6傷害；不同機會可合併；每源1份，主攻出手即全耗。追加不扣防禦、仍受護衛，不暴擊、不觸發技能。",
       "effects": [
         {
           "type": "add",
-          "stat": "attack",
+          "stat": "highlandWindAttack",
+          "amount": 6
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-move-shield",
+      "name": "移步留隙",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "eventTitle": "移步留隙",
+      "eventText": "你移到石縫另一側，留下能轉身的餘裕。",
+      "flavorText": "",
+      "effectText": "主動移位後獲得6護盾，每場最多2次。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandMoveShield",
+          "amount": 6
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-shelter-heal",
+      "name": "石背歇息",
+      "category": "healing",
+      "rarity": "common",
+      "primaryFlow": "healing",
+      "eventTitle": "石背歇息",
+      "eventText": "石頭替你擋下一陣風，你趁隙調順呼吸。",
+      "flavorText": "",
+      "effectText": "岩石替你擋風後恢復8生命，每場最多2次。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandShelterHeal",
+          "amount": 8
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-guard-shield",
+      "name": "抵風握柄",
+      "category": "defense",
+      "rarity": "common",
+      "primaryFlow": "defense",
+      "eventTitle": "抵風握柄",
+      "eventText": "你把雙腳踩穩，沒有讓盾面跟著風抖動。",
+      "flavorText": "",
+      "effectText": "守勢遇到風時獲得8護盾，每場一次。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandGuardShield",
+          "amount": 8
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-break-strike",
+      "name": "鑿開缺口",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "attack",
+      "eventTitle": "鑿開缺口",
+      "eventText": "石層裂開，你記住裂隙另一側的腳步。",
+      "flavorText": "",
+      "effectText": "主動拆岩後，下一次主攻命中追加10傷害；不同機會可合併；每源1份，主攻出手即全耗。追加不扣防禦、仍受護衛，不暴擊、不觸發技能。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandBreakAttack",
+          "amount": 10
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-shelter-strike",
+      "name": "藏鋒待風",
+      "category": "attack",
+      "rarity": "common",
+      "primaryFlow": "attack",
+      "eventTitle": "藏鋒待風",
+      "eventText": "風聲暫時蓋過刀鋒，你等著岩後的人先動。",
+      "flavorText": "",
+      "effectText": "岩石替你擋風後，儲存一次穿隘機會：下一次主攻忽略護衛減傷；追擊與武器追加不受益。未命中仍消耗。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandShelterPierce",
+          "amount": 1
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-ride",
+      "name": "留步借勢",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "attack",
+      "eventTitle": "留步借勢",
+      "eventText": "你收回原本要踩穩的那一步，讓風推你前進。",
+      "flavorText": "",
+      "effectText": "解鎖借風移位：不抵風、不減傷，換取下一次主攻命中追加10傷害；不同機會可合併；每源1份，主攻出手即全耗。追加不扣防禦、仍受護衛，不暴擊、不觸發技能。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandRideAttack",
+          "amount": 10
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-firm-stance",
+      "name": "沉身守隘",
+      "category": "defense",
+      "rarity": "uncommon",
+      "primaryFlow": "defense",
+      "eventTitle": "沉身守隘",
+      "eventText": "你把盾壓低，讓重心停在靴底。",
+      "flavorText": "",
+      "effectText": "守勢多抵消1格風，但直接傷害減免從35%降為20%。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandFirmStance",
+          "amount": 1
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-rock-shield",
+      "name": "岩盡人立",
+      "category": "defense",
+      "rarity": "uncommon",
+      "primaryFlow": "defense",
+      "eventTitle": "岩盡人立",
+      "eventText": "石頭散落時，你已經接住它讓出的空處。",
+      "flavorText": "",
+      "effectText": "擋風岩為你擋住最後一次風壓、耐久耗盡時，獲得14護盾；每塊岩一次。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandRockShield",
+          "amount": 14
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-border",
+      "name": "追至邊界",
+      "category": "attack",
+      "rarity": "uncommon",
+      "primaryFlow": "attack",
+      "eventTitle": "追至邊界",
+      "eventText": "退無可退的腳步，比任何呼喊都明顯。",
+      "flavorText": "",
+      "effectText": "主攻消耗敵人的失衡時，額外增加6基礎傷害；追擊與副包不重複觸發。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandBorderAttack",
+          "amount": 6
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-environment-heal",
+      "name": "借敵開路",
+      "category": "healing",
+      "rarity": "uncommon",
+      "primaryFlow": "healing",
+      "eventTitle": "借敵開路",
+      "eventText": "你等衝來的腳步越過自己，再從石後走出。",
+      "flavorText": "",
+      "effectText": "每場首次由你誘導的衝撞擊殺敵人時，恢復12生命；自然互傷不算。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandEnvKillHeal",
+          "amount": 12
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-wind-heal",
+      "name": "隨風換息",
+      "category": "healing",
+      "rarity": "uncommon",
+      "primaryFlow": "healing",
+      "eventTitle": "隨風換息",
+      "eventText": "身體不再和每陣風對抗，呼吸也跟著鬆開。",
+      "flavorText": "",
+      "effectText": "每場首次實際隨風移動時，恢復8生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandWindHeal",
+          "amount": 8
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-no-rock",
+      "name": "無岩之地",
+      "category": "attack",
+      "rarity": "rare",
+      "primaryFlow": "attack",
+      "eventTitle": "無岩之地",
+      "eventText": "最後的遮蔽倒下後，每一步都必須由你自己選。",
+      "flavorText": "",
+      "effectText": "雙岩全毀後解鎖突進攻擊：先移到目標所在欄，再主攻，不受原有射程限制；之後風與敵人仍會行動。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandNoRockLunge",
+          "amount": 1
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-slip",
+      "name": "逆勢而行",
+      "category": "defense",
+      "rarity": "rare",
+      "primaryFlow": "defense",
+      "eventTitle": "逆勢而行",
+      "eventText": "風沒有停，你卻在兩陣風之間踏進另一塊岩台。",
+      "flavorText": "",
+      "effectText": "每場可使用一次轉瞬移位，不耗回合；不重置敵人已鎖定的落點，不充武器資源。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandSlipToken",
+          "amount": 1
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-demolish",
+      "name": "破岩突入",
+      "category": "attack",
+      "rarity": "rare",
+      "primaryFlow": "attack",
+      "eventTitle": "破岩突入",
+      "eventText": "你看準裂縫，與崩落的石塊一起穿過風口。",
+      "flavorText": "",
+      "effectText": "每場一次，可在拆掉整塊岩石的同一行動移入該欄；仍耗回合、不抵風。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "highlandDemolish",
+          "amount": 1
+        }
+      ],
+      "maxStacks": 1
+    },
+    {
+      "id": "highlands-rations",
+      "name": "乾糧分配",
+      "category": "healing",
+      "rarity": "common",
+      "primaryFlow": "healing",
+      "eventTitle": "乾糧分配",
+      "eventText": "你把口糧分成幾份，留給下一段路。",
+      "flavorText": "",
+      "effectText": "擊殺敵人恢復3生命。",
+      "effects": [
+        {
+          "type": "add",
+          "stat": "killHeal",
           "amount": 3
         }
       ]
     },
     {
-      "id": "highlands-slate",
-      "name": "疊岩護身",
+      "id": "highlands-cairn",
+      "name": "立岩誓約",
       "category": "defense",
-      "rarity": "common",
+      "rarity": "uncommon",
       "primaryFlow": "defense",
-      "eventTitle": "疊岩護身",
-      "eventText": "薄岩片交錯固定在護具上，讓撞擊不會落在同一處。",
-      "flavorText": "薄岩片交錯固定在護具上，讓撞擊不會落在同一處。",
-      "effectText": "防禦 +2，開場護盾 +8。",
+      "eventTitle": "立岩誓約",
+      "eventText": "石塔倒了一半，你重新放穩最底下那塊。",
+      "flavorText": "",
+      "effectText": "最大生命+16，開場護盾+8。",
       "effects": [
-        {
-          "type": "add",
-          "stat": "defense",
-          "amount": 2
-        },
-        {
-          "type": "add",
-          "stat": "shieldStart",
-          "amount": 8
-        }
-      ]
-    },
-    {
-      "id": "highlands-shelter",
-      "name": "背風歇腳",
-      "category": "healing",
-      "rarity": "common",
-      "primaryFlow": "healing",
-      "eventTitle": "背風歇腳",
-      "eventText": "岩背遮住了風，你終於能把呼吸放慢。",
-      "flavorText": "岩背遮住了風，你終於能把呼吸放慢。",
-      "effectText": "立即恢復 30 生命，最大生命 +8。",
-      "effects": [
-        {
-          "type": "recoverHp",
-          "amount": 30
-        },
         {
           "type": "add",
           "stat": "maxHp",
+          "amount": 16
+        },
+        {
+          "type": "add",
+          "stat": "shieldStart",
           "amount": 8
         }
       ]
     },
     {
-      "id": "highlands-formation",
-      "name": "迎風列陣",
-      "category": "defense",
-      "rarity": "common",
-      "primaryFlow": "defense",
-      "eventTitle": "迎風列陣",
-      "eventText": "你把每一道逼近的腳步聲都當成提醒，先護住最容易失守的位置。",
-      "flavorText": "你把每一道逼近的腳步聲都當成提醒，先護住最容易失守的位置。",
-      "effectText": "面對多敵人，開場額外護盾 +12。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "multiEnemyShieldStart",
-          "amount": 12
-        }
-      ]
-    },
-    {
-      "id": "highlands-salvage",
-      "name": "獵途補給",
-      "category": "healing",
-      "rarity": "common",
-      "primaryFlow": "healing",
-      "eventTitle": "獵途補給",
-      "eventText": "獵物留下的乾糧袋還完整，足夠支持下一小段山路。",
-      "flavorText": "獵物留下的乾糧袋還完整，足夠支持下一小段山路。",
-      "effectText": "擊殺敵人恢復 7 生命。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "killHeal",
-          "amount": 7
-        }
-      ]
-    },
-    {
-      "id": "highlands-focus",
-      "name": "隘口凝神",
-      "category": "attack",
-      "rarity": "common",
-      "primaryFlow": "attack",
-      "eventTitle": "隘口凝神",
-      "eventText": "你不再盯著每一陣風，而是等敵人真正踏出腳步。",
-      "flavorText": "你不再盯著每一陣風，而是等敵人真正踏出腳步。",
-      "effectText": "暴擊率 +5%。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "critChance",
-          "amount": 0.05
-        }
-      ]
-    },
-    {
-      "id": "highlands-reversal",
-      "name": "岩盾回震",
-      "category": "defense",
-      "rarity": "uncommon",
-      "primaryFlow": "defense",
-      "eventTitle": "岩盾回震",
-      "eventText": "你記住盾面裂開時的震動，將還未散去的力道留給反擊。",
-      "flavorText": "你記住盾面裂開時的震動，將還未散去的力道留給反擊。",
-      "effectText": "開場護盾 +6；每場首次被直接攻擊破盾後，下次直接攻擊額外 +10 傷害。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "shieldStart",
-          "amount": 6
-        },
-        {
-          "type": "add",
-          "stat": "shieldReversalDamage",
-          "amount": 10
-        }
-      ]
-    },
-    {
-      "id": "highlands-silence",
-      "name": "斷哨",
+      "id": "highlands-calm-eye",
+      "name": "風隙定睛",
       "category": "attack",
       "rarity": "uncommon",
       "primaryFlow": "attack",
-      "eventTitle": "斷哨",
-      "eventText": "繩結一動，你便從風聲中辨認出那短暫的空隙。",
-      "flavorText": "繩結一動，你便從風聲中辨認出那短暫的空隙。",
-      "effectText": "敵人支援後，下一次直接攻擊額外 +12 傷害，每場最多獲得 2 次。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "supportCounterDamage",
-          "amount": 12
-        },
-        {
-          "type": "add",
-          "stat": "supportCounterMaxUses",
-          "amount": 2
-        }
-      ]
-    },
-    {
-      "id": "highlands-break",
-      "name": "碎甲追勢",
-      "category": "attack",
-      "rarity": "uncommon",
-      "primaryFlow": "attack",
-      "eventTitle": "碎甲追勢",
-      "eventText": "岩甲倒下的聲音一響，你已經把腳步接進空出的缺口。",
-      "flavorText": "岩甲倒下的聲音一響，你已經把腳步接進空出的缺口。",
-      "effectText": "擊敗前排後，本場攻擊 +5。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "frontlineBreakAttack",
-          "amount": 5
-        }
-      ]
-    },
-    {
-      "id": "highlands-opening",
-      "name": "掠風先手",
-      "category": "attack",
-      "rarity": "uncommon",
-      "primaryFlow": "attack",
-      "eventTitle": "掠風先手",
-      "eventText": "等陣風蓋過足音，你先一步切進敵人的側面。",
-      "flavorText": "等陣風蓋過足音，你先一步切進敵人的側面。",
-      "effectText": "每場首次攻擊額外 +30% 暴擊率。",
+      "eventTitle": "風隙定睛",
+      "eventText": "你沒有追著每片草葉看，只盯住對手先動的肩。",
+      "flavorText": "",
+      "effectText": "每場首次攻擊額外增加20%暴擊率。",
       "effects": [
         {
           "type": "add",
           "stat": "openingCritChance",
-          "amount": 0.3
-        }
-      ]
-    },
-    {
-      "id": "highlands-breath",
-      "name": "長坡呼吸",
-      "category": "healing",
-      "rarity": "uncommon",
-      "primaryFlow": "healing",
-      "eventTitle": "長坡呼吸",
-      "eventText": "你讓呼吸和腳步保持同一個節奏，不再為每一次上坡耗盡力氣。",
-      "flavorText": "你讓呼吸和腳步保持同一個節奏，不再為每一次上坡耗盡力氣。",
-      "effectText": "立即恢復 20 生命；接下來 4 場戰鬥，每 3 回合恢復最大生命 4%。",
-      "effects": [
-        {
-          "type": "recoverHp",
-          "amount": 20
-        },
-        {
-          "type": "addTimedRegen",
-          "id": "highlands-breath",
-          "durationEncounters": 4,
-          "everyTurns": 3,
-          "maxHpRatio": 0.04
-        }
-      ]
-    },
-    {
-      "id": "highlands-oath",
-      "name": "立岩誓約",
-      "category": "defense",
-      "rarity": "rare",
-      "primaryFlow": "defense",
-      "eventTitle": "立岩誓約",
-      "eventText": "風把新堆的石塔吹歪，你重新放穩最底下那一塊。",
-      "flavorText": "風把新堆的石塔吹歪，你重新放穩最底下那一塊。",
-      "effectText": "最大生命 +20，開場護盾 +16。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "maxHp",
-          "amount": 20
-        },
-        {
-          "type": "add",
-          "stat": "shieldStart",
-          "amount": 16
-        }
-      ]
-    },
-    {
-      "id": "highlands-pass",
-      "name": "穿隘",
-      "category": "attack",
-      "rarity": "rare",
-      "primaryFlow": "attack",
-      "eventTitle": "穿隘",
-      "eventText": "你找到了岩甲交錯之間的路，不必每次都撞向最硬的一面。",
-      "flavorText": "你找到了岩甲交錯之間的路，不必每次都撞向最硬的一面。",
-      "effectText": "忽略敵方前排保護造成的減傷；攻擊 +2。",
-      "effects": [
-        {
-          "type": "set",
-          "stat": "ignoreProtectedEnemyReduction",
-          "value": true
-        },
-        {
-          "type": "add",
-          "stat": "attack",
-          "amount": 2
-        }
-      ]
-    },
-    {
-      "id": "highlands-echo",
-      "name": "山鳴連勢",
-      "category": "attack",
-      "rarity": "rare",
-      "primaryFlow": "attack",
-      "eventTitle": "山鳴連勢",
-      "eventText": "空谷把出手的聲音送回來；第二次揮擊已經接上第一次的節拍。",
-      "flavorText": "空谷把出手的聲音送回來；第二次揮擊已經接上第一次的節拍。",
-      "effectText": "對同一存活目標連續直接攻擊，後續傷害每層 +2，最多 5 層；更換或擊倒目標後重新累積。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "cavernEchoDamagePerStack",
-          "amount": 2
-        },
-        {
-          "type": "max",
-          "stat": "cavernEchoMaxStacks",
-          "value": 5
-        }
-      ]
-    },
-    {
-      "id": "highlands-return",
-      "name": "歸途餘糧",
-      "category": "healing",
-      "rarity": "uncommon",
-      "primaryFlow": "healing",
-      "eventTitle": "歸途餘糧",
-      "eventText": "你把最好的那份口糧留到隘口之後，現在正好用得上。",
-      "flavorText": "你把最好的那份口糧留到隘口之後，現在正好用得上。",
-      "effectText": "擊殺敵人恢復 10 生命；最大生命 +10。",
-      "effects": [
-        {
-          "type": "add",
-          "stat": "killHeal",
-          "amount": 10
-        },
-        {
-          "type": "add",
-          "stat": "maxHp",
-          "amount": 10
+          "amount": 0.2
         }
       ]
     }

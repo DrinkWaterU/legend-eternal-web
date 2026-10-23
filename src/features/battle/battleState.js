@@ -1,3 +1,5 @@
+import { startHighlandBattle } from "../../core/highlandBattle.js";
+import { resetWeaponTechnique } from "../../core/weaponTechniques.js";
 import { resetBattleEntryState } from "../../adventure/battleLifecycle.js";
 import { canTakeBattleAction } from "../../core/battleActions.js";
 import { initializeCharacterBattleState } from "../../characters/skills/index.js";
@@ -84,6 +86,10 @@ export function createBattleState({
       activeRouteId: state.activeRouteId,
       battleEncounterType: state.battleEncounterType,
       turn: state.turn,
+      highlandBattle: clone(state.highlandBattle || null),
+      heroBattleColumn: state.hero.battleColumn,
+      heroCombat: Object.fromEntries(["shield", "skillState", "battleAttackBonus", "battleCritBonus", "hasAttackedThisBattle", "weaponBattleMode", "weaponBattleStartApplied", "windStagger", "highlandOpportunities", "highlandShelterPierceReady"].map(key => [key, clone(state.hero[key] ?? null)])),
+      weaponRuntime: clone(state.hero.weaponRuntime || null),
       blessingBattleState: clone(state.hero.blessingBattleState || {}),
       source,
       battleSource: state.battleSource
@@ -112,6 +118,7 @@ export function createBattleState({
     state.hero.skillState = createSkillState();
     resetBlessingBattleState(state.hero);
     initializeCharacterBattleState(state.hero);
+    resetWeaponTechnique(state.hero);
   }
 
   function beginBattleRuntime(options = {}) {
@@ -127,6 +134,7 @@ export function createBattleState({
     setEnemyGroup(enemies, { restore: restoreEnemies });
     state.hero.activeEnemyCount = getLivingEnemies(state.enemies).length;
     resetHeroBattleState();
+    startHighlandBattle(state);
     beginPreparationBattle(state.runPreparation, { enemyCount: state.hero.activeEnemyCount });
     applyBattleStartSkills();
     const weaponStart = applyEquippedWeaponBattleStart(state.hero, {
@@ -175,6 +183,14 @@ export function createBattleState({
       source: threat.battleSource || "main",
       encounterType: threat.battleEncounterType || getAdventureEncounterType()
     });
+    state.turn = threat.turn;
+    if (threat.highlandBattle) {
+      state.enemies = restoreRuntimeEnemyGroup(restoredEnemies);
+      state.highlandBattle = clone(threat.highlandBattle);
+      state.hero.battleColumn = threat.heroBattleColumn;
+    }
+    if (threat.weaponRuntime) state.hero.weaponRuntime = clone(threat.weaponRuntime);
+    if (threat.heroCombat) Object.assign(state.hero, clone(threat.heroCombat));
     state.hero.blessingBattleState = clone(threat.blessingBattleState || threat.caveBlessingBattle || {});
 
     if (introText) addFixedLog("system", introText);

@@ -89,7 +89,7 @@ export function createEventRuntime(host) {
       throw new Error(`找不到排程事件：${schedule?.eventId || "(empty)"}`);
     }
 
-    state.eventSchedule = null;
+    state.eventSchedule = schedule.remaining?.length ? { ...schedule.remaining[0], remaining: schedule.remaining.slice(1) } : null;
     state.eventContext = createEventContext(event.id);
     state.eventInputLocked = true;
     state.phase = "event";

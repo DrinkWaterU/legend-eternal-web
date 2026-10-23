@@ -94,7 +94,7 @@ export function resolveHeroAction({ hero, enemy, enemies = [], log }) {
 }
 
 export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {} }) {
-  const { critChanceBonus = 0, damageMultiplier = 1, allowHeavyStrike = true } = options;
+  const { critChanceBonus = 0, damageMultiplier = 1, allowHeavyStrike = true, source = "original" } = options;
   const enemyName = getEnemyDisplayName(enemy);
   const openingCritChance = hero.hasAttackedThisBattle ? 0 : (hero.openingCritChance || 0);
   hero.hasAttackedThisBattle = true;
@@ -107,6 +107,9 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
   const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
   const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
   let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier: damageMultiplier * caveModifiers.damageMultiplier, attackMultiplier }) + caveModifiers.extraDamage;
+  if (source === "original" && enemy.weaponBreach) {
+    damage += Math.max(3, Math.round((Number(enemy.defense) || 0) * .25 * enemy.weaponBreach.strength));
+  }
   const heavyStrikeMastered = hasSkill(hero, "heavy-strike-mastery");
   const heavyStrikeChance = heavyStrikeMastered ? HEAVY_STRIKE_MASTERY_CHANCE : HEAVY_STRIKE_CHANCE;
   const heavyStrikeMultiplier = heavyStrikeMastered
@@ -133,7 +136,7 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
     enemy,
     enemies,
     damage,
-    reductionRatio: shouldIgnoreProtectedEnemyReduction(hero) ? 0 : undefined
+    reductionRatio: shouldIgnoreProtectedEnemyReduction(hero) || (source === "original" && hero.highlandShelterPierceActive) ? 0 : undefined
   }).damage;
   enemy.hp = Math.max(0, enemy.hp - damage);
   consumeCaveDirectAttackModifiers(hero, caveModifiers);
@@ -143,7 +146,7 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
     enemy,
     damage,
     critical,
-    source: "original"
+    source
   });
 
   if (hero.poisonPower > 0 && enemy.hp > 0) {

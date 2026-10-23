@@ -84,6 +84,16 @@ export function createQuestRuntime({
     }, onSaved);
   }
 
+  function recordHighlandTactic(event) {
+    if (saveStore.hasPendingTransaction || event.debugBuildRun || event.regionId !== "highlands") return false;
+    const quests = normalize(), quest = questDefinitions[quests.active?.questId];
+    if (quest?.objective?.type !== "performHighlandTactic" || quest.objective.tactic !== event.tactic) return false;
+    const old = quests.active.progress;
+    quests.active.progress = Math.min(quest.objective.target, old + 1);
+    saveStore.current.quests = quests;
+    return quests.active.progress !== old;
+  }
+
   function recordEnemyDefeated(event) {
     if (saveStore.hasPendingTransaction) return false;
     const quests = normalize();
@@ -203,6 +213,7 @@ export function createQuestRuntime({
     acceptQuest,
     abandonQuest,
     recordEnemyDefeated,
+    recordHighlandTactic,
     recordRunCleared,
     reportQuest,
     getSnapshot

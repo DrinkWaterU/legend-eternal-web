@@ -11,6 +11,7 @@ import { randomItem, roll, weightedRandomItem } from "../../utils.js";
 
 export function createEscapeController({
   state,
+  resolveHighlandFleeFailure = null,
   normalFleeChance,
   eliteFleeChance,
   tacticalFleeResults,
@@ -42,6 +43,12 @@ export function createEscapeController({
   runSaveOperation = (action) => action()
 }) {
   function resolveFleeFailure() {
+    if (state.highlandBattle && resolveHighlandFleeFailure) {
+      state.runStats.fleeFailures += 1;
+      addLog("system", "fleeFail", { enemy: getEnemyGroupLabel(state.enemies) });
+      resolveHighlandFleeFailure();
+      return;
+    }
     const attacker = randomItem(getLivingEnemies(state.enemies));
     if (!attacker) return;
     state.runStats.fleeFailures += 1;

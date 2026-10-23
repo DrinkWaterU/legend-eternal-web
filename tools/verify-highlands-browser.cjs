@@ -76,19 +76,23 @@ async function main() {
         for (let i = 0; i < 700; i++) {
           if (!capturedThreeEnemies && await page.locator('#nextButton').isVisible()) {
             const state = (await save(page)).activeRun?.state;
-            if (state?.encounterIndex >= 11 && state?.enemies?.filter(enemy => enemy.hp > 0).length === 3) {
+            if (state?.encounterIndex >= 6 && state?.enemies?.filter(enemy => enemy.hp > 0).length === 3) {
               await capture('summit-three-enemies'); capturedThreeEnemies = true;
             }
           }
           if (await condition()) return;
-          if (await page.locator('#blessingPanel').isVisible()) await page.locator('#blessingChoices button').first().click();
+          if (await page.locator('.highland-path-choice:visible').count()) await page.locator('.highland-path-choice:visible').first().click();
+          else if (await page.locator('#blessingPanel').isVisible()) await page.locator('#blessingChoices button').first().click();
           else if (await page.locator('#eventLayout').isVisible() && await page.locator('#eventChoices button:visible').count()) {
             if (!capturedEventChoices) { await capture('event-choices'); capturedEventChoices = true; }
             await page.locator('#eventChoices button:visible').first().click();
           }
           else if (await page.locator('#eventContinueButton').isVisible()) await page.click('#eventContinueButton');
           else if (await page.locator('#continueButton').isVisible()) await page.click('#continueButton');
-          else if (await page.locator('#nextButton').isVisible()) await page.click('#nextButton');
+          else if (await page.locator('#nextButton').isVisible()) {
+            if (await page.locator('#nextButton').isEnabled()) await page.click('#nextButton');
+            else { if (!await page.locator("#tacticalActions details").evaluate(e => e.open)) await page.locator("#tacticalActions summary").click(); await page.locator('#tacticalActions [data-tactic-column="1"]').click(); await page.locator('#tacticalActions button[data-action-type=move][data-column="1"]').click(); }
+          }
           else if (await page.locator('#endPanel').isVisible()) throw new Error('Unexpected terminal result');
           else await pause(30);
         }
@@ -108,6 +112,7 @@ async function main() {
           await capture('departure');
           await page.click('#startButton');
           assert.equal((await save(page)).activeRun.state.activeRouteId, 'windbreak-ascent');
+          await page.locator('.highland-path-choice').first().click();
           await page.click('#guardButton');
           assert.match(await page.locator('#battleLog').textContent(), /守勢/);
           await capture('outer-battle');
@@ -126,7 +131,7 @@ async function main() {
           await capture('event');
           const event = (await save(page)).activeRun.state.eventContext;
           await resume(); assert.deepEqual((await save(page)).activeRun.state.eventContext, event);
-          await advanceUntil(async () => (await save(page)).activeRun?.state.encounterIndex >= 12 && await page.locator('#nextButton').isVisible());
+          await advanceUntil(async () => (await save(page)).activeRun?.state.encounterIndex >= 6 && await page.locator('#nextButton').isVisible());
           await capture('summit-battle');
           const snapshot = await save(page);
           await page.evaluate(() => {
@@ -136,6 +141,9 @@ async function main() {
           await page.evaluate(d => localStorage.setItem('legendEternalSave', JSON.stringify(d)), snapshot); await resume();
           await advanceUntil(async () => (await save(page)).activeRun?.state.phase === 'routeEnding');
           await capture('ending');
+          const endState=(await save(page)).activeRun.state;
+          assert.deepEqual(Object.keys(endState.highlandChoices),['0','4','8']);
+          assert.equal(new Set(endState.runEventRecords.map(e=>e.eventId)).size,2,'Exactly two distinct exploration events must complete');
           assert.ok(capturedThreeEnemies, 'Must inspect three-enemy summit layout');
           const before = await save(page); await resume();
           assert.deepEqual((await save(page)).inventory, before.inventory);
@@ -178,6 +186,31 @@ async function main() {
           await page.click('#equipWeaponButton');
           assert.equal((await save(page)).progression.characters.adventurer.equipment.weaponId, 'windbreak-sword');
           await capture('equipment');
+        });
+        await check('production-blessings-and-full-build', async () => {
+          await seed(true); await page.click('#openRegionButton'); await page.click('#campStartButton');
+          await page.click('#startButton'); await capture('path-choice'); await page.locator('.highland-path-choice').first().click();
+          await page.evaluate(async () => {
+            const { highlandsRegion } = await import('/src/data/regions/highlands.js');
+            const { applyBlessingEffects } = await import('/src/core/blessings.js');
+            const d = JSON.parse(localStorage.getItem('legendEternalSave'));
+            for (const b of highlandsRegion.blessings) applyBlessingEffects(d.activeRun.state.hero,b);
+            d.activeRun.state.runPreparation = { effect:{type:'highlandTool',tool:'step'}, remainingCharges:3 };
+            localStorage.setItem('legendEternalSave',JSON.stringify(d));
+          }); await resume(); await page.locator('#tacticalActions summary').click(); await capture('full-build-actions');
+          for (let offset=0;offset<18;offset+=3) {
+            await page.evaluate(async offset => {
+              const { highlandsRegion } = await import('/src/data/regions/highlands.js');
+              const d=JSON.parse(localStorage.getItem('legendEternalSave')); const s=d.activeRun.state;
+              s.awaitingBlessing=true; s.blessingChoices=highlandsRegion.blessings.slice(offset,offset+3);
+              localStorage.setItem('legendEternalSave',JSON.stringify(d));
+            },offset); await resume();
+            assert.equal(await page.locator('#blessingChoices .blessing-card').count(),3);
+            assert.equal(await page.locator('#blessingChoices .blessing-card em').count(),0,'No duplicated blue flavor layer');
+            await capture(`blessings-${offset/3+1}`);
+            await page.locator('#blessingPanel .blessing-dialog').evaluate(e => { e.scrollTop=e.scrollHeight; });
+            await capture(`blessings-${offset/3+1}-bottom`);
+          }
         });
       } catch (error) {
         await capture('failure').catch(() => {});
