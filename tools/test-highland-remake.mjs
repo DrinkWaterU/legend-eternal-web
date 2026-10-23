@@ -217,5 +217,5 @@ try {
   finale.controller.playTurn({ type: "move", column: 1 });
 } finally { Math.random = random; }
 assert.equal(finale.state.highlandBattle.inducedCollisions, 1, "Preserve the right rock, then sidestep the telegraphed real boss charge into its ally");
-assert.ok(finale.messages.some(m => m.text?.includes("衝撞波及")));
+assert.ok(finale.messages.some(m => m.text?.includes("攻擊波及")));
 console.log("Final encounter's real three-action rock/guard/bait sequence passed");

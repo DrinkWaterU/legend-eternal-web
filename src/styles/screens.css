@@ -212,6 +212,7 @@
 }
 
 .blessing-info-card {
+  text-align: left;
   padding: 14px;
   border: 1px solid rgba(217, 199, 150, 0.22);
   border-radius: 8px;
@@ -299,6 +300,10 @@
   white-space: pre-line;
 }
 
+.blessing-info-card small { align-items:flex-start; }
+.blessing-info-card small strong { margin:0; }
+.blessing-info-card p:not(.blessing-info-story) { color:var(--grass); font-weight:700; }
+
 .blessing-info-card em {
   display: block;
   margin-top: 8px;
@@ -320,7 +325,11 @@
 }
 
 .blessing-card {
-  min-height: 176px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: 0;
   padding: 16px;
   border: 1px solid var(--line);
   background:
@@ -360,6 +369,9 @@
   margin-bottom: 8px;
   font-size: 1.05rem;
 }
+
+.blessing-card .blessing-heading { margin: 0 0 8px; align-items: flex-start; }
+.blessing-heading strong { min-width: 0; margin: 0; color: var(--ink); }
 
 .blessing-card > span,
 .blessing-card > em,

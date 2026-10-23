@@ -10,7 +10,6 @@ export function renderBlessingInfoView({ filtersElement, listElement, blessingNa
   }
   const activeFlow = activeFilterByElement.get(filtersElement) || "all";
   const flowDefinitions = getBlessingFlowDefinitions();
-  const flowDefinitionMap = new Map(flowDefinitions.map((flow) => [flow.id, flow]));
   const flowCounts = countBlessingFlows(heldBlessings);
 
   renderFilters({
@@ -34,7 +33,7 @@ export function renderBlessingInfoView({ filtersElement, listElement, blessingNa
   const visibleBlessings = activeFlow === "all"
     ? heldBlessings
     : heldBlessings.filter((blessing) => blessing.primaryFlow === activeFlow);
-  renderBlessingList(listElement, visibleBlessings, flowDefinitionMap);
+  renderBlessingList(listElement, visibleBlessings);
 }
 
 function resolveHeldBlessings(blessingNames = [], blessingDefinitions = []) {
@@ -81,7 +80,7 @@ function renderFilters({ filtersElement, heldBlessings, flowDefinitions, flowCou
   }));
 }
 
-function renderBlessingList(listElement, blessings, flowDefinitionMap) {
+function renderBlessingList(listElement, blessings) {
   listElement.replaceChildren();
   if (blessings.length === 0) {
     const empty = document.createElement("p");
@@ -93,34 +92,27 @@ function renderBlessingList(listElement, blessings, flowDefinitionMap) {
 
   blessings.forEach((blessing) => {
     const rarity = getBlessingRarity(blessing?.rarity);
-    const flow = flowDefinitionMap.get(blessing?.primaryFlow) || { id: "unknown", label: "未分類" };
     const card = document.createElement("article");
     const meta = document.createElement("small");
-    const event = document.createElement("span");
     const tags = document.createElement("span");
-    const flowTag = document.createElement("i");
     const rarityTag = document.createElement("i");
     const title = document.createElement("strong");
     const effect = document.createElement("p");
-    const flavor = document.createElement("em");
+    const story = document.createElement("p");
 
     card.className = `blessing-info-card rarity-${rarity.id}`;
-    event.textContent = blessing?.eventTitle || "臨時祝福";
     tags.className = "blessing-info-tags";
-    flowTag.className = "blessing-info-flow-tag";
-    flowTag.dataset.flow = flow.id;
-    flowTag.textContent = flow.label;
     rarityTag.className = "blessing-info-rarity-tag";
     rarityTag.textContent = rarity.label;
-    tags.append(flowTag, rarityTag);
-    meta.append(event, tags);
+    tags.append(rarityTag);
     title.textContent = blessing?.name || "未知祝福";
+    meta.append(title, tags);
+    story.className = "blessing-info-story";
+    story.textContent = blessing?.eventText || blessing?.flavorText || "";
     effect.textContent = blessing?.effectText || "效果資料尚未整理。";
-    flavor.textContent = blessing?.flavorText || "";
-    card.append(meta, title, effect);
-    if (flavor.textContent) {
-      card.append(flavor);
-    }
+    card.append(meta);
+    if (story.textContent) card.append(story);
+    card.append(effect);
     listElement.append(card);
   });
 }

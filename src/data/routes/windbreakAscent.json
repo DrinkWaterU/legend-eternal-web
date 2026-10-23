@@ -326,8 +326,8 @@
         },
         {
           "enemyId": "highland-signal-keeper",
-          "statScale": 0.6,
-          "rewardScale": 0.72
+          "statScale": 0.9,
+          "rewardScale": 1.08
         }
       ]
     }

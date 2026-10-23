@@ -9,9 +9,9 @@
       "rarity": "common",
       "primaryFlow": "attack",
       "eventTitle": "乘風一步",
-      "eventText": "風吹過岩脊，你把踉蹌接成下一次出手。",
+      "eventText": "風把你推了一步，你順勢接上下一刀。",
       "flavorText": "",
-      "effectText": "實際隨風移動後，下一次主攻命中追加6傷害；不同機會可合併；每源1份，主攻出手即全耗。追加不扣防禦、仍受護衛，不暴擊、不觸發技能。",
+      "effectText": "被風吹動後，下次攻擊命中追加6點固定傷害。\n只存1次，可合併其他加傷祝福；出手就用掉，打空也算。",
       "effects": [
         {
           "type": "add",
@@ -28,9 +28,9 @@
       "rarity": "common",
       "primaryFlow": "defense",
       "eventTitle": "移步留隙",
-      "eventText": "你移到石縫另一側，留下能轉身的餘裕。",
+      "eventText": "你往旁邊讓開，順手把盾護在身前。",
       "flavorText": "",
-      "effectText": "主動移位後獲得6護盾，每場最多2次。",
+      "effectText": "使用移位或借風後，獲得6護盾。每場最多2次。",
       "effects": [
         {
           "type": "add",
@@ -47,9 +47,9 @@
       "rarity": "common",
       "primaryFlow": "healing",
       "eventTitle": "石背歇息",
-      "eventText": "石頭替你擋下一陣風，你趁隙調順呼吸。",
+      "eventText": "岩石擋下迎面的風，你總算能喘口氣。",
       "flavorText": "",
-      "effectText": "岩石替你擋風後恢復8生命，每場最多2次。",
+      "effectText": "岩石替你擋風時，恢復8生命。每場最多2次。",
       "effects": [
         {
           "type": "add",
@@ -66,9 +66,9 @@
       "rarity": "common",
       "primaryFlow": "defense",
       "eventTitle": "抵風握柄",
-      "eventText": "你把雙腳踩穩，沒有讓盾面跟著風抖動。",
+      "eventText": "風扯著盾面，你握緊把手，沒有鬆開。",
       "flavorText": "",
-      "effectText": "守勢遇到風時獲得8護盾，每場一次。",
+      "effectText": "在有風的回合使用守勢，獲得8護盾。每場一次。",
       "effects": [
         {
           "type": "add",
@@ -85,9 +85,9 @@
       "rarity": "common",
       "primaryFlow": "attack",
       "eventTitle": "鑿開缺口",
-      "eventText": "石層裂開，你記住裂隙另一側的腳步。",
+      "eventText": "岩石裂開了，你握著武器，等對手露出空隙。",
       "flavorText": "",
-      "effectText": "主動拆岩後，下一次主攻命中追加10傷害；不同機會可合併；每源1份，主攻出手即全耗。追加不扣防禦、仍受護衛，不暴擊、不觸發技能。",
+      "effectText": "親手拆岩後，下次攻擊命中追加10點固定傷害。\n只存1次，可合併其他加傷祝福；出手就用掉，打空也算。",
       "effects": [
         {
           "type": "add",
@@ -104,9 +104,9 @@
       "rarity": "common",
       "primaryFlow": "attack",
       "eventTitle": "藏鋒待風",
-      "eventText": "風聲暫時蓋過刀鋒，你等著岩後的人先動。",
+      "eventText": "你藏在岩後，盯著護衛還沒顧到的地方。",
       "flavorText": "",
-      "effectText": "岩石替你擋風後，儲存一次穿隘機會：下一次主攻忽略護衛減傷；追擊與武器追加不受益。未命中仍消耗。",
+      "effectText": "岩石替你擋風後，下一次攻擊的第一下無視護衛減傷。打空也會用掉；不影響敵人的防禦。",
       "effects": [
         {
           "type": "add",
@@ -123,9 +123,9 @@
       "rarity": "uncommon",
       "primaryFlow": "attack",
       "eventTitle": "留步借勢",
-      "eventText": "你收回原本要踩穩的那一步，讓風推你前進。",
+      "eventText": "你沒有硬頂著風，反而讓它送你一程。",
       "flavorText": "",
-      "effectText": "解鎖借風移位：不抵風、不減傷，換取下一次主攻命中追加10傷害；不同機會可合併；每源1份，主攻出手即全耗。追加不扣防禦、仍受護衛，不暴擊、不觸發技能。",
+      "effectText": "解鎖借風移動：花一回合換位置，不抵抗風。\n下次攻擊命中追加10點固定傷害，只存1次、出手就用掉（打空也算），可合併其他加傷祝福。",
       "effects": [
         {
           "type": "add",
@@ -142,13 +142,13 @@
       "rarity": "uncommon",
       "primaryFlow": "defense",
       "eventTitle": "沉身守隘",
-      "eventText": "你把盾壓低，讓重心停在靴底。",
+      "eventText": "你把腳跟踩進石縫，這回誰也別想把你吹走。",
       "flavorText": "",
-      "effectText": "守勢多抵消1格風，但直接傷害減免從35%降為20%。",
+      "effectText": "解鎖扎穩守勢：花一回合留在原位、不被風吹，受到的攻擊傷害減少20%（普通守勢為35%）。",
       "effects": [
         {
           "type": "add",
-          "stat": "highlandFirmStance",
+          "stat": "highlandHold",
           "amount": 1
         }
       ],
@@ -156,19 +156,19 @@
     },
     {
       "id": "highlands-rock-shield",
-      "name": "岩盡人立",
-      "category": "defense",
+      "name": "破岩引風",
+      "category": "attack",
       "rarity": "uncommon",
-      "primaryFlow": "defense",
-      "eventTitle": "岩盡人立",
-      "eventText": "石頭散落時，你已經接住它讓出的空處。",
+      "primaryFlow": "attack",
+      "eventTitle": "破岩引風",
+      "eventText": "你敲開擋風的岩面，積在後面的風一下湧了出來。",
       "flavorText": "",
-      "effectText": "擋風岩為你擋住最後一次風壓、耐久耗盡時，獲得14護盾；每塊岩一次。",
+      "effectText": "解鎖破岩放風：花一回合拆岩，將這回合的風加強成兩格。敵我一起受影響；無風時不能使用。",
       "effects": [
         {
           "type": "add",
-          "stat": "highlandRockShield",
-          "amount": 14
+          "stat": "highlandShatterGust",
+          "amount": 1
         }
       ],
       "maxStacks": 1
@@ -180,9 +180,9 @@
       "rarity": "uncommon",
       "primaryFlow": "attack",
       "eventTitle": "追至邊界",
-      "eventText": "退無可退的腳步，比任何呼喊都明顯。",
+      "eventText": "對手被風吹得踉蹌，你沒有放過這個破綻。",
       "flavorText": "",
-      "effectText": "主攻消耗敵人的失衡時，額外增加6基礎傷害；追擊與副包不重複觸發。",
+      "effectText": "敵人撞邊失衡時，你對他的下一次攻擊額外多打6傷害。打空也會用掉，不會反覆引發追擊。",
       "effects": [
         {
           "type": "add",
@@ -199,9 +199,9 @@
       "rarity": "uncommon",
       "primaryFlow": "healing",
       "eventTitle": "借敵開路",
-      "eventText": "你等衝來的腳步越過自己，再從石後走出。",
+      "eventText": "你等來的腳步越過自己，再從石縫後走出。",
       "flavorText": "",
-      "effectText": "每場首次由你誘導的衝撞擊殺敵人時，恢復12生命；自然互傷不算。",
+      "effectText": "引敵人打死同伴，恢復12生命。每場一次；必須是你引導的攻擊。",
       "effects": [
         {
           "type": "add",
@@ -213,19 +213,19 @@
     },
     {
       "id": "highlands-wind-heal",
-      "name": "隨風換息",
-      "category": "healing",
+      "name": "順勢推搡",
+      "category": "attack",
       "rarity": "uncommon",
-      "primaryFlow": "healing",
-      "eventTitle": "隨風換息",
-      "eventText": "身體不再和每陣風對抗，呼吸也跟著鬆開。",
+      "primaryFlow": "attack",
+      "eventTitle": "順勢推搡",
+      "eventText": "你貼近對手肩側，趁牠沒站穩，往風裡送了一把。",
       "flavorText": "",
-      "effectText": "每場首次實際隨風移動時，恢復8生命。",
+      "effectText": "解鎖推敵：花一回合，把身旁敵人推一格。牠接著還會被風吹動，並照原本準備的位置出招。",
       "effects": [
         {
           "type": "add",
-          "stat": "highlandWindHeal",
-          "amount": 8
+          "stat": "highlandShove",
+          "amount": 1
         }
       ],
       "maxStacks": 1
@@ -237,9 +237,9 @@
       "rarity": "rare",
       "primaryFlow": "attack",
       "eventTitle": "無岩之地",
-      "eventText": "最後的遮蔽倒下後，每一步都必須由你自己選。",
+      "eventText": "最後一塊岩石也碎了，眼前只剩彼此的距離。",
       "flavorText": "",
-      "effectText": "雙岩全毀後解鎖突進攻擊：先移到目標所在欄，再主攻，不受原有射程限制；之後風與敵人仍會行動。",
+      "effectText": "兩側岩石都沒了，就能突進攻擊：移到敵人身旁並攻擊，合計花一回合。之後照常吹風、敵人照常出手。",
       "effects": [
         {
           "type": "add",
@@ -256,9 +256,9 @@
       "rarity": "rare",
       "primaryFlow": "defense",
       "eventTitle": "逆勢而行",
-      "eventText": "風沒有停，你卻在兩陣風之間踏進另一塊岩台。",
+      "eventText": "你看準對手落腳前的空隙，先一步閃到旁邊。",
       "flavorText": "",
-      "effectText": "每場可使用一次轉瞬移位，不耗回合；不重置敵人已鎖定的落點，不充武器資源。",
+      "effectText": "每場可免費換位置一次，不消耗回合。敵人已瞄準的地方不會跟著改。",
       "effects": [
         {
           "type": "add",
@@ -275,9 +275,9 @@
       "rarity": "rare",
       "primaryFlow": "attack",
       "eventTitle": "破岩突入",
-      "eventText": "你看準裂縫，與崩落的石塊一起穿過風口。",
+      "eventText": "你撞開碎岩，腳步沒有停下，直接切進空出的位置。",
       "flavorText": "",
-      "effectText": "每場一次，可在拆掉整塊岩石的同一行動移入該欄；仍耗回合、不抵風。",
+      "effectText": "每場一次，拆岩並移到那裡，合計只花一回合。仍會被風照常推動。",
       "effects": [
         {
           "type": "add",
@@ -294,9 +294,9 @@
       "rarity": "common",
       "primaryFlow": "healing",
       "eventTitle": "乾糧分配",
-      "eventText": "你把口糧分成幾份，留給下一段路。",
+      "eventText": "你把口袋裡的乾糧掰成小塊，留著每次歇腳時吃。",
       "flavorText": "",
-      "effectText": "擊殺敵人恢復3生命。",
+      "effectText": "擊殺敵人，恢復3生命。",
       "effects": [
         {
           "type": "add",
@@ -312,9 +312,9 @@
       "rarity": "uncommon",
       "primaryFlow": "defense",
       "eventTitle": "立岩誓約",
-      "eventText": "石塔倒了一半，你重新放穩最底下那塊。",
+      "eventText": "你扶正傾倒的石堆，也把自己站穩了些。",
       "flavorText": "",
-      "effectText": "最大生命+16，開場護盾+8。",
+      "effectText": "最大生命增加16，每場開戰獲得8護盾。",
       "effects": [
         {
           "type": "add",
@@ -335,9 +335,9 @@
       "rarity": "uncommon",
       "primaryFlow": "attack",
       "eventTitle": "風隙定睛",
-      "eventText": "你沒有追著每片草葉看，只盯住對手先動的肩。",
+      "eventText": "草葉還在亂晃，你卻看清了對手先動的肩。",
       "flavorText": "",
-      "effectText": "每場首次攻擊額外增加20%暴擊率。",
+      "effectText": "每場第一次攻擊，暴擊率增加20個百分點。",
       "effects": [
         {
           "type": "add",

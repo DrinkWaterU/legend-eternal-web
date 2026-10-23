@@ -47,15 +47,12 @@ export function renderBlessingChoices(element, blessings, onChoose, options = {}
     button.className = `blessing-card rarity-${rarity.id}`;
     button.type = "button";
     button.innerHTML = `
-      <small>
-        <span>${blessing.eventTitle !== blessing.name ? blessing.eventTitle || "" : ""}</span>
+      <small class="blessing-heading">
+        <strong>${blessing.name}</strong>
         <i>${rarity.label}</i>
       </small>
-      <strong>${blessing.name}</strong>
       <span>${blessing.eventText}</span>
-      ${blessing.flavorText && blessing.flavorText !== blessing.eventText ? `<em>${blessing.flavorText}</em>` : ""}
-      <b>${blessing.effectText.split("；")[0]}</b>
-      ${blessing.effectText.includes("；") ? `<span class="blessing-trigger-rules">${blessing.effectText.split("；").slice(1).join("；")}</span>` : ""}
+      <b>${blessing.effectText}</b>
     `;
     const ownedCount = Math.max(0, Math.floor(Number(ownedCounts?.[blessing.id]) || 0));
     button.setAttribute(

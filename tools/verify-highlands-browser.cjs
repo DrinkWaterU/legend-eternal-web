@@ -38,14 +38,17 @@ async function main() {
           return !transition || (!transition.classList.contains('is-visible') && Number(getComputedStyle(transition).opacity) === 0);
         });
         await page.evaluate(() => scrollTo(0, 0));
-        if (/battle|critical|three-enemies/.test(name) && await page.locator('#nextButton').isVisible()) {
+        if (/battle|critical|three-enemies|full-build-actions|wind-intro/.test(name) && await page.locator('#nextButton').isVisible()) {
           const attack = await page.locator('#nextButton').boundingBox();
-          assert.ok(attack.height >= 44 && attack.y + attack.height <= height, `${name}: action outside first viewport`);
+          assert.ok(attack.height >= 44 && attack.y + attack.height <= height, `${name}: action outside first viewport ${JSON.stringify(attack)}`);
         }
+        const overflow = await page.evaluate(() => [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > innerWidth + 1 && e.getBoundingClientRect().width > 0).map(e => ({tag:e.tagName,id:e.id,cls:e.className,width:e.getBoundingClientRect().width,min:getComputedStyle(e).minWidth})).slice(-20));
+        if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) console.error(JSON.stringify({name,width,overflow}));
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, name + ' overflow');
         await page.screenshot({ path: path.join(output, `${name}-${width}.png`), fullPage: true });
       }
       async function check(name, action) {
+        if (process.env.GAME_TEST_SCENARIOS && !process.env.GAME_TEST_SCENARIOS.split(",").includes(name)) return;
         await action(); assert.deepEqual(errors, []);
         results.push({ width, name, status: 'PASS' }); console.log(`PASS ${name} ${width}`);
         await fs.writeFile(path.join(output, 'browser-results.json'), JSON.stringify(results, null, 2));
@@ -91,7 +94,7 @@ async function main() {
           else if (await page.locator('#continueButton').isVisible()) await page.click('#continueButton');
           else if (await page.locator('#nextButton').isVisible()) {
             if (await page.locator('#nextButton').isEnabled()) await page.click('#nextButton');
-            else { if (!await page.locator("#tacticalActions details").evaluate(e => e.open)) await page.locator("#tacticalActions summary").click(); await page.locator('#tacticalActions [data-tactic-column="1"]').click(); await page.locator('#tacticalActions button[data-action-type=move][data-column="1"]').click(); }
+            else { if (!await page.locator("#tacticalActions > details").evaluate(e => e.open)) await page.locator("#tacticalActions > details > summary").click(); await page.locator('#tacticalActions [data-tactic-column="1"]').click(); await page.locator('#tacticalActions button[data-action-type=move][data-column="1"]').click(); }
           }
           else if (await page.locator('#endPanel').isVisible()) throw new Error('Unexpected terminal result');
           else await pause(30);
@@ -187,17 +190,62 @@ async function main() {
           assert.equal((await save(page)).progression.characters.adventurer.equipment.weaponId, 'windbreak-sword');
           await capture('equipment');
         });
+        await check('wind-danger-and-preview', async () => {
+          await seed(true); await page.click('#openRegionButton'); await page.click('#campStartButton');
+          await page.click('#startButton'); await page.locator('.highland-path-choice').first().click();
+          await capture('wind-intro');
+          const original = await save(page);
+          await page.getByRole('button',{name:'看守勢後',exact:true}).click();
+          assert.equal(await page.getByRole('button',{name:'看守勢後',exact:true}).getAttribute('aria-pressed'),'true');
+          assert.match(await page.locator('.highland-preview-label').innerText(),/守勢/);
+          assert.match(await page.locator('.highland-forecast').innerText(),/仍會吃到/);
+          assert.deepEqual((await save(page)).activeRun,original.activeRun,'Preview must not spend a turn or random draw');
+          await page.getByRole('button',{name:'看攻擊後',exact:true}).click();
+          assert.match(await page.locator('.highland-forecast').innerText(),/風剛好/);
+          await page.click('#nextButton');
+          assert.equal((await save(page)).activeRun.state.hero.hp,original.activeRun.state.hero.hp);
+          async function controlled(mode) {
+            await page.evaluate(({original,mode})=>{
+              const d=structuredClone(original),s=d.activeRun.state,b=s.highlandBattle,e=s.enemies[0];
+              s.encounterIndex=s.routeEncounterIndex=2;s.turn=0;s.hero.battleColumn=mode==='rock'?0:1;s.hero.shield=0;
+              e.hp=e.maxHp;e.attack=30;e.battleColumn=1;
+              b.rocks=mode==='rock'?[2,0,0]:[0,0,0];b.pattern=[1];b.intentTurn=0;
+              b.intents=mode==='tracking'?[{id:e.runtimeId,kind:'track',range:2,text:'◎ 盯著你打：會追人'}]:[{id:e.runtimeId,kind:'strike',columns:[mode==='rock'?0:2],attackRatio:1,friendly:false,text:'⚔ 打這裡，不追人'}];
+              localStorage.setItem('legendEternalSave',JSON.stringify(d));
+            },{original,mode});await resume();
+          }
+          await controlled('intercept');await capture('wind-danger');
+          assert.match(await page.locator('.highland-forecast').innerText(),/仍會吃到/);
+          await page.getByRole('button',{name:'看守勢後',exact:true}).click();
+          assert.match(await page.locator('.highland-forecast').innerText(),/能避開/);
+          await capture('wind-guard-preview');
+          await controlled('rock');await capture('wind-rock-trap');
+          assert.match(await page.locator('.highland-forecast').innerText(),/岩石擋住/);
+          await page.locator('#tacticalActions > details > summary').click();
+          await page.locator('#tacticalActions [data-tactic-column="0"]').click();
+          await page.locator('#tacticalActions [data-action-type="break"][data-column="0"]').focus();
+          assert.match(await page.locator('.highland-forecast').innerText(),/能避開/);
+          await capture('wind-break-preview');
+          const rockBefore=await save(page);await page.locator('#tacticalActions [data-action-type="break"][data-column="0"]').click();
+          assert.equal((await save(page)).activeRun.state.hero.hp,rockBefore.activeRun.state.hero.hp);
+          await controlled('tracking');await capture('wind-tracking');
+          assert.match(await page.locator('.highland-forecast').innerText(),/盯著你追/);
+          const trackedHp=(await save(page)).activeRun.state.hero.hp;await page.click('#nextButton');
+          assert.ok((await save(page)).activeRun.state.hero.hp<trackedHp);
+        });
         await check('production-blessings-and-full-build', async () => {
           await seed(true); await page.click('#openRegionButton'); await page.click('#campStartButton');
           await page.click('#startButton'); await capture('path-choice'); await page.locator('.highland-path-choice').first().click();
           await page.evaluate(async () => {
             const { highlandsRegion } = await import('/src/data/regions/highlands.js');
             const { applyBlessingEffects } = await import('/src/core/blessings.js');
+            const { createRunPreparation } = await import('/src/core/preparations.js');
             const d = JSON.parse(localStorage.getItem('legendEternalSave'));
             for (const b of highlandsRegion.blessings) applyBlessingEffects(d.activeRun.state.hero,b);
-            d.activeRun.state.runPreparation = { effect:{type:'highlandTool',tool:'step'}, remainingCharges:3 };
+            d.activeRun.state.runPreparation = createRunPreparation(highlandsRegion, 'ridge-whetstone', {enhanced:true});
             localStorage.setItem('legendEternalSave',JSON.stringify(d));
-          }); await resume(); await page.locator('#tacticalActions summary').click(); await capture('full-build-actions');
+          }); await resume(); await page.locator('#tacticalActions > details > summary').click(); await capture('full-build-actions');
+          const cardHeights={};
           for (let offset=0;offset<18;offset+=3) {
             await page.evaluate(async offset => {
               const { highlandsRegion } = await import('/src/data/regions/highlands.js');
@@ -207,10 +255,28 @@ async function main() {
             },offset); await resume();
             assert.equal(await page.locator('#blessingChoices .blessing-card').count(),3);
             assert.equal(await page.locator('#blessingChoices .blessing-card em').count(),0,'No duplicated blue flavor layer');
+            for (const c of await page.locator('#blessingChoices .blessing-card').evaluateAll(cards=>cards.map(c=>({name:c.querySelector('.blessing-heading strong').textContent,height:c.getBoundingClientRect().height,children:c.children.length,dy:Math.abs(c.querySelector('.blessing-heading strong').getBoundingClientRect().y-c.querySelector('.blessing-heading i').getBoundingClientRect().y)})))) {
+              assert.equal(c.children,3,'Only header(name+rarity), story and effect');assert.ok(c.dy<=8,'Name and rarity share a row');cardHeights[c.name]=c.height;
+            }
             await capture(`blessings-${offset/3+1}`);
             await page.locator('#blessingPanel .blessing-dialog').evaluate(e => { e.scrollTop=e.scrollHeight; });
             await capture(`blessings-${offset/3+1}-bottom`);
           }
+          assert.ok(cardHeights['乾糧分配']<cardHeights['留步借勢'],'Short blessings must not inherit a fixed tall card');
+          await page.evaluate(async()=>{
+            const { highlandsRegion } = await import('/src/data/regions/highlands.js');
+            const d=JSON.parse(localStorage.getItem('legendEternalSave')),s=d.activeRun.state;
+            s.awaitingBlessing=false;s.blessingChoices=[];s.hero.blessings=highlandsRegion.blessings.map(b=>b.name);
+            localStorage.setItem('legendEternalSave',JSON.stringify(d));
+          });await resume();await page.click('#viewBlessingsButton');
+          assert.equal(await page.locator('#blessingInfoList .blessing-info-card').count(),18);
+          for(const c of await page.locator('#blessingInfoList .blessing-info-card').evaluateAll(cards=>cards.map(c=>({children:c.children.length,names:c.querySelectorAll('strong').length,stories:c.querySelectorAll('.blessing-info-story').length,flavors:c.querySelectorAll('em').length})))) {
+            assert.deepEqual(c,{children:3,names:1,stories:1,flavors:0});
+          }
+          await capture('owned-blessings');
+          for(const dy of await page.locator('#blessingInfoList .blessing-info-card').evaluateAll(cards=>cards.map(c=>Math.abs(c.querySelector('strong').getBoundingClientRect().y-c.querySelector('.blessing-info-rarity-tag').getBoundingClientRect().y)))) assert.ok(dy<=8,'Owned blessing name and rarity share a row');
+          await page.locator('#blessingInfoPanel .combat-info-body').evaluate(e=>{e.scrollTop=e.scrollHeight;});
+          await capture('owned-blessings-bottom');
         });
       } catch (error) {
         await capture('failure').catch(() => {});

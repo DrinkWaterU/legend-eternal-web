@@ -12,7 +12,7 @@ import {
 import { beginGuard, clearGuard, DEFAULT_GUARD_DAMAGE_REDUCTION } from "../../core/guard.js";
 import { getLivingEnemies } from "../../core/enemyGroups.js";
 import { getWeaponActions, resetWeaponTechnique, runWeaponAttack, finishWeaponTurn } from "../../core/weaponTechniques.js";
-import { highlandActions, highlandIntents, canReachHighlandTarget, actOnHighland, resolveHighlandWind, resolveHighlandEnemyIntent, updateHighlandProtection, lockHighlandIntents } from "../../core/highlandBattle.js";
+import { highlandActions, highlandIntents, canReachHighlandTarget, actOnHighland, resolveHighlandWind, resolveHighlandEnemyIntent, updateHighlandProtection, lockHighlandIntents, projectHighlandWind } from "../../core/highlandBattle.js";
 import { canTakeBattleAction } from "../../core/battleActions.js";
 
 export function createBattleTurnController({
@@ -48,6 +48,7 @@ export function createBattleTurnController({
     if (["attack", "lunge", "sweep", "cleave", "breach"].includes(request.type) && (!target || !canReachHighlandTarget(state, target, request.type))) return false;
     return runSaveOperation(() => withLogBatch(() => {
       if (["slip", "tool-step"].includes(request.type)) {
+        if (state.highlandBattle.freeRepositionTurn !== state.turn) state.highlandBattle.freeRepositionOrigin = state.hero.battleColumn;
         if (request.type === "slip") { state.hero.battleColumn = request.column; state.highlandBattle.slipUsed = true; }
         else actOnHighland(state, request, createCombatLogger());
         state.highlandBattle.freeRepositionTurn = state.turn;
@@ -65,7 +66,10 @@ export function createBattleTurnController({
     if (!state.hero.weaponRuntime) resetWeaponTechnique(state.hero);
     const log = createCombatLogger();
     state.phase = "combat";
-    if (state.highlandBattle) state.highlandBattle.actionOriginColumn = state.hero.battleColumn;
+    if (state.highlandBattle) {
+      state.highlandBattle.actionOriginColumn = state.hero.battleColumn;
+      state.highlandBattle.baselineWind = Object.fromEntries(projectHighlandWind(state).filter(p => p.unit !== state.hero).map(p => [p.unit.runtimeId, p.destination]));
+    }
     state.turn += 1;
     state.turnActionId = (state.turnActionId || 0) + 1;
     state.lastPlayerAction = playerAction;
@@ -79,8 +83,8 @@ export function createBattleTurnController({
       onRetryResult: recordEntangleRetryResult
     });
     if (!heroEntangled) {
-      if (playerAction === "guard") {
-        const guard = beginGuard(state.hero, DEFAULT_GUARD_DAMAGE_REDUCTION - (state.highlandBattle && state.hero.highlandFirmStance ? .15 : 0));
+      if (["guard", "hold"].includes(playerAction)) {
+        const guard = beginGuard(state.hero, playerAction === "hold" ? .2 : DEFAULT_GUARD_DAMAGE_REDUCTION);
         log.fixed(
           "status",
           `你採取守勢，本回合直接傷害降低 ${Math.round(guard.damageReduction * 100)}%。`
@@ -88,9 +92,9 @@ export function createBattleTurnController({
       }
 
       const target = currentTargetEnemy();
-      if (["move", "ride", "break", "demolish", "tool-brace", "tool-rock"].includes(playerAction)) {
+      if (["move", "ride", "break", "demolish", "gust-break", "shove", "tool-brace", "tool-rock"].includes(playerAction)) {
         actOnHighland(state, action, log);
-        if (["break", "demolish"].includes(playerAction) && !state.debugBuildRun) recordTactic({ regionId: state.selectedRegionId, tactic: "breakRock", debugBuildRun: false });
+        if (["break", "demolish", "gust-break"].includes(playerAction) && !state.debugBuildRun) recordTactic({ regionId: state.selectedRegionId, tactic: "breakRock", debugBuildRun: false });
       }
       if (playerAction === "charge") {
         state.hero.weaponRuntime.charge = 3;
@@ -137,7 +141,7 @@ export function createBattleTurnController({
         continue;
       }
       const originalAttack = enemy.attack;
-      if (windIntent?.kind === "charge") enemy.attack *= 1.5;
+      if (windIntent && windIntent.kind !== "flurry") enemy.attack *= windIntent.attackRatio || 1;
       if (state.hero.windStagger) { enemy.attack += 8; state.hero.windStagger = false; }
       const enemyAction = resolveEnemyAction({
         hero: state.hero,

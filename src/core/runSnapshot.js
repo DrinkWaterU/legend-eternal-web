@@ -56,8 +56,9 @@ function validTacticalState(s) {
     && b.pattern.every(n => Number.isInteger(n) && n >= -2 && n <= 2)
     && col(heroColumn) && Array.isArray(enemies) && enemies.every(e => col(e.battleColumn))
     && (!b.intents || (Array.isArray(b.intents) && b.intents.length <= 3 && b.intents.every(i => i && typeof i.id === "string"
-      && ["track", "move", "charge", "anchor", "gust", "build", "rally", "flurry"].includes(i.kind)
+      && ["track", "move", "charge", "anchor", "gust", "build", "rally", "flurry", "strike", "slam", "sweep"].includes(i.kind)
       && (!["move", "charge", "build"].includes(i.kind) || col(i.column))
+      && (!["strike", "slam", "sweep", "flurry"].includes(i.kind) || (Array.isArray(i.columns) && i.columns.length > 0 && i.columns.length <= 2 && i.columns.every(col)))
       && (i.kind !== "track" || [1, 2].includes(i.range))
       && (i.kind !== "gust" || [-2, 2].includes(i.direction)))))
     && (!b.windOverrides || (typeof b.windOverrides === "object" && !Array.isArray(b.windOverrides)

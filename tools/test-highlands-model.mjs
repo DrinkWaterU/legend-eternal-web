@@ -1,3 +1,4 @@
+import { attackColumns, isGroundAttack } from "../src/core/highlandTelegraphs.js";
 // Fixed-level model: real battle entry, turn controller, native skills and settlement.
 // No EXP, events, preparations or retreats; heuristic reads visible intents, never future RNG.
 import assert from "node:assert/strict";
@@ -52,19 +53,21 @@ export function heuristicAction(state, tactical = true) {
   let incoming = 0, collateral=0;
   for (const p of projection.slice(1)) {
    const i = intents.find(i=>i.id===p.unit.runtimeId); if (!i) continue;
-   if (i.kind === "charge") {
-    if (mine.destination===i.column) incoming += Math.max(1,p.unit.attack*1.5-h.defense);
-    else collateral += projection.slice(1).filter(q=>q.unit!==p.unit && q.destination===i.column).reduce((s,q)=>s+Math.min(q.unit.hp,Math.max(1,p.unit.attack*1.2-q.unit.defense)),0);
-   } else if (["track","flurry"].includes(i.kind) && Math.abs(p.destination-mine.destination)<=(i.range??2)) incoming += Math.max(1,p.unit.attack-h.defense)*(i.kind==="flurry"?1.3:1);
+   if (isGroundAttack(i)) {
+    const columns=attackColumns(i), hits=i.kind==="flurry"?2:1;
+    if(columns.includes(mine.destination)) incoming+=hits*Math.max(1,p.unit.attack*(i.attackRatio||1)-h.defense);
+    if(i.friendly) collateral+=projection.slice(1).filter(q=>q.unit!==p.unit && columns.includes(q.destination)).reduce((s,q)=>s+Math.min(q.unit.hp,hits*Math.max(1,p.unit.attack*(i.kind==="charge"?1.2:i.attackRatio||1)-q.unit.defense)),0);
+   } else if (i.kind==="track" && Math.abs(p.destination-mine.destination)<=i.range) incoming+=Math.max(1,p.unit.attack-h.defense);
   }
-  if (a.type === "guard") incoming *= h.highlandFirmStance ? .8 : .65;
+  if (a.type === "guard") incoming *= .65;
+  if (a.type === "hold") incoming *= .8;
   if (mine.stagger) incoming += 8;
   const immediateKill = outgoing>=target.hp && ["attack","lunge","sweep","cleave","breach"].includes(a.type);
   if(immediateKill) incoming *= enemies.length===1 ? 0 : .7;
   let value = outgoing + collateral*.7 - incoming*(h.hp<h.maxHp*.35 ? .9 : .5);
   if (["move","ride"].includes(a.type)) {
    if ((state.highlandBattle.moveShieldUses||0)<2) value += h.highlandMoveShield||0;
-   value += (a.type==="ride"?h.highlandRideAttack||0:0)*.7;
+   value += (a.type==="ride" && !h.highlandOpportunities?.ride ? h.highlandRideAttack||0 : 0)*.7;
   }
   if (a.type==="guard" && kind==="riposte" && !r.riposte && incoming>0) value += h.attack*.6;
   if (a.type==="slip") value -= 8; // Free action still spends a once-per-battle option.

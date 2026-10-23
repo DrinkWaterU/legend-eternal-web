@@ -1,3 +1,5 @@
+import { renderHighlandBoard, updateHighlandPreview } from "./highlandBoardView.js";
+import { projectedHighlandThreats } from "../core/highlandTelegraphs.js";
 import { HIGHLAND_COLUMNS, highlandActions, highlandIntents, windFor, windLabel, canReachHighlandTarget, projectHighlandWind } from "../core/highlandBattle.js";
 import { getWeaponActions, getWeaponStatus } from "../core/weaponTechniques.js";
 import { getPendingHighlandPaths } from "../data/highlandPaths.js";
@@ -5,6 +7,9 @@ import { getPendingHighlandPaths } from "../data/highlandPaths.js";
 export function renderTacticalBattle({ state, els, canFight, choosePath }) {
   const panel = els.highlandBattlePanel, controls = els.tacticalActions;
   const text = getWeaponStatus(state.hero);
+  for (const [button, type] of [[els.nextButton, "attack"], [els.guardButton, "guard"]]) if (button) {
+    button.onmouseenter = button.onfocus = () => updateHighlandPreview(state, panel, { type });
+  }
   if (els.weaponTechniqueStatus) {
     els.weaponTechniqueStatus.textContent = text;
     els.weaponTechniqueStatus.hidden = !text || !canFight;
@@ -16,10 +21,10 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
     const details = controls.ownerDocument.createElement("details");
     details.open = wasOpen;
     const summary = controls.ownerDocument.createElement("summary");
-    summary.textContent = "戰術行動｜選落點與方式"; details.append(summary);
+    summary.textContent = "換位、拆岩與其他招式"; details.append(summary);
     const tabs = controls.ownerDocument.createElement("div"); tabs.className = "tactical-destinations"; details.append(tabs);
     const grid = controls.ownerDocument.createElement("div"); grid.className = "tactical-action-grid"; details.append(grid);
-    const terrainTypes = ["move", "break", "ride", "slip", "demolish", "tool-step", "tool-rock", "tool-brace"];
+    const terrainTypes = ["move", "break", "ride", "slip", "demolish", "tool-step", "tool-rock", "tool-brace", "shove", "gust-break"];
     const columns = [...new Set(moves.filter(a => terrainTypes.includes(a.type) && a.column !== undefined).map(a => a.column))].sort();
     let selected = Number(controls.dataset.selectedColumn);
     if (!columns.includes(selected)) selected = columns[0];
@@ -31,17 +36,21 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
     for (const column of columns) {
       const tab = controls.ownerDocument.createElement("button"); tab.type = "button"; tab.className = "secondary-button";
       tab.textContent = HIGHLAND_COLUMNS[column]; tab.dataset.tacticColumn = String(column);
-      tab.addEventListener("click", () => selectColumn(column)); tabs.append(tab);
+      tab.addEventListener("click", () => { selectColumn(column); const move = moves.find(a => a.column === column); if (move) updateHighlandPreview(state, panel, move); }); tabs.append(tab);
     }
-    if (moves.some(a => ["move", "break", "ride", "slip", "demolish", "tool-step", "tool-rock", "tool-brace"].includes(a.type))) controls.append(details);
+    if (moves.some(a => ["move", "break", "ride", "slip", "demolish", "tool-step", "tool-rock", "tool-brace", "shove", "gust-break"].includes(a.type))) controls.append(details);
     for (const move of moves) {
       const button = controls.ownerDocument.createElement("button");
       button.type = "button"; button.className = "secondary-button";
       button.textContent = move.label; button.dataset.actionType = move.type;
+      button.onmouseenter = button.onfocus = () => updateHighlandPreview(state, panel, move);
       const labels = {
-        move: ["移位", "1回合・抵風1"], ride: ["借風", `1回合・不抵風・機會+${state.hero.highlandRideAttack}`],
-        slip: ["轉瞬", "免費・本場1次"], break: ["拆岩", "1回合・毀共用岩"], demolish: ["破岩突入", "1回合・拆岩並移位・本場1次"],
-        "tool-step": ["踏釘", `免費・整備剩${state.runPreparation?.remainingCharges}次`],
+        shove: ["推敵", "花1回合・把選中的敵人推到這裡"],
+        "gust-break": ["破岩放風", "花1回合・拆岩並讓風變成2格"],
+        hold: ["扎穩守勢", "花1回合・不被風吹・減傷20%"],
+        move: ["移位", "花1回合・少被風吹1格"], ride: ["借風", `花1回合・照常被風吹・下次多打${state.hero.highlandRideAttack}`],
+        slip: ["轉瞬", "不花回合・每場1次"], break: ["拆岩", "花1回合・敵我都失去擋風岩"], demolish: ["破岩突入", "花1回合・拆岩並移動・每場1次"],
+        "tool-step": ["踏釘", `不花回合・整備剩${state.runPreparation?.remainingCharges}次`],
         "tool-rock": ["加固", `1回合・整備剩${state.runPreparation?.remainingCharges}次`],
         "tool-brace": ["繩索固定", `1回合・兩回合不受風推・剩${state.runPreparation?.remainingCharges}次`]
       };
@@ -53,6 +62,10 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
         const landing = projectHighlandWind(state, move).find(p => p.unit === state.hero);
         const hint = controls.ownerDocument.createElement("small");
         hint.textContent = `${["slip", "tool-step"].includes(move.type) ? "立即" : "風後"}：${HIGHLAND_COLUMNS[landing.destination]}${landing.stagger ? "・撞邊失衡" : ""}`;
+        if (!["slip", "tool-step"].includes(move.type)) {
+          const count = projectedHighlandThreats(state, projectHighlandWind(state, move), highlandIntents(state)).length;
+          hint.textContent += count ? "・仍會挨打" : "・能躲開";
+        }
         button.append(hint);
       }
       if (move.column !== undefined) button.dataset.column = String(move.column);
@@ -83,33 +96,7 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
     }
     return;
   }
-  const wind = doc.createElement("p"); wind.className = "highland-wind";
-  wind.textContent = `本回合風向 ${windLabel(windFor(state))}　｜接下來 ${windLabel(windFor(state, 1))} / ${windLabel(windFor(state, 2))}`;
-  panel.append(wind);
-  const board = doc.createElement("div"); board.className = "highland-board";
-  for (let col = 0; col < 3; col++) {
-    const lane = doc.createElement("div"); lane.className = "highland-lane";
-    lane.classList.toggle("has-hero", state.hero.battleColumn === col);
-    const name = doc.createElement("strong"); name.textContent = HIGHLAND_COLUMNS[col];
-    const rock = doc.createElement("small"); rock.textContent = col === 1 ? "無遮蔽" : state.highlandBattle.rocks[col] ? `擋${col === 0 ? "→" : "←"}風・耐久${state.highlandBattle.rocks[col]}` : "岩壁已碎";
-    lane.append(name, rock);
-    for (const unit of [state.hero, ...state.enemies].filter(e => e.hp > 0 && e.battleColumn === col)) {
-      const tag = doc.createElement("span"); tag.textContent = `${unit === state.hero ? "◆ " : ""}${unit.name}${unit.windStagger ? "・失衡" : ""}`; lane.append(tag);
-    }
-    board.append(lane);
-  }
-  panel.append(board);
-  const forecast = doc.createElement("p"); forecast.className = "highland-forecast";
-  const projected = projectHighlandWind(state);
-  const mine = projected[0];
-  const opportunity = Object.values(state.hero.highlandOpportunities || {}).reduce((sum, n) => sum + n, 0);
-  forecast.textContent = `直接攻擊後，你會在${HIGHLAND_COLUMNS[mine.destination]}${mine.stagger ? "（撞邊失衡）" : ""}。${opportunity ? `借勢已存${opportunity}。` : ""}${state.hero.highlandShelterPierceReady ? "穿隘就緒。" : ""}`;
-  panel.append(forecast);
-  const rules = doc.createElement("details"); rules.className = "highland-rules";
-  const rulesTitle = doc.createElement("summary"); rulesTitle.textContent = "風與地形說明";
-  const rulesText = doc.createElement("p"); rulesText.textContent = "玩家 → 風 → 敵意。移位抵風1、無減傷；守勢抵風1並減傷。岩石只擋風，敵我共用；最後1耐久仍保護整欄。預覽只到風後，敵意接著執行，擊殺會改變結果。";
-  rules.append(rulesTitle, rulesText);
-  panel.append(rules);
+  renderHighlandBoard(state, panel, controls?.querySelector("details") || panel);
   const intentMap = new Map(highlandIntents(state).map(i => [i.id, i.text]));
   for (const card of els.enemyRoster?.querySelectorAll?.("[data-runtime-id]") || []) {
     const intent = card.querySelector("[data-enemy-intent]");
