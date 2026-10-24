@@ -19,6 +19,11 @@ export const musicDefinitions = Object.freeze({
     src: "assets/audio/bgm/forest.mp3",
     gain: 1
   }),
+  highlands: Object.freeze({
+    id: "highlands",
+    src: "assets/audio/bgm/highlands.mp3",
+    gain: 1
+  }),
   "coast-beach": Object.freeze({
     id: "coast-beach",
     src: "assets/audio/bgm/coast-beach.mp3",
