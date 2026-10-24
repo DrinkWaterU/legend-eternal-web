@@ -22,7 +22,7 @@ async function main() {
     browser = await chromium.launch({ channel: 'msedge', headless: true });
     for (const width of (process.env.GAME_TEST_WIDTHS || '320,390,1440').split(',').map(Number)) {
       const height = width === 320 ? 800 : width === 390 ? 844 : 900;
-      const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
+      const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce', hasTouch: width < 960, isMobile: width < 960 });
       const page = await context.newPage(); page.setDefaultTimeout(10000);
       const errors = [];
       const networkErrors = [];
@@ -51,7 +51,7 @@ async function main() {
         if (process.env.GAME_TEST_SCENARIOS && !process.env.GAME_TEST_SCENARIOS.split(",").includes(name)) return;
         await action(); assert.deepEqual(errors, []);
         results.push({ width, name, status: 'PASS' }); console.log(`PASS ${name} ${width}`);
-        await fs.writeFile(path.join(output, 'browser-results.json'), JSON.stringify(results, null, 2));
+        await fs.writeFile(path.join(output, process.env.GAME_TEST_RESULTS || 'browser-results.json'), JSON.stringify(results, null, 2));
       }
       async function seed(unlocked) {
         await page.goto(base); await ready();
@@ -94,7 +94,7 @@ async function main() {
           else if (await page.locator('#continueButton').isVisible()) await page.click('#continueButton');
           else if (await page.locator('#nextButton').isVisible()) {
             if (await page.locator('#nextButton').isEnabled()) await page.click('#nextButton');
-            else { if (!await page.locator("#tacticalActions > details").evaluate(e => e.open)) await page.locator("#tacticalActions > details > summary").click(); await page.locator('#tacticalActions [data-tactic-column="1"]').click(); await page.locator('#tacticalActions button[data-action-type=move][data-column="1"]').click(); }
+            else { if (!await page.locator("#tacticalActions > details").evaluate(e => e.open)) await page.locator("#tacticalActions > details > summary").click(); await page.locator('#tacticalActions [data-tactic-column="1"]').click(); await page.locator('#tacticalActions button[data-preview-only][data-action-type=move][data-column="1"]').click(); await page.locator('[data-action-confirm]').click(); }
           }
           else if (await page.locator('#endPanel').isVisible()) throw new Error('Unexpected terminal result');
           else await pause(30);
@@ -223,10 +223,12 @@ async function main() {
           assert.match(await page.locator('.highland-forecast').innerText(),/岩石擋住/);
           await page.locator('#tacticalActions > details > summary').click();
           await page.locator('#tacticalActions [data-tactic-column="0"]').click();
-          await page.locator('#tacticalActions [data-action-type="break"][data-column="0"]').focus();
+          await page.locator('#tacticalActions [data-preview-only][data-action-type="break"][data-column="0"]').click();
           assert.match(await page.locator('.highland-forecast').innerText(),/能避開/);
           await capture('wind-break-preview');
-          const rockBefore=await save(page);await page.locator('#tacticalActions [data-action-type="break"][data-column="0"]').click();
+          const rockBefore=await save(page);await page.locator('#tacticalActions [data-preview-only][data-action-type="break"][data-column="0"]').click();
+          assert.deepEqual((await save(page)).activeRun,rockBefore.activeRun,'Selecting a terrain action only previews it');
+          await page.locator('[data-action-confirm]').click();
           assert.equal((await save(page)).activeRun.state.hero.hp,rockBefore.activeRun.state.hero.hp);
           await controlled('tracking');await capture('wind-tracking');
           assert.match(await page.locator('.highland-forecast').innerText(),/盯著你追/);
@@ -277,6 +279,57 @@ async function main() {
           for(const dy of await page.locator('#blessingInfoList .blessing-info-card').evaluateAll(cards=>cards.map(c=>Math.abs(c.querySelector('strong').getBoundingClientRect().y-c.querySelector('.blessing-info-rarity-tag').getBoundingClientRect().y)))) assert.ok(dy<=8,'Owned blessing name and rarity share a row');
           await page.locator('#blessingInfoPanel .combat-info-body').evaluate(e=>{e.scrollTop=e.scrollHeight;});
           await capture('owned-blessings-bottom');
+        });
+        await check('touch-tactics-and-interrupt', async () => {
+          await seed(true);await page.click('#openRegionButton');await page.click('#campStartButton');await page.click('#startButton');await page.locator('.highland-path-choice').first().click();
+          await page.evaluate(async()=>{
+            const { highlandsRegion }=await import('/src/data/regions/highlands.js');
+            const { applyBlessingEffects }=await import('/src/core/blessings.js');
+            const { createRunPreparation }=await import('/src/core/preparations.js');
+            const d=JSON.parse(localStorage.getItem('legendEternalSave')),s=d.activeRun.state;
+            for(const b of highlandsRegion.blessings) applyBlessingEffects(s.hero,b);
+            s.runPreparation=createRunPreparation(highlandsRegion,'ridge-whetstone',{enhanced:true});
+            s.encounterIndex=s.routeEncounterIndex=5;s.turn=2;s.hero.battleColumn=1;
+            s.enemies[0].windRole='boss';s.enemies[0].battleColumn=1;
+            s.highlandBattle.rocks=[3,0,2];s.highlandBattle.pattern=[1];
+            const { lockHighlandIntents }=await import('/src/core/highlandBattle.js');lockHighlandIntents(s);
+            localStorage.setItem('legendEternalSave',JSON.stringify(d));
+          });await resume();
+          const prepared=await save(page), press=async locator=>width<960?locator.tap():locator.click();
+          async function select(type,column) {
+            if(!await page.locator('#tacticalActions > details').evaluate(e=>e.open)) await press(page.locator('#tacticalActions > details > summary'));
+            await press(page.locator(`[data-tactic-column="${column}"]`));
+            const before=await save(page);
+            await press(page.locator(`[data-preview-only][data-action-type="${type}"][data-column="${column}"]`));
+            assert.deepEqual((await save(page)).activeRun,before.activeRun,'Touch selection must not commit a turn or charge');
+            assert.equal(await page.locator('.tactical-selection').isVisible(),true);
+          }
+          await select('shove',0);assert.match(await page.locator('.tactical-selection').innerText(),/打斷/);
+          if(width>=960) {
+            await page.locator('#guardButton').hover();assert.equal(await page.locator('.tactical-selection').isVisible(),false,'Changing the shown action cancels a different pending confirmation');
+            await select('shove',0);
+          }
+          await capture('touch-shove-preview');
+          await press(page.locator('[data-action-confirm]'));
+          const interrupted=await save(page);assert.equal(interrupted.activeRun.state.highlandBattle.rocks[0],0);assert.equal(interrupted.activeRun.state.turn,prepared.activeRun.state.turn+1);
+          for(const type of ['ride','slip','tool-step']) {
+            await page.evaluate(d=>localStorage.setItem('legendEternalSave',JSON.stringify(d)),prepared);await resume();
+            await select(type,0);await capture(`touch-${type}-preview`);await press(page.locator('[data-action-confirm]'));
+            const result=await save(page);assert.equal(result.activeRun.state.turn,prepared.activeRun.state.turn+(type==='ride'?1:0));
+            if(type==='slip') assert.equal(result.activeRun.state.highlandBattle.slipUsed,true);
+            if(type==='tool-step') assert.equal(result.activeRun.state.runPreparation.remainingCharges,prepared.activeRun.state.runPreparation.remainingCharges-1);
+          }
+          await page.evaluate(d=>{
+            d.activeRun.state.highlandBattle.intents=[{id:d.activeRun.state.enemies[0].runtimeId,kind:'anchor',text:'站穩護衛：本回合不攻擊'}];
+            localStorage.setItem('legendEternalSave',JSON.stringify(d));
+          },prepared);await resume();
+          assert.match(await page.locator('.highland-forecast').innerText(),/這回合敵人不攻擊/);
+          await select('move',0);assert.match(await page.locator('.tactical-selection').innerText(),/敵人本回合不攻擊/);
+          await capture('no-attack-preview');
+          await page.evaluate(d=>{d.activeRun.state.highlandBattle.rocks=[0,0,0];localStorage.setItem('legendEternalSave',JSON.stringify(d));},prepared);await resume();
+          await select('move',0);assert.match(await page.locator('.tactical-selection').innerText(),/抵住1格風/);await capture('touch-resist-preview');
+          const beforeHold=await save(page);await press(page.locator('[data-preview-only][data-action-type="hold"]'));
+          assert.deepEqual((await save(page)).activeRun,beforeHold.activeRun);assert.match(await page.locator('.tactical-selection').innerText(),/固定住/);await capture('touch-hold-preview');
         });
       } catch (error) {
         await capture('failure').catch(() => {});

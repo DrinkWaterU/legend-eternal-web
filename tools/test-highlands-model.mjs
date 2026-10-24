@@ -77,8 +77,9 @@ export function heuristicAction(state, tactical = true) {
  }
  return best;
 }
-function simulate(character,weapon,level,tactical,path) {
+function simulate(character,weapon,level,tactical,path,windSeed) {
  const x=remakeHarness({character,weapon,level,index:0,quiet:true}), s=x.state, owned={}, actions={};
+ s.runRandomState=windSeed;
  let total=0;
  for(let index=0;index<12;index++) {
   s.ended=false; s.outcome=null; s.encounterIndex=index; s.routeEncounterIndex=index;
@@ -101,7 +102,7 @@ const results=[];
 for(const level of [28,30]) for(const [character,weapons] of Object.entries(equipment)) for(const weapon of weapons) for(const path of ["shelter","gale","mixed"]) for(const tactical of [false,true]) {
  let wins=0,reached=0,turns=0,stalls=0;const defeats={},actions={};
  for(let n=0;n<rounds;n++) {
-  const r=withSeed(seedFromText(`remake:${character}:${level}:${n}`),()=>simulate(character,weapon,level,tactical,path));
+  const r=withSeed(seedFromText(`remake:${character}:${level}:${n}`),()=>simulate(character,weapon,level,tactical,path,seedFromText(`wind:${n}`)));
   wins+=Number(r.won); reached+=r.reached; turns+=r.turns;stalls+=Number(r.stalled||false);
   if(!r.won) defeats[r.reached]=(defeats[r.reached]||0)+1;
   for(const [a,count] of Object.entries(r.actions)) actions[a]=(actions[a]||0)+count;

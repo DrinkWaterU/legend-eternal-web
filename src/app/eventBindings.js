@@ -148,7 +148,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.nextButton.addEventListener("click", () => playTurn("attack"));
   els.tacticalActions?.addEventListener("click", event => {
     const button = event.target.closest("button[data-action-type]");
-    if (!button || button.disabled) return;
+    if (!button || button.disabled || button.dataset.previewOnly === "true") return;
     playTurn({ type: button.dataset.actionType, column: button.dataset.column === undefined ? undefined : Number(button.dataset.column) });
   });
   els.guardButton?.addEventListener("click", () => playTurn("guard"));

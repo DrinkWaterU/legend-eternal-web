@@ -17,6 +17,10 @@ export function startHighlandBattle(state) {
   state.highlandBattle = { rocks: index < 2 ? [1, 0, 0] : [2, 0, 2],
     pattern: path === "gale" ? (block === 0 ? patterns[1] : block === 1 ? [2, -1, -2, 0, 2, -1] : [-2, 1, 2, -1, 0, 2]) : patterns[block],
     path, terrainBreaks: 0, heroBreaks: 0, lastWind: null };
+  // Freeze one visible opening variant at battle entry; resuming never rerolls it.
+  const phase = index < 2 ? 0 : (Number(state.runRandomState) >>> 0) % state.highlandBattle.pattern.length;
+  const pattern = state.highlandBattle.pattern;
+  state.highlandBattle.pattern = [...pattern.slice(phase), ...pattern.slice(0, phase)];
   const terrain = state.hero.nextHighlandTerrain;
   if (terrain === "exposed") state.highlandBattle.rocks = [0, 0, 0];
   if (terrain === "reinforced") state.highlandBattle.rocks = [3, 0, 3];
@@ -73,6 +77,11 @@ export function canReachHighlandTarget(state, target, action = "attack") {
   return !!target && Math.abs(target.battleColumn - state.hero.battleColumn) <= (bow ? 2 : 1);
 }
 
+function shoveHitsChargingRock(state, action, intents) {
+  return action.type === "shove" && state.highlandBattle.rocks[action.column] > 0
+    && intents.some(i => i.id === state.targetEnemyId && i.kind === "charge");
+}
+
 export function highlandActions(state) {
   if (!state.highlandBattle) return [];
   const list = [];
@@ -91,8 +100,8 @@ export function highlandActions(state) {
     }
     if (state.highlandBattle.rocks[column] > 0 && Math.abs(column - state.hero.battleColumn) <= 1)
       { list.push({ type: "break", column, label: `拆除${HIGHLAND_COLUMNS[column]}岩石` });
-        if (state.hero.highlandShatterGust && windFor(state)) list.push({ type: "gust-break", column, label: "破岩放風（本回合風力變兩格）" });
-        if (state.hero.highlandDemolish && !state.highlandBattle.demolishUsed)
+        if (state.hero.highlandShatterGust && Math.abs(windFor(state)) === 1) list.push({ type: "gust-break", column, label: "破岩放風（本回合風力變兩格）" });
+        if (state.hero.highlandDemolish && !state.highlandBattle.demolishUsed && column !== state.hero.battleColumn)
           list.push({ type: "demolish", column, label: `破岩突入${HIGHLAND_COLUMNS[column]}（本場一次）` });
       }
   }
@@ -114,6 +123,7 @@ export function projectHighlandWind(state, action = { type: "attack" }, intents 
   if (!state.highlandBattle) return [];
   const h = state.hero, b = state.highlandBattle, rocks = [...b.rocks];
   if (!afterAction && ["break", "demolish", "gust-break"].includes(action.type)) rocks[action.column] = 0;
+  if (!afterAction && shoveHitsChargingRock(state, action, intents)) rocks[action.column] = 0;
   if (!afterAction && action.type === "gust-break") wind = Math.sign(wind) * 2;
   if (!afterAction && action.type === "tool-rock") rocks[action.column] = Math.min(3, rocks[action.column] + (state.runPreparation?.isEnhanced ? 2 : 1));
   return [h, ...getLivingEnemies(state.enemies)].map(unit => {
@@ -137,6 +147,11 @@ export function actOnHighland(state, action, log) {
   if (action.type === "shove") {
     const target = state.enemies.find(e => e.runtimeId === state.targetEnemyId && e.hp > 0);
     target.battleColumn = action.column; b.forcedEnemyTurn = state.turn; b.forcedEnemyId = target.runtimeId;
+    if (shoveHitsChargingRock(state, action, b.intents || [])) {
+      b.rocks[action.column] = 0; b.terrainBreaks++;
+      b.interruptedEnemyId = target.runtimeId; b.interruptedEnemyTurn = state.turn;
+      log.fixed("status", `${target.name}撞碎了整塊擋風岩，這次衝撞被打斷了；岩石也沒了。`);
+    }
     log.fixed("status", `你把${target.name}推到${HIGHLAND_COLUMNS[action.column]}，接著還會被風吹動。`);
   } else if (action.type.startsWith("tool-")) {
     state.runPreparation.remainingCharges--; state.runPreparation.triggerCount = (state.runPreparation.triggerCount || 0) + 1;
@@ -199,6 +214,7 @@ export function resolveHighlandWind(state, action, intents, log) {
 // collateral never invokes character incoming-hit callbacks or finisher healing.
 export function resolveHighlandEnemyIntent(state, enemy, intent, action, log) {
   if (!state.highlandBattle || !intent) return false;
+  if (state.highlandBattle.interruptedEnemyTurn === state.turn && state.highlandBattle.interruptedEnemyId === enemy.runtimeId) return true;
   if (intent.kind === "anchor") return true;
   if (intent.kind === "gust") {
     state.highlandBattle.windOverrides = { ...(state.highlandBattle.windOverrides || {}), [state.turn]: intent.direction };

@@ -282,3 +282,10 @@ body[data-region="highlands"] #gameScreen:has([data-path-choice="true"]) .battle
 .highland-mini-board .tactical-icon { width:16px; height:16px; }
 
 .tactical-destinations button, .tactical-action-grid button { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+.highland-attack-source { color:#ffd8bf; }
+.highland-consequence { margin:6px 0 0; color:#d5dda5; font-size:.8rem; line-height:1.6; }
+.tactical-help, .tactical-unlocks { margin:6px 0; font-size:.78rem; color:#d0d9c6; line-height:1.6; }
+.tactical-selection { width:100%; padding:10px; border:1px solid var(--gold); background:#182921; border-radius:5px; }
+.tactical-selection p { font-size:.85rem; line-height:1.65; margin:0 0 8px; }
+.tactical-selection button { width:100%; }
+.tactical-actions [data-preview-only][aria-pressed="true"] { border-color:var(--gold); background:#304234; color:var(--gold); }
