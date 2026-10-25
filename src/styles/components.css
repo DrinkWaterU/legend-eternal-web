@@ -1566,11 +1566,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .preparation-detail,
+  .preparation-detail.is-open,
   .preparation-detail-card,
+  .preparation-detail-card.is-enhancement-reveal,
   .preparation-card-hint::after,
   .preparation-detail-effect-label,
+  .preparation-detail-effect-label.is-reveal,
   .preparation-effect-change,
-  .preparation-effect-change::after {
+  .preparation-effect-change.is-reveal,
+  .preparation-effect-change::after,
+  .preparation-effect-change.is-reveal::after {
     animation: none;
     transition: none;
   }

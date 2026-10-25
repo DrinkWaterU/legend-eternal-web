@@ -86,9 +86,10 @@
         "charges": 2
       },
       "enhancement": {
-        "title": "耐存高地乾糧",
+        "title": "加厚層岩支架",
         "description": "花一回合加固相鄰或腳下現存岩石，耐久+2，上限3；不能重建已毀岩。整輪3次。",
         "changedFragments": [
+          "+2",
           "3次"
         ],
         "materialCosts": [
@@ -120,7 +121,7 @@
         "charges": 2
       },
       "enhancement": {
-        "title": "精磨風礫",
+        "title": "備用移步踏釘",
         "description": "可移至另一欄而不耗回合，不重置已鎖定敵意、不充武器資源。整輪3次。",
         "changedFragments": [
           "3次"

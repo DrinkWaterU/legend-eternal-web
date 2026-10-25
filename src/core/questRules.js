@@ -1,6 +1,7 @@
 import { questDefinitions as defaultQuestDefinitions } from "../data/quests.js";
 import { QUEST_RARITIES } from "../data/questRarities.js";
 import { getRouteDefinition } from "../data/routes/index.js";
+import { getEnemyDefinition } from "../data/enemies/index.js";
 import { sumSafeIntegers, toSafeInteger } from "../utils.js";
 
 export const QUEST_BOARD_SIZE = 4;
@@ -179,7 +180,7 @@ export function buildQuestRewardPlan(quest) {
 
 export function formatQuestObjective(quest, materialDefinitions = {}) {
   const objective = quest?.objective || {};
-  if (objective.type === "performHighlandTactic") return objective.tactic === "breakRock" ? `在高地主動拆岩 ${objective.target} 次` : `在高地誘導衝撞命中其他敵人 ${objective.target} 次`;
+  if (objective.type === "performHighlandTactic") return objective.tactic === "breakRock" ? `在高地拆岩或推敵撞岩打斷衝撞 ${objective.target} 次` : `在高地引導敵人誤傷同伴 ${objective.target} 次`;
   if (objective.type === "deliverMaterials") {
     return objective.materials.map((entry) => (
       `${materialDefinitions[entry.id]?.name || entry.id} ×${entry.quantity}`
@@ -195,6 +196,7 @@ export function formatQuestObjective(quest, materialDefinitions = {}) {
     const region = getRegionLabel(objective) || "任意";
     return `完成${region}正式冒險 ${objective.target} 次`;
   }
+  if (objective.enemyIds?.length) return `在${getRegionLabel(objective) || "指定地區"}擊敗${objective.enemyIds.map(id => getEnemyDefinition(id)?.name || id).join("、")} ${objective.target} 隻`;
   if (objective.enemyKinds?.length === 1) return `擊敗任意${objective.enemyKinds[0]}敵人 ${objective.target} 隻`;
   if (objective.enemyFamilies?.length === 1) {
     const familyLabel = ENEMY_FAMILY_LABELS[objective.enemyFamilies[0]] || `${objective.enemyFamilies[0]}系`;

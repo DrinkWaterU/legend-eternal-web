@@ -1,11 +1,9 @@
+import { createBlacksmithEffectList } from "./blacksmithWeaponEffects.js";
 import { getInventoryCostStatus } from "../core/commerce.js";
 import {
   createWeaponIcon,
-  createWeaponTechniqueRules,
   formatWeaponCategory,
-  formatWeaponEffect,
   formatWeaponEffects,
-  getWeaponEffects,
   getWeaponRarityClass,
   getWeaponRarityLabel,
   setWeaponRarityData
@@ -246,36 +244,8 @@ export function renderBlacksmithDetail({
   const effectSection = document.createElement("section");
   effectSection.className = "blacksmith-detail-section";
   const effectTitle = document.createElement("h4");
-  const effectList = document.createElement("div");
+  const effectList = createBlacksmithEffectList(weapon);
   effectTitle.textContent = "武器效果";
-  effectList.className = "blacksmith-effect-list";
-  if (weapon.effectText) {
-    const item = document.createElement("div");
-    item.className = "blacksmith-effect-item";
-    const label = document.createElement("small");
-    const value = document.createElement("strong");
-    label.textContent = weapon.effectName || "特殊效果";
-    value.textContent = weapon.effectSummary || weapon.effectText;
-    item.append(label, value);
-    effectList.append(item);
-  } else {
-    getWeaponEffects(weapon).forEach((effect) => {
-      const item = document.createElement("div");
-      item.className = "blacksmith-effect-item";
-      const label = document.createElement("small");
-      const value = document.createElement("strong");
-      label.textContent = effect.stat === "attack" ? "基礎能力" : "特殊效果";
-      value.textContent = formatWeaponEffect(effect);
-      item.append(label, value);
-      if (weapon.effectSummary) item.append(createWeaponTechniqueRules(weapon));
-      effectList.append(item);
-    });
-  }
-  if (!effectList.children.length) {
-    const effectText = document.createElement("p");
-    effectText.textContent = formatWeaponEffects(weapon);
-    effectList.append(effectText);
-  }
   effectSection.append(effectTitle, effectList);
 
   const recipeSection = document.createElement("section");

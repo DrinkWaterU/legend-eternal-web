@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
-const output = path.join(__dirname, 'verification-artifacts/highlands');
+const output = path.resolve(root, process.env.GAME_TEST_OUTPUT || 'tools/verification-artifacts/highlands');
 const port = Number(process.env.GAME_TEST_PORT || 4196);
 const base = `http://127.0.0.1:${port}`;
 const pause = ms => new Promise(r => setTimeout(r, ms));
@@ -181,6 +181,18 @@ async function main() {
           assert.ok((await save(page)).inventory.weapons['windbreak-sword']);
           for (const [id, name] of [['windbreak-sword', '斷風守隘劍'], ['ridgewind-bow', '脊風獵弓'], ['cairn-warhammer', '鎮隘岩鎚'], ['gale-dagger', '掠風短刃'], ['stormsplit-axe', '破隘長斧']]) {
             await page.locator('#blacksmithWeaponList button').filter({ hasText: name }).screenshot({ path: path.join(output, `weapon-card-${id}-${width}.png`) });
+            await page.locator('#blacksmithWeaponList button').filter({hasText:name}).click();
+            assert.match(await page.locator('#blacksmithDetail .weapon-base-stats').innerText(),/攻擊.*1/);
+            await page.locator('#blacksmithDetail details summary').click();
+            const weapon=await page.evaluate(async id=>(await import('/src/data/weapons.js')).weaponDefinitions[id],id);
+            assert.equal(await page.locator('#blacksmithDetail details p').innerText(),weapon.effectText);
+            await page.locator('#blacksmithDetailPanel').screenshot({path:path.join(output,`market-weapon-${id}-${width}.png`)});
+            if(!(await save(page)).inventory.weapons[id]) {
+              const before=await save(page);await page.click('#blacksmithCraftButton');await page.click('#confirmBlacksmithCraftButton');const after=await save(page);
+              assert.equal(after.inventory.gold,before.inventory.gold-weapon.recipe.goldCost);assert.equal(after.inventory.weapons[id],true);
+              for(const m of weapon.recipe.materialCosts) assert.equal(after.inventory.materials[m.materialId].quantity,before.inventory.materials[m.materialId].quantity-m.quantity);
+              assert.equal(await page.locator('#blacksmithCraftButton').isDisabled(),true);
+            }
           }
           await page.reload(); await ready(); await page.click('#openCharacterButton');
           await page.locator('#characterChoiceList [data-character-id="adventurer"]').click();
@@ -279,6 +291,35 @@ async function main() {
           for(const dy of await page.locator('#blessingInfoList .blessing-info-card').evaluateAll(cards=>cards.map(c=>Math.abs(c.querySelector('strong').getBoundingClientRect().y-c.querySelector('.blessing-info-rarity-tag').getBoundingClientRect().y)))) assert.ok(dy<=8,'Owned blessing name and rarity share a row');
           await page.locator('#blessingInfoPanel .combat-info-body').evaluate(e=>{e.scrollTop=e.scrollHeight;});
           await capture('owned-blessings-bottom');
+        });
+        await check('market-and-commissions', async () => {
+          await seed(true);await page.click('#openRegionButton');await page.click('#campStartButton');
+          const before=await save(page);
+          for(const [id,name,title] of [['ridge-anchor','守隘繩索','加固繫岩腰索'],['slope-rations','層岩支架','加厚層岩支架'],['ridge-whetstone','移步踏釘','備用移步踏釘']]) {
+            await page.locator('#regionPreparationChoices button').filter({hasText:name}).click();
+            await page.locator('#regionPreparationDetail button').filter({hasText:'使用素材強化'}).click();
+            await page.waitForFunction(()=>[...document.querySelectorAll('#regionPreparationDetail .preparation-effect-change')].every(e=>Number(getComputedStyle(e).opacity)===1 && getComputedStyle(e).animationName==='none'));
+            assert.match(await page.locator('#regionPreparationDetail').innerText(),new RegExp(title));
+            if(id==='slope-rations') assert.deepEqual(await page.locator('.preparation-effect-change').allTextContents(),['+2','3次']);
+            assert.deepEqual((await save(page)).inventory,before.inventory,'Comparing enhancements must not spend gold or materials');
+            await capture(`market-preparation-${id}`);
+          }
+          await page.click('#startButton');const started=await save(page);
+          assert.equal(started.inventory.gold,before.inventory.gold-12);assert.equal(started.inventory.materials.gale_feather.quantity,before.inventory.materials.gale_feather.quantity-1);
+          assert.equal(started.activeRun.state.runPreparation.remainingCharges,3);
+          const boards=[['highlands-patrol','highlands-signals','highlands-survey','highlands-supplies'],['highlands-windheart','highlands-rockwork','highlands-bait','highlands-patrol']];
+          for(let n=0;n<boards.length;n++) {
+            await seed(true);await page.evaluate(({ids,n})=>{const d=JSON.parse(localStorage.getItem('legendEternalSave'));d.quests.board.questIds=ids;d.quests.active=n===0?{questId:'highlands-signals',progress:0,acceptedAtCompletionCount:0}:null;localStorage.setItem('legendEternalSave',JSON.stringify(d));},{ids:boards[n],n});
+            await page.reload();await ready();await page.click('#openRegionButton');await page.click('#campPlacesButton');
+            await page.locator('#facilityList button').filter({hasText:/瑟琳|公會接待員/}).click();await page.locator('#dialogueChoices button').filter({hasText:'查看公會委託'}).click();
+            const text=await page.locator('#guildQuestContent').innerText();assert.ok(!text.includes('Debug'));
+            if(n===0) assert.match(text,/結繩哨衛 4 隻/);else {assert.match(text,/引導敵人誤傷同伴/);assert.match(text,/推敵撞岩打斷衝撞/);}
+            await capture(`market-quests-${n+1}`);
+            for(const card of await page.locator('.guild-quest-board .guild-quest-card').all()) {
+              const title=await card.locator('h4').innerText();await card.screenshot({path:path.join(output,`market-quest-${title}-${width}.png`)});
+            }
+            if(n===1) {await page.locator('.guild-quest-card').filter({hasText:'借敵破陣'}).getByRole('button',{name:'承接委託',exact:true}).click();assert.equal((await save(page)).quests.active.questId,'highlands-bait');}
+          }
         });
         await check('touch-tactics-and-interrupt', async () => {
           await seed(true);await page.click('#openRegionButton');await page.click('#campStartButton');await page.click('#startButton');await page.locator('.highland-path-choice').first().click();

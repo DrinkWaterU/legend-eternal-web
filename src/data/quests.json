@@ -478,7 +478,7 @@
     "enabled": true,
     "weight": 100,
     "requiredRegionId": "highlands",
-    "description": "在正式高地冒險中實踐地形戰術，已完成行動即保留；不計Debug。",
+    "description": "公會要重畫風口的岩台圖。親手拆岩，或推敵撞岩擋下衝撞，都能留下記錄；撤退或倒下仍保留進度。",
     "objective": {
       "type": "performHighlandTactic",
       "regionIds": [
@@ -500,7 +500,7 @@
     "enabled": true,
     "weight": 100,
     "requiredRegionId": "highlands",
-    "description": "在正式高地冒險中實踐地形戰術，已完成行動即保留；不計Debug。",
+    "description": "守望隊常把風口堵得水洩不通。試著換位、拆岩或推敵，讓牠們打到同伴；自然發生的誤傷不算，撤退或倒下仍保留進度。",
     "objective": {
       "type": "performHighlandTactic",
       "regionIds": [

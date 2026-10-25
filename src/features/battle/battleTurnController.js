@@ -94,7 +94,9 @@ export function createBattleTurnController({
       const target = currentTargetEnemy();
       if (["move", "ride", "break", "demolish", "gust-break", "shove", "tool-brace", "tool-rock"].includes(playerAction)) {
         actOnHighland(state, action, log);
-        if (["break", "demolish", "gust-break"].includes(playerAction) && !state.debugBuildRun) recordTactic({ regionId: state.selectedRegionId, tactic: "breakRock", debugBuildRun: false });
+        const brokeRock = ["break", "demolish", "gust-break"].includes(playerAction)
+          || (playerAction === "shove" && state.highlandBattle.interruptedEnemyTurn === state.turn);
+        if (brokeRock && !state.debugBuildRun) recordTactic({ regionId: state.selectedRegionId, tactic: "breakRock", debugBuildRun: false });
       }
       if (playerAction === "charge") {
         state.hero.weaponRuntime.charge = 3;

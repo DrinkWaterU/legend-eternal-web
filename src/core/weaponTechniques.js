@@ -70,9 +70,11 @@ export function runWeaponAttack({ state, action, target, log, runAttack }) {
   if (terrainBonus) packet(target, terrainBonus, "借勢破綻", true);
   if (kind === "riposte" && counter) packet(target, power * .7 + 4, "架勢反攻");
   if (kind === "charge" && charge) {
-    packet(target, power * .8, "蓄射追加");
-    if (alive.length === 1) packet(target, power * .3, "集中餘力");
-    else alive.filter(e => e.runtimeId !== target.runtimeId).forEach(e => packet(e, power * .5, "穿風箭"));
+    if (alive.length === 1) packet(target, power * 1.1, "蓄射追加・集中餘力");
+    else {
+      packet(target, power * .8, "蓄射追加");
+      alive.filter(e => e.runtimeId !== target.runtimeId).forEach(e => packet(e, power * .5, "穿風箭"));
+    }
   }
   if (kind === "weight" && action === "sweep") alive.forEach(e => packet(e, power * weight * .35, "斧勢橫掃"));
   if (kind === "weight" && action === "cleave") packet(target, power * 1.5, "斧勢重劈");
