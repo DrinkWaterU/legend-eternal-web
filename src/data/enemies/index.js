@@ -68,7 +68,10 @@ function validateSupportAction(definition, label) {
   if (!isNonNegativeInteger(support.attackGain) || !isNonNegativeInteger(support.defenseGain)) {
     throw new Error(`${label} ${definition.id} supportAction 攻防加成必須是非負整數。`);
   }
-  if (Number(support.attackGain) === 0 && Number(support.defenseGain) === 0) {
+  if (support.healMaxHpRatio !== undefined && !isChance(support.healMaxHpRatio)) {
+    throw new Error(`${label} ${definition.id} supportAction 恢復比例必須介於 0 到 1。`);
+  }
+  if (Number(support.attackGain) === 0 && Number(support.defenseGain) === 0 && !(Number(support.healMaxHpRatio) > 0)) {
     throw new Error(`${label} ${definition.id} supportAction 至少要有一種有效加成。`);
   }
   if (support.targetCombatRole !== undefined && !COMBAT_ROLES.has(support.targetCombatRole)) {

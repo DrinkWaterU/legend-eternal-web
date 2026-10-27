@@ -147,7 +147,18 @@ export function createBlessingController({
         state.blessingInputLocked = false;
       }
     });
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(updateScrollHint);
   }
+
+  function updateScrollHint() {
+    const dialog = els.blessingPanel.querySelector?.(".blessing-dialog");
+    const hint = els.blessingPanel.querySelector?.(".blessing-scroll-hint");
+    if (!dialog || !hint) return;
+    hint.hidden = true;
+    hint.hidden = dialog.scrollHeight > dialog.clientHeight + 1 ? false : true;
+  }
+
+  globalThis.addEventListener?.("resize", updateScrollHint);
 
   return Object.freeze({ showBlessings, grantBlessing, restoreBlessingChoices });
 }

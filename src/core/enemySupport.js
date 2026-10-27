@@ -2,6 +2,25 @@ import { getEnemyDisplayName, getLivingEnemies } from "./enemyGroups.js";
 import { registerEnemySupportCounter } from "./caveBlessingEffects.js";
 
 export function resolveEnemySupportAction({ enemies = [], actor, turn, log, hero = null }) {
+  const plan = getEnemySupportPlan({ enemies, actor, turn });
+  if (!plan) return false;
+  const { target, attackGain, defenseGain, healMaxHpRatio } = plan;
+  target.attack = Math.max(1, Number(target.attack) || 0) + attackGain;
+  target.defense = Math.max(0, Number(target.defense) || 0) + defenseGain;
+  target.supportAttackBonus = normalizeNonNegativeInteger(target.supportAttackBonus) + attackGain;
+  target.supportDefenseBonus = normalizeNonNegativeInteger(target.supportDefenseBonus) + defenseGain;
+  const healed = Math.min(Math.max(0, target.maxHp - target.hp), Math.round(target.maxHp * healMaxHpRatio));
+  target.hp += healed;
+  actor.supportUses = normalizeNonNegativeInteger(actor.supportUses) + 1;
+  if (hero) registerEnemySupportCounter(hero);
+  logSupportAction({ log, actor, target, attackGain, defenseGain });
+  if (healed > 0) log?.fixed?.("heal", `${getEnemyDisplayName(actor)}替${getEnemyDisplayName(target)}恢復 ${healed} 點生命。`);
+  return true;
+}
+
+// Share eligibility with the preview so spent support or a dead frontline
+// never advertises a buff that will actually become an ordinary attack.
+export function getEnemySupportPlan({ enemies = [], actor, turn }) {
   const support = normalizeSupportAction(actor?.supportAction);
   if (
     !support
@@ -10,36 +29,21 @@ export function resolveEnemySupportAction({ enemies = [], actor, turn, log, hero
     || actor.hp <= 0
     || turn % support.everyTurns !== 0
   ) {
-    return false;
+    return null;
   }
 
   const supportUses = normalizeNonNegativeInteger(actor.supportUses);
   if (supportUses >= support.maxUses) {
-    return false;
+    return null;
   }
 
   const target = selectSupportTarget(enemies, actor, support.targetCombatRole);
   if (!target) {
-    return false;
+    return null;
   }
 
-  const attackGain = support.attackGain;
-  const defenseGain = support.defenseGain;
-  target.attack = Math.max(1, Number(target.attack) || 0) + attackGain;
-  target.defense = Math.max(0, Number(target.defense) || 0) + defenseGain;
-  target.supportAttackBonus = normalizeNonNegativeInteger(target.supportAttackBonus) + attackGain;
-  target.supportDefenseBonus = normalizeNonNegativeInteger(target.supportDefenseBonus) + defenseGain;
-  actor.supportUses = supportUses + 1;
-  if (hero) registerEnemySupportCounter(hero);
-
-  logSupportAction({
-    log,
-    actor,
-    target,
-    attackGain,
-    defenseGain
-  });
-  return true;
+  return { target, attackGain: support.attackGain, defenseGain: support.defenseGain, healMaxHpRatio: support.healMaxHpRatio,
+    remainingUses: support.maxUses - supportUses, targetCombatRole: support.targetCombatRole };
 }
 
 function selectSupportTarget(enemies, actor, targetCombatRole) {
@@ -73,7 +77,8 @@ function normalizeSupportAction(value) {
   const maxUses = normalizePositiveInteger(value.maxUses);
   const attackGain = normalizeNonNegativeInteger(value.attackGain);
   const defenseGain = normalizeNonNegativeInteger(value.defenseGain);
-  if (!everyTurns || !maxUses || (attackGain <= 0 && defenseGain <= 0)) {
+  const healMaxHpRatio = Math.max(0, Math.min(1, Number(value.healMaxHpRatio) || 0));
+  if (!everyTurns || !maxUses || (attackGain <= 0 && defenseGain <= 0 && healMaxHpRatio <= 0)) {
     return null;
   }
 
@@ -82,7 +87,8 @@ function normalizeSupportAction(value) {
     maxUses,
     targetCombatRole: value.targetCombatRole ? String(value.targetCombatRole) : "",
     attackGain,
-    defenseGain
+    defenseGain,
+    healMaxHpRatio
   };
 }
 

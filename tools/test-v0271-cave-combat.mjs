@@ -72,11 +72,12 @@ assert.deepEqual(
 assert.equal(getEnemyDefinition("cave-fishman-frontline").combatRole, "frontline");
 assert.equal(getEnemyDefinition("cave-fishman-output").combatRole, "output");
 assert.deepEqual(getEnemyDefinition("cave-fishman-support").supportAction, {
-  everyTurns: 3,
+  everyTurns: 2,
   maxUses: 2,
   targetCombatRole: "frontline",
   attackGain: 0,
-  defenseGain: 3
+  defenseGain: 3,
+  healMaxHpRatio: 0.35
 });
 assert.equal(getEnemyDefinition("cave-fishman-control").paralysisChance, 0.15);
 assert.equal(getEnemyDefinition("cave-fishman-boss").chargeEvery, 4);
@@ -90,14 +91,14 @@ assert.deepEqual(
 );
 
 const coastCaveRoute = getRouteDefinition("coast-cave");
-assert.equal(coastCaveRoute.groups.length, 10, "洞穴應有 10 組可重用編隊資料");
+assert.equal(coastCaveRoute.groups.length, 11, "洞穴包含無前衛側襲，共 11 組可重用編隊資料");
 assert.equal(coastCaveRoute.encounterPlan.length, 16, "洞穴應固定 16 場遭遇");
 assert.deepEqual(
   coastCaveRoute.encounterPlan.map((entry) => entry.groupId),
   [
     "cave-lesson-front-output",
-    "cave-lesson-front-output",
-    "cave-lesson-front-output",
+    "cave-exposed-flank",
+    "cave-support-lesson",
     "cave-lesson-front-output",
     "cave-support-lesson",
     "cave-support-mix",
@@ -303,7 +304,7 @@ const supportGroup = createRuntimeEnemyGroup([
 assert.equal(resolveEnemySupportAction({
   enemies: supportGroup,
   actor: supportGroup[0],
-  turn: 3,
+  turn: 2,
   log: createLogger()
 }), true);
 assert.equal(supportGroup[1].defense, 12, "洞穴支援應在固定回合提高前衛防禦");

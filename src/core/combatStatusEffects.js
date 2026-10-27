@@ -7,6 +7,7 @@ const SALT_EROSION_MAX_TURNS = 7;
 const PARALYSIS_INITIAL_TURNS = 2;
 const PARALYSIS_MAX_TURNS = 3;
 const DEFAULT_SALT_HEALING_REDUCTION = 0.3;
+const PERIODIC_RECOVERY_LIMIT = 4;
 
 export function getHeroPendingHpLoss(hero) {
   if (!hero || hero.poison <= 0) {
@@ -147,10 +148,15 @@ export function applyEnemyEndOfTurnNegativeEffects({ enemy, enemies = [], log })
 }
 
 export function applyHeroEndOfTurnRecoveryEffects({ hero, turn, log }) {
-  if (hero.regenEvery > 0 && turn % hero.regenEvery === 0 && hero.hp > 0) {
+  if (hero.regenEvery > 0 && turn % hero.regenEvery === 0 && hero.hp > 0
+      && canUsePeriodicRecovery(hero, "base")) {
     const amount = applyHeroBattleHealing(hero, hero.regenAmount);
-    if (amount > 0) log.template("heal", "heal", { target: hero.name, amount });
+    if (amount > 0) {
+      recordPeriodicRecovery(hero, "base");
+      log.template("heal", "heal", { target: hero.name, amount });
+    }
   }
+  applyPeriodicRegens(hero, turn, log);
   applyTimedRegens(hero, turn, log);
 }
 
@@ -170,16 +176,32 @@ function calculateHeroPoisonDamage(hero) {
   return poison > 0 ? Math.max(1, Math.round(poison * (1 - damageReduction))) : 0;
 }
 
+function applyPeriodicRegens(hero, turn, log) {
+  if (!Array.isArray(hero.periodicRegens) || hero.hp <= 0) return;
+  hero.periodicRegens.forEach((effect) => {
+    const key = `periodic:${effect.id}`;
+    if (effect.everyTurns <= 0 || turn % effect.everyTurns !== 0 || !canUsePeriodicRecovery(hero, key)) return;
+    const amount = applyHeroBattleHealing(hero, effect.amount);
+    if (amount > 0) {
+      recordPeriodicRecovery(hero, key);
+      log.template("heal", "heal", { target: hero.name, amount });
+    }
+  });
+}
+
 function applyTimedRegens(hero, turn, log) {
   if (!Array.isArray(hero.timedRegens) || hero.hp <= 0) {
     return;
   }
-  hero.timedRegens.forEach((effect) => {
-    if (effect.remainingEncounters <= 0 || effect.everyTurns <= 0 || turn % effect.everyTurns !== 0) {
+  hero.timedRegens.forEach((effect, index) => {
+    const key = `timed:${effect.id || index}`;
+    if (effect.remainingEncounters <= 0 || effect.everyTurns <= 0 || turn % effect.everyTurns !== 0
+        || !canUsePeriodicRecovery(hero, key)) {
       return;
     }
     const amount = applyHeroBattleHealing(hero, Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio)));
     if (amount > 0) {
+      recordPeriodicRecovery(hero, key);
       log.template("heal", "timedRegen", {
         source: effect.source,
         target: hero.name,
@@ -187,4 +209,19 @@ function applyTimedRegens(hero, turn, log) {
       });
     }
   });
+}
+
+function periodicRecoveryCounts(hero) {
+  hero.blessingBattleState ??= {};
+  hero.blessingBattleState.periodicRecoveryCounts ??= {};
+  return hero.blessingBattleState.periodicRecoveryCounts;
+}
+
+function canUsePeriodicRecovery(hero, key) {
+  return (Number(periodicRecoveryCounts(hero)[key]) || 0) < PERIODIC_RECOVERY_LIMIT;
+}
+
+function recordPeriodicRecovery(hero, key) {
+  const counts = periodicRecoveryCounts(hero);
+  counts[key] = (Number(counts[key]) || 0) + 1;
 }

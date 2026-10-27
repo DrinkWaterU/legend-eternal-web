@@ -267,8 +267,8 @@ assert.equal(plainsSource.preparations.length, 3);
 assert.equal(forestSource.preparations.length, 3);
 assert.deepEqual(plainsSource.traits, ["野獸出沒", "強敵衝擊"]);
 assert.deepEqual(forestSource.traits, ["毒性威脅", "纏繞", "長途冒險"]);
-assert.deepEqual(plainsSource.preparations.map((entry) => entry.summary), ["傷勢恢復", "野獸對策", "強敵攻勢"]);
-assert.deepEqual(forestSource.preparations.map((entry) => entry.summary), ["毒性對策", "長途續航", "纏繞對策"]);
+assert.deepEqual(plainsSource.preparations.map((entry) => entry.summary), ["戰後低血補回 6% 生命，整輪一次", "每場首度受到野獸直接攻擊時減傷 15%", "精英／首領戰首次出手攻擊 +2"]);
+assert.deepEqual(forestSource.preparations.map((entry) => entry.summary), ["中毒傷害降低 25%，整輪最多 6 次", "第 5、10 次勝利各補 3% 生命，事件戰鬥不計", "掙脫失敗時立即重試，整輪最多 2 次"]);
 assert.equal(plainsSource.preparations.find((entry) => entry.id === "simple-bandage")?.effect?.hpThresholdRatio, 0.8);
 assert.equal(forestSource.preparations.find((entry) => entry.id === "insect-repellent-powder")?.effect?.charges, 6);
 assert.deepEqual(
@@ -282,11 +282,11 @@ assert.deepEqual(
 assert.equal(forestSource.preparations.find((entry) => entry.id === "web-cutting-knife")?.effect?.type, "entangleRetry");
 
 for (const playerText of [
-  "生命低於 80% 時",
-  "面對野獸時，每場第一次受到的攻擊傷害降低 15%",
+  "生命低於 80% 時自動恢復最大生命的 6%",
+  "每場第一次受到野獸的直接攻擊時，該次傷害降低 15%",
   "遇上菁英或首領時，開戰後第一次出手會獲得 2 點攻擊加成",
   "受到毒性傷害時，傷害降低 25%。最多生效 6 次",
-  "隨著冒險深入，會自動進行兩次包紮",
+  "本次冒險累計第 5、10 次勝利後，各恢復最大生命的 3%",
   "前 2 次掙脫纏繞失敗時，會立刻再嘗試一次"
 ]) {
   assert.ok(regionJsonSources.some((source) => source.includes(playerText)), `玩家整備文案缺少或已退回術語：${playerText}`);

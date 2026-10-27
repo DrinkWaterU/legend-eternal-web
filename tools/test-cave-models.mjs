@@ -484,8 +484,10 @@ function beginBattle(hero, enemies, { isBoss = false } = {}) {
     lastBagFlowWeightMultiplier: 0.6
   });
   battleSkills.applyBattleStartSkills();
-  if (getLivingEnemies(enemies).length >= 2 && hero.multiEnemyShieldStart > 0) {
-    hero.shield += hero.multiEnemyShieldStart;
+  const enemyCount = getLivingEnemies(enemies).length;
+  if (enemyCount >= 2) {
+    hero.shield += (Number(hero.multiEnemyShieldStart) || 0)
+      + Math.min(100, (Number(hero.shieldPerExtraEnemy) || 0) * Math.min(3, enemyCount - 1));
   }
   applyEquippedWeaponBattleStart(hero, {
     enemyCount: getLivingEnemies(enemies).length,
@@ -624,6 +626,7 @@ function scoreBlessing({ characterId, blessing, hero, encounterIndex }) {
     if (effect.stat === "maxHp") score += amount / 7;
     if (effect.stat === "shieldStart") score += amount / 4.5;
     if (effect.stat === "multiEnemyShieldStart") score += amount / 5;
+    if (effect.stat === "shieldPerExtraEnemy") score += amount / 5;
     if (effect.stat === "killHeal") score += amount / 6;
     if (effect.stat === "critChance") score += amount * (characterId === "archer" ? 30 : 24);
     if (effect.stat === "openingCritChance") score += amount * (characterId === "archer" ? 11 : 8);

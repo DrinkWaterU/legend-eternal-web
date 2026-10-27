@@ -21,9 +21,9 @@
     {
       "id": "simple-bandage",
       "name": "簡易繃帶",
-      "summary": "傷勢恢復",
+      "summary": "戰後低血補回 6% 生命，整輪一次",
       "cost": 4,
-      "description": "生命低於 80% 時，戰鬥結束後自動恢復少量生命。每次冒險最多發動一次。",
+      "description": "戰鬥勝利後，生命低於 80% 時自動恢復最大生命的 6%。每次冒險最多一次；事件戰鬥及最終戰後不觸發。",
       "effect": {
         "type": "postEncounterLowHpHeal",
         "hpThresholdRatio": 0.8,
@@ -42,7 +42,7 @@
             "quantity": 1
           }
         ],
-        "description": "生命低於 80% 時，戰鬥結束後自動恢復 10% 最大生命。每次冒險最多發動一次。",
+        "description": "戰鬥勝利後，生命低於 80% 時自動恢復 10% 最大生命。每次冒險最多一次；事件戰鬥及最終戰後不觸發。",
         "changedFragments": [
           "10%"
         ],
@@ -57,9 +57,9 @@
     {
       "id": "beast-repellent-herb",
       "name": "驅獸香草",
-      "summary": "野獸對策",
+      "summary": "每場首度受到野獸直接攻擊時減傷 15%",
       "cost": 6,
-      "description": "面對野獸時，每場第一次受到的攻擊傷害降低 15%。",
+      "description": "每場第一次受到野獸的直接攻擊時，該次傷害降低 15%；不減少中毒等持續傷害。",
       "effect": {
         "type": "firstFamilyDirectDamageReduction",
         "targetFamily": "beast",
@@ -77,7 +77,7 @@
             "quantity": 1
           }
         ],
-        "description": "面對野獸時，每場第一次受到的攻擊傷害降低 22%。",
+        "description": "每場第一次受到野獸的直接攻擊時，該次傷害降低 22%；不減少中毒等持續傷害。",
         "changedFragments": [
           "22%"
         ],
@@ -91,7 +91,7 @@
     {
       "id": "weapon-maintenance",
       "name": "武器保養",
-      "summary": "強敵攻勢",
+      "summary": "精英／首領戰首次出手攻擊 +2",
       "cost": 6,
       "description": "遇上菁英或首領時，開戰後第一次出手會獲得 2 點攻擊加成。",
       "effect": {
@@ -500,18 +500,9 @@
       "eventTitle": "野草繃帶",
       "eventText": "你採下柔韌的長草與乾淨布條，做成方便替換的臨時繃帶。",
       "flavorText": "不算精緻，但冒險者常常就是靠這種小準備活下來。",
-      "effectText": "每 3 回合恢復 5 點生命。",
+      "effectText": "每 3 回合恢復 5 點生命；每份祝福每場最多恢復 4 次，滿血不消耗次數。",
       "effects": [
-        {
-          "type": "set",
-          "stat": "regenEvery",
-          "value": 3
-        },
-        {
-          "type": "add",
-          "stat": "regenAmount",
-          "amount": 5
-        }
+        { "type": "addPeriodicRegen", "everyTurns": 3, "amount": 5 }
       ]
     },
     {

@@ -191,8 +191,9 @@ function simulateRuns({ regionId, regionLabel, region, characterId, buildId, lev
         enemyCount: enemies.length,
         encounterType
       });
-      if (enemies.length >= 2 && hero.multiEnemyShieldStart > 0) {
-        hero.shield += hero.multiEnemyShieldStart;
+      if (enemies.length >= 2) {
+        hero.shield += (Number(hero.multiEnemyShieldStart) || 0)
+          + Math.min(100, (Number(hero.shieldPerExtraEnemy) || 0) * Math.min(3, enemies.length - 1));
       }
       applyEnemyAmbushes(hero, enemies);
 
@@ -542,12 +543,13 @@ function scoreBlessing(blessing, hero, characterId) {
   for (const effect of blessing.effects || []) {
     const amount = Number(effect.amount) || 0;
     if (effect.type === "recoverHp") score += Math.min(amount, missingHp) / 10;
-    if (effect.type === "addTimedRegen") score += hpRatio < 0.7 ? 3 : 1;
+    if (effect.type === "addTimedRegen" || effect.type === "addPeriodicRegen") score += hpRatio < 0.7 ? 3 : 1;
     if (effect.type === "addFamilyDamageBonus") score += amount * 20;
     if (effect.type === "add" && effect.stat === "attack") score += amount * 0.8;
     if (effect.type === "add" && effect.stat === "defense") score += amount;
     if (effect.type === "add" && effect.stat === "maxHp") score += amount / 8;
     if (effect.type === "add" && effect.stat === "shieldStart") score += amount / 5;
+    if (effect.type === "add" && effect.stat === "shieldPerExtraEnemy") score += amount / 5;
     if (effect.type === "add" && effect.stat === "critChance") score += amount * (characterId === "archer" ? 30 : 24);
     if (effect.type === "add" && effect.stat === "poisonPower") score += amount * 1.4;
   }

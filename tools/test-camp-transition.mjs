@@ -306,7 +306,7 @@ assert.equal(finishedOutcome, "segmentClear");
     }
   });
   assert.equal(archerController.openCampSelection(), true);
-  archerState.blessingInstances.slice(0, 8).forEach((instance) => {
+  [...archerState.blessingInstances.slice(0, 6), ...archerState.blessingInstances.slice(8, 10)].forEach((instance) => {
     assert.equal(archerController.toggleCampBlessing(instance.instanceId), true);
   });
   assert.equal(archerController.confirmCampSelection(), true, "使用回報的 16 張弓箭手 Build 應能完成扎營");
@@ -315,6 +315,8 @@ assert.equal(finishedOutcome, "segmentClear");
   assert.equal(archerState.runPreparation.name, "礁釘繫索・強化");
   assert.equal(archerState.hero.blessings.length, 8);
   assert.equal(archerState.blessingInstances.length, 8);
+  assert.equal(archerState.hero.periodicRegens.length, 2, "營地重建保留兩張同名回血祝福，互不覆蓋");
+  assert.equal(new Set(archerState.hero.periodicRegens.map(item => item.id)).size, 2);
 }
 
 console.log("Camp transition and blessing retention tests passed.");

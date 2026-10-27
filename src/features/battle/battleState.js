@@ -147,9 +147,13 @@ export function createBattleState({
         `${weaponStart.weaponName}啟動「${weaponStart.modeName}」：${weaponStart.summary}。`
       );
     }
-    if (state.hero.activeEnemyCount >= 2 && state.hero.multiEnemyShieldStart > 0) {
-      state.hero.shield += state.hero.multiEnemyShieldStart;
-      addFixedLog("status", `敵群逼近，${state.hero.name}獲得額外 ${state.hero.multiEnemyShieldStart} 點護盾。`);
+    if (state.hero.activeEnemyCount >= 2) {
+      const crowdShield = (Number(state.hero.multiEnemyShieldStart) || 0)
+        + Math.min(100, (Number(state.hero.shieldPerExtraEnemy) || 0) * Math.min(3, state.hero.activeEnemyCount - 1));
+      if (crowdShield > 0) {
+        state.hero.shield += crowdShield;
+        addFixedLog("status", `敵群逼近，${state.hero.name}獲得額外 ${crowdShield} 點護盾。`);
+      }
     }
   }
 

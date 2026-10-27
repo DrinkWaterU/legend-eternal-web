@@ -5,9 +5,18 @@ import { getEnemyIntent } from "../core/enemyIntent.js";
 
 const rosterTargetState = new WeakMap();
 
-export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, turn = 0, onTargetSelect }) {
+export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, turn = 0, onTargetSelect, suppressRosterSummary = false }) {
   const livingEnemies = getLivingEnemies(enemies);
   countLabel.textContent = livingEnemies.length > 0 ? `${livingEnemies.length} 名敵人` : "暫無遭遇";
+  const summary = roster.closest?.(".enemy-zone")?.querySelector(".enemy-intent-summary");
+  if (summary) {
+    const intents = !suppressRosterSummary && livingEnemies.length >= 3 && (phase === "danger" || phase === "combat")
+      ? livingEnemies.map(enemy => ({ enemy, text: getEnemyIntent(enemy, turn, enemies) }))
+        .filter(item => item.text && item.text !== "下回合：攻擊。")
+      : [];
+    summary.textContent = intents.length ? `下回合｜${intents.map(({ enemy, text }) => `${getEnemyDisplayName(enemy)}：${text.replace(/^下回合：/, "").split("。")[0]}`).join("；")}` : "";
+    summary.hidden = !intents.length;
+  }
   const existingCards = new Map(
     [...roster.querySelectorAll(".enemy-card[data-runtime-id]")]
       .map((card) => [card.dataset.runtimeId, card])
@@ -42,7 +51,7 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
     card._onTargetSelect = onTargetSelect;
     updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies);
     const intent = card.querySelector("[data-enemy-intent]");
-    intent.textContent = (phase === "danger" || phase === "combat") ? getEnemyIntent(enemy, turn) || "" : "";
+    intent.textContent = (phase === "danger" || phase === "combat") ? getEnemyIntent(enemy, turn, enemies) || "" : "";
     intent.hidden = !intent.textContent;
   });
   keepTargetVisible(roster, targetEnemyId);
@@ -58,6 +67,7 @@ function createEnemyCard(runtimeId) {
       <span class="enemy-name-line"><strong data-enemy-name></strong><span class="target-mark">目標</span></span>
       <span class="enemy-kind" data-enemy-kind></span>
     </span>
+    <span class="enemy-role" data-enemy-role hidden></span>
     <span class="layered-meter enemy-meter" data-enemy-meter role="meter">
       <span class="meter-layer enemy-hp" data-enemy-hp></span>
       <span class="meter-layer pending-loss" data-enemy-pending></span>
@@ -86,6 +96,14 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
   card.disabled = enemy.hp <= 0;
   card.querySelector("[data-enemy-name]").textContent = getEnemyDisplayName(enemy);
   card.querySelector("[data-enemy-kind]").textContent = enemy.kind || "普通";
+  const role = card.querySelector("[data-enemy-role]");
+  const roles = { frontline: "前衛", output: "攻手", support: "輔助", control: "牽制" };
+  const protection = getEnemyProtectionState({ enemy, enemies });
+  role.textContent = roles[enemy.combatRole] || "";
+  if (protection.protected) role.textContent += `・受前衛保護，減傷 ${Math.round(protection.reductionRatio * 100)}%`;
+  else if (enemy.combatRole === "frontline" && enemies.some(other => other !== enemy
+    && getEnemyProtectionState({ enemy: other, enemies: [enemy, other] }).protected)) role.textContent += "・保護同隊後排";
+  role.hidden = !role.textContent;
   card.querySelector("[data-enemy-health-text]").textContent = `${enemy.hp} / ${enemy.maxHp}`;
   card.querySelector("[data-enemy-attack]").textContent = enemy.attack ?? 0;
   card.querySelector("[data-enemy-defense]").textContent = enemy.defense ?? 0;
@@ -93,7 +111,6 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
   const intro = card.querySelector("[data-enemy-intro]");
   intro.textContent = enemy.intro || "";
   intro.hidden = !intro.textContent;
-  const protection = getEnemyProtectionState({ enemy, enemies });
   const protectionDetail = card.querySelector("[data-enemy-protection]");
   protectionDetail.textContent = protection.description;
   protectionDetail.hidden = !protection.protected;
@@ -171,7 +188,10 @@ function alignCardWithinRoster(roster, card) {
   const rosterRect = roster.getBoundingClientRect();
   const cardRect = card.getBoundingClientRect();
   const padding = 4;
-  if (cardRect.bottom > rosterRect.bottom - padding) {
+  if (cardRect.height > rosterRect.height - padding * 2) {
+    // A tall selected card cannot fit: keep its name and target marker visible.
+    roster.scrollTop += cardRect.top - rosterRect.top - padding;
+  } else if (cardRect.bottom > rosterRect.bottom - padding) {
     roster.scrollTop += cardRect.bottom - rosterRect.bottom + padding;
   } else if (cardRect.top < rosterRect.top + padding) {
     roster.scrollTop -= rosterRect.top - cardRect.top + padding;

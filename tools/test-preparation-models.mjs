@@ -1,3 +1,4 @@
+import { resetBlessingBattleState } from "../src/core/caveBlessingEffects.js";
 import assert from "node:assert/strict";
 
 import { applyBlessingEffects } from "../src/core/blessings.js";
@@ -296,6 +297,7 @@ function resetBattleState(hero) {
   hero.hasAttackedThisBattle = false;
   hero.statusFamiliarityLimitBonus = 0;
   hero.victoryHealBonusRatio = 0;
+  resetBlessingBattleState(hero);
   hero.shield = hero.shieldStart;
   hero.skillState = createSkillState();
   initializeCharacterBattleState(hero);

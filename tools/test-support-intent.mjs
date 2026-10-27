@@ -1,0 +1,27 @@
+import assert from "node:assert/strict";
+import { getEnemyIntent } from "../src/core/enemyIntent.js";
+import { getEnemySupportPlan, resolveEnemySupportAction } from "../src/core/enemySupport.js";
+import { getEnemyDefinition } from "../src/data/enemies/index.js";
+import { createRuntimeEnemyGroup } from "../src/core/enemyGroups.js";
+
+const enemies = createRuntimeEnemyGroup(['cave-fishman-frontline','cave-fishman-support'].map(getEnemyDefinition));
+const [front, support] = enemies;
+front.hp = 100;
+const before = JSON.stringify(enemies);
+assert.match(getEnemyIntent(support, 0, enemies), /攻擊/);
+assert.match(getEnemyIntent(support, 1, enemies), /前衛防禦 \+3.*恢復最大生命 35%.*剩 2 次/);
+const plan = getEnemySupportPlan({ enemies, actor: support, turn: 2 });
+assert.equal(plan.target, front);
+assert.equal(JSON.stringify(enemies), before, 'Reading a telegraph cannot spend support uses or change stats');
+const defense = front.defense;
+assert.equal(resolveEnemySupportAction({ enemies, actor: support, turn: 2 }), true);
+assert.equal(front.defense, defense + plan.defenseGain);
+assert.equal(front.hp, 100 + Math.round(front.maxHp * .35));
+assert.match(getEnemyIntent(support, 3, enemies), /剩 1 次/);
+front.hp = 0;
+assert.equal(getEnemySupportPlan({ enemies, actor: support, turn: 4 }), null);
+assert.equal(getEnemyIntent(support, 3, enemies), '下回合：攻擊。', 'Killing the frontline changes the forecast too');
+front.hp = front.maxHp; support.supportUses = 2;
+assert.equal(getEnemyIntent(support, 7, enemies), '下回合：攻擊。');
+assert.equal(resolveEnemySupportAction({ enemies, actor: support, turn: 8 }), false);
+console.log('Support telegraphs share live eligibility, target, finite uses and fallback with execution');

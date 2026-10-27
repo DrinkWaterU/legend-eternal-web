@@ -64,5 +64,5 @@ assert.match(getEnemyIntent(enemy, 2), /Triple hit/);
 assert.equal(getScheduledSpecialAttack(enemy, 3), enemy.specialAttack);
 assert.equal(getScheduledSpecialAttack(enemy, 2), null);
 assert.equal(getEnemyIntent({ ...enemy, hp: 0 }, 2), null);
-assert.equal(getEnemyIntent({ ...enemy, combatRole: "support" }, 2), null);
+assert.equal(getEnemyIntent({ ...enemy, combatRole: "support" }, 2), "下回合：攻擊。");
 console.log("Battle actions: batched turn logs, bounded history, phase locks and intent scheduling passed.");

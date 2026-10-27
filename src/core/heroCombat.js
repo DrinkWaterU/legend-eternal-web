@@ -67,7 +67,7 @@ export function resolveHeroAction({ hero, enemy, enemies = [], log }) {
     ? FOLLOW_UP_PLUS_ATTACK_RATIO
     : FOLLOW_UP_ATTACK_RATIO;
   if (enemy.hp > 0 && hasSkill(hero, "skilled-follow-up") && roll(followUpChance)) {
-    const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
+    const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies, canCrit: false });
     const rawFollowUpDamage = Math.max(1, Math.round(getHeroEffectiveAttack(hero) * followUpAttackRatio * caveModifiers.damageMultiplier)) + caveModifiers.extraDamage;
     const followUpDamage = applyEnemyDamageProtection({
       enemy,

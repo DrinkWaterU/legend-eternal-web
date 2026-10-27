@@ -1079,3 +1079,35 @@
 }
 
 .enemy-intent[hidden] { display: none; }
+
+.enemy-role {
+  display: block;
+  color: #a7cec6;
+  font-size: .75rem;
+  line-height: 1.4;
+  white-space: normal;
+}
+.enemy-role[hidden] { display: none; }
+
+.enemy-list-scroll-hint { display: none; }
+.enemy-intent-summary { display: none; }
+@media (max-width: 820px) {
+  #gameScreen .enemy-intent-summary:not([hidden]) {
+    display: block;
+    margin: 0 0 4px;
+    color: #ffe1a3;
+    font-size: .72rem;
+    line-height: 1.35;
+  }
+  #gameScreen .enemy-zone:has(.enemy-card:nth-child(3)) .enemy-list-scroll-hint {
+    display: block;
+    margin: 0 0 4px;
+    color: #a7cec6;
+    font-size: .72rem;
+  }
+  #gameScreen .enemy-roster:has(.enemy-card:nth-child(3)) {
+    max-height: clamp(230px, 37vh, 340px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}

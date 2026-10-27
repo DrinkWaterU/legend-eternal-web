@@ -1,3 +1,4 @@
+import { resetBlessingBattleState } from "../src/core/caveBlessingEffects.js";
 import assert from "node:assert/strict";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -128,8 +129,7 @@ const beachBlessings = [
     rarity: "common",
     primaryFlow: "defense",
     name: "逆流護勢",
-    effects: [],
-    modelEffects: { multiEnemyShieldStart: 6 }
+    effects: [{ type: "add", stat: "shieldPerExtraEnemy", amount: 18 }]
   },
   {
     id: "beach-tide-scavenger",
@@ -139,8 +139,7 @@ const beachBlessings = [
     name: "潮汐拾荒",
     effects: [
       { type: "add", stat: "killHeal", amount: 14 },
-      { type: "set", stat: "regenEvery", value: 4 },
-      { type: "add", stat: "regenAmount", amount: 6 }
+      { type: "addPeriodicRegen", everyTurns: 4, amount: 6 }
     ]
   },
   {
@@ -456,7 +455,7 @@ function runBeachModel() {
   );
 
   if (BLESSING_MODE === "beach") {
-    console.log("Beach blessing model assumptions: multiEnemyShieldStart=6, multiEnemyDamageBonus=10% non-stacking, saltHealingReduction=20%.");
+    console.log("Beach model uses 18 shield per extra enemy (up to 3 extras, total blessing shield capped at 100); other modeled assumptions: multiEnemyDamageBonus=10% non-stacking, saltHealingReduction=20%.");
   }
 
   if (PLAYER_BUILD_MODE) {
@@ -832,10 +831,6 @@ function applyModelBlessing(hero, blessing, options = undefined) {
   if (BLESSING_MODE !== "beach") return;
 
   const modelEffects = blessing.modelEffects || {};
-  if (Number.isFinite(modelEffects.multiEnemyShieldStart)) {
-    hero.beachMultiEnemyShieldStart = (Number(hero.beachMultiEnemyShieldStart) || 0)
-      + modelEffects.multiEnemyShieldStart;
-  }
   if (Number.isFinite(modelEffects.multiEnemyDamageBonus)) {
     hero.beachMultiEnemyDamageBonus = modelEffects.stackMultiEnemyDamageBonus === false
       ? Math.max(Number(hero.beachMultiEnemyDamageBonus) || 0, modelEffects.multiEnemyDamageBonus)
@@ -854,12 +849,14 @@ function scoreCampBlessing(characterId, instance, hero) {
   let score = 0;
   for (const effect of blessing.effects || []) {
     const amount = Number(effect.amount) || 0;
+    if (effect.type === "addPeriodicRegen") score += amount * 2;
     if (effect.type === "add") {
       if (effect.stat === "attack") score += amount * (characterId === "archer" ? 5.5 : 6);
       if (effect.stat === "defense") score += amount * 6;
       if (effect.stat === "maxHp") score += amount * 0.7;
       if (effect.stat === "shieldStart") score += amount * 0.8;
       if (effect.stat === "multiEnemyShieldStart") score += amount * 0.7;
+      if (effect.stat === "shieldPerExtraEnemy") score += amount * 0.7;
       if (effect.stat === "killHeal") score += amount * 0.7;
       if (effect.stat === "regenAmount") score += amount * 2;
       if (effect.stat === "critChance") score += amount * (characterId === "archer" ? 120 : 95);
@@ -990,9 +987,10 @@ function hasBiasedBeachFamily(enemy, bias) {
   return families.includes(enemy.family);
 }
 
-function applyBeachBattleStartEffects(hero, enemies) {
-  if (BLESSING_MODE !== "beach" || enemies.length < 2) return;
-  const extraShield = Math.max(0, Number(hero.beachMultiEnemyShieldStart) || 0);
+export function applyBeachBattleStartEffects(hero, enemies) {
+  if (enemies.length < 2) return;
+  const extraShield = (Number(hero.multiEnemyShieldStart) || 0)
+    + Math.min(100, (Number(hero.shieldPerExtraEnemy) || 0) * Math.min(3, enemies.length - 1));
   if (extraShield > 0) hero.shield += extraShield;
 }
 
@@ -1117,6 +1115,7 @@ function resetBattleState(hero) {
   hero.weaponBattleMode = null;
   hero.statusFamiliarityLimitBonus = 0;
   hero.victoryHealBonusRatio = 0;
+  resetBlessingBattleState(hero);
   hero.shield = hero.shieldStart;
   hero.skillState = createSkillState();
   initializeCharacterBattleState(hero);

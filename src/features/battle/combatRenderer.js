@@ -80,6 +80,7 @@ export function createCombatRenderer({
       targetEnemyId: state.targetEnemyId,
       phase: state.phase,
       turn: state.turn,
+      suppressRosterSummary: Boolean(state.highlandBattle),
       preparationStatus: getPreparationCombatStatus({
         preparation: state.runPreparation,
         encounterType: state.battleEncounterType,
@@ -111,7 +112,7 @@ export function createCombatRenderer({
     } else {
       els.encounterLabel.textContent = state.eventContext
         ? `${sourceName}事件｜第 ${encounterNumber} 場前`
-        : `第 ${encounterNumber} / ${encounterTotal} 場`;
+        : `${sourceName}｜${encounterNumber} / ${encounterTotal} 場`;
       els.battleLogTitle.textContent = state.battleSource === "event"
         ? `事件戰鬥｜${sourceName}第 ${encounterNumber} 場前`
         : `戰鬥紀錄｜第 ${encounterNumber} / ${encounterTotal} 場`;
