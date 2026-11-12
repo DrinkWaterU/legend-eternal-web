@@ -861,8 +861,9 @@
   opacity: 0;
 }
 
+/* Before the gaze the eye layer is fully hidden (a squashed iris would read as a smudge). */
 .story-panel[data-beat="star"] .story-star-eye {
-  opacity: 0.32;
+  opacity: 0;
   transform: scaleX(1.16) scaleY(0.05);
 }
 
@@ -923,10 +924,11 @@
   opacity: 0.82;
 }
 
+/* Once the ember lights, the eye closes and leaves no trace. */
 .story-panel[data-beat="ember"] .story-star-eye,
 .story-panel[data-beat="phoenix"] .story-star-eye {
-  opacity: 0.12;
-  transform: scaleX(1.16) scaleY(0.3);
+  opacity: 0;
+  transform: scaleX(1.16) scaleY(0.05);
 }
 
 .story-panel[data-beat="ember"] .story-star-strip::after {
