@@ -11,9 +11,10 @@ import {
 } from "../../core/combat.js";
 import { beginGuard, clearGuard, DEFAULT_GUARD_DAMAGE_REDUCTION } from "../../core/guard.js";
 import { getLivingEnemies } from "../../core/enemyGroups.js";
-import { getWeaponActions, resetWeaponTechnique, runWeaponAttack, finishWeaponTurn } from "../../core/weaponTechniques.js";
+import { getWeaponActions, resetWeaponTechnique, runWeaponAttack, finishWeaponTurn, isSwiftRiposte } from "../../core/weaponTechniques.js";
 import { highlandActions, highlandIntents, canReachHighlandTarget, actOnHighland, resolveHighlandWind, resolveHighlandEnemyIntent, updateHighlandProtection, lockHighlandIntents, projectHighlandWind } from "../../core/highlandBattle.js";
 import { canTakeBattleAction } from "../../core/battleActions.js";
+import { HAMMER_TRAINING_WEAPON } from "../../core/hammerTraining.js";
 
 export function createBattleTurnController({
   state,
@@ -28,6 +29,8 @@ export function createBattleTurnController({
   applyEmergencyBandage,
   tryLastStand,
   recordTactic = () => {},
+  recordSwordRiposte = () => {},
+  recordHammerBreak = () => {},
   prepareEnemyAction = () => {},
   completeEnemyAction = () => {},
   withLogBatch = (action) => action(),
@@ -45,7 +48,11 @@ export function createBattleTurnController({
       || highlandActions(state).some(a => a.type === request.type && a.column === request.column));
     if (!allowed) return false;
     if (request.type === "breach" && (!target || target.weaponBreach || state.turn + 1 <= (target.breachCooldownUntil ?? -1))) return false;
-    if (["attack", "lunge", "sweep", "cleave", "breach"].includes(request.type) && (!target || !canReachHighlandTarget(state, target, request.type))) return false;
+    if (request.type === "breach-wave" && (getLivingEnemies(state.enemies).length < 2
+      || state.hero.weaponRuntime?.impact !== 3
+      || state.hero.equipment?.weaponId !== HAMMER_TRAINING_WEAPON
+      || state.hero.equipment?.hammerTechniqueUnlocked !== true)) return false;
+    if (["attack", "lunge", "sweep", "cleave", "breach", "breach-wave"].includes(request.type) && (!target || !canReachHighlandTarget(state, target, request.type))) return false;
     return runSaveOperation(() => withLogBatch(() => {
       if (["slip", "tool-step"].includes(request.type)) {
         if (state.highlandBattle.freeRepositionTurn !== state.turn) state.highlandBattle.freeRepositionOrigin = state.hero.battleColumn;
@@ -84,7 +91,7 @@ export function createBattleTurnController({
     });
     if (!heroEntangled) {
       if (["guard", "hold"].includes(playerAction)) {
-        const guard = beginGuard(state.hero, playerAction === "hold" ? .2 : DEFAULT_GUARD_DAMAGE_REDUCTION);
+        const guard = beginGuard(state.hero, playerAction === "hold" || isSwiftRiposte(state.hero) ? .2 : DEFAULT_GUARD_DAMAGE_REDUCTION);
         log.fixed(
           "status",
           `你採取守勢，本回合直接傷害降低 ${Math.round(guard.damageReduction * 100)}%。`
@@ -105,7 +112,51 @@ export function createBattleTurnController({
       if (["attack", "lunge", "sweep", "cleave", "breach"].includes(playerAction)) {
         if (!target) return;
         if (playerAction === "lunge") state.hero.battleColumn = target.battleColumn;
-        runWeaponAttack({ state, action: playerAction, target, log, runAttack: () => runHeroPlayerAction({ target, log }) });
+        const hammerTrainingReady = state.hero.equipment?.weaponId === HAMMER_TRAINING_WEAPON
+          && state.selectedRegionId === "highlands"
+          && state.hammerTrainingStartEnemyCount >= 2;
+        const fullImpactBreach = playerAction === "breach" && hammerTrainingReady
+          && state.hero.weaponRuntime.impact === 3;
+        const followsFullImpactBreach = ["attack", "lunge"].includes(playerAction)
+          && state.hammerTrainingBreachTargetId === target.runtimeId
+          && target.weaponBreach?.strength === 3;
+        const breachStrength = followsFullImpactBreach ? target.weaponBreach.strength : 0;
+        const attackResult = runWeaponAttack({ state, action: playerAction, target, log, runAttack: () => runHeroPlayerAction({ target, log }) });
+        if (["attack", "lunge"].includes(playerAction) && attackResult?.primaryHit
+          && attackResult?.riposteDamage > 0 && attackResult.riposteFromStandardGuard) {
+          recordSwordRiposte({
+            regionId: state.selectedRegionId,
+            weaponId: state.hero.equipment?.weaponId,
+            battleSource: state.battleSource,
+            debugBuildRun: state.debugBuildRun,
+            playerAction,
+            riposteDamage: attackResult.riposteDamage,
+            riposteFromStandardGuard: attackResult.riposteFromStandardGuard
+          });
+        }
+        if (fullImpactBreach && attackResult?.primaryHit && target.hp > 0 && target.weaponBreach?.strength === 3) {
+          state.hammerTrainingBreachTargetId = target.runtimeId;
+        }
+        if (followsFullImpactBreach && attackResult?.primaryHit) {
+          recordHammerBreak({
+            regionId: state.selectedRegionId,
+            weaponId: state.hero.equipment?.weaponId,
+            battleSource: state.battleSource,
+            debugBuildRun: state.debugBuildRun,
+            battleStartEnemyCount: state.hammerTrainingStartEnemyCount,
+            playerAction,
+            breachTargetId: state.hammerTrainingBreachTargetId,
+            targetId: target.runtimeId,
+            breachStrength,
+            primaryHit: true
+          });
+          state.hammerTrainingBreachTargetId = null;
+        }
+      }
+      if (playerAction === "breach-wave") {
+        if (!target) return;
+        const attackResult = runWeaponAttack({ state, action: playerAction, target, log, runAttack: () => runHeroPlayerAction({ target, log }) });
+        if (!attackResult?.primaryHit) log.fixed("status", "攻擊未命中，沒有發出裂陣震波。");
       }
       settleDefeatedEnemies();
       if (getLivingEnemies(state.enemies).length === 0) {
@@ -199,6 +250,11 @@ export function createBattleTurnController({
       clearGuard(state.hero);
       winEncounter();
       return;
+    }
+    state.hero.activeEnemyCount = getLivingEnemies(state.enemies).length;
+    if (state.hammerTrainingBreachTargetId && !getLivingEnemies(state.enemies).some(enemy =>
+      enemy.runtimeId === state.hammerTrainingBreachTargetId && enemy.weaponBreach?.strength === 3)) {
+      state.hammerTrainingBreachTargetId = null;
     }
     clearGuard(state.hero);
     render();

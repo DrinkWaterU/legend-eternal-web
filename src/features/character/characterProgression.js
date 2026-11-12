@@ -9,6 +9,8 @@ import {
   getSkillsForLevel,
   normalizeCharacterProgress as normalizeCharacterProgressCore
 } from "../../core/progression.js";
+import { getSwordTraining } from "../../core/weaponTraining.js";
+import { getHammerTraining } from "../../core/hammerTraining.js";
 
 export function createCharacterProgression({
   state,
@@ -35,10 +37,13 @@ export function createCharacterProgression({
   function buildHeroFromProgression(characterId = state.selectedHeroId) {
     const character = getCharacterDefinition(characterId);
     const progress = normalizeCharacterProgress(characterId);
-    return buildHeroFromProgressionCore(character, progress, {
+    const hero = buildHeroFromProgressionCore(character, progress, {
       inventory: saveStore.current.inventory,
       weaponDefinitions
     });
+    if (hero.equipment.weaponId === "windbreak-sword") hero.equipment.trainingMode = getSwordTraining(saveStore.current).mode;
+    if (hero.equipment.weaponId === "cairn-warhammer") hero.equipment.hammerTechniqueUnlocked = getHammerTraining(saveStore.current).unlocked;
+    return hero;
   }
 
   function gainCharacterExp(amount) {

@@ -16,8 +16,8 @@
   },
   "visual": {
     "background": {
-      "desktop": "assets/images/regions/coast/coast-beach.jpg",
-      "mobile": "assets/images/regions/coast/coast-beach-mobile.jpg",
+      "desktop": "assets/images/regions/coast/coast-beach.webp",
+      "mobile": "assets/images/regions/coast/coast-beach-mobile.webp",
       "tone": "coast-beach"
     }
   },

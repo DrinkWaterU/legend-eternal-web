@@ -29,8 +29,10 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
     const grid = controls.ownerDocument.createElement("div"); grid.className = "tactical-action-grid"; details.append(grid);
     const selection = controls.ownerDocument.createElement("div"); selection.className = "tactical-selection"; selection.hidden = true;
     const result = controls.ownerDocument.createElement("p"); result.setAttribute("aria-live", "polite");
+    const survival = controls.ownerDocument.createElement("p"); survival.className = "tactical-survival";
+    survival.textContent = `目前生命 ${state.hero.hp} / ${state.hero.maxHp}｜護盾 ${state.hero.shield || 0}`;
     const confirm = controls.ownerDocument.createElement("button"); confirm.type = "button"; confirm.className = "primary-button"; confirm.dataset.actionConfirm = "true";
-    selection.append(result, confirm);
+    selection.append(result, survival, confirm);
     const terrainTypes = ["move", "break", "ride", "slip", "demolish", "tool-step", "tool-rock", "tool-brace", "shove", "gust-break"];
     const columns = [...new Set(moves.filter(a => terrainTypes.includes(a.type) && a.column !== undefined).map(a => a.column))].sort();
     let selected = Number(controls.dataset.selectedColumn);
@@ -61,7 +63,8 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
         slip: ["轉瞬", "不花回合・每場1次"], break: ["拆岩", "花1回合・敵我都失去擋風岩"], demolish: ["破岩突入", "花1回合・拆岩並移動・每場1次"],
         "tool-step": ["踏釘", `不花回合・整備剩${state.runPreparation?.remainingCharges}次`],
         "tool-rock": ["加固", `1回合・整備剩${state.runPreparation?.remainingCharges}次`],
-        "tool-brace": ["繩索固定", `1回合・兩回合不受風推・剩${state.runPreparation?.remainingCharges}次`]
+        "tool-brace": ["繩索固定", `1回合・兩回合不受風推・剩${state.runPreparation?.remainingCharges}次`],
+        "breach-wave": ["震岩裂陣", "耗盡3層衝擊・攻擊命中後震擊其他存活敵人"]
       };
       if (labels[move.type]) {
         button.textContent = labels[move.type][0] + (move.column === undefined ? "" : `・${HIGHLAND_COLUMNS[move.column]}`);
@@ -97,10 +100,12 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
         });
       }
       if (move.column !== undefined) button.dataset.column = String(move.column);
-      if (["sweep", "cleave", "breach"].includes(move.type)) {
+      if (["sweep", "cleave", "breach", "breach-wave"].includes(move.type)) {
         const target = state.enemies.find(e => e.runtimeId === state.targetEnemyId);
-        button.disabled = !canReachHighlandTarget(state, target) || (move.type === "breach" && (!!target?.weaponBreach || state.turn + 1 <= (target?.breachCooldownUntil ?? -1)));
+        button.disabled = !canReachHighlandTarget(state, target, move.type)
+          || (move.type === "breach" && (!!target?.weaponBreach || state.turn + 1 <= (target?.breachCooldownUntil ?? -1)));
         if (button.disabled && move.type === "breach") button.textContent = "破勢暫不可用・請換目標或等待";
+        if (button.disabled && move.type === "breach-wave") button.textContent = "目標太遠・請選擇可攻擊的敵人";
       }
       if (terrainTypes.includes(move.type)) grid.append(button); else controls.append(button);
     }

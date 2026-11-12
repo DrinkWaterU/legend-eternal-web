@@ -160,5 +160,5 @@ export function createBlessingController({
 
   globalThis.addEventListener?.("resize", updateScrollHint);
 
-  return Object.freeze({ showBlessings, grantBlessing, restoreBlessingChoices });
+  return Object.freeze({ showBlessings, chooseBlessing, grantBlessing, restoreBlessingChoices });
 }

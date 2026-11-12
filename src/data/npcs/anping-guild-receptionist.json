@@ -5,7 +5,7 @@
   "race": "foxfolk",
   "gender": "female",
   "ageGroup": "adult",
-  "portrait": "assets/images/npcs/anping/celine.png",
+  "portrait": "assets/images/npcs/anping/celine.webp",
   "dialogueId": "anping-guild-receptionist-main",
   "identity": {
     "unknownLabel": "公會接待員",

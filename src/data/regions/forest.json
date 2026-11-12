@@ -15,8 +15,8 @@
   },
   "visual": {
     "background": {
-      "desktop": "assets/images/regions/forest/forest-outer.jpg",
-      "mobile": "assets/images/regions/forest/forest-outer-mobile.jpg",
+      "desktop": "assets/images/regions/forest/forest-outer.webp",
+      "mobile": "assets/images/regions/forest/forest-outer-mobile.webp",
       "tone": "forest-outer"
     },
     "backgroundStages": [
@@ -24,32 +24,32 @@
         "id": "outer",
         "fromEncounter": 1,
         "toEncounter": 4,
-        "desktop": "assets/images/regions/forest/forest-outer.jpg",
-        "mobile": "assets/images/regions/forest/forest-outer-mobile.jpg",
+        "desktop": "assets/images/regions/forest/forest-outer.webp",
+        "mobile": "assets/images/regions/forest/forest-outer-mobile.webp",
         "tone": "forest-outer"
       },
       {
         "id": "mid",
         "fromEncounter": 5,
         "toEncounter": 8,
-        "desktop": "assets/images/regions/forest/forest-mid.jpg",
-        "mobile": "assets/images/regions/forest/forest-mid-mobile.jpg",
+        "desktop": "assets/images/regions/forest/forest-mid.webp",
+        "mobile": "assets/images/regions/forest/forest-mid-mobile.webp",
         "tone": "forest-mid"
       },
       {
         "id": "deep",
         "fromEncounter": 9,
         "toEncounter": 13,
-        "desktop": "assets/images/regions/forest/forest-deep.jpg",
-        "mobile": "assets/images/regions/forest/forest-deep-mobile.jpg",
+        "desktop": "assets/images/regions/forest/forest-deep.webp",
+        "mobile": "assets/images/regions/forest/forest-deep-mobile.webp",
         "tone": "forest-deep"
       },
       {
         "id": "heart",
         "fromEncounter": 14,
         "toEncounter": 16,
-        "desktop": "assets/images/regions/forest/forest-heart.jpg",
-        "mobile": "assets/images/regions/forest/forest-heart-mobile.jpg",
+        "desktop": "assets/images/regions/forest/forest-heart.webp",
+        "mobile": "assets/images/regions/forest/forest-heart-mobile.webp",
         "tone": "forest-heart"
       }
     ]

@@ -67,6 +67,18 @@ function validTacticalState(s) {
   if (s.pendingThreat && !battleValid(s.pendingThreat.highlandBattle, s.pendingThreat.heroBattleColumn, s.pendingThreat.enemies)) return false;
   const r = s.hero?.weaponRuntime;
   if (r && ![[r.charge, 3], [r.weight, 4], [r.impact, 3], [r.chain, 2]].every(([n, max]) => Number.isInteger(n) && n >= 0 && n <= max)) return false;
+  if (r && Object.hasOwn(r, "riposteFromStandardGuard") && typeof r.riposteFromStandardGuard !== "boolean") return false;
+  if (s.hammerTrainingBreachTargetId !== undefined && s.hammerTrainingBreachTargetId !== null
+    && (typeof s.hammerTrainingBreachTargetId !== "string" || s.hammerTrainingBreachTargetId.length > 128
+      || !s.enemies.some(enemy => enemy.runtimeId === s.hammerTrainingBreachTargetId))) return false;
+  const validTrainingEnemyCount = value => Number.isInteger(value) && value >= 0 && value <= 30;
+  if (Object.hasOwn(s, "hammerTrainingStartEnemyCount") && !validTrainingEnemyCount(s.hammerTrainingStartEnemyCount)) return false;
+  if (s.pendingThreat && Object.hasOwn(s.pendingThreat, "hammerTrainingStartEnemyCount")
+    && !validTrainingEnemyCount(s.pendingThreat.hammerTrainingStartEnemyCount)) return false;
+  if (s.pendingThreat?.hammerTrainingBreachTargetId != null
+    && (typeof s.pendingThreat.hammerTrainingBreachTargetId !== "string"
+      || s.pendingThreat.hammerTrainingBreachTargetId.length > 128
+      || !s.pendingThreat.enemies.some(enemy => enemy.runtimeId === s.pendingThreat.hammerTrainingBreachTargetId))) return false;
   for (const h of [s.hero, s.pendingThreat?.heroCombat].filter(Boolean)) {
     if (h.highlandOpportunities && (Array.isArray(h.highlandOpportunities) || typeof h.highlandOpportunities !== "object"
       || !Object.entries(h.highlandOpportunities).every(([key, value]) => ["wind", "ride", "break"].includes(key) && Number.isFinite(value) && value >= 0 && value <= 16))) return false;

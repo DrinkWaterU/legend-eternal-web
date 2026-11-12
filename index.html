@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.9.4-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.11.0-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -40,7 +40,7 @@
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.9.4-alpha</p>
+            <p class="version-label">v0.2.11.0-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -89,7 +89,7 @@
                 <small id="campRegionHint">目前：平原</small>
               </button>
               <button id="campCharacterButton" class="camp-feature-button" data-feature="character" type="button">
-                <span>查看角色</span>
+                <span>切換角色</span>
                 <small id="campCharacterHint">冒險者 Lv.1</small>
               </button>
               <button id="campStorageButton" class="camp-feature-button" data-feature="storage" type="button" hidden>
@@ -1103,12 +1103,12 @@
         <div id="anpingArrivalDialog" class="story-dialog anping-arrival-dialog" data-stage="forest">
           <div class="anping-arrival-visual" aria-hidden="true">
             <picture class="anping-arrival-picture anping-arrival-background-picture">
-              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-background-desktop.jpg">
-              <img src="assets/images/anping-town/arrival/anping-arrival-background-mobile.jpg" alt="">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-background-desktop.webp">
+              <img src="assets/images/anping-town/arrival/anping-arrival-background-mobile.webp" alt="">
             </picture>
             <picture class="anping-arrival-picture anping-arrival-scene-picture">
-              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-scene-desktop.jpg">
-              <img src="assets/images/anping-town/arrival/anping-arrival-scene-mobile.jpg" alt="">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-scene-desktop.webp">
+              <img src="assets/images/anping-town/arrival/anping-arrival-scene-mobile.webp" alt="">
             </picture>
             <div class="anping-arrival-mist"></div>
             <div class="anping-arrival-wind"><i></i><i></i><i></i></div>
@@ -1286,6 +1286,6 @@
       </aside>
     </main>
 
-  <script type="module" src="game.js?v=0.2.9.4-alpha&amp;build=v0294-alpha-1"></script>
+  <script type="module" src="game.js?v=0.2.11.0-alpha&amp;build=v02110-alpha-1"></script>
   </body>
 </html>

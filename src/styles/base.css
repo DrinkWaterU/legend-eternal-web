@@ -52,7 +52,7 @@ body[data-scene="camp"] {
       rgba(5, 7, 10, 0.18) 100%
     ),
     linear-gradient(180deg, rgba(5, 7, 10, 0.14) 0%, rgba(5, 7, 10, 0.48) 100%),
-    var(--safe-area-bg-mobile, url("../../assets/images/camp/camp-mobile.png")) center / cover fixed no-repeat;
+    var(--safe-area-bg-mobile, url("../../assets/images/camp/camp-mobile.webp")) center / cover fixed no-repeat;
 }
 
 body[data-scene="region"] {
@@ -66,7 +66,7 @@ body[data-scene="region"] {
       rgba(5, 7, 10, 0.42) 100%
     ),
     linear-gradient(180deg, rgba(5, 7, 10, 0.24) 0%, rgba(5, 7, 10, 0.74) 100%),
-    var(--region-bg-mobile, url("../../assets/images/regions/plains/plains-morning-mobile.png")) center / cover fixed no-repeat;
+    var(--region-bg-mobile, url("../../assets/images/regions/plains/plains-morning-mobile.webp")) center / cover fixed no-repeat;
 }
 
 button {

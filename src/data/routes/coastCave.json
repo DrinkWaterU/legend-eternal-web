@@ -6,8 +6,8 @@
   "name": "海岸洞穴",
   "audio": { "bgmId": "coast-cave" },
   "visual": {
-    "background": { "desktop": "assets/images/regions/coast/coast-cave.jpg", "mobile": "assets/images/regions/coast/coast-cave-mobile.jpg", "tone": "coast-cave" },
-    "backgroundStages": [{ "id": "cave", "fromEncounter": 1, "toEncounter": 16, "desktop": "assets/images/regions/coast/coast-cave.jpg", "mobile": "assets/images/regions/coast/coast-cave-mobile.jpg", "tone": "coast-cave" }]
+    "background": { "desktop": "assets/images/regions/coast/coast-cave.webp", "mobile": "assets/images/regions/coast/coast-cave-mobile.webp", "tone": "coast-cave" },
+    "backgroundStages": [{ "id": "cave", "fromEncounter": 1, "toEncounter": 16, "desktop": "assets/images/regions/coast/coast-cave.webp", "mobile": "assets/images/regions/coast/coast-cave-mobile.webp", "tone": "coast-cave" }]
   },
   "blessingPoolId": "cave",
   "encounterPlan": [

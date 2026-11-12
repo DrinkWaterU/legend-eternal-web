@@ -45,6 +45,8 @@ export function createAdventureRuntimeState({
     ambushAdvantage: false,
     lastPlayerAction: null,
     pendingThreat: null,
+    hammerTrainingStartEnemyCount: 0,
+    hammerTrainingBreachTargetId: null,
     blessingContext: "normal",
     blessingPoolOverrideId: null,
     blessingInputLocked: false,

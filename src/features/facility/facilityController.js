@@ -49,6 +49,8 @@ export function createFacilityController({
     materialDefinitions,
     getInventory: () => saveStore.current.inventory,
     getSafeArea: getCurrentSafeArea,
+    getSave: () => saveStore.current,
+    commitSaveChange,
     commitInventoryChange: (mutate, onSaved) => commitSaveChange((draft) => mutate(draft.inventory), onSaved)
   });
 

@@ -22,6 +22,8 @@ import { normalizeQuestState } from "./questRules.js";
 import { STORY_QUEST_STATUSES, normalizeStoryQuestState } from "./storyQuestRules.js";
 import { applyStoryQuestRewards } from "./storyQuestRewards.js";
 import { getExpStorageLimit } from "./progression.js";
+import { getSwordTraining } from "./weaponTraining.js";
+import { getHammerTraining } from "./hammerTraining.js";
 
 export const LV25_EXP_CAP_MIGRATION_SCHEMA_VERSION = 11;
 
@@ -44,6 +46,12 @@ export function migrateSaveData(rawSave) {
   mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
   save.inventory.gold = toSafeInteger(rawSave.inventory?.gold);
   save.inventory.weapons = normalizeWeaponInventory(rawSave.inventory?.weapons, weaponDefinitions);
+  const training = getSwordTraining(rawSave);
+  delete training.ready;
+  save.weaponTraining = training;
+  const hammerTraining = getHammerTraining(rawSave);
+  delete hammerTraining.ready;
+  save.hammerTraining = hammerTraining;
   normalizeInventory(save.inventory);
   migrateStoryFlags(save, rawSave);
   migrateAchievements(save, rawSave);

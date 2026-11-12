@@ -20,8 +20,8 @@
   },
   "visual": {
     "background": {
-      "desktop": "assets/images/regions/highlands/outer-desktop.png",
-      "mobile": "assets/images/regions/highlands/outer-mobile.png",
+      "desktop": "assets/images/regions/highlands/outer-desktop.webp",
+      "mobile": "assets/images/regions/highlands/outer-mobile.webp",
       "tone": "highlands"
     },
     "backgroundStages": [
@@ -29,16 +29,16 @@
         "id": "outer",
         "fromEncounter": 1,
         "toEncounter": 6,
-        "desktop": "assets/images/regions/highlands/outer-desktop.png",
-        "mobile": "assets/images/regions/highlands/outer-mobile.png",
+        "desktop": "assets/images/regions/highlands/outer-desktop.webp",
+        "mobile": "assets/images/regions/highlands/outer-mobile.webp",
         "tone": "highlands-outer"
       },
       {
         "id": "summit",
         "fromEncounter": 7,
         "toEncounter": 12,
-        "desktop": "assets/images/regions/highlands/summit-desktop.png",
-        "mobile": "assets/images/regions/highlands/summit-mobile.png",
+        "desktop": "assets/images/regions/highlands/summit-desktop.webp",
+        "mobile": "assets/images/regions/highlands/summit-mobile.webp",
         "tone": "highlands-summit"
       }
     ]

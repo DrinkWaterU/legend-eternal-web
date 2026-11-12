@@ -16,7 +16,7 @@ const PERCENT_STATS = new Set(["critChance", "openingCritChance", "woundedTarget
 
 export function getWeaponIconPath(weapon) {
   const assetId = String(weapon?.iconAssetId || weapon?.id || "").trim();
-  return assetId ? `./assets/images/icons/weapons/${assetId}.png` : "";
+  return assetId ? `./assets/images/icons/weapons/${assetId}.webp` : "";
 }
 
 export function createWeaponIcon(weapon, options = {}) {
@@ -83,10 +83,12 @@ export function formatWeaponEffects(weapon) {
 
 export function createWeaponTechniqueRules(weapon) {
   const rules = document.createElement("details");
+  rules.className = "weapon-technique-rules";
   const title = document.createElement("summary");
-  title.textContent = "觸發與計數細則";
+  title.textContent = "查看完整規則";
   const text = document.createElement("p");
-  text.textContent = weapon.effectText;
+  text.className = "weapon-technique-rules-copy";
+  text.textContent = String(weapon?.effectText || "");
   rules.append(title, text);
   return rules;
 }

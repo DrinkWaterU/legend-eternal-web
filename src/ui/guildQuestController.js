@@ -1,5 +1,7 @@
 import { renderStandaloneDialogueText } from "./dialogueView.js";
 import { renderGuildQuestView } from "./guildQuestView.js";
+import { getSwordTraining } from "../core/weaponTraining.js";
+import { getHammerTraining } from "../core/hammerTraining.js";
 
 const SPEECH = Object.freeze({
   idle: "今天能接的單子都在這裡了。先掂量一下自己的斤兩再決定，別被上面寫的數字沖昏頭喔。",
@@ -47,6 +49,10 @@ export function createGuildQuestController({
       snapshot,
       questDefinitions,
       materialDefinitions,
+      swordTraining: getSwordTraining(getSave()),
+      ownsSword: getSave().inventory?.weapons?.["windbreak-sword"] === true,
+      hammerTraining: getHammerTraining(getSave()),
+      ownsHammer: getSave().inventory?.weapons?.["cairn-warhammer"] === true,
       onAccept: acceptQuest,
       onReport: reportQuest,
       onAbandon: openAbandonConfirm

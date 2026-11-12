@@ -92,7 +92,11 @@ export function createBattleState({
       weaponRuntime: clone(state.hero.weaponRuntime || null),
       blessingBattleState: clone(state.hero.blessingBattleState || {}),
       source,
-      battleSource: state.battleSource
+      battleSource: state.battleSource,
+      hammerTrainingStartEnemyCount: state.hammerTrainingStartEnemyCount,
+      hammerTrainingBreachTargetId: livingEnemies.some(enemy => enemy.runtimeId === state.hammerTrainingBreachTargetId && enemy.weaponBreach?.strength === 3)
+        ? state.hammerTrainingBreachTargetId
+        : null
     };
   }
 
@@ -133,6 +137,8 @@ export function createBattleState({
     resetBattleEntryState(state, { source, encounterType, ambushAdvantage });
     setEnemyGroup(enemies, { restore: restoreEnemies });
     state.hero.activeEnemyCount = getLivingEnemies(state.enemies).length;
+    state.hammerTrainingStartEnemyCount = state.hero.activeEnemyCount;
+    state.hammerTrainingBreachTargetId = null;
     resetHeroBattleState();
     startHighlandBattle(state);
     beginPreparationBattle(state.runPreparation, { enemyCount: state.hero.activeEnemyCount });
@@ -195,6 +201,8 @@ export function createBattleState({
     }
     if (threat.weaponRuntime) state.hero.weaponRuntime = clone(threat.weaponRuntime);
     if (threat.heroCombat) Object.assign(state.hero, clone(threat.heroCombat));
+    if (Number.isInteger(threat.hammerTrainingStartEnemyCount)) state.hammerTrainingStartEnemyCount = threat.hammerTrainingStartEnemyCount;
+    state.hammerTrainingBreachTargetId = threat.hammerTrainingBreachTargetId || null;
     state.hero.blessingBattleState = clone(threat.blessingBattleState || threat.caveBlessingBattle || {});
 
     if (introText) addFixedLog("system", introText);

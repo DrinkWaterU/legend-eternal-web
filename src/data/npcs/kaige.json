@@ -5,7 +5,7 @@
   "race": "human",
   "gender": "male",
   "ageGroup": "young-adult",
-  "portrait": "assets/images/characters/kaige/kaige.png",
+  "portrait": "assets/images/characters/kaige/kaige.webp",
   "portraitFocus": "50% 24%",
   "dialogueId": "kaige-challenge",
   "identity": {

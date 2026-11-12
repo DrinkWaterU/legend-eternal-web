@@ -70,6 +70,7 @@ export function createWorldFeatures({
     weaponDefinitions,
     weaponCategoryDefinitions,
     saveGameSafe,
+    commitSaveChange,
     setNavigationContext,
     getNavigationReturnTarget,
     showScreen,

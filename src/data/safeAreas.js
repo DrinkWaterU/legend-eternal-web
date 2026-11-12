@@ -23,8 +23,8 @@ export const safeAreaDefinitions = Object.freeze({
     placesLockedDescription: "看看營地周圍",
     visual: Object.freeze({
       background: Object.freeze({
-        mobile: "assets/images/camp/camp-mobile.png",
-        desktop: "assets/images/camp/camp-desktop.png"
+        mobile: "assets/images/camp/camp-mobile.webp",
+        desktop: "assets/images/camp/camp-desktop.webp"
       })
     }),
     audio: Object.freeze({ bgmId: "camp", ambientId: null }),
@@ -47,8 +47,8 @@ export const safeAreaDefinitions = Object.freeze({
     placesLockedDescription: "鎮內設施尚未開放",
     visual: Object.freeze({
       background: Object.freeze({
-        mobile: "assets/images/anping-town/anping-town-mobile.jpg",
-        desktop: "assets/images/anping-town/anping-town-desktop.jpg"
+        mobile: "assets/images/anping-town/anping-town-mobile.webp",
+        desktop: "assets/images/anping-town/anping-town-desktop.webp"
       })
     }),
     audio: Object.freeze({ bgmId: "anping-town", ambientId: "anping-coast" }),

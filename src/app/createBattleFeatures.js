@@ -15,6 +15,8 @@ import { createBattleSettlement } from "../features/battle/battleSettlement.js";
 import { createBattleTurnController } from "../features/battle/battleTurnController.js";
 import { createCombatRenderer } from "../features/battle/combatRenderer.js";
 import { templates } from "../data/templates.js";
+import { recordSwordTraining } from "../core/weaponTraining.js";
+import { recordHammerBreak } from "../core/hammerTraining.js";
 
 export function createBattleFeatures({
   foundation,
@@ -144,6 +146,8 @@ export function createBattleFeatures({
     applyEmergencyBandage: battleSkills.applyEmergencyBandage,
     tryLastStand: battleSkills.tryLastStand,
     recordTactic: event => world?.questRuntime?.recordHighlandTactic(event),
+    recordSwordRiposte: event => recordSwordTraining(saveStore.current, event),
+    recordHammerBreak: event => recordHammerBreak(saveStore.current, event),
     prepareEnemyAction,
     completeEnemyAction,
     winEncounter,

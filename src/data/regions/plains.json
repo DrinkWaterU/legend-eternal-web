@@ -12,8 +12,8 @@
   },
   "visual": {
     "background": {
-      "desktop": "assets/images/regions/plains/plains-morning.png",
-      "mobile": "assets/images/regions/plains/plains-morning-mobile.png",
+      "desktop": "assets/images/regions/plains/plains-morning.webp",
+      "mobile": "assets/images/regions/plains/plains-morning-mobile.webp",
       "tone": "morning-plains"
     }
   },

@@ -2577,6 +2577,20 @@
     0 14px 30px rgba(20, 8, 29, 0.22);
 }
 
+.sword-training-options {
+  margin-top: 1rem;
+  line-height: 1.6;
+}
+
+.sword-training-options > div {
+  margin-top: 0.8rem;
+}
+
+.sword-training-options p {
+  margin: 0.4rem 0;
+  font-weight: 400;
+}
+
 .equipment-preview-effect {
   margin: 12px 0;
   color: var(--gold);
@@ -3416,13 +3430,18 @@
 
 .clerk-dialogue-region {
   position: relative;
+  display: block;
   height: 118px;
   margin-top: 5px;
-  padding: 13px 50px 13px 14px;
+  padding: 13px 14px;
   overflow: auto;
   border: 1px solid rgba(109, 170, 183, 0.28);
   border-radius: 9px;
   background: rgba(4, 9, 10, 0.66);
+}
+
+.clerk-dialogue-region.is-typing {
+  padding-right: 50px;
 }
 
 .clerk-dialogue-region p {

@@ -28,7 +28,7 @@ export function previewHighlandTurn(state, action = { type: "attack" }) {
   }
   // A player attack might kill the ally-damage caster, leaving its victim alive
   // to attack. Never promise safety based on that conditional collateral kill.
-  const possibleThreats = ["attack", "lunge", "sweep", "cleave", "breach"].includes(action.type) ? projectedHighlandThreats(state, wind, intents) : threats;
+  const possibleThreats = ["attack", "lunge", "sweep", "cleave", "breach", "breach-wave"].includes(action.type) ? projectedHighlandThreats(state, wind, intents) : threats;
   return { wind, final: [simulation.hero, ...simulation.enemies].map((unit, n) => ({ unit: n ? state.enemies[n - 1] : state.hero,
     destination: unit.battleColumn, hp: unit.hp })), threats: possibleThreats, collateral, interrupted: b.interruptedEnemyTurn === simulation.turn ? b.interruptedEnemyId : null, free: false };
 }

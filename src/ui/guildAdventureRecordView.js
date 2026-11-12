@@ -20,7 +20,7 @@ function createReceptionCard(npc) {
   portrait.className = "guild-record-portrait-card";
   const image = document.createElement("img");
   const displayName = String(npc?.name || "瑟琳");
-  image.src = String(npc?.portrait || "./assets/images/npcs/anping/celine.png");
+  image.src = String(npc?.portrait || "./assets/images/npcs/anping/celine.webp");
   image.alt = `${displayName}的立繪`;
   const fallback = document.createElement("span");
   fallback.className = "guild-record-portrait-fallback";

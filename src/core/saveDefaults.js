@@ -30,6 +30,8 @@ export function createDefaultSave() {
       safeAreas: createDefaultSafeAreaProgression(undefined, { defaultVisitedAt: now })
     },
     inventory: { gold: 0, materials: {}, weapons: {} },
+    weaponTraining: { regions: { forest: false, beach: false, highlands: false }, unlocked: false, mode: "steady" },
+    hammerTraining: { regions: { highlands: false }, unlocked: false },
     storyFlags: createDefaultStoryFlags(),
     achievements: createDefaultAchievements(),
     quests: createDefaultQuestState(),

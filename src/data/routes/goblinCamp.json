@@ -8,8 +8,8 @@
   },
   "visual": {
     "background": {
-      "desktop": "assets/images/routes/goblin-camp/goblin-camp-outer.jpg",
-      "mobile": "assets/images/routes/goblin-camp/goblin-camp-outer-mobile.jpg",
+      "desktop": "assets/images/routes/goblin-camp/goblin-camp-outer.webp",
+      "mobile": "assets/images/routes/goblin-camp/goblin-camp-outer-mobile.webp",
       "tone": "goblin-camp-outer"
     },
     "backgroundStages": [
@@ -17,16 +17,16 @@
         "id": "outer",
         "fromEncounter": 1,
         "toEncounter": 4,
-        "desktop": "assets/images/routes/goblin-camp/goblin-camp-outer.jpg",
-        "mobile": "assets/images/routes/goblin-camp/goblin-camp-outer-mobile.jpg",
+        "desktop": "assets/images/routes/goblin-camp/goblin-camp-outer.webp",
+        "mobile": "assets/images/routes/goblin-camp/goblin-camp-outer-mobile.webp",
         "tone": "goblin-camp-outer"
       },
       {
         "id": "deep",
         "fromEncounter": 5,
         "toEncounter": 9,
-        "desktop": "assets/images/routes/goblin-camp/goblin-camp-deep.jpg",
-        "mobile": "assets/images/routes/goblin-camp/goblin-camp-deep-mobile.jpg",
+        "desktop": "assets/images/routes/goblin-camp/goblin-camp-deep.webp",
+        "mobile": "assets/images/routes/goblin-camp/goblin-camp-deep-mobile.webp",
         "tone": "goblin-camp-deep"
       }
     ]

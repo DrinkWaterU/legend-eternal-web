@@ -175,7 +175,7 @@
         rgba(5, 7, 10, 0.22) 100%
       ),
       linear-gradient(180deg, rgba(5, 7, 10, 0.08) 0%, rgba(5, 7, 10, 0.38) 100%),
-      var(--safe-area-bg-desktop, url("../../assets/images/camp/camp-desktop.png")) center / cover fixed no-repeat;
+      var(--safe-area-bg-desktop, url("../../assets/images/camp/camp-desktop.webp")) center / cover fixed no-repeat;
   }
 
   body[data-scene="region"] {
@@ -189,7 +189,7 @@
         rgba(5, 7, 10, 0.34) 100%
       ),
       linear-gradient(180deg, rgba(5, 7, 10, 0.18) 0%, rgba(5, 7, 10, 0.68) 100%),
-      var(--region-bg-desktop, url("../../assets/images/regions/plains/plains-morning.png")) center / cover fixed no-repeat;
+      var(--region-bg-desktop, url("../../assets/images/regions/plains/plains-morning.webp")) center / cover fixed no-repeat;
   }
 
   .camp-screen {
@@ -672,6 +672,10 @@
 
   .clerk-dialogue-region {
     height: 148px;
+    padding-right: 18px;
+  }
+
+  .clerk-dialogue-region.is-typing {
     padding-right: 52px;
   }
 

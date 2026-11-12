@@ -6,7 +6,11 @@ export function renderBlacksmithWeaponSelection({
   inventory,
   weaponCategoryDefinitions,
   materialDefinitions,
-  onCraftRequest
+  onCraftRequest,
+  swordTraining,
+  onUnlockSwordTraining,
+  hammerTraining,
+  onUnlockHammerTraining
 }) {
   Array.from(els.blacksmithWeaponList?.children || []).forEach((button) => {
     const isSelected = button.dataset.weaponId === weapon?.id;
@@ -19,6 +23,10 @@ export function renderBlacksmithWeaponSelection({
     inventory,
     weaponCategoryDefinitions,
     materialDefinitions,
-    onCraftRequest
+    onCraftRequest,
+    swordTraining,
+    onUnlockSwordTraining,
+    hammerTraining,
+    onUnlockHammerTraining
   });
 }

@@ -9,6 +9,7 @@ import {
   renderCharacterEquipmentView
 } from "../../ui/characterEquipmentView.js";
 import { clone } from "../../utils.js";
+import { getSwordTraining, selectSwordTrainingMode } from "../../core/weaponTraining.js";
 
 export function createCharacterEquipmentController({
   uiState,
@@ -18,6 +19,7 @@ export function createCharacterEquipmentController({
   weaponDefinitions,
   weaponCategoryDefinitions,
   saveGameSafe,
+  commitSaveChange,
   showScreen,
   isCharacterUnlocked,
   showLockedCharacterHint,
@@ -89,8 +91,22 @@ export function createCharacterEquipmentController({
       onCategoryChange: updateAndRender("equipmentCategoryFilter"),
       onWeaponSelect: selectEquipmentPreview,
       onEquip: equipCharacterWeapon,
-      onUnequip: unequipCharacterWeapon
+      onUnequip: unequipCharacterWeapon,
+      swordTraining: getSwordTraining(saveStore.current),
+      onSwordTrainingMode: setSwordTrainingMode
     });
+  }
+
+  function setSwordTrainingMode(mode) {
+    try {
+      commitSaveChange((draft) => selectSwordTrainingMode(draft, mode), () => {
+        setNotice("已切換守隘劍打法。下一次冒險生效。");
+        renderCharacterScreen();
+      });
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "無法切換打法。", "error");
+      renderCharacterScreen();
+    }
   }
 
   function selectEquipmentPreview(weaponId) {
@@ -104,6 +120,7 @@ export function createCharacterEquipmentController({
     const character = characterDefinitions[uiState.characterDetailId];
     const progress = getCharacterProgress(character.id);
     const previousWeaponId = progress.equipment?.weaponId || null;
+    if (previousWeaponId === weaponId) return;
     try {
       const weapon = equipWeapon({
         character,
@@ -127,10 +144,16 @@ export function createCharacterEquipmentController({
   function unequipCharacterWeapon() {
     const character = characterDefinitions[uiState.characterDetailId];
     const progress = getCharacterProgress(character.id);
-    const previousWeaponId = unequipWeapon(progress);
-    const previousWeapon = weaponDefinitions[previousWeaponId];
+    const previousWeaponId = progress.equipment?.weaponId || null;
+    if (!previousWeaponId) {
+      setNotice("目前沒有已裝備的武器。");
+      renderCharacterScreen();
+      return;
+    }
+    const removedWeaponId = unequipWeapon(progress);
+    const previousWeapon = weaponDefinitions[removedWeaponId];
     if (!saveGameSafe()) {
-      progress.equipment = { weaponId: previousWeaponId };
+      progress.equipment = { weaponId: removedWeaponId };
       setNotice("瀏覽器無法保存卸下結果，已恢復原本武器。", "error");
     } else {
       setNotice(previousWeapon
