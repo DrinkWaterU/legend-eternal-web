@@ -17,6 +17,16 @@ assert.match(describeUpcomingEncounter({ encounterType: "elite", encounterNumber
 assert.equal(describeUpcomingEncounter({ resumingThreat: true, encounterType: "boss", encounterNumber: 8, encounterCount: 8 }), "前方：剛才逃離的敵人還在等你。");
 assert.equal(describeUpcomingEncounter({ encounterType: null, encounterNumber: 9, encounterCount: 8 }), "", "past the plan there is nothing to preview");
 
+// Boss level guideline: shown only when the hero is below it, and never as a hard "cannot win".
+const underLevel = describeUpcomingEncounter({ encounterType: "boss", encounterNumber: 8, encounterCount: 8, heroLevel: 8, bossRecommendedLevel: 10 });
+assert.match(underLevel, /建議 Lv\.10，你目前 Lv\.8/);
+assert.doesNotMatch(underLevel, /無法獲勝|不可能/);
+assert.doesNotMatch(describeUpcomingEncounter({ encounterType: "boss", encounterNumber: 8, encounterCount: 8, heroLevel: 10, bossRecommendedLevel: 10 }), /建議 Lv/);
+assert.doesNotMatch(describeUpcomingEncounter({ encounterType: "boss", encounterNumber: 8, encounterCount: 8, heroLevel: 3 }), /建議 Lv/, "regions without a guideline stay silent");
+assert.doesNotMatch(describeUpcomingEncounter({ encounterType: "elite", encounterNumber: 4, encounterCount: 8, heroLevel: 3, bossRecommendedLevel: 10 }), /建議 Lv/, "only the boss preview names the level");
+assert.equal(regionDefinitions.plains.bossRecommendedLevel, 10);
+assert.match(regionDefinitions.plains.recommendedLevel, /首領 Lv\.10/);
+
 // The plains plan used by the first-region preview: battle 4 is an elite, battle 8 the boss.
 const plainsPlan = regionDefinitions.plains.encounterPlan.map((entry) => typeof entry === "string" ? entry : entry.type);
 assert.equal(plainsPlan[3], "elite");

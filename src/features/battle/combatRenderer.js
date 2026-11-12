@@ -18,6 +18,7 @@ export function createCombatRenderer({
   getAdventureEncounterCount,
   getAdventureEncounterIndex,
   getAdventureEncounterType = () => null,
+  getBossRecommendedLevel = () => null,
   getAdventureSourceName,
   hasPendingThreat,
   selectEnemyTarget,
@@ -80,7 +81,9 @@ export function createCombatRenderer({
       encounterNumber: index + 1,
       encounterCount: getAdventureEncounterCount(),
       eventPending: shouldTriggerScheduledEvent(state.eventSchedule, index),
-      resumingThreat: hasPendingThreat("safeEscape")
+      resumingThreat: hasPendingThreat("safeEscape"),
+      heroLevel: Number(state.hero?.level) || null,
+      bossRecommendedLevel: getBossRecommendedLevel()
     });
   }
 

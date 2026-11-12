@@ -8,13 +8,27 @@ const TYPE_LABELS = Object.freeze({
   boss: "首領戰"
 });
 
-export function describeUpcomingEncounter({ encounterType, encounterNumber, encounterCount, eventPending = false, resumingThreat = false } = {}) {
+// bossRecommendedLevel is a guideline, not a hard gate: strong builds can win earlier,
+// so the wording only flags the gap and leaves the decision to the player.
+export function describeUpcomingEncounter({
+  encounterType,
+  encounterNumber,
+  encounterCount,
+  eventPending = false,
+  resumingThreat = false,
+  heroLevel = null,
+  bossRecommendedLevel = null
+} = {}) {
   if (resumingThreat) return "前方：剛才逃離的敵人還在等你。";
   const label = TYPE_LABELS[encounterType];
   if (!label || !(encounterNumber >= 1)) return "";
   const position = encounterCount >= encounterNumber ? `（第 ${encounterNumber} / ${encounterCount} 場）` : "";
   const lead = eventPending ? `前方似乎有些動靜，之後是${label}${position}。` : `前方：${label}${position}。`;
-  if (encounterType === "boss") return `${lead}首領戰無法逃跑，要撤退只能趁現在。`;
+  if (encounterType === "boss") {
+    const underLevel = Number.isFinite(heroLevel) && Number.isFinite(bossRecommendedLevel) && heroLevel < bossRecommendedLevel;
+    const levelHint = underLevel ? `建議 Lv.${bossRecommendedLevel}，你目前 Lv.${heroLevel}。` : "";
+    return `${lead}首領戰無法逃跑，要撤退只能趁現在。${levelHint}`;
+  }
   if (encounterType === "elite") return `${lead}對手明顯更強，狀態不好時可以先撤退。`;
   return lead;
 }

@@ -65,6 +65,8 @@ export function createBattleFeatures({
     getAdventureEncounterCount,
     getAdventureEncounterIndex,
     getAdventureEncounterType,
+    // Only the region's own boss has a recommended level; routes have their own endings.
+    getBossRecommendedLevel: () => (currentRoute?.() ? null : Number(currentRegion?.()?.bossRecommendedLevel) || null),
     getAdventureSourceName,
     hasPendingThreat: (...args) => battleState.hasPendingThreat(...args),
     selectEnemyTarget: (...args) => battleState.selectEnemyTarget(...args),

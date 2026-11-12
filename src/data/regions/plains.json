@@ -7,6 +7,8 @@
     "野獸出沒",
     "強敵衝擊"
   ],
+  "recommendedLevel": "首領 Lv.10",
+  "bossRecommendedLevel": 10,
   "audio": {
     "bgmId": "plains"
   },
