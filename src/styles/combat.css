@@ -368,6 +368,18 @@
   text-align: center;
 }
 
+#endText {
+  white-space: pre-line;
+}
+
+.enemy-roster-upcoming {
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-style: solid;
+  border-color: rgba(241, 211, 134, 0.32);
+  color: var(--gold);
+}
+
 .enemy-card {
   --card-line: rgba(173, 148, 102, 0.26);
   flex: 0 0 auto;

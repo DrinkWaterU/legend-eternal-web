@@ -13,6 +13,7 @@ export function renderCombatView({
   targetEnemyId,
   phase,
   turn = 0,
+  safeNotice = "",
   suppressRosterSummary = false,
   preparationStatus = null,
   characterStatusEntries = [],
@@ -29,6 +30,7 @@ export function renderCombatView({
     targetEnemyId,
     phase,
     turn,
+    safeNotice,
     suppressRosterSummary,
     onTargetSelect
   });

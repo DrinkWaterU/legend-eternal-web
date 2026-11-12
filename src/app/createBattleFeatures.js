@@ -64,6 +64,7 @@ export function createBattleFeatures({
     runStartingFlees: RUN_STARTING_FLEES,
     getAdventureEncounterCount,
     getAdventureEncounterIndex,
+    getAdventureEncounterType,
     getAdventureSourceName,
     hasPendingThreat: (...args) => battleState.hasPendingThreat(...args),
     selectEnemyTarget: (...args) => battleState.selectEnemyTarget(...args),

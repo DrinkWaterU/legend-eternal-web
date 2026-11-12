@@ -106,6 +106,11 @@ export function createRunRecords({
         ? currentRegion().encounterCount
         : state.encounterIndex + 1;
 
+    if (state.runStats) {
+      const previousBest = Number(regionProgress.bestEncounter) || 0;
+      state.runStats.previousBestEncounter = previousBest;
+      state.runStats.newBestEncounter = previousBest > 0 && bestEncounter > previousBest;
+    }
     if (segmentCleared) recordBeachSegmentCompleted();
 
     regionStats.bestEncounter = Math.max(regionStats.bestEncounter, bestEncounter);

@@ -5,7 +5,7 @@ import { getEnemyIntent } from "../core/enemyIntent.js";
 
 const rosterTargetState = new WeakMap();
 
-export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, turn = 0, onTargetSelect, suppressRosterSummary = false }) {
+export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, turn = 0, safeNotice = "", onTargetSelect, suppressRosterSummary = false }) {
   const livingEnemies = getLivingEnemies(enemies);
   countLabel.textContent = livingEnemies.length > 0 ? `${livingEnemies.length} 名敵人` : "暫無遭遇";
   const summary = roster.closest?.(".enemy-zone")?.querySelector(".enemy-intent-summary");
@@ -28,13 +28,19 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
       existingCards.delete(runtimeId);
     }
   });
-  roster.querySelector(".enemy-roster-empty")?.remove();
+  roster.querySelectorAll(".enemy-roster-empty").forEach((element) => element.remove());
 
   if (livingEnemies.length === 0) {
     const empty = document.createElement("p");
     empty.className = "enemy-roster-empty";
     empty.textContent = phase === "safe" ? "目前位於安全路段。" : "目前沒有可戰鬥的敵人。";
     roster.append(empty);
+    if (phase === "safe" && safeNotice) {
+      const upcoming = document.createElement("p");
+      upcoming.className = "enemy-roster-empty enemy-roster-upcoming";
+      upcoming.textContent = safeNotice;
+      roster.append(upcoming);
+    }
     rosterTargetState.set(roster, null);
     return;
   }

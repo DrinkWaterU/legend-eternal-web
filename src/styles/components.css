@@ -936,6 +936,11 @@
   margin: 18px 0;
 }
 
+/* Progress record spans the row under the four overview stats. */
+.region-overview > div:nth-child(5) {
+  grid-column: 1 / -1;
+}
+
 .region-traits {
   display: flex;
   align-items: center;

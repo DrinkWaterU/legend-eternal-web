@@ -6,6 +6,8 @@ import { resolveTargetEnemyId } from "../../core/enemyGroups.js";
 import { getPreparationCombatStatus } from "../../core/preparations.js";
 import { getCharacterCombatStatusEntries } from "../../characters/skills/index.js";
 import { getEventDefinition } from "../../data/events/index.js";
+import { shouldTriggerScheduledEvent } from "../../core/events.js";
+import { describeUpcomingEncounter } from "../../core/upcomingEncounter.js";
 import { renderCombatView, renderCurrentAbilityView } from "../../ui/combatView.js";
 import { renderBattleLog } from "../../ui/renderHelpers.js";
 
@@ -15,6 +17,7 @@ export function createCombatRenderer({
   runStartingFlees,
   getAdventureEncounterCount,
   getAdventureEncounterIndex,
+  getAdventureEncounterType = () => null,
   getAdventureSourceName,
   hasPendingThreat,
   selectEnemyTarget,
@@ -69,6 +72,18 @@ export function createCombatRenderer({
     renderTacticalBattle({ state, els, canFight, choosePath });
   }
 
+  function getSafeRouteNotice() {
+    if (state.phase !== "safe" || state.ended || state.battleSource === "duel") return "";
+    const index = getAdventureEncounterIndex();
+    return describeUpcomingEncounter({
+      encounterType: getAdventureEncounterType(),
+      encounterNumber: index + 1,
+      encounterCount: getAdventureEncounterCount(),
+      eventPending: shouldTriggerScheduledEvent(state.eventSchedule, index),
+      resumingThreat: hasPendingThreat("safeEscape")
+    });
+  }
+
   function render() {
     const hero = state.hero;
     if (!hero) return;
@@ -80,6 +95,7 @@ export function createCombatRenderer({
       targetEnemyId: state.targetEnemyId,
       phase: state.phase,
       turn: state.turn,
+      safeNotice: getSafeRouteNotice(),
       suppressRosterSummary: Boolean(state.highlandBattle),
       preparationStatus: getPreparationCombatStatus({
         preparation: state.runPreparation,
@@ -134,6 +150,13 @@ export function createCombatRenderer({
     if (state.phase === "highlandChoice") {
       els.combatActionHint.textContent = "先選擇山路，再開始下一段旅程。";
       els.combatActionHint.dataset.action = "path";
+      return;
+    }
+    if (state.phase === "safe" && !state.ended) {
+      els.combatActionHint.textContent = state.canRest && !state.hasRested
+        ? "安全路段：可以繼續前進、原地修整，或撤退回營地。"
+        : "安全路段：可以繼續前進，或撤退回營地。";
+      els.combatActionHint.dataset.action = "safe";
       return;
     }
     if (state.lastPlayerAction === "guard") {

@@ -1,5 +1,6 @@
 import { formatRewards } from "../../core/rewards.js";
 import { getPreparationSummary } from "../../core/preparations.js";
+import { getPrePhoenixDeathEmberLine } from "../../core/phoenixForeshadowing.js";
 import { isSafeAreaUnlocked, isSafeAreaVisited } from "../../core/safeAreaProgression.js";
 import { ANPING_TOWN_SAFE_AREA_ID, DEFAULT_SAFE_AREA_ID, getSafeAreaDefinition } from "../../data/safeAreas.js";
 import { renderStatList } from "../../ui/renderHelpers.js";
@@ -90,7 +91,10 @@ export function createRunResultController({
     if (hasPhoenixBlessing()) {
       return `你倒下了。鳳凰的加護在灰燼般的微光中甦醒，將你帶回${getRunOriginSafeAreaName()}。`;
     }
-    return "你倒在野外，這段旅途累積的等級與經驗已經失去。";
+    const ember = getPrePhoenixDeathEmberLine(saveStore.current?.statistics?.totalDefeats);
+    return ember
+      ? `你倒在野外，這段旅途累積的等級與經驗已經失去。\n${ember}`
+      : "你倒在野外，這段旅途累積的等級與經驗已經失去。";
   }
 
   function getReachedEncounter(completed) {
@@ -107,6 +111,9 @@ export function createRunResultController({
     const sourceName = getAdventureSourceName();
     const encounterTotal = getAdventureEncounterCount();
     const reachedEncounter = getReachedEncounter(completed);
+    // Region records count main-path encounters; route runs use a different index.
+    const showsRegionRecord = !state.debugBuildRun && !completed && !currentRoute();
+    const previousBest = Math.min(Number(state.runStats?.previousBestEncounter) || 0, encounterTotal);
     const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
     const progress = getCharacterProgress();
     const displayLevel = state.debugBuildRun ? state.hero.level : progress.level;
@@ -122,7 +129,7 @@ export function createRunResultController({
     const items = [
       ["結果", cleared ? "冒險成功" : segmentCleared ? "海灘段落完成" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗"],
       ["路線", sourceName],
-      ["抵達", `第 ${reachedEncounter} / ${encounterTotal} 場`],
+      ["抵達", `第 ${reachedEncounter} / ${encounterTotal} 場${showsRegionRecord && state.runStats?.newBestEncounter ? "（新紀錄）" : ""}`],
       ["角色等級", `Lv. ${displayLevel}`],
       ["本輪經驗", `${state.runStats?.expGained || 0}`],
       ["擊敗敵人", `${state.defeatedEnemies} 隻`],
@@ -132,6 +139,9 @@ export function createRunResultController({
     ];
     if (state.runStats?.evacuationEscapes) items.splice(8, 0, ["撤離逃跑", `${state.runStats.evacuationEscapes} 次`]);
     if (state.runStats?.bossName) items.splice(7, 0, ["本輪首領", state.runStats.bossName]);
+    if (showsRegionRecord && !state.runStats?.newBestEncounter && previousBest > reachedEncounter) {
+      items.splice(items.findIndex(([label]) => label === "抵達") + 1, 0, ["最遠紀錄", `第 ${previousBest} / ${encounterTotal} 場`]);
+    }
     if (hasPhoenixBlessing()) {
       const rewards = formatRewards(state.runStats?.rewards, materialDefinitions);
       if (rewards.gold > 0) items.push(["本輪金幣", rewards.gold]);

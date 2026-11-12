@@ -1,3 +1,5 @@
+import { insertPhoenixPayoffLine } from "../../core/phoenixForeshadowing.js";
+
 export function createPlainsStoryController({
   state,
   saveStore,
@@ -41,7 +43,7 @@ export function createPlainsStoryController({
   }
 
   function renderText(revealed) {
-    const lines = getStoryDefinition()?.lines || [];
+    const lines = insertPhoenixPayoffLine(getStoryDefinition()?.lines || [], saveStore.current?.statistics?.totalDefeats);
     if (state.storyTimer) {
       windowRef.clearTimeout(state.storyTimer);
       state.storyTimer = null;
