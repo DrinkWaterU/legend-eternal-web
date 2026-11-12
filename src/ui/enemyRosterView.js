@@ -28,19 +28,19 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
       existingCards.delete(runtimeId);
     }
   });
-  roster.querySelectorAll(".enemy-roster-empty").forEach((element) => element.remove());
+  roster.querySelector(".enemy-roster-empty")?.remove();
 
   if (livingEnemies.length === 0) {
     const empty = document.createElement("p");
     empty.className = "enemy-roster-empty";
     empty.textContent = phase === "safe" ? "目前位於安全路段。" : "目前沒有可戰鬥的敵人。";
-    roster.append(empty);
     if (phase === "safe" && safeNotice) {
-      const upcoming = document.createElement("p");
-      upcoming.className = "enemy-roster-empty enemy-roster-upcoming";
+      const upcoming = document.createElement("strong");
+      upcoming.className = "enemy-roster-upcoming";
       upcoming.textContent = safeNotice;
-      roster.append(upcoming);
+      empty.append(upcoming);
     }
+    roster.append(empty);
     rosterTargetState.set(roster, null);
     return;
   }

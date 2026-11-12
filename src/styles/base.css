@@ -25,6 +25,17 @@
   box-sizing: border-box;
 }
 
+/* Full-bleed screens (camp, safe areas) use 100vw, which includes the vertical scrollbar.
+   Clip that sliver on the viewport instead of showing a horizontal scrollbar. */
+html {
+  overflow-x: clip;
+}
+
+/* Phrase spans let long CJK headings wrap between phrases instead of mid-word. */
+.heading-phrase {
+  display: inline-block;
+}
+
 body {
   margin: 0;
   min-height: 100vh;

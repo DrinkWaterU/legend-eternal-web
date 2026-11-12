@@ -372,12 +372,17 @@
   white-space: pre-line;
 }
 
-.enemy-roster-upcoming {
-  margin-top: 8px;
-  padding: 12px 14px;
+.enemy-roster-empty:has(.enemy-roster-upcoming) {
+  flex: 1 1 100%;
   border-style: solid;
   border-color: rgba(241, 211, 134, 0.32);
+}
+
+.enemy-roster-upcoming {
+  display: block;
+  margin-top: 6px;
   color: var(--gold);
+  font-weight: 600;
 }
 
 .enemy-card {

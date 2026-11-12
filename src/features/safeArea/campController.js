@@ -31,7 +31,7 @@ export function createCampController({
     if (achievementHint) {
       achievementHint.textContent = saveStore.current.storyFlags.achievementSystemUnlocked
         ? "查看已解鎖成就"
-        : "尚未開放";
+        : "星光尚未照見";
     }
   }
 
@@ -89,7 +89,7 @@ export function createCampController({
     if (els.campWarning) {
       els.campWarning.textContent = phoenixUnlocked
         ? "鳳凰的加護已覺醒。死亡會結束本輪冒險，但角色等級與經驗會保留。"
-        : "警告：死亡會失去目前等級與經驗；撤退能保留成長。";
+        : "警告：死亡會失去目前等級與經驗；撤退能保留成長。倒下時，沒有任何力量會接住你——至少現在還沒有。";
       els.campWarning.dataset.type = phoenixUnlocked ? "blessed" : "danger";
     }
   }
