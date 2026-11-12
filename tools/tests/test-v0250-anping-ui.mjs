@@ -128,6 +128,9 @@ assert.match(game, /button\.dataset\.safeAreaId = destination\.id/);
 assert.match(html, /id="campTravelButton"[\s\S]*id="safeAreaTravelScreen"[\s\S]*id="safeAreaTravelList"/);
 assert.doesNotMatch(html + game + dom, /campTravelSection|campTravelList|handleCampTravel/);
 assert.match(screensCss, /anping-arrival-dialog\[data-stage="town"\][\s\S]*anping-arrival-scene-picture/);
+// Page 1 is still in the forest; the sea must not be the visible picture before page 2.
+assert.match(html, /anping-arrival-forest-picture[\s\S]*?regions\/forest\/forest-mid\.webp/);
+assert.match(screensCss, /anping-arrival-dialog\[data-stage="forest"\] \.anping-arrival-forest-picture \{\s*opacity: 1;/);
 assert.match(screensCss, /prefers-reduced-motion: reduce/);
 
 console.log("v0.2.5.0 Anping Town UI, assets, audio, and flow tests passed.");

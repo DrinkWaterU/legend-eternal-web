@@ -1,4 +1,4 @@
-import { insertPhoenixPayoffLine } from "../../core/phoenixForeshadowing.js";
+import { getPhoenixStoryBeats, insertPhoenixPayoffLine } from "../../core/phoenixForeshadowing.js";
 
 export function createPlainsStoryController({
   state,
@@ -34,19 +34,47 @@ export function createPlainsStoryController({
       && !saveStore.current.storyFlags.plainsBossStorySeen;
   }
 
+  // Beat timers switch the panel's scene (stars → gaze → death → ember → phoenix)
+  // in step with the line that is fading in.
+  let beatTimerIds = [];
+
+  function clearBeatTimers() {
+    beatTimerIds.forEach((timerId) => windowRef.clearTimeout(timerId));
+    beatTimerIds = [];
+  }
+
+  function setBeat(beat) {
+    if (beat) els.storyPanel.dataset.beat = beat;
+    else delete els.storyPanel.dataset.beat;
+  }
+
   function closePanel() {
     if (state.storyTimer) {
       windowRef.clearTimeout(state.storyTimer);
       state.storyTimer = null;
     }
+    clearBeatTimers();
+    setBeat("");
     els.storyPanel.classList.remove("is-visible");
   }
 
   function renderText(revealed) {
-    const lines = insertPhoenixPayoffLine(getStoryDefinition()?.lines || [], saveStore.current?.statistics?.totalDefeats);
+    const story = getStoryDefinition();
+    const lines = insertPhoenixPayoffLine(story?.lines || [], saveStore.current?.statistics?.totalDefeats);
+    const beats = getPhoenixStoryBeats(story?.beats, lines.length);
     if (state.storyTimer) {
       windowRef.clearTimeout(state.storyTimer);
       state.storyTimer = null;
+    }
+    clearBeatTimers();
+    if (revealed) {
+      setBeat(beats.filter(Boolean).at(-1) || "");
+    } else {
+      setBeat(beats[0]);
+      beats.forEach((beat, index) => {
+        if (index === 0 || !beat || beat === beats[index - 1]) return;
+        beatTimerIds.push(windowRef.setTimeout(() => setBeat(beat), index * storyLineDelayMs));
+      });
     }
     els.storyText.innerHTML = "";
     lines.forEach((line, index) => {
@@ -109,7 +137,7 @@ export function createPlainsStoryController({
       if (!state.debugBuildRun) unlockPhoenixBlessing();
       state.runResumeFinished = true;
       afterAdventureSaved(() => {
-        els.storyPanel.classList.remove("is-visible");
+        closePanel();
         returnToRunOriginSafeArea();
       });
     });

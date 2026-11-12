@@ -1,7 +1,7 @@
 // Safe-route preview, pre-phoenix death embers and the phoenix payoff line.
 import assert from "node:assert/strict";
 import { describeUpcomingEncounter } from "../../src/core/upcomingEncounter.js";
-import { getPhoenixPayoffLine, getPrePhoenixDeathEmberLine, insertPhoenixPayoffLine } from "../../src/core/phoenixForeshadowing.js";
+import { getPhoenixPayoffLine, getPhoenixStoryBeats, getPrePhoenixDeathEmberLine, insertPhoenixPayoffLine } from "../../src/core/phoenixForeshadowing.js";
 import { regionDefinitions } from "../../src/data/regions/index.js";
 
 // Upcoming encounter follows the fixed plan type and never names enemies.
@@ -38,5 +38,17 @@ assert.equal(withPayoff.length, storyLines.length + 1);
 assert.equal(withPayoff.at(-1), storyLines.at(-1), "the phoenix return stays the closing line");
 assert.match(withPayoff.at(-2), /倒下 2 次/);
 assert.deepEqual(insertPhoenixPayoffLine([], 2), []);
+
+// Presentation beats stay aligned with the lines: the death line darkens the scene,
+// the payoff line shares the ember beat, and the fire only rises on the closing line.
+const storyBeats = regionDefinitions.plains.clearStory.beats;
+assert.equal(storyBeats.length, storyLines.length, "one beat per original story line");
+const alignedBeats = getPhoenixStoryBeats(storyBeats, withPayoff.length);
+assert.deepEqual(alignedBeats, ["star", "gaze", "death", "ember", "ember", "phoenix"]);
+withPayoff.forEach((line, index) => {
+  if (/story-mark-death/.test(line)) assert.equal(alignedBeats[index], "death", "the death line plays the death beat");
+});
+assert.equal(alignedBeats.indexOf("phoenix"), withPayoff.length - 1, "the phoenix fire must not appear before the closing line");
+assert.deepEqual(getPhoenixStoryBeats(undefined, 3), ["", "", ""], "missing beats fall back to the static presentation");
 
 console.log("Run foreshadowing tests passed.");

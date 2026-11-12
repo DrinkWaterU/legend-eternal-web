@@ -862,6 +862,7 @@
     "id": "plains-phoenix-awakening",
     "resultLabel": "命運覺醒",
     "encounterLabel": "星穹之外",
+    "beats": ["star", "gaze", "death", "ember", "phoenix"],
     "lines": [
       "魔化野豬王倒下後，牠身上的紋路化作無溫的<span class=\"story-mark-star\">星光</span>。",
       "平原的風停了，你在<span class=\"story-mark-star\">星穹之外</span>看見<span class=\"story-mark-star\">某個存在</span>睜開了眼。",

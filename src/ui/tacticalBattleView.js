@@ -30,7 +30,8 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
     const selection = controls.ownerDocument.createElement("div"); selection.className = "tactical-selection"; selection.hidden = true;
     const result = controls.ownerDocument.createElement("p"); result.setAttribute("aria-live", "polite");
     const survival = controls.ownerDocument.createElement("p"); survival.className = "tactical-survival";
-    survival.textContent = `目前生命 ${state.hero.hp} / ${state.hero.maxHp}｜護盾 ${state.hero.shield || 0}`;
+    // Camp/safe-area returns can render before any run has created a hero.
+    if (state.hero) survival.textContent = `目前生命 ${state.hero.hp} / ${state.hero.maxHp}｜護盾 ${state.hero.shield || 0}`;
     const confirm = controls.ownerDocument.createElement("button"); confirm.type = "button"; confirm.className = "primary-button"; confirm.dataset.actionConfirm = "true";
     selection.append(result, survival, confirm);
     const terrainTypes = ["move", "break", "ride", "slip", "demolish", "tool-step", "tool-rock", "tool-brace", "shove", "gust-break"];
