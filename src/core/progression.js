@@ -48,6 +48,7 @@ export function normalizeCharacterProgress(progress, character) {
   if (progress.level >= getCharacterMaxLevel(character)) {
     progress.exp = Math.min(progress.exp, getExpStorageLimit(progress.level, character));
   }
+  progress.emberLevel = Math.max(0, Math.min(getCharacterMaxLevel(character), Math.floor(Number(progress.emberLevel) || 0)));
   progress.learnedSkills = getSkillsForLevel(character, progress.level).map((skill) => skill.id);
   progress.equipment = {
     weaponId: typeof progress.equipment?.weaponId === "string"

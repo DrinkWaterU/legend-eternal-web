@@ -187,6 +187,7 @@ function migrateProgression(save, rawSave, options = {}) {
     if (shouldResetLegacyCharacterGrowth) {
       progress.level = 1;
       progress.exp = 0;
+      progress.emberLevel = 0;
       progress.learnedSkills = [];
       return;
     }
@@ -199,6 +200,7 @@ function migrateProgression(save, rawSave, options = {}) {
       );
     }
     progress.learnedSkills = Array.isArray(rawProgress.learnedSkills) ? rawProgress.learnedSkills : [];
+    progress.emberLevel = toSafeInteger(rawProgress.emberLevel);
   });
 }
 

@@ -304,7 +304,7 @@
       "critChance": 0.03,
       "chargeEvery": 3,
       "chargeMultiplier": 1.45,
-      "expReward": 28,
+      "expReward": 40,
       "rewards": {
         "materials": [
           {
@@ -335,7 +335,7 @@
       "critChance": 0,
       "regenEvery": 3,
       "regenAmount": 6,
-      "expReward": 26,
+      "expReward": 38,
       "rewards": {
         "materials": [
           {

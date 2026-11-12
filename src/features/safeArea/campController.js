@@ -1,3 +1,4 @@
+import { describeEmberRecovery } from "../../core/emberRecovery.js";
 import {
   getCharacterMaxLevel,
   getExpStorageLimit,
@@ -87,9 +88,11 @@ export function createCampController({
     renderCampTravelButton(safeArea);
 
     if (els.campWarning) {
-      els.campWarning.textContent = phoenixUnlocked
+      const emberText = describeEmberRecovery(progress);
+      els.campWarning.textContent = (phoenixUnlocked
         ? "鳳凰的加護已覺醒。死亡會結束本輪冒險，但角色等級與經驗會保留。"
-        : "警告：死亡會失去目前等級與經驗；撤退能保留成長。倒下時，沒有任何力量會接住你——至少現在還沒有。";
+        : "警告：死亡會失去目前等級與經驗；撤退能保留成長。倒下時，沒有任何力量會接住你——至少現在還沒有。")
+        + (emberText ? `\n灰燼回復中：${emberText}` : "");
       els.campWarning.dataset.type = phoenixUnlocked ? "blessed" : "danger";
     }
   }

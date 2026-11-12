@@ -77,6 +77,7 @@ function createDefaultCharacterProgression() {
       unlocked: characterId === DEFAULT_CHARACTER_ID,
       level: 1,
       exp: 0,
+      emberLevel: 0,
       learnedSkills: [],
       equipment: { weaponId: null },
       runs: 0,
