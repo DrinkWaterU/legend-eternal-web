@@ -8,8 +8,8 @@
 
 1. 從專案根目錄執行 `git status --short --branch`。`dev` 應與 `origin/dev` 一致。
 2. 核對 `VERSION`、`tools/VERSION` 和 `src/config.js`。三處都應是 `v0.2.11.0-alpha`。
-3. 向交付者取得 Git 以外的資料：`企劃/` 與 `tools/verification-artifacts/`。說明見第 6 節。
-4. 讀取 [專案審查準則](AGENTS.md)。每一輪改動都要留審查紀錄。
+3. 向交付者取得 Git 以外的資料：`AGENTS.md`、`企劃/` 與 `tools/verification-artifacts/`。說明見第 6 節。
+4. 讀取 [專案審查準則](AGENTS.md)。作者要求代理隨時質疑、透過討論決定；玩法、數值、介面等改動要留審查紀錄。
 5. 讀取本輪紀錄：[研修回饋修訂紀錄](企劃/v0.2.11.0_研修回饋修訂審查紀錄.md) 與 [劇情前留存與死亡伏筆紀錄](企劃/v0.2.11.x_劇情前留存與死亡伏筆紀錄.md)。
 
 | 位置 | 版本 | Git 基準 |
@@ -107,6 +107,7 @@
 
 | 內容 | 說明 |
 | --- | --- |
+| `AGENTS.md` | 專案審查準則，只給作者與代理使用。自 2026-11-12 起受 `.gitignore` 排除，不上遠端，須另附。GitHub 歷史中仍有舊版本。 |
 | `企劃/` | 受 `.gitignore` 排除。包含第五輪審查評論、研修修訂紀錄與本輪劇情紀錄。須另附。 |
 | `tools/verification-artifacts/` | 未追蹤，約 363 MB。包含 `r4-baseline-backup-20261112/`（含 `SHA256SUMS`）、`r4-paired-45*`、`r4-paired-100*`、`r4-paired-*-r5fix*` 與歷次截圖。裂陣係數的判定依據在這裡。 |
 | 其他未追蹤項 | `tools/` 下的幾個 demo／prototype 目錄、`.claude/`、`.playwright-mcp/`、`代訂企劃.txt`。交付前請作者確認是否需要。 |
