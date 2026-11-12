@@ -966,6 +966,240 @@
   }
 }
 
+/* Typewriter reveal: characters appear one by one; cue words play their effect
+   when typing reaches them (see plainsStoryController and plains.json clearStory). */
+.story-text p.is-typing {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+.story-char {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.story-char.is-shown {
+  opacity: 1;
+}
+
+.story-cue-gaze,
+.story-cue-shatter,
+.story-mark-death[data-fx],
+.story-mark-phoenix[data-fx="bloom"] {
+  display: inline-block;
+}
+
+/* 「睜開」: turns red and trembles together with the eye and the whole panel. */
+.story-cue-gaze.is-cued {
+  color: #ff6f6a;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(255, 80, 72, 0.6), 0 0 22px rgba(190, 30, 40, 0.4);
+  animation: cueTremble 950ms ease-out, cueRedPulse 2.6s ease-in-out 950ms infinite;
+}
+
+/* 「壓碎」: squashed and jittered. */
+.story-cue-shatter.is-cued {
+  color: #d9dcf4;
+  font-weight: 900;
+  animation: cueCrush 700ms ease-out;
+}
+
+/* 「死亡」: a heavy single toll. */
+.story-mark-death.is-cued {
+  animation: cueToll 1100ms ease-out;
+}
+
+/* 「鳳凰的加護」: blooms with warm light. */
+.story-mark-phoenix[data-fx="bloom"].is-cued {
+  animation: cueBloom 1600ms ease-out, phoenixWord 2.8s ease-in-out 1600ms infinite;
+}
+
+.story-cue.is-settled,
+.story-mark-death.is-settled {
+  animation: none;
+}
+
+.story-mark-phoenix[data-fx="bloom"].is-settled {
+  animation: phoenixWord 2.8s ease-in-out infinite;
+}
+
+.story-cue-gaze.is-settled {
+  animation: cueRedPulse 2.6s ease-in-out infinite;
+}
+
+/* Overlay used for flashes (red on the gaze, warm on the phoenix). */
+.story-panel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  content: "";
+}
+
+/* 星光: the sky flares once. */
+.story-panel.fx-twinkle .story-star-field {
+  animation: starDrift 90s linear infinite, starFlare 1400ms ease-out;
+}
+
+/* 風停了: the drifting sky stops. */
+.story-panel.fx-still .story-star-field,
+.story-panel.fx-still .story-star-glow {
+  animation-play-state: paused;
+}
+
+/* 睜開: the whole panel shakes, the iris flares, the edges flash red. */
+.story-panel[data-beat="gaze"] .story-star-eye {
+  transition-duration: 650ms;
+}
+
+.story-panel.fx-quake {
+  animation: storyQuake 950ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.story-panel.fx-quake::after {
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(200, 24, 36, 0.38) 100%);
+  animation: overlayFlash 950ms ease-out;
+}
+
+.story-panel.fx-quake .story-star-eye::after {
+  animation: irisFlare 950ms ease-out;
+}
+
+/* 壓碎: every thought on the page blurs and breaks for a moment. */
+.story-panel.fx-shatter .story-text p.is-typing {
+  animation: thoughtShatter 1800ms ease-out;
+}
+
+/* 死亡: the panel drops once under the weight. */
+.story-panel.fx-toll .story-dialog {
+  animation: storyToll 1100ms ease-out;
+}
+
+/* 那點微光／它沒有熄滅: the ember at the bottom flares. */
+.story-panel.fx-flare .story-phoenix-strip::before {
+  animation: emberFlare 1500ms ease-out;
+}
+
+/* 鳳凰的加護: warm light floods the panel. */
+.story-panel.fx-bloom::after {
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 196, 110, 0.42), rgba(255, 140, 70, 0.12) 55%, transparent 80%);
+  animation: overlayFlash 1800ms ease-out;
+}
+
+.story-panel.fx-bloom .story-ember-field {
+  animation-duration: 2.4s;
+}
+
+@keyframes cueTremble {
+  0% { transform: scale(1); }
+  8% { transform: translate(-2px, 1px) rotate(-2deg) scale(1.18); }
+  16% { transform: translate(2px, -1px) rotate(2deg) scale(1.16); }
+  24% { transform: translate(-2px, -1px) rotate(-1deg) scale(1.14); }
+  32% { transform: translate(2px, 1px) rotate(1deg) scale(1.12); }
+  44% { transform: translate(-1px, 0) scale(1.08); }
+  58% { transform: translate(1px, 0) scale(1.04); }
+  100% { transform: none; }
+}
+
+@keyframes cueRedPulse {
+  50% { text-shadow: 0 0 14px rgba(255, 80, 72, 0.85), 0 0 30px rgba(190, 30, 40, 0.5); }
+}
+
+@keyframes cueCrush {
+  0% { transform: none; filter: none; }
+  20% { transform: scale(1.12, 0.62) translateY(3px); filter: blur(1px); }
+  40% { transform: scale(0.94, 1.08) translateX(-2px); }
+  60% { transform: scale(1.03, 0.94) translateX(2px); }
+  100% { transform: none; filter: none; }
+}
+
+@keyframes cueToll {
+  0% { transform: scale(1.6); opacity: 0.2; text-shadow: 0 0 30px rgba(255, 90, 80, 0.9); }
+  35% { transform: scale(0.94); opacity: 1; }
+  60% { transform: scale(1.04); }
+  100% { transform: none; }
+}
+
+@keyframes cueBloom {
+  0% { transform: scale(0.92); }
+  30% { transform: scale(1.12); text-shadow: 0 0 18px rgba(255, 220, 150, 0.95), 0 0 40px rgba(244, 154, 82, 0.7); }
+  100% { transform: none; }
+}
+
+@keyframes starFlare {
+  0% { filter: brightness(1); }
+  25% { filter: brightness(2.1) drop-shadow(0 0 4px rgba(210, 216, 255, 0.9)); }
+  100% { filter: brightness(1); }
+}
+
+@keyframes storyQuake {
+  0%, 100% { transform: none; }
+  6% { transform: translate(-9px, 3px); }
+  12% { transform: translate(8px, -4px); }
+  18% { transform: translate(-7px, -2px); }
+  24% { transform: translate(7px, 3px); }
+  32% { transform: translate(-5px, 2px); }
+  40% { transform: translate(5px, -2px); }
+  50% { transform: translate(-3px, 1px); }
+  62% { transform: translate(2px, -1px); }
+  76% { transform: translate(-1px, 0); }
+}
+
+@keyframes overlayFlash {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes irisFlare {
+  0% { box-shadow: 0 0 22px rgba(214, 216, 255, 0.75); }
+  20% { box-shadow: 0 0 40px rgba(255, 120, 110, 0.95), 0 0 90px rgba(200, 40, 50, 0.7); }
+  100% { box-shadow: 0 0 22px rgba(214, 216, 255, 0.75), 0 0 54px rgba(150, 146, 255, 0.55); }
+}
+
+@keyframes thoughtShatter {
+  0% { filter: none; transform: none; opacity: 1; }
+  12% { filter: blur(2.5px); transform: translateX(-4px) skewX(-6deg); opacity: 0.55; }
+  24% { filter: blur(1px); transform: translateX(3px) skewX(4deg); opacity: 0.8; }
+  40% { filter: blur(2px); transform: translateX(-2px); opacity: 0.5; }
+  100% { filter: none; transform: none; opacity: 1; }
+}
+
+@keyframes storyToll {
+  0% { transform: none; }
+  18% { transform: translateY(7px); }
+  45% { transform: translateY(-2px); }
+  100% { transform: none; }
+}
+
+@keyframes emberFlare {
+  0% { filter: brightness(1); transform: none; }
+  25% { filter: brightness(2.2); transform: scale(1.35); }
+  100% { filter: brightness(1); transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-char {
+    transition-duration: 0.01ms;
+  }
+
+  .story-cue-gaze.is-cued,
+  .story-cue-gaze.is-settled,
+  .story-cue-shatter.is-cued,
+  .story-mark-death.is-cued,
+  .story-mark-phoenix[data-fx="bloom"].is-cued,
+  .story-panel.fx-quake,
+  .story-panel.fx-quake .story-star-eye::after,
+  .story-panel.fx-shatter .story-text p.is-typing,
+  .story-panel.fx-toll .story-dialog,
+  .story-panel.fx-flare .story-phoenix-strip::before,
+  .story-panel.fx-twinkle .story-star-field {
+    animation: none;
+  }
+}
+
 .debug-panel {
   position: fixed;
   right: 18px;

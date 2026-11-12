@@ -10,8 +10,7 @@ import {
   REST_HEAL_RATIO,
   RUN_STARTING_FLEES,
   SAFE_ESCAPE_ENEMY_HEAL_RATIO,
-  STORY_FINISH_EXTRA_DELAY_MS,
-  STORY_LINE_DELAY_MS,
+  STORY_TYPEWRITER_TIMING,
   TACTICAL_FLEE_RESULTS
 } from "./runtimeConstants.js";
 import { createRunLifecycleController } from "../features/adventure/runLifecycleController.js";
@@ -239,8 +238,7 @@ export function createAdventureFeatures({
     documentRef,
     windowRef,
     regionDefinitions,
-    storyLineDelayMs: STORY_LINE_DELAY_MS,
-    storyFinishExtraDelayMs: STORY_FINISH_EXTRA_DELAY_MS,
+    storyTypewriterTiming: STORY_TYPEWRITER_TIMING,
     plainsTrialAchievementId: PLAINS_TRIAL_ACHIEVEMENT_ID,
     hasPhoenixBlessing: foundation.hasPhoenixBlessing,
     setNavigationContext: foundation.setNavigationContext,

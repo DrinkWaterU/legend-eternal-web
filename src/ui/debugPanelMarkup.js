@@ -116,6 +116,15 @@ export function createDebugPanelElement(documentRef = document) {
             中段選擇
             <select class="debug-mid-choice"></select>
           </label>
+          <label class="debug-story-defeats-row" hidden>
+            死亡次數預覽
+            <select class="debug-story-defeats">
+              <option value="">依目前存檔</option>
+              <option value="0">0 次（從未倒下）</option>
+              <option value="1">1 次</option>
+              <option value="3">3 次</option>
+            </select>
+          </label>
           <label class="debug-hp-row">
             測試場景進場 HP（%）
             <input class="debug-scenario-hp" type="number" min="1" max="100" value="75" />

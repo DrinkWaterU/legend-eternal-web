@@ -13,17 +13,9 @@ export function getPrePhoenixDeathEmberLine(totalDefeats) {
 export function getPhoenixPayoffLine(totalDefeats) {
   const count = Math.max(0, Math.floor(Number(totalDefeats) || 0));
   if (count <= 0) {
-    return "你從未在旅途中倒下。第一次面對死亡，<span class=\"story-mark-phoenix\">那點微光</span>卻像早就在等你。";
+    return "你從未在旅途中倒下。第一次面對死亡，<span class=\"story-mark-phoenix\" data-fx=\"flare\">那點微光</span>卻像早就在等你。";
   }
-  return `你認得這點光。你曾倒下 ${count} 次，它每次都在灰燼裡閃過，又熄滅。這一次，<span class="story-mark-phoenix">它沒有熄滅</span>。`;
-}
-
-// Presentation beats for each story line, kept aligned with insertPhoenixPayoffLine:
-// the payoff line belongs to the "ember" beat (the light that did not go out).
-export function getPhoenixStoryBeats(beats, lineCount) {
-  const source = Array.isArray(beats) ? beats : [];
-  const aligned = source.length > 0 ? [...source.slice(0, -1), "ember", source.at(-1)] : [];
-  return Array.from({ length: Math.max(0, lineCount) }, (_, index) => aligned[index] || "");
+  return `你認得這點光。你曾倒下 ${count} 次，它每次都在灰燼裡閃過，又熄滅。這一次，<span class="story-mark-phoenix" data-fx="flare">它沒有熄滅</span>。`;
 }
 
 export function insertPhoenixPayoffLine(lines, totalDefeats) {

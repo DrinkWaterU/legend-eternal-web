@@ -862,13 +862,12 @@
     "id": "plains-phoenix-awakening",
     "resultLabel": "命運覺醒",
     "encounterLabel": "星穹之外",
-    "beats": ["star", "gaze", "death", "ember", "phoenix"],
     "lines": [
-      "魔化野豬王倒下後，牠身上的紋路化作無溫的<span class=\"story-mark-star\">星光</span>。",
-      "平原的風停了，你在<span class=\"story-mark-star\">星穹之外</span>看見<span class=\"story-mark-star\">某個存在</span>睜開了眼。",
-      "你的思緒被那道<span class=\"story-mark-star\">目光</span>壓碎，<span class=\"story-mark-death\">死亡</span>隨之降臨。",
-      "<span class=\"story-mark-phoenix\">灰燼般的微光</span>在黑暗中燃起。",
-      "<span class=\"story-mark-phoenix\">鳳凰的加護</span>回應了死亡，將你帶回<span class=\"story-mark-phoenix\">營地</span>。"
+      "魔化野豬王倒下後，牠身上的紋路化作無溫的<span class=\"story-mark-star\" data-fx=\"twinkle\">星光</span>。",
+      "平原的<span class=\"story-cue story-cue-still\" data-fx=\"still\">風停了</span>，你在<span class=\"story-mark-star\">星穹之外</span>看見<span class=\"story-mark-star\">某個存在</span><span class=\"story-cue story-cue-gaze\" data-beat=\"gaze\" data-fx=\"quake\">睜開</span>了眼。",
+      "你的思緒被那道<span class=\"story-mark-star\">目光</span><span class=\"story-cue story-cue-shatter\" data-fx=\"shatter\">壓碎</span>，<span class=\"story-mark-death\" data-beat=\"death\" data-fx=\"toll\">死亡</span>隨之降臨。",
+      "<span class=\"story-mark-phoenix\" data-beat=\"ember\">灰燼般的微光</span>在黑暗中燃起。",
+      "<span class=\"story-mark-phoenix\" data-beat=\"phoenix\" data-fx=\"bloom\">鳳凰的加護</span>回應了死亡，將你帶回<span class=\"story-mark-phoenix\">營地</span>。"
     ]
   }
 }

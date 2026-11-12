@@ -1,7 +1,8 @@
 // Safe-route preview, pre-phoenix death embers and the phoenix payoff line.
 import assert from "node:assert/strict";
 import { describeUpcomingEncounter } from "../../src/core/upcomingEncounter.js";
-import { getPhoenixPayoffLine, getPhoenixStoryBeats, getPrePhoenixDeathEmberLine, insertPhoenixPayoffLine } from "../../src/core/phoenixForeshadowing.js";
+import { getPhoenixPayoffLine, getPrePhoenixDeathEmberLine, insertPhoenixPayoffLine } from "../../src/core/phoenixForeshadowing.js";
+import { planTypewriterTimeline } from "../../src/ui/storyTypewriter.js";
 import { regionDefinitions } from "../../src/data/regions/index.js";
 
 // Upcoming encounter follows the fixed plan type and never names enemies.
@@ -39,16 +40,32 @@ assert.equal(withPayoff.at(-1), storyLines.at(-1), "the phoenix return stays the
 assert.match(withPayoff.at(-2), /倒下 2 次/);
 assert.deepEqual(insertPhoenixPayoffLine([], 2), []);
 
-// Presentation beats stay aligned with the lines: the death line darkens the scene,
-// the payoff line shares the ember beat, and the fire only rises on the closing line.
-const storyBeats = regionDefinitions.plains.clearStory.beats;
-assert.equal(storyBeats.length, storyLines.length, "one beat per original story line");
-const alignedBeats = getPhoenixStoryBeats(storyBeats, withPayoff.length);
-assert.deepEqual(alignedBeats, ["star", "gaze", "death", "ember", "ember", "phoenix"]);
-withPayoff.forEach((line, index) => {
-  if (/story-mark-death/.test(line)) assert.equal(alignedBeats[index], "death", "the death line plays the death beat");
-});
-assert.equal(alignedBeats.indexOf("phoenix"), withPayoff.length - 1, "the phoenix fire must not appear before the closing line");
-assert.deepEqual(getPhoenixStoryBeats(undefined, 3), ["", "", ""], "missing beats fall back to the static presentation");
+// Story cues: scene beats fire on the words that describe them, in story order,
+// and the phoenix fire only appears on the closing line.
+const beatOrder = withPayoff.flatMap((line) => [...line.matchAll(/data-beat="([a-z]+)"/g)].map((match) => match[1]));
+assert.deepEqual(beatOrder, ["gaze", "death", "ember", "phoenix"]);
+assert.match(storyLines[1], /data-beat="gaze" data-fx="quake">睜開</, "the eye opens on 睜開 and shakes the panel");
+assert.match(storyLines[2], /data-beat="death"[^>]*>死亡</);
+assert.match(withPayoff.at(-1), /data-beat="phoenix"/);
+withPayoff.slice(0, -1).forEach((line) => assert.doesNotMatch(line, /data-beat="phoenix"/));
+assert.match(getPhoenixPayoffLine(0), /data-fx="flare"/);
+assert.match(getPhoenixPayoffLine(2), /data-fx="flare"/);
+const stripTags = (html) => html.replace(/<[^>]+>/g, "");
+assert.equal(stripTags(storyLines[1]), "平原的風停了，你在星穹之外看見某個存在睜開了眼。", "cue markup must not change the text");
+
+// Typewriter timeline: characters advance in order, punctuation and cue words hold longer,
+// lines pause between each other, and the finish button comes after the last character.
+const timing = { charDelayMs: 100, linePauseMs: 500, cueHoldMs: 700, finishDelayMs: 900 };
+const step = (char, extra = {}) => ({ char, beat: "", fx: "", cueEnd: false, ...extra });
+const plan = planTypewriterTimeline([
+  [step("風"), step("停", { fx: "still" }), step("。")],
+  [step("睜", { beat: "gaze", fx: "quake" }), step("開", { cueEnd: true }), step("了")]
+], timing);
+assert.deepEqual(plan.events.map((event) => event.at), [0, 100, 200, 1040, 1140, 1940]);
+assert.equal(plan.events[3].beat, "gaze");
+assert.equal(plan.events[3].fx, "quake");
+assert.equal(plan.events[1].fx, "still");
+assert.equal(plan.finishAt, 1940 + 100 + 900, "。 holds 3.4× a character, 開 ends a cue (+700)");
+assert.deepEqual(planTypewriterTimeline([], timing), { events: [], finishAt: 900 });
 
 console.log("Run foreshadowing tests passed.");

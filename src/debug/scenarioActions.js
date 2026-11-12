@@ -111,7 +111,10 @@ export function createDebugScenarioActions(host) {
           persistSelection: false
         });
         state.defeatedBoss = true;
-        showPlainsStory();
+        // Preview the death-count line without touching the save's statistics.
+        showPlainsStory({
+          previewDefeats: options.storyDefeats === "" || options.storyDefeats == null ? null : Number(options.storyDefeats)
+        });
         return "已觸發平原星神劇情 Sandbox；完成後不會解鎖鳳凰。";
       case "goblinEnding": {
         const route = getRouteDefinition("goblin-camp");
