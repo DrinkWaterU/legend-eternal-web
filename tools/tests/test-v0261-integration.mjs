@@ -83,7 +83,7 @@ assert.match(responsiveCss, /@media \(max-width: 920px\)[\s\S]*\.guild-record-la
 assert.match(responsiveCss, /@media \(max-width: 980px\)[\s\S]*\.guild-sale-layout/);
 
 if (!existsSync(new URL("AI_PACKAGE_INFO.txt", root))) {
-  await access(new URL("assets/images/npcs/anping/celine.png", root));
+  await access(new URL("assets/images/npcs/anping/celine.webp", root));
 }
 assert.match(html, new RegExp(`styles\\.css\\?v=${GAME_VERSION.slice(1).replaceAll(".", "\\.")}`));
 assert.match(html, new RegExp(`game\\.js\\?v=${GAME_VERSION.slice(1).replaceAll(".", "\\.")}`));

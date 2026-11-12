@@ -86,7 +86,7 @@ const newWeapons = ["windbreak-sword", "ridgewind-bow", "cairn-warhammer", "gale
 assert.equal(new Set(newWeapons.map(id => weaponDefinitions[id].categoryId)).size, 5);
 for (const id of newWeapons) {
   const w = weaponDefinitions[id];
-  assert.ok(existsSync(`assets/images/icons/weapons/${w.iconAssetId}.png`));
+  assert.ok(existsSync(`assets/images/icons/weapons/${w.iconAssetId}.webp`));
   assert.ok(w.recipe.materialCosts.every(m => materialDefinitions[m.materialId]));
   assert.ok(w.recipe.materialCosts.some(m => m.materialId.startsWith("slate") || m.materialId.startsWith("gale")));
 }
