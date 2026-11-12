@@ -5,28 +5,28 @@
     {
       "id": "outer-desktop",
       "file": "assets/images/regions/highlands/outer-desktop.png",
-      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "reference": "assets/images/regions/forest/forest-outer.webp",
       "transparentBackground": false,
       "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. LANDSCAPE 16:9. Outer ascending trail, leaning stone cairns and broad low flat-topped ridges. Open horizon."
     },
     {
       "id": "outer-mobile",
       "file": "assets/images/regions/highlands/outer-mobile.png",
-      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "reference": "assets/images/regions/forest/forest-outer.webp",
       "transparentBackground": false,
       "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. PORTRAIT 9:16, independently composed vertical ascending upland trail. Leaning cairn in upper left, a strong terraced slate cliff on right edge, distant open ridges above center. Top and side silhouettes readable around mobile game cards."
     },
     {
       "id": "summit-desktop",
       "file": "assets/images/regions/highlands/summit-desktop.png",
-      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "reference": "assets/images/regions/forest/forest-outer.webp",
       "transparentBackground": false,
       "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. LANDSCAPE 16:9. Inner summit pass: two tall weathered slate rock pillars frame a narrow ridge path, lowered clouds and a distant broken stone windbreak wall at upper right. More enclosed than outer area; not a duplicate layout."
     },
     {
       "id": "summit-mobile",
       "file": "assets/images/regions/highlands/summit-mobile.png",
-      "reference": "assets/images/regions/forest/forest-outer.jpg",
+      "reference": "assets/images/regions/forest/forest-outer.webp",
       "transparentBackground": false,
       "prompt": "Transform this reference game's pixel environment into a DIFFERENT location for the SAME game: Windbreak Highlands. Preserve its unmistakable coarse pixel clusters, hard stair-step contours, 3-5 shade color ramps, limited colors. The output must visually look like a 426x240 pixel illustration enlarged with nearest-neighbor pixels, NOT a digital painting with tiny noise, NO anti-aliasing, NO thin individual grass blades. Use large geometric grass clumps and solid stone planes. Dry muted sage/ochre grass, layered blue-gray slate cliffs, overcast pale blue sky, diffuse upper-left light. Traveler eye-level, low detail calm center where game cards will cover it, clear wind-bent rock/grass silhouettes at outside edges. No UI,text,people,snow,magical glow. PORTRAIT 9:16. Summit pass in vertical composition: tall tiered slate pillar rises up left edge, a narrow rocky ridge ascends from lower right to upper center, distant broken windbreak wall at upper right under low pale clouds. Enclosed imposing terrain."
     },
