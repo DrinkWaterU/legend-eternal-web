@@ -148,14 +148,14 @@
 }
 
 .enemy-card[data-kind="elite"] .enemy-crest {
-  background: #6a4a12;
-  color: #ffe7b0;
+  background: var(--px-primary);
+  color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 0 0 2px var(--px-gold);
 }
 
 .enemy-card[data-kind="boss"] .enemy-crest {
-  background: #7a2f2a;
-  color: #ffe7b0;
+  background: var(--px-boss);
+  color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 0 0 2px var(--px-red);
 }
 
@@ -281,7 +281,7 @@
 .meter-layer.pending-loss {
   z-index: 3;
   background: #5a0f1c;
-  box-shadow: inset 0 0 0 2px #ff9aa2;
+  box-shadow: inset 0 0 0 2px var(--px-loss);
   animation: px-pending-blink 1s steps(2, jump-none) infinite;
 }
 
@@ -289,7 +289,7 @@
 .meter-layer.pending-gain {
   z-index: 3;
   background: rgba(126, 208, 106, 0.28);
-  box-shadow: inset 0 0 0 2px #c8f7bb;
+  box-shadow: inset 0 0 0 2px #c3e2b1;
 }
 
 .meter-layer.shield {
@@ -369,8 +369,8 @@
 
 .combat-status.is-shield { color: var(--px-sky); }
 .combat-status.is-normal { color: var(--px-green); }
-.combat-status.is-negative { color: #ff9aa2; }
-.combat-status.is-positive { color: #9be8b0; }
+.combat-status.is-negative { color: var(--px-loss); }
+.combat-status.is-positive { color: #a9d6b4; }
 .combat-status.is-protected { color: var(--px-gold); }
 
 .combat-status.is-fury {
@@ -430,8 +430,8 @@
   display: block;
   margin-top: 12px;
   padding: 8px 10px;
-  background: #3a2408;
-  color: #ffe2a6;
+  background: var(--px-warn);
+  color: var(--px-warn-ink);
   font-size: var(--px-text-m);
   line-height: 1.6;
   overflow-wrap: anywhere;
@@ -548,7 +548,7 @@
 }
 
 .hero-combat-status .meter-text.is-critical {
-  color: #ff9aa2;
+  color: var(--px-loss);
 }
 
 .battle-hero:has(.meter-text.is-critical) .meter-layer.hp {
@@ -801,36 +801,36 @@
 }
 
 .combat-actions .action-combat {
-  background: #6a4a12;
-  color: #ffe7b0;
+  background: var(--px-primary);
+  color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
 }
 
 .combat-actions .action-combat:hover:not(:disabled),
 .combat-actions .action-combat:focus-visible {
-  background: #87601a;
+  background: var(--px-primary-hover);
 }
 
 .combat-actions .action-guard {
-  background: #18424a;
-  color: #c9f3ef;
+  background: var(--px-guard);
+  color: var(--px-guard-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-teal);
 }
 
 .combat-actions .action-guard:hover:not(:disabled),
 .combat-actions .action-guard:focus-visible {
-  background: #1f5560;
+  background: var(--px-guard-hover);
 }
 
 .combat-actions .action-forward {
-  background: #1d4a2a;
-  color: #d3f6c9;
+  background: var(--px-go);
+  color: var(--px-go-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-green);
 }
 
 .combat-actions .action-forward:hover:not(:disabled),
 .combat-actions .action-forward:focus-visible {
-  background: #25613a;
+  background: var(--px-go-hover);
 }
 
 .combat-actions .action-flee,
@@ -845,7 +845,7 @@
   content: attr(data-hint);
   display: block;
   margin-top: 2px;
-  color: #9fe3dd;
+  color: #a9d3cc;
   font-size: var(--px-text-s);
 }
 

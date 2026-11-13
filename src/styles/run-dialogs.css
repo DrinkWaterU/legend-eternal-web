@@ -68,7 +68,7 @@
 
 .blessing-card:not(:disabled):hover,
 .blessing-card:not(:disabled):focus-visible {
-  background: #2a3661;
+  background: var(--px-hover);
   transform: none;
   outline: none;
   box-shadow: var(--px-frame), inset 0 0 0 4px var(--rarity);
@@ -145,7 +145,7 @@
 
 .blessing-card > b {
   margin-top: 8px;
-  color: #a5e88f;
+  color: var(--px-effect);
   font-size: var(--px-text-m);
   font-weight: 400;
   line-height: 1.6;
@@ -258,7 +258,7 @@
 }
 
 .blessing-info-summary li {
-  color: #a5e88f;
+  color: var(--px-effect);
   font-size: var(--px-text-m);
 }
 
@@ -339,7 +339,7 @@
 
 .blessing-info-effect {
   margin: 2px 0 0;
-  color: #a5e88f;
+  color: var(--px-effect);
   font-size: var(--px-text-m);
   line-height: 1.6;
   white-space: pre-line;
@@ -425,7 +425,7 @@
 #gameScreen .event-actions button:focus-visible,
 #gameScreen .camp-transition-actions button:hover:not(:disabled),
 #gameScreen .camp-transition-actions button:focus-visible {
-  background: #2a3661;
+  background: var(--px-hover);
   transform: none;
   outline: none;
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
@@ -434,8 +434,8 @@
 .px-dialog .end-actions .primary-button,
 #gameScreen .event-actions .primary-button,
 #gameScreen .camp-transition-actions .primary-button {
-  background: #6a4a12;
-  color: #ffe7b0;
+  background: var(--px-primary);
+  color: var(--px-primary-ink);
   font-size: var(--px-text-l);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
 }
@@ -446,23 +446,23 @@
 #gameScreen .event-actions .primary-button:focus-visible,
 #gameScreen .camp-transition-actions .primary-button:hover:not(:disabled),
 #gameScreen .camp-transition-actions .primary-button:focus-visible {
-  background: #87601a;
+  background: var(--px-primary-hover);
 }
 
 .px-dialog .end-actions .danger-button {
-  background: #5a1a1c;
-  color: #ffd2cc;
+  background: var(--px-danger);
+  color: var(--px-danger-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-red);
 }
 
 .px-dialog .end-actions .danger-button:hover,
 .px-dialog .end-actions .danger-button:focus-visible {
-  background: #782326;
+  background: var(--px-danger-hover);
 }
 
 .px-dialog .end-actions button:disabled,
 #gameScreen .camp-transition-actions button:disabled {
-  color: #6b7499;
+  color: var(--px-disabled);
   cursor: not-allowed;
   filter: none;
   opacity: 1;
@@ -498,7 +498,7 @@
 }
 
 #endText.danger-text {
-  color: #ff9aa2;
+  color: var(--px-loss);
 }
 
 /* 三個重點數字放大，其餘一行一項。 */
@@ -565,11 +565,11 @@
 }
 
 .end-summary div.is-loss dd {
-  color: #ff9aa2;
+  color: var(--px-loss);
 }
 
 .end-summary div.is-gain dd {
-  color: #a5e88f;
+  color: var(--px-effect);
 }
 
 /* ---------- 戰鬥中的委託詳情 ---------- */
@@ -709,7 +709,7 @@
 
 .event-narrative {
   max-width: 680px;
-  color: #d5daf0;
+  color: #dcd5c5;
   font-size: var(--px-text-m);
   line-height: 1.8;
 }
@@ -760,14 +760,14 @@
 
 .event-choice-list .choice-button:hover:not(:disabled),
 .event-choice-list .choice-button:focus-visible {
-  background: #2a3661;
+  background: var(--px-hover);
   transform: none;
   outline: none;
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
 }
 
 .event-choice-list .choice-button:disabled {
-  color: #6b7499;
+  color: var(--px-disabled);
   cursor: wait;
   opacity: 1;
 }
@@ -803,7 +803,7 @@
   margin: 18px 0;
   padding: 10px 12px;
   background: var(--px-navy-3);
-  color: #ffe2a6;
+  color: var(--px-warn-ink);
   line-height: 1.6;
   box-shadow: inset 0 0 0 2px var(--px-gold);
 }
@@ -897,8 +897,8 @@
 .camp-transition-reminder {
   margin: 0;
   padding: 8px 10px;
-  background: #3a2408;
-  color: #ffe2a6;
+  background: var(--px-warn);
+  color: var(--px-warn-ink);
   font-size: var(--px-text-m);
   line-height: 1.6;
   box-shadow: inset 0 0 0 2px var(--px-gold);
@@ -944,7 +944,7 @@
 }
 
 .camp-transition-layout .camp-blessing-card.is-retained {
-  background: #3d3413;
+  background: var(--px-picked);
   box-shadow: var(--px-frame), inset 0 0 0 4px var(--px-gold);
 }
 
@@ -991,7 +991,7 @@
 
 .camp-transition-ready p {
   margin: 0;
-  color: #a5e88f;
+  color: var(--px-effect);
   font-size: var(--px-text-m);
 }
 

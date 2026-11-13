@@ -15,20 +15,45 @@
   --px-text-m: 18px;
   --px-text-l: 24px;
 
-  --px-ink: #f6edd0;
-  --px-dim: #aab3d8;
-  --px-navy: #141a2e;
-  --px-navy-2: #1f2847;
-  --px-navy-3: #0f1424;
-  --px-edge: #0a0d18;
-  --px-rim: #3b4a7a;
-  --px-gold: #f6c453;
-  --px-red: #e0584f;
-  --px-green: #7ed06a;
-  --px-teal: #58c7c0;
-  --px-sky: #7cc7ee;
-  --px-violet: #b69ae7;
-  --px-orange: #f08a4b;
+  /* 色彩：夜景偏冷、營火偏暖，兩者之間用低飽和的石板灰銜接。
+     飽和色只留給「現在該按的」與「危險」，其他一律收斂。 */
+  --px-ink: #efe6d2;
+  --px-dim: #a39d92;
+  --px-navy: #171a22;
+  --px-navy-2: #232733;
+  --px-navy-3: #11131a;
+  --px-edge: #07080c;
+  --px-rim: #3e4353;
+  --px-hover: #2e3343;
+  --px-gold: #d6b25e;
+  --px-red: #c65a50;
+  --px-green: #86b56f;
+  --px-teal: #73afa6;
+  --px-sky: #8eb2c6;
+  --px-violet: #a395c2;
+  --px-orange: #d38b58;
+  --px-disabled: #5e6271;
+  --px-effect: #a9d293;
+  --px-loss: #e2a199;
+
+  --px-primary: #4b3b1f;
+  --px-primary-hover: #5d4a26;
+  --px-primary-ink: #f2dfb2;
+  --px-primary-sub: #c9b68c;
+  --px-danger: #45211f;
+  --px-danger-hover: #582a27;
+  --px-danger-ink: #efcbc3;
+  --px-guard: #1e393a;
+  --px-guard-hover: #27494a;
+  --px-guard-ink: #cfe6e1;
+  --px-go: #213826;
+  --px-go-hover: #2a4730;
+  --px-go-ink: #d5e9c8;
+  --px-warn: #31250f;
+  --px-warn-ink: #eed7a4;
+  --px-alert: #331817;
+  --px-boss: #5c2b26;
+  --px-picked: #3a3219;
 
   /* 邊框粗細。四個方向各一條實心邊，四角自然留下缺口。 */
   --px-u: 4px;
@@ -74,7 +99,7 @@
 
 .px-button:hover:not(:disabled),
 .px-button:focus-visible {
-  background: #2a3661;
+  background: var(--px-hover);
   transform: none;
   outline: none;
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
@@ -85,7 +110,7 @@
 }
 
 .px-button:disabled {
-  color: #6b7499;
+  color: var(--px-disabled);
   cursor: default;
 }
 

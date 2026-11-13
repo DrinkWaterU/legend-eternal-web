@@ -132,15 +132,15 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #menuScreen .primary-button,
 #campScreen .primary-button,
 #regionScreen .primary-button {
-  background: #6a4a12;
-  color: #ffe7b0;
+  background: var(--px-primary);
+  color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
 }
 
 #menuScreen .danger-button,
 #campScreen .danger-button {
-  background: #5a1a1c;
-  color: #ffd2cc;
+  background: var(--px-danger);
+  color: var(--px-danger-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-red);
 }
 
@@ -158,18 +158,13 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #campScreen :is(.primary-button, .secondary-button):disabled,
 #regionScreen :is(.primary-button, .secondary-button):disabled {
   background: var(--px-navy-2);
-  color: #6b7499;
+  color: var(--px-disabled);
   cursor: not-allowed;
   opacity: 1;
   box-shadow: var(--px-frame), var(--px-rim-inset);
 }
 
 /* 大型入口按鈕：左側色條分辨用途 */
-.menu-button,
-.camp-feature-button {
-  --accent: var(--px-gold);
-}
-
 #menuScreen .menu-button,
 #campScreen .menu-button,
 .camp-feature-button {
@@ -178,32 +173,60 @@ body:has(#menuScreen.is-active) .topbar h1 {
   width: 100%;
   min-height: 0;
   overflow: visible;
-  padding: 12px 14px 14px 22px;
+  padding: 12px 14px 14px;
   border: 0;
   border-radius: 0;
   background: var(--px-navy-2);
   color: var(--px-ink);
   font-family: var(--px-font);
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), var(--px-rim-inset);
   transition: none;
 }
 
+/* layout.css 的舊色條（.menu-button::before 與 .choice-button 共用）在這裡關掉。 */
 #menuScreen .menu-button::before,
 #campScreen .menu-button::before,
 .camp-feature-button::before {
-  content: "";
-  position: absolute;
-  inset: 2px auto 6px 2px;
-  width: 8px;
-  background: var(--accent);
+  content: none;
+}
+
+/* 入口按鈕置中；選到時兩側出現游標，像傳統選單。
+   游標平時透明但仍佔位，文字才不會在選取時左右跳動。 */
+#menuScreen .menu-button span::before,
+#campScreen .menu-button span::before,
+.camp-feature-button span::before {
+  content: "▶ ";
+  color: transparent;
+}
+
+#menuScreen .menu-button span::after,
+#campScreen .menu-button span::after,
+.camp-feature-button span::after {
+  content: " ◀";
+  color: transparent;
+}
+
+#menuScreen .menu-button:is(:hover, :focus-visible) span::before,
+#menuScreen .menu-button:is(:hover, :focus-visible) span::after,
+#campScreen .menu-button:is(:hover, :focus-visible) span::before,
+#campScreen .menu-button:is(:hover, :focus-visible) span::after,
+.camp-feature-button:is(:hover, :focus-visible):not(:disabled) span::before,
+.camp-feature-button:is(:hover, :focus-visible):not(:disabled) span::after {
+  color: var(--px-gold);
+}
+
+/* 移動據點的「新地點」標籤是 span，不加游標。 */
+.camp-feature-button .camp-travel-badge::before,
+.camp-feature-button .camp-travel-badge::after {
+  content: none;
 }
 
 #menuScreen .menu-button:is(:hover, :focus-visible),
 #campScreen .menu-button:is(:hover, :focus-visible),
 .camp-feature-button:is(:hover, :focus-visible):not(:disabled) {
-  background: #2a3661;
+  background: var(--px-hover);
   transform: none;
   outline: none;
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
@@ -235,7 +258,7 @@ body:has(#menuScreen.is-active) .topbar h1 {
 }
 
 .camp-feature-button:disabled {
-  color: #6b7499;
+  color: var(--px-disabled);
   cursor: not-allowed;
 }
 
@@ -296,34 +319,18 @@ body:has(#menuScreen.is-active) {
   gap: 16px;
 }
 
-.menu-button:nth-child(1) {
-  --accent: var(--px-gold);
-}
-
-.menu-button:nth-child(2) {
-  --accent: var(--px-sky);
-}
-
-.menu-button:nth-child(3) {
-  --accent: var(--px-violet);
-}
-
-.menu-button:nth-child(4) {
-  --accent: var(--px-red);
-}
-
 #menuScreen .menu-button:nth-child(1) {
-  background: #6a4a12;
-  color: #ffe7b0;
+  background: var(--px-primary);
+  color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
 }
 
 #menuScreen .menu-button:nth-child(1) small {
-  color: #e6cf9a;
+  color: var(--px-primary-sub);
 }
 
 #menuScreen .menu-button:nth-child(1):is(:hover, :focus-visible) {
-  background: #87601a;
+  background: var(--px-primary-hover);
 }
 
 /* ---------- 待續旅程面板 ---------- */
@@ -338,6 +345,10 @@ body:has(#menuScreen.is-active) {
 .run-resume-panel[hidden],
 .run-resume-confirm[hidden] {
   display: none;
+}
+
+.run-resume-panel {
+  text-align: center;
 }
 
 .run-resume-panel h3 {
@@ -361,7 +372,7 @@ body:has(#menuScreen.is-active) {
 
 .run-resume-confirm p {
   margin: 0 0 6px;
-  color: #ffcfc4;
+  color: var(--px-danger-ink);
   font-size: var(--px-text-m);
   line-height: 1.7;
 }
@@ -416,7 +427,7 @@ body[data-scene="camp"] {
 
 /* 標題直接壓在場景圖上，用硬邊陰影維持可讀。 */
 .camp-copy {
-  text-align: left;
+  text-align: center;
 }
 
 .camp-copy .eyebrow {
@@ -440,7 +451,7 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 
 #campScreen .camp-copy .body-text {
   max-width: 520px;
-  margin: 0;
+  margin: 0 auto;
   color: var(--px-ink);
   text-shadow: 0 2px 0 var(--px-edge), 0 0 12px rgba(0, 0, 0, 0.9);
 }
@@ -486,17 +497,17 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 .camp-warning {
   margin: 0;
   padding: 10px 12px;
-  background: #3a1215;
-  color: #ffc9c2;
+  background: var(--px-alert);
+  color: var(--px-danger-ink);
   font-size: var(--px-text-m);
   line-height: 1.6;
-  text-align: left;
+  text-align: center;
   box-shadow: var(--px-frame), inset 0 0 0 2px var(--px-red);
 }
 
 .camp-warning[data-type="blessed"] {
-  background: #3a2408;
-  color: #ffe2a6;
+  background: var(--px-warn);
+  color: var(--px-warn-ink);
   box-shadow: var(--px-frame), inset 0 0 0 2px var(--px-gold);
 }
 
@@ -505,14 +516,14 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #campScreen .camp-primary-action {
-  padding: 18px 20px 20px 28px;
-  background: #6a4a12;
-  color: #ffe7b0;
+  padding: 18px 20px 20px;
+  background: var(--px-primary);
+  color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
 }
 
 #campScreen .camp-primary-action:is(:hover, :focus-visible) {
-  background: #87601a;
+  background: var(--px-primary-hover);
 }
 
 #campScreen .camp-primary-action > span {
@@ -520,7 +531,7 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #campScreen .camp-primary-action small {
-  color: #e6cf9a;
+  color: var(--px-primary-sub);
   font-size: var(--px-text-m);
 }
 
@@ -535,7 +546,7 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
   margin: 0 0 12px;
   color: var(--px-gold);
   font-size: var(--px-text-s);
-  text-align: left;
+  text-align: center;
 }
 
 .camp-feature-grid {
@@ -553,16 +564,9 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
   grid-column: 1 / -1;
 }
 
-.camp-feature-button[data-feature="region"] { --accent: var(--px-sky); }
-.camp-feature-button[data-feature="character"] { --accent: var(--px-violet); }
-.camp-feature-button[data-feature="storage"] { --accent: var(--px-orange); }
-.camp-feature-button[data-feature="places"] { --accent: var(--px-gold); }
-.camp-feature-button[data-feature="records"] { --accent: var(--px-red); }
-.camp-feature-button[data-feature="story-quests"] { --accent: var(--px-green); }
-.camp-feature-button[data-feature="travel"] { --accent: var(--px-teal); }
 
 .camp-travel-button > span:first-child {
-  padding-right: 80px;
+  padding: 0 64px;
 }
 
 .camp-travel-button[data-new-location="true"] {
@@ -868,7 +872,7 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #safeAreaTravelScreen .safe-area-travel-card:is(:hover, :focus-visible) {
-  background: #2a3661;
+  background: var(--px-hover);
   transform: none;
   outline: none;
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
