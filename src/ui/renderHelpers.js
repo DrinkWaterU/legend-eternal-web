@@ -2,8 +2,9 @@ import { DEFAULT_BLESSING_RARITY, getBlessingRarity } from "../data/rarities.js"
 
 export function renderStatList(element, items) {
   element.innerHTML = "";
-  items.forEach(([label, value]) => {
+  items.forEach(([label, value, className]) => {
     const item = document.createElement("div");
+    if (className) item.className = className;
     item.innerHTML = `<dt>${label}</dt><dd>${value}</dd>`;
     element.append(item);
   });
