@@ -10,32 +10,6 @@
   border: 0;
 }
 
-.blessing-card {
-  border: 0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease,
-    box-shadow 150ms ease,
-    background 150ms ease;
-}
-
-.blessing-card.is-revealing {
-  opacity: 0;
-  transform: translateY(10px);
-  cursor: default;
-}
-
-.blessing-card.is-revealing.is-revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.blessing-card:disabled {
-  cursor: default;
-}
-
 .primary-button {
   min-height: 46px;
   padding: 0 18px;
@@ -125,8 +99,7 @@
 
 .primary-button:hover,
 .secondary-button:hover,
-.danger-button:hover,
-.blessing-card:not(:disabled):hover {
+.danger-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
 }
@@ -297,7 +270,6 @@
   color: #9ed7ff;
 }
 
-
 .skill-section {
   margin: 22px 0 24px;
   padding: 16px;
@@ -398,7 +370,6 @@
 .danger-zone .danger-button {
   width: min(100%, 260px);
 }
-
 
 .character-grid {
   display: grid;
@@ -582,7 +553,6 @@
   max-width: 460px;
   text-align: center;
 }
-
 
 .facility-panel,
 .merchant-summary,
@@ -1224,7 +1194,6 @@
   font-size: 0.88rem;
   line-height: 1.6;
 }
-
 
 .preparation-option.is-enhanced {
   border-color: rgba(241, 211, 134, 0.82);

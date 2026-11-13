@@ -34,6 +34,9 @@ export {
   getHeroBattleHealingAmount,
   getHeroBattleHealingMultiplier,
   getParalysisDamageMultiplier,
+  describeTurnForecast,
   getEnemyPendingHpLoss,
-  getHeroPendingHpLoss
+  getEnemyTurnForecast,
+  getHeroPendingHpLoss,
+  getHeroTurnForecast
 } from "./combatStatusEffects.js";

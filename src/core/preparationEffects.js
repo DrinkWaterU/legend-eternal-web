@@ -172,6 +172,17 @@ export function resolvePostEncounterPreparation({ preparation, hero, isFinalEnco
   }
 }
 
+// 不消耗次數的預覽版，供血量預計顯示使用；規則必須與 resolvePreparationPoisonDamage 相同。
+export function previewPreparationPoisonDamage({ preparation, damage }) {
+  const normalizedDamage = normalizeDamage(damage);
+  if (!preparation || preparation.effect?.type !== "poisonDamageReduction" || preparation.remainingCharges <= 0
+      || normalizedDamage <= 0) {
+    return normalizedDamage;
+  }
+  const reducedDamage = Math.max(1, Math.floor(normalizedDamage * (1 - preparation.effect.reductionRatio)));
+  return normalizedDamage - reducedDamage < 1 ? normalizedDamage : reducedDamage;
+}
+
 export function resolvePreparationPoisonDamage({ preparation, damage }) {
   const normalizedDamage = normalizeDamage(damage);
   if (!preparation || preparation.effect?.type !== "poisonDamageReduction" || preparation.remainingCharges <= 0) {

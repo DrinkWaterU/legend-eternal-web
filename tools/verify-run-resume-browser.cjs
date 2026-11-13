@@ -176,11 +176,11 @@ async function main() {
           assert.deepEqual((await save(page)).activeRun, before.activeRun);
           assert.match(await page.locator('#regionStartNotice').innerText(), /已有待續/);
           await page.reload();
-          page.once('dialog', dialog => dialog.dismiss());
           await page.locator('#menuScreen .discard-run-button').click();
+          await page.locator('#menuScreen .cancel-discard-run-button').click();
           assert.deepEqual((await save(page)).activeRun, before.activeRun);
-          page.once('dialog', dialog => dialog.accept());
           await page.locator('#menuScreen .discard-run-button').click();
+          await page.locator('#menuScreen .confirm-discard-run-button').click();
           assert.equal((await save(page)).activeRun, null);
           assert.equal((await save(page)).statistics.totalRetreats, before.statistics.totalRetreats + 1);
         });
@@ -218,8 +218,8 @@ async function main() {
           await page.reload();
           assert.equal(await page.locator('#menuScreen .resume-run-button').isDisabled(), true);
           const before = await save(page);
-          page.once('dialog', dialog => dialog.accept());
           await page.locator('#menuScreen .discard-run-button').click();
+          await page.locator('#menuScreen .confirm-discard-run-button').click();
           const after = await save(page);
           assert.equal(after.activeRun, null);
           for (const key of ['inventory', 'progression', 'statistics']) assert.deepEqual(after[key], before[key]);

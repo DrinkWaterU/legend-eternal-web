@@ -7,7 +7,7 @@ import { getEventDefinition } from "../data/events/index.js";
 import { showCombatLayout } from "../ui/eventView.js";
 
 export function createRunResumeController({ foundation, battle, adventure, eventRuntime, screen, els,
-  documentRef = document, windowRef = window }) {
+  documentRef = document }) {
   const { state, saveStore } = foundation;
   let failedSnapshot = null;
   const definitions = { regions: regionDefinitions, characters: characterDefinitions, routes: getRouteDefinition, events: getEventDefinition };
@@ -64,7 +64,6 @@ export function createRunResumeController({ foundation, battle, adventure, event
 
   function discard() {
     if (!saveStore.current.activeRun || saveStore.hasPendingTransaction) return;
-    if (!windowRef.confirm("結束這段旅程？已保存的角色成長與素材會保留，這次冒險將無法再續玩。")) return;
     const snapshot = inspect();
     if (snapshot.ok && snapshot.state.phase !== "story") {
       restore();

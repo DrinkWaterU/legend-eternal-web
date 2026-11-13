@@ -148,19 +148,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .blessing-info-filter {
-    flex: 0 0 auto;
-  }
-
-  .blessing-info-card small {
-    align-items: flex-start;
-    flex-direction: row;
-  }
-
-  .blessing-info-tags {
-    justify-content: flex-start;
-  }
-
 }
 
 @media (min-width: 821px) {
@@ -180,15 +167,8 @@
 
   body[data-scene="region"] {
     background:
-      linear-gradient(
-        90deg,
-        rgba(5, 7, 10, 0.32) 0%,
-        rgba(5, 7, 10, 0.56) 30%,
-        rgba(5, 7, 10, 0.72) 50%,
-        rgba(5, 7, 10, 0.56) 70%,
-        rgba(5, 7, 10, 0.34) 100%
-      ),
-      linear-gradient(180deg, rgba(5, 7, 10, 0.18) 0%, rgba(5, 7, 10, 0.68) 100%),
+      /* 戰鬥視窗已是實心底，背景只在上下緣壓暗，讓場景圖露出來。 */
+    linear-gradient(180deg, rgba(5, 7, 10, 0.34) 0%, rgba(5, 7, 10, 0.08) 26%, rgba(5, 7, 10, 0.14) 60%, rgba(5, 7, 10, 0.6) 100%),
       var(--region-bg-desktop, url("../../assets/images/regions/plains/plains-morning.webp")) center / cover fixed no-repeat;
   }
 
@@ -273,7 +253,6 @@
     margin-left: 72px;
   }
 }
-
 
 @media (max-width: 820px) {
   .facility-button {
@@ -379,7 +358,6 @@
     width: 100%;
   }
 }
-
 
 @media (max-width: 820px) {
   body[data-safe-area="anping-town"] .camp-copy h2 {

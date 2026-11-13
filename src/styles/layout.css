@@ -9,8 +9,6 @@
 .menu-layout,
 .camp-layout,
 .selection-panel,
-.status-panel,
-.log-panel,
 .blessing-dialog,
 .end-dialog {
   border: 1px solid var(--line);
@@ -450,7 +448,6 @@ dd {
   width: 100%;
   margin-top: 14px;
 }
-
 
 .camp-feature-button:disabled {
   cursor: not-allowed;

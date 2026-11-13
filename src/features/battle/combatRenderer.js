@@ -10,6 +10,7 @@ import { shouldTriggerScheduledEvent } from "../../core/events.js";
 import { describeUpcomingEncounter } from "../../core/upcomingEncounter.js";
 import { renderCombatView, renderCurrentAbilityView } from "../../ui/combatView.js";
 import { renderBattleLog } from "../../ui/renderHelpers.js";
+import { getChargeBrace, isChargeTurn } from "../../core/chargeBrace.js";
 
 export function createCombatRenderer({
   state,
@@ -45,6 +46,11 @@ export function createCombatRenderer({
     if (els.guardButton) {
       els.guardButton.disabled = !canFight;
       els.guardButton.hidden = !canFight;
+      // 下回合有可撐住的衝鋒時，直接在守勢按鈕上寫出來。
+      const canBrace = canFight && !state.highlandBattle && (state.enemies || []).some(enemy =>
+        enemy.hp > 0 && isChargeTurn(enemy, (state.turn || 0) + 1) && getChargeBrace(enemy));
+      if (canBrace) els.guardButton.dataset.hint = "可撐住衝鋒";
+      else if (els.guardButton.dataset) delete els.guardButton.dataset.hint;
     }
     els.fleeButton.disabled = !(canFight && (isDuel || !isBoss));
     els.fleeButton.hidden = !canFight;

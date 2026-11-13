@@ -1856,7 +1856,6 @@ button:disabled {
   }
 }
 
-
 /* Regression hardening: dense browser panels must not squeeze adjacent content. */
 .storage-browser-panel .page-heading-description {
   margin-right: auto;
@@ -1872,7 +1871,6 @@ button:disabled {
 .statistics-detail-stat {
   min-width: 0;
 }
-
 
 .storage-detail-heading > div,
 .material-usage-card > div:first-child > div {

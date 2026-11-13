@@ -68,15 +68,8 @@ body[data-scene="camp"] {
 
 body[data-scene="region"] {
   background:
-    linear-gradient(
-      90deg,
-      rgba(5, 7, 10, 0.42) 0%,
-      rgba(5, 7, 10, 0.66) 28%,
-      rgba(5, 7, 10, 0.78) 50%,
-      rgba(5, 7, 10, 0.66) 72%,
-      rgba(5, 7, 10, 0.42) 100%
-    ),
-    linear-gradient(180deg, rgba(5, 7, 10, 0.24) 0%, rgba(5, 7, 10, 0.74) 100%),
+    /* 戰鬥視窗已是實心底，背景只在上下緣壓暗，讓場景圖露出來。 */
+    linear-gradient(180deg, rgba(5, 7, 10, 0.34) 0%, rgba(5, 7, 10, 0.08) 26%, rgba(5, 7, 10, 0.14) 60%, rgba(5, 7, 10, 0.6) 100%),
     var(--region-bg-mobile, url("../../assets/images/regions/plains/plains-morning-mobile.webp")) center / cover fixed no-repeat;
 }
 

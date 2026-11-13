@@ -1,6 +1,6 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
 import { applyEnemyDamageProtection } from "./enemyProtection.js";
-import { resolvePreparationSaltErosionInitialTurns } from "./preparationEffects.js";
+import { previewPreparationPoisonDamage, resolvePreparationSaltErosionInitialTurns } from "./preparationEffects.js";
 
 const SALT_EROSION_INITIAL_TURNS = 5;
 const SALT_EROSION_MAX_TURNS = 7;
@@ -21,6 +21,64 @@ export function getEnemyPendingHpLoss(enemy) {
     return 0;
   }
   return Math.max(0, Number(enemy.poison) || 0);
+}
+
+// 回合結束時「確定會發生」的生命變化：中毒與週期回復。只看目前已有的狀態，
+// 不含敵人攻擊（有暴擊、減傷等變數）與本回合才會被施加的效果。
+// 計算順序必須與 applyHeroEndOfTurnNegativeEffects → applyHeroEndOfTurnRecoveryEffects 相同。
+export function getHeroTurnForecast(hero, completedTurn = 0) {
+  const empty = { loss: 0, gain: 0, hpAfter: Math.max(0, Number(hero?.hp) || 0) };
+  if (!hero || !(hero.hp > 0)) return empty;
+  let hp = hero.hp;
+  const loss = Math.min(hp, previewPreparationPoisonDamage({
+    preparation: hero.activePreparation,
+    damage: getHeroPendingHpLoss(hero)
+  }));
+  hp -= loss;
+  let gain = 0;
+  if (hp > 0) {
+    const turn = Math.max(0, Math.floor(Number(completedTurn) || 0)) + 1;
+    const recover = (requested, key) => {
+      if (!canUsePeriodicRecovery(hero, key)) return;
+      const amount = Math.min(hero.maxHp - hp, getHeroBattleHealingAmount(hero, requested));
+      if (amount > 0) { hp += amount; gain += amount; }
+    };
+    if (hero.regenEvery > 0 && turn % hero.regenEvery === 0) recover(hero.regenAmount, "base");
+    (Array.isArray(hero.periodicRegens) ? hero.periodicRegens : []).forEach((effect) => {
+      if (effect.everyTurns > 0 && turn % effect.everyTurns === 0) recover(effect.amount, `periodic:${effect.id}`);
+    });
+    (Array.isArray(hero.timedRegens) ? hero.timedRegens : []).forEach((effect, index) => {
+      if (effect.remainingEncounters > 0 && effect.everyTurns > 0 && turn % effect.everyTurns === 0) {
+        recover(Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio)), `timed:${effect.id || index}`);
+      }
+    });
+  }
+  return { loss, gain, hpAfter: hp };
+}
+
+// 敵人版：中毒會先扣前衛保護的減傷，再看下回合是否輪到自我回復。
+export function getEnemyTurnForecast(enemy, enemies = [], completedTurn = 0) {
+  const empty = { loss: 0, gain: 0, hpAfter: Math.max(0, Number(enemy?.hp) || 0) };
+  if (!enemy || !(enemy.hp > 0)) return empty;
+  const poison = getEnemyPendingHpLoss(enemy);
+  const loss = poison > 0
+    ? Math.min(enemy.hp, applyEnemyDamageProtection({ enemy, enemies, damage: poison }).damage)
+    : 0;
+  let hp = enemy.hp - loss;
+  let gain = 0;
+  const turn = Math.max(0, Math.floor(Number(completedTurn) || 0)) + 1;
+  if (hp > 0 && enemy.regenEvery > 0 && turn % enemy.regenEvery === 0) {
+    gain = Math.max(0, Math.min(enemy.maxHp - hp, Number(enemy.regenAmount) || 0));
+    hp += gain;
+  }
+  return { loss, gain, hpAfter: hp };
+}
+
+export function describeTurnForecast({ loss, gain, hpAfter }) {
+  const parts = [];
+  if (loss > 0) parts.push(`中毒 -${loss}`);
+  if (gain > 0) parts.push(`回復 +${gain}`);
+  return parts.length ? `回合結束：${parts.join("、")} → ${hpAfter}` : "";
 }
 
 export function applyEnemyPoisonDamage({ enemy, enemies = [] }) {

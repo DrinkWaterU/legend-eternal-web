@@ -1,4 +1,4 @@
-export function renderLayeredMeter({ meter, currentLayer, pendingLayer, shieldLayer, value, max, pendingLoss, shield, enemy = false }) {
+export function renderLayeredMeter({ meter, currentLayer, pendingLayer, shieldLayer, gainLayer = null, value, max, pendingLoss, pendingGain = 0, shield, enemy = false }) {
   const safeMax = Math.max(1, Number(max) || 1);
   const safeValue = Math.max(0, Math.min(safeMax, Number(value) || 0));
   const safePendingLoss = Math.max(0, Math.min(safeValue, Number(pendingLoss) || 0));
@@ -7,6 +7,7 @@ export function renderLayeredMeter({ meter, currentLayer, pendingLayer, shieldLa
   const pendingStart = percentOf(safeValue - safePendingLoss, safeMax);
   const pendingPercent = percentOf(safePendingLoss, safeMax);
   const shieldPercent = Math.min(100 - hpPercent, percentOf(safeShield, safeMax));
+  const safePendingGain = Math.max(0, Math.min(safeMax - safeValue, Number(pendingGain) || 0));
 
   currentLayer.classList.toggle("enemy-hp", enemy);
   currentLayer.classList.toggle("hp", !enemy);
@@ -16,12 +17,16 @@ export function renderLayeredMeter({ meter, currentLayer, pendingLayer, shieldLa
   pendingLayer.style.width = `${pendingPercent}%`;
   shieldLayer.style.left = `${hpPercent}%`;
   shieldLayer.style.width = `${shieldPercent}%`;
+  if (gainLayer) {
+    gainLayer.style.left = `${hpPercent}%`;
+    gainLayer.style.width = `${percentOf(safePendingGain, safeMax)}%`;
+  }
   meter.setAttribute("aria-valuemin", "0");
   meter.setAttribute("aria-valuemax", String(safeMax));
   meter.setAttribute("aria-valuenow", String(safeValue));
   meter.setAttribute(
     "aria-valuetext",
-    `${safeValue} / ${safeMax}${safeShield > 0 ? `，護盾 ${safeShield}` : ""}${safePendingLoss > 0 ? `，預計失去 ${safePendingLoss}` : ""}`
+    `${safeValue} / ${safeMax}${safeShield > 0 ? `，護盾 ${safeShield}` : ""}${safePendingLoss > 0 ? `，預計失去 ${safePendingLoss}` : ""}${safePendingGain > 0 ? `，預計回復 ${safePendingGain}` : ""}`
   );
 }
 

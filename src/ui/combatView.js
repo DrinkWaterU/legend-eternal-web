@@ -1,4 +1,4 @@
-import { getHeroPendingHpLoss } from "../core/combat.js";
+import { describeTurnForecast, getHeroTurnForecast } from "../core/combat.js";
 import { formatQuestObjective, getQuestTarget } from "../core/questRules.js";
 import { materialDefinitions } from "../data/materials.js";
 import { getQuestRarity } from "../data/questRarities.js";
@@ -21,7 +21,7 @@ export function renderCombatView({
   questSnapshot = null
 }) {
   if (!hero) return;
-  renderHeroStatus(els, hero, characterStatusEntries);
+  renderHeroStatus(els, hero, characterStatusEntries, turn);
   renderPreparationStatus(els, preparationStatus);
   renderEnemyRoster({
     roster: els.enemyRoster,
@@ -151,7 +151,8 @@ export function getHeroRuntimeCritChance(hero) {
   return (Number(hero?.critChance) || 0) + (Number(hero?.battleCritBonus) || 0);
 }
 
-function renderHeroStatus(els, hero, characterStatusEntries) {
+function renderHeroStatus(els, hero, characterStatusEntries, turn = 0) {
+  const forecast = getHeroTurnForecast(hero, turn);
   els.heroName.textContent = hero.name;
   els.heroLevel.textContent = `角色 Lv. ${hero.level || 1}`;
   renderLayeredMeter({
@@ -161,16 +162,23 @@ function renderHeroStatus(els, hero, characterStatusEntries) {
     shieldLayer: els.heroShieldBar,
     value: hero.hp,
     max: hero.maxHp,
-    pendingLoss: getHeroPendingHpLoss(hero),
+    gainLayer: els.heroHealthMeter.querySelector?.(".pending-gain") || null,
+    pendingLoss: forecast.loss,
+    pendingGain: forecast.gain,
     shield: hero.shield || 0
   });
+  const forecastLine = els.heroHealthMeter.parentElement?.querySelector?.("[data-turn-forecast]");
+  if (forecastLine) {
+    forecastLine.textContent = describeTurnForecast(forecast);
+    forecastLine.hidden = !forecastLine.textContent;
+  }
   const criticalHealth = hero.hp > 0 && hero.hp / hero.maxHp <= 0.25;
   els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}${criticalHealth ? " · 生命危急" : ""}`;
   els.heroHealthText.classList.toggle("is-critical", criticalHealth);
   const statuses = [];
   if (hero.shield > 0) statuses.push({ label: `護盾 ${hero.shield}`, className: "is-shield" });
   if (hero.poison > 0) {
-    statuses.push({ label: `中毒 ${hero.poison} · 預計 -${getHeroPendingHpLoss(hero)}`, className: "is-negative" });
+    statuses.push({ label: `中毒 ${hero.poison}`, className: "is-negative" });
   }
   if (hero.entangle) statuses.push({ label: "纏繞", className: "is-negative" });
   if (hero.saltErosion?.remainingTurns > 0) {

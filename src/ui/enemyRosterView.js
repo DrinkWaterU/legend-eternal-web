@@ -1,4 +1,4 @@
-import { getEnemyPendingHpLoss, getEnemyProtectionState } from "../core/combat.js";
+import { describeTurnForecast, getEnemyProtectionState, getEnemyTurnForecast } from "../core/combat.js";
 import { getEnemyDisplayName, getLivingEnemies } from "../core/enemyGroups.js";
 import { renderLayeredMeter, renderStatusChips } from "./combatMeterView.js";
 import { getEnemyIntent } from "../core/enemyIntent.js";
@@ -55,7 +55,7 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
   });
   orderedCards.forEach(({ enemy, card }) => {
     card._onTargetSelect = onTargetSelect;
-    updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies);
+    updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies, turn);
     const intent = card.querySelector("[data-enemy-intent]");
     intent.textContent = (phase === "danger" || phase === "combat") ? getEnemyIntent(enemy, turn, enemies) || "" : "";
     intent.hidden = !intent.textContent;
@@ -69,17 +69,24 @@ function createEnemyCard(runtimeId) {
   card.className = "enemy-card";
   card.dataset.runtimeId = runtimeId;
   card.innerHTML = `
-    <span class="enemy-card-heading">
-      <span class="enemy-name-line"><strong data-enemy-name></strong><span class="target-mark">目標</span></span>
-      <span class="enemy-kind" data-enemy-kind></span>
+    <span class="enemy-card-top">
+      <span class="enemy-crest" data-enemy-crest aria-hidden="true"></span>
+      <span class="enemy-card-main">
+        <span class="enemy-card-heading">
+          <span class="enemy-name-line"><strong data-enemy-name></strong><span class="target-mark">目標</span></span>
+          <span class="enemy-kind" data-enemy-kind></span>
+        </span>
+        <span class="enemy-role" data-enemy-role hidden></span>
+        <span class="layered-meter enemy-meter px-meter" data-enemy-meter role="meter">
+          <span class="meter-layer enemy-hp" data-enemy-hp></span>
+          <span class="meter-layer pending-loss" data-enemy-pending></span>
+          <span class="meter-layer pending-gain" data-enemy-gain></span>
+          <span class="meter-layer shield" data-enemy-shield></span>
+        </span>
+        <span class="meter-text" data-enemy-health-text></span>
+        <span class="turn-forecast" data-enemy-forecast hidden></span>
+      </span>
     </span>
-    <span class="enemy-role" data-enemy-role hidden></span>
-    <span class="layered-meter enemy-meter" data-enemy-meter role="meter">
-      <span class="meter-layer enemy-hp" data-enemy-hp></span>
-      <span class="meter-layer pending-loss" data-enemy-pending></span>
-      <span class="meter-layer shield" data-enemy-shield></span>
-    </span>
-    <span class="meter-text" data-enemy-health-text></span>
     <span class="enemy-intent" data-enemy-intent hidden></span>
     <span class="enemy-card-detail"><span class="enemy-card-detail-inner"><span class="enemy-detail-content">
       <span class="enemy-stats">
@@ -95,13 +102,17 @@ function createEnemyCard(runtimeId) {
   return card;
 }
 
-function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
+function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies, turn = 0) {
+  const forecast = getEnemyTurnForecast(enemy, enemies, turn);
   card.classList.toggle("is-target", isTarget);
   card.setAttribute("aria-pressed", String(isTarget));
   card.classList.toggle("is-single", enemyCount === 1);
   card.disabled = enemy.hp <= 0;
   card.querySelector("[data-enemy-name]").textContent = getEnemyDisplayName(enemy);
   card.querySelector("[data-enemy-kind]").textContent = enemy.kind || "普通";
+  card.dataset.kind = enemy.kind === "首領" ? "boss" : enemy.kind === "精英" ? "elite" : "normal";
+  const crest = card.querySelector("[data-enemy-crest]");
+  if (crest) crest.textContent = getEnemyCrest(enemy);
   const role = card.querySelector("[data-enemy-role]");
   const roles = { frontline: "前衛", output: "攻手", support: "輔助", control: "牽制" };
   const protection = getEnemyProtectionState({ enemy, enemies });
@@ -127,10 +138,17 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
     shieldLayer: card.querySelector("[data-enemy-shield]"),
     value: enemy.hp,
     max: enemy.maxHp,
-    pendingLoss: getEnemyPendingHpLoss(enemy),
+    gainLayer: card.querySelector("[data-enemy-gain]"),
+    pendingLoss: forecast.loss,
+    pendingGain: forecast.gain,
     shield: enemy.shield || 0,
     enemy: true
   });
+  const forecastLine = card.querySelector("[data-enemy-forecast]");
+  if (forecastLine) {
+    forecastLine.textContent = describeTurnForecast(forecast);
+    forecastLine.hidden = !forecastLine.textContent;
+  }
   const statuses = [];
   if (enemy.shield > 0) statuses.push({ label: `護盾 ${enemy.shield}`, className: "is-shield" });
   if (enemy.supportAttackBonus > 0) {
@@ -146,7 +164,7 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
     statuses.push({ label: `失衡 · 下一擊 +${Math.round(enemy.stagger.damageBonus * 100)}%`, className: "is-negative" });
   }
   if (enemy.poison > 0) {
-    statuses.push({ label: `中毒 ${enemy.poison} · 預計 -${getEnemyPendingHpLoss(enemy)}`, className: "is-negative" });
+    statuses.push({ label: `中毒 ${enemy.poison}`, className: "is-negative" });
   }
   if (enemy.paralysis?.remainingTurns > 0) {
     statuses.push({ label: `麻痺 ${enemy.paralysis.remainingTurns}`, className: "is-negative" });
@@ -205,4 +223,16 @@ function alignCardWithinRoster(roster, card) {
   } else if (cardRect.top < rosterRect.top + padding) {
     roster.scrollTop -= rosterRect.top - cardRect.top + padding;
   }
+}
+
+// 目前沒有敵人圖像，先用一個字的紋章代表。資料可用 crest 指定；否則取名稱結尾的動物字，再退回族群字。
+const CREST_TAIL = new Set([..."豬狼兔蟹鷹羊犬鹿蛛蜂王后"]);
+const CREST_BY_FAMILY = Object.freeze({ beast: "獸", slime: "黏", fishman: "鱗", insect: "蟲", plant: "木", goblin: "鬼", construct: "岩", highlander: "哨" });
+
+export function getEnemyCrest(enemy) {
+  if (typeof enemy?.crest === "string" && enemy.crest) return [...enemy.crest][0];
+  const name = String(enemy?.name || "");
+  const tail = [...name].pop();
+  if (tail && CREST_TAIL.has(tail)) return tail;
+  return CREST_BY_FAMILY[enemy?.family] || [...name][0] || "?";
 }
