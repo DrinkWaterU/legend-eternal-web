@@ -394,51 +394,6 @@
    第 2b 階段：冒險中的頂端標籤、結算、確認、委託、事件頁、海岸扎營。
    ===================================================================== */
 
-/* ---------- 冒險中的頂端列 ---------- */
-
-body[data-scene="region"] .topbar h1 {
-  color: var(--px-ink);
-  font-family: var(--px-font);
-  font-size: var(--px-text-l);
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  text-shadow: 0 3px 0 var(--px-edge);
-}
-
-body[data-scene="region"] .topbar .eyebrow {
-  color: var(--px-gold);
-  font-family: var(--px-font);
-  font-size: var(--px-text-s);
-  font-weight: 400;
-  text-shadow: 0 2px 0 var(--px-edge);
-}
-
-body[data-scene="region"] .topbar .run-summary {
-  gap: 14px;
-  padding: 4px;
-}
-
-body[data-scene="region"] .topbar .run-summary span,
-body[data-scene="region"] .music-settings summary {
-  min-height: 28px;
-  padding: 6px 10px;
-  border: 0;
-  border-radius: 0;
-  background: var(--px-navy);
-  color: var(--px-ink);
-  font-family: var(--px-font);
-  font-size: var(--px-text-s);
-  font-weight: 400;
-  line-height: 1.4;
-  box-shadow: var(--px-frame), var(--px-rim-inset);
-}
-
-body[data-scene="region"] .music-settings summary {
-  min-height: 44px;
-  color: var(--px-dim);
-}
-
 /* ---------- 共用：像素對話框內的按鈕 ---------- */
 
 .px-dialog .end-actions,

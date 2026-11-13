@@ -12,7 +12,8 @@ const [html, game, dom, baseCss, layoutCss, screensCss, responsiveCss] = await P
   Promise.all(["src/features/story/anpingArrivalController.js", "src/features/safeArea/safeAreaController.js", "src/app/sceneController.js", "src/app/createFoundation.js", "src/features/adventure/runResultController.js", "src/features/adventure/runLifecycleController.js", "src/features/safeArea/campController.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dom.js", root), "utf8"),
   readFile(new URL("src/styles/base.css", root), "utf8"),
-  readFile(new URL("src/styles/layout.css", root), "utf8"),
+  // 營地／城鎮主頁的版面規則已移到 hub.css，與 layout.css 一起檢查。
+  Promise.all(["src/styles/layout.css", "src/styles/hub.css"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/styles/screens.css", root), "utf8"),
   readFile(new URL("src/styles/responsive.css", root), "utf8")
 ]);

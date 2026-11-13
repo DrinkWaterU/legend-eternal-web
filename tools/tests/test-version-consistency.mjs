@@ -36,7 +36,7 @@ assert.deepEqual([...new Set(htmlCacheVersions)], [cacheVersion], "index.html ca
 assert.match(html, /game\.js\?v=[^"']+&amp;build=v02110-alpha-1/, "v0.2.11.0 開發入口應提供獨立 build cache-buster");
 
 const styleCacheVersions = [...styleIndex.matchAll(/\?v=([^"\)]+)/g)].map((match) => match[1]);
-assert.equal(styleCacheVersions.length, 10, "styles.css 應包含既有樣式、A 版旅途場景樣式、像素共用基礎 pixel.css 與冒險對話框 run-dialogs.css");
+assert.equal(styleCacheVersions.length, 11, "styles.css 應包含既有樣式、A 版旅途場景樣式，以及像素風格的 pixel.css、hub.css、run-dialogs.css");
 assert.deepEqual([...new Set(styleCacheVersions)], [cacheVersion], "內部 CSS cache version 未同步");
 
 const editorVersion = editorSource.match(/const DEFAULT_GAME_VERSION = "([^"]+)"/)?.[1] || null;

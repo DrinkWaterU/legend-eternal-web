@@ -42,7 +42,8 @@ const [
   ].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("../../index.html", import.meta.url), "utf8"),
   readFile(new URL("../../src/ui/dom.js", import.meta.url), "utf8"),
-  readFile(new URL("../../src/styles/layout.css", import.meta.url), "utf8"),
+  // 主選單與營地的版面規則已移到 hub.css，與 layout.css 一起檢查。
+  Promise.all(["../../src/styles/layout.css", "../../src/styles/hub.css"].map((path) => readFile(new URL(path, import.meta.url), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("../../src/styles/components.css", import.meta.url), "utf8"),
   readFile(new URL("../../src/styles/responsive.css", import.meta.url), "utf8"),
   readFile(new URL("../../src/styles/combat.css", import.meta.url), "utf8"),
