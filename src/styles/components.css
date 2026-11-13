@@ -273,11 +273,6 @@
 .skill-section {
   margin: 22px 0 24px;
   padding: 16px;
-  border: 1px solid rgba(217, 199, 150, 0.18);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(111, 176, 193, 0.06), transparent 48%),
-    rgba(9, 13, 13, 0.42);
   text-align: left;
 }
 
@@ -292,8 +287,6 @@
 
 .skill-section-heading h3 {
   margin: 0 0 12px;
-  color: var(--sky);
-  font-size: 0.95rem;
 }
 
 .skill-section-heading h3 {
@@ -302,16 +295,6 @@
 
 .skill-section-heading p {
   margin: 0;
-  color: var(--muted);
-  font-size: 0.86rem;
-}
-
-.skill-type-milestone {
-  border-color: rgba(111, 176, 193, 0.52);
-}
-
-.skill-type-rare {
-  border-color: rgba(241, 211, 134, 0.62);
 }
 
 .save-tools {
@@ -2474,28 +2457,6 @@
   gap: 14px;
   min-height: 122px;
   padding: 14px;
-  border: 2px solid rgba(241, 211, 134, 0.42);
-  border-radius: 10px;
-  background:
-    linear-gradient(145deg, rgba(224, 179, 93, 0.08), transparent 50%),
-    rgba(7, 12, 13, 0.72);
-}
-
-.equipment-current-slot[data-rarity="uncommon"] {
-  border-color: rgba(127, 183, 127, 0.5);
-  background:
-    linear-gradient(145deg, rgba(94, 145, 96, 0.1), transparent 50%),
-    rgba(7, 12, 13, 0.72);
-}
-
-.equipment-current-slot[data-rarity="rare"] {
-  border-color: rgba(207, 156, 255, 0.7);
-  background: linear-gradient(145deg, rgba(67, 39, 83, 0.8), rgba(28, 23, 38, 0.94));
-}
-
-.equipment-current-slot.is-empty {
-  border-style: dashed;
-  border-color: rgba(184, 176, 160, 0.28);
 }
 
 .equipment-current-slot > div {
@@ -2504,18 +2465,7 @@
   min-width: 0;
 }
 
-.equipment-current-slot span {
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-
-.equipment-current-slot strong {
-  color: #fff4d8;
-  font-size: 1.08rem;
-}
-
 .equipment-current-slot small {
-  color: var(--sky);
   line-height: 1.55;
 }
 
@@ -2534,23 +2484,6 @@
   min-height: 250px;
 }
 
-.equipment-preview-panel[data-rarity="uncommon"] {
-  border-color: rgba(127, 183, 127, 0.48);
-  background:
-    linear-gradient(145deg, rgba(94, 145, 96, 0.1), transparent 50%),
-    rgba(14, 20, 20, 0.92);
-}
-
-.equipment-preview-panel[data-rarity="rare"] {
-  border-color: rgba(207, 156, 255, 0.68);
-  background:
-    radial-gradient(circle at 92% 4%, rgba(207, 156, 255, 0.14), transparent 40%),
-    linear-gradient(145deg, rgba(55, 34, 68, 0.9), rgba(24, 21, 31, 0.96));
-  box-shadow:
-    inset 0 0 0 1px rgba(232, 204, 255, 0.08),
-    0 14px 30px rgba(20, 8, 29, 0.22);
-}
-
 .sword-training-options {
   margin-top: 1rem;
   line-height: 1.6;
@@ -2567,8 +2500,6 @@
 
 .equipment-preview-effect {
   margin: 12px 0;
-  color: var(--gold);
-  font-weight: 800;
   line-height: 1.6;
 }
 
@@ -2583,28 +2514,6 @@
   display: grid;
   gap: 3px;
   padding: 9px 10px;
-  border: 1px solid rgba(217, 199, 150, 0.14);
-  border-radius: 7px;
-  background: rgba(5, 10, 10, 0.42);
-}
-
-.equipment-comparison-list span {
-  color: var(--muted);
-  font-size: 0.74rem;
-}
-
-.equipment-comparison-list strong {
-  color: var(--ink);
-  font-size: 0.86rem;
-}
-
-.equipment-comparison-list > div.is-changed {
-  border-color: rgba(127, 218, 160, 0.38);
-  background: rgba(44, 82, 56, 0.18);
-}
-
-.equipment-comparison-list > div.is-changed strong {
-  color: var(--grass);
 }
 
 .equipment-inventory {
@@ -2627,26 +2536,8 @@
   align-items: center;
   min-height: 112px;
   padding: 12px;
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 9px;
-  background: rgba(8, 14, 14, 0.68);
-  color: var(--ink);
   cursor: pointer;
   text-align: left;
-  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
-}
-
-.equipment-weapon-card:hover,
-.equipment-weapon-card:focus-visible,
-.equipment-weapon-card.is-selected {
-  transform: translateY(-1px);
-  border-color: rgba(241, 211, 134, 0.68);
-  background: rgba(35, 42, 39, 0.9);
-  outline: none;
-}
-
-.equipment-weapon-card.is-equipped {
-  box-shadow: inset 0 0 0 1px rgba(127, 218, 160, 0.28);
 }
 
 .equipment-card-icon {
@@ -2659,21 +2550,6 @@
 .equipment-weapon-card small,
 .equipment-weapon-card > span:last-child {
   grid-column: 2;
-}
-
-.equipment-weapon-card strong {
-  color: #fff4d8;
-}
-
-.equipment-weapon-card small {
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-
-.equipment-weapon-card > span:last-child {
-  color: var(--gold);
-  font-size: 0.75rem;
-  font-weight: 800;
 }
 
 .equipment-slot-icon,

@@ -3,14 +3,15 @@ import { readFile } from "node:fs/promises";
 
 const normalize = (source) => source.replace(/\r\n?/g, "\n");
 const root = new URL("../../", import.meta.url);
-const [html, game, dom, style, achievementView, storageView, statisticsView] = (await Promise.all([
+const [html, game, dom, style, achievementView, storageView, statisticsView, pagesCss] = (await Promise.all([
   readFile(new URL("index.html", root), "utf8"),
   Promise.all(["src/features/profile/achievementController.js", "src/features/adventure/adventureAchievements.js", "src/app/createApplication.js", "src/app/createProfileFeatures.js"].map((path) => readFile(new URL(path, root), "utf8"))).then((sources) => sources.join("\n")),
   readFile(new URL("src/ui/dom.js", root), "utf8"),
   readFile(new URL("src/styles/ui-refresh.css", root), "utf8"),
   readFile(new URL("src/ui/achievementView.js", root), "utf8"),
   readFile(new URL("src/ui/storageView.js", root), "utf8"),
-  readFile(new URL("src/ui/statisticsView.js", root), "utf8")
+  readFile(new URL("src/ui/statisticsView.js", root), "utf8"),
+  readFile(new URL("src/styles/pages.css", root), "utf8")
 ])).map(normalize);
 
 for (const id of [
@@ -39,7 +40,8 @@ assert.match(storageView, /overflow|renderUsageList/);
 assert.match(statisticsView, /\["overview", "characters", "regions", "save"\]/);
 assert.match(achievementView, /hiddenUntilUnlocked/);
 assert.match(style, /\.storage-workspace[\s\S]*grid-template-columns/);
-assert.match(style, /\.upgrade-tier-1[^{]*\{[^}]*#63d58e/);
+// 技能階段配色在像素轉移後由 pages.css 的 --tier 定義（強化 I 為綠色）。
+assert.match(pagesCss, /\.upgrade-tier-1 \{ --tier: var\(--px-green\); \}/);
 assert.match(style, /prefers-reduced-motion/);
 
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);

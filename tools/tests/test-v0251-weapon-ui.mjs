@@ -89,9 +89,12 @@ assert.match(componentsCss, /\.blacksmith-weapon-card\.rarity-rare/);
 assert.match(componentsCss, /\.blacksmith-detail-panel\[data-rarity="rare"\]/);
 assert.match(componentsCss, /\.blacksmith-detail-panel\[data-rarity="rare"\] \.blacksmith-effect-item/);
 assert.match(componentsCss, /\.blacksmith-craft-panel\[data-rarity="rare"\] \.blacksmith-craft-dialog/);
-assert.match(componentsCss, /\.equipment-current-slot\[data-rarity="uncommon"\]/);
-assert.match(componentsCss, /\.equipment-current-slot\[data-rarity="rare"\]/);
-assert.match(componentsCss, /\.equipment-preview-panel\[data-rarity="rare"\]/);
+// 角色頁的稀有度外觀在像素轉移後改由 pages.css 的 --rarity 變數統一處理。
+const pagesCss = (await readFile(new URL("src/styles/pages.css", root), "utf8")).replace(/\r\n?/g, "\n");
+assert.match(pagesCss, /\[data-rarity="uncommon"\]\) \{ --rarity: var\(--px-green\); \}/);
+assert.match(pagesCss, /\[data-rarity="rare"\]\) \{ --rarity: var\(--px-gold\); \}/);
+assert.match(pagesCss, /#characterScreen \.equipment-current-slot \{[^}]*var\(--rarity\)/);
+assert.match(pagesCss, /#characterScreen \.equipment-preview-panel \{[^}]*var\(--rarity\)/);
 assert.doesNotMatch(componentsCss, /\.equipment-layout(?![A-Za-z0-9_-])/);
 assert.doesNotMatch(componentsCss, /\.character-equipment-summary(?![A-Za-z0-9_-])/);
 assert.doesNotMatch(componentsCss, /grade-special/);

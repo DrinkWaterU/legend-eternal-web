@@ -264,6 +264,8 @@ function renderPreview({ element, selectedWeapon, equippedWeapon, currentHero, p
   createEquipmentComparison(currentHero, previewHero).forEach((entry) => {
     const row = document.createElement("div");
     row.classList.toggle("is-changed", entry.changed);
+    // 比較欄位都是越高越好；標出升降，避免下降也被看成「有變化＝變好」。
+    if (entry.changed) row.dataset.direction = entry.difference > 0 ? "up" : "down";
     const label = document.createElement("span");
     const values = document.createElement("strong");
     label.textContent = entry.label;

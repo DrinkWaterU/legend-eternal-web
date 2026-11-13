@@ -76,12 +76,14 @@ body:has(#menuScreen.is-active) .topbar h1 {
   color: var(--px-dim);
 }
 
-/* ---------- 共用：據點畫面的字型與按鈕 ---------- */
+/* ---------- 共用：據點與管理頁面的字型與按鈕 ---------- */
 
 #menuScreen,
 #campScreen,
 #regionScreen,
-#safeAreaTravelScreen {
+#safeAreaTravelScreen,
+#characterScreen,
+#storageScreen {
   color: var(--px-ink);
   font-family: var(--px-font);
   font-size: var(--px-text-m);
@@ -90,6 +92,8 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #menuScreen .eyebrow,
 #campScreen .eyebrow,
 #regionScreen .eyebrow,
+#characterScreen .eyebrow,
+#storageScreen .eyebrow,
 #safeAreaTravelScreen .eyebrow {
   margin: 0 0 6px;
   color: var(--px-gold);
@@ -100,6 +104,8 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #menuScreen .body-text,
 #campScreen .body-text,
 #regionScreen .body-text,
+#characterScreen .body-text,
+#storageScreen .body-text,
 #safeAreaTravelScreen .body-text {
   color: var(--px-dim);
   font-size: var(--px-text-m);
@@ -114,7 +120,11 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #campScreen .secondary-button,
 #campScreen .danger-button,
 #regionScreen .primary-button,
+#characterScreen .primary-button,
+#storageScreen .primary-button,
 #regionScreen .secondary-button,
+#characterScreen .secondary-button,
+#storageScreen .secondary-button,
 #safeAreaTravelScreen .secondary-button {
   min-height: 44px;
   padding: 8px 16px 10px;
@@ -131,7 +141,9 @@ body:has(#menuScreen.is-active) .topbar h1 {
 
 #menuScreen .primary-button,
 #campScreen .primary-button,
-#regionScreen .primary-button {
+#regionScreen .primary-button,
+#characterScreen .primary-button,
+#storageScreen .primary-button {
   background: var(--px-primary);
   color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
@@ -147,6 +159,8 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #menuScreen :is(.primary-button, .secondary-button, .danger-button):is(:hover, :focus-visible):not(:disabled),
 #campScreen :is(.primary-button, .secondary-button, .danger-button):is(:hover, :focus-visible):not(:disabled),
 #regionScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
+#characterScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
+#storageScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
 #safeAreaTravelScreen .secondary-button:is(:hover, :focus-visible):not(:disabled) {
   transform: none;
   outline: none;
@@ -156,7 +170,9 @@ body:has(#menuScreen.is-active) .topbar h1 {
 
 #menuScreen :is(.primary-button, .secondary-button):disabled,
 #campScreen :is(.primary-button, .secondary-button):disabled,
-#regionScreen :is(.primary-button, .secondary-button):disabled {
+#regionScreen :is(.primary-button, .secondary-button):disabled,
+#characterScreen :is(.primary-button, .secondary-button):disabled,
+#storageScreen :is(.primary-button, .secondary-button):disabled {
   background: var(--px-navy-2);
   color: var(--px-disabled);
   cursor: not-allowed;
@@ -668,6 +684,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 /* ---------- 地區選擇、地區詳情、據點移動（範圍覆寫） ---------- */
 
 #regionScreen .selection-panel,
+#characterScreen .selection-panel,
+#storageScreen .selection-panel,
 #safeAreaTravelScreen .selection-panel {
   padding: 22px 24px 24px;
   border: 0;
@@ -679,6 +697,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #regionScreen .app-page-heading,
+#characterScreen .app-page-heading,
+#storageScreen .app-page-heading,
 #safeAreaTravelScreen .app-page-heading {
   flex-direction: row;
   align-items: flex-start;
@@ -690,6 +710,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #regionScreen .app-page-heading h2,
+#characterScreen .app-page-heading h2,
+#storageScreen .app-page-heading h2,
 #safeAreaTravelScreen .app-page-heading h2 {
   margin: 0;
   font-size: var(--px-text-l);
@@ -698,6 +720,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #regionScreen .app-page-heading .secondary-button,
+#characterScreen .app-page-heading .secondary-button,
+#storageScreen .app-page-heading .secondary-button,
 #safeAreaTravelScreen .app-page-heading .secondary-button {
   width: auto;
   flex: none;
