@@ -149,7 +149,10 @@
       "family": "beast",
       "weight": 100,
       "maxHp": 34,
-      "attack": 8,
+      "attack": 7,
+      "chargeEvery": 3,
+      "chargeMultiplier": 1.5,
+      "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
       "defense": 1,
       "critChance": 0.03,
       "expReward": 9,
@@ -267,7 +270,10 @@
       "family": "beast",
       "weight": 100,
       "maxHp": 22,
-      "attack": 7,
+      "attack": 6,
+      "chargeEvery": 3,
+      "chargeMultiplier": 1.5,
+      "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
       "defense": 0,
       "critChance": 0.1,
       "dodgeChance": 0.15,
@@ -304,6 +310,7 @@
       "critChance": 0.03,
       "chargeEvery": 3,
       "chargeMultiplier": 1.45,
+      "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
       "expReward": 40,
       "rewards": {
         "materials": [
@@ -373,6 +380,7 @@
     "critChance": 0.06,
     "chargeEvery": 3,
     "chargeMultiplier": 1.6,
+    "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
     "expReward": 48,
     "rewards": {
       "materials": [

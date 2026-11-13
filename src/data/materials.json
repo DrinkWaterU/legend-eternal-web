@@ -84,7 +84,7 @@
     "category": "material",
     "description": "野豬類魔物留下的堅硬獠牙，表面帶著粗糙磨痕。",
     "usage": "適合製作武器握柄、護手，或需要承受撞擊的零件。",
-    "source": "平原 / 野豬、巨大野豬",
+    "source": "平原 / 野豬、巨大野豬、魔化野豬王",
     "sellPrice": 3,
     "sortOrder": 220,
     "tags": [
@@ -133,7 +133,7 @@
     "category": "material",
     "description": "森林野獸身上的獸皮，纖維更厚，帶著潮濕草葉的氣味。",
     "usage": "可交給皮匠製作輕裝護具、背帶與適合長程行動的皮革補強。",
-    "source": "森林 / 森林狼、迷霧獵狼",
+    "source": "森林 / 森林狼、迷霧獵狼、翠影鹿王",
     "sellPrice": 2,
     "sortOrder": 400,
     "tags": [
@@ -149,7 +149,7 @@
     "category": "material",
     "description": "森林蜘蛛吐出的細絲，看似柔軟，拉扯時卻很難斷裂。",
     "usage": "適合製作繩線、弓弦、縫合材料，或作為陷阱與機關零件。",
-    "source": "森林 / 蜘蛛、毒蜘蛛",
+    "source": "森林 / 蜘蛛、毒蜘蛛、哥布林偵查兵",
     "sellPrice": 2,
     "sortOrder": 410,
     "tags": [
@@ -165,7 +165,7 @@
     "category": "material",
     "description": "從活藤與老藤中抽出的纖維，彈性與韌性都比普通草繩更好。",
     "usage": "常用於編織、束縛、護具內襯，以及木工零件的固定。",
-    "source": "森林 / 藤蔓怪、古藤守衛",
+    "source": "森林 / 藤蔓怪、古藤守衛、古木守衛",
     "sellPrice": 2,
     "sortOrder": 420,
     "tags": [
@@ -377,7 +377,7 @@
     "category": "material",
     "description": "礁甲蟹脫落的硬殼碎片，邊緣帶著潮水磨出的細痕。",
     "usage": "可用於護具補強、盾牌外層與耐衝擊零件。",
-    "source": "海灘 / 礁甲蟹、潮汐巨蟹",
+    "source": "海灘 / 礁甲蟹、潮汐巨蟹、巨鉗礁甲蟹",
     "sellPrice": 3,
     "sortOrder": 800,
     "tags": [
@@ -524,7 +524,7 @@
     "category": "material",
     "description": "魚人礁甲剝落的殼片，邊緣留著洞窟潮水磨出的霧白痕跡。",
     "usage": "可用於護具補強、盾牌外層與耐潮零件。",
-    "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮祭司、深潮魚人首領",
+    "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮祭司、深潮魚人首領、精英魚人礁衛",
     "sellPrice": 3,
     "sortOrder": 900,
     "tags": [
@@ -541,7 +541,7 @@
     "category": "material",
     "description": "深潮魚人留下的骨片，表面附著細小鹽晶，敲擊時聲音清脆。",
     "usage": "可用於武器握柄、骨製零件與潮性材料的基礎加工。",
-    "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮咒師、深潮魚人首領",
+    "source": "海岸洞穴 / 魚人礁衛、魚人潮刃手、魚人潮咒師、深潮魚人首領、精英魚人礁衛",
     "sellPrice": 3,
     "sortOrder": 910,
     "tags": [

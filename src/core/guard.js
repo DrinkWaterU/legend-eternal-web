@@ -33,7 +33,7 @@ export function getGuardState(hero) {
   };
 }
 
-export function applyGuardToDirectDamage({ hero, damage, log } = {}) {
+export function applyGuardToDirectDamage({ hero, damage, log, minimumReduction = 0 } = {}) {
   const normalizedDamage = Math.max(0, Math.round(Number(damage) || 0));
   const guard = getGuardState(hero);
   if (!guard || normalizedDamage <= 0) {
@@ -45,9 +45,10 @@ export function applyGuardToDirectDamage({ hero, damage, log } = {}) {
     };
   }
 
+  const damageReduction = Math.max(guard.damageReduction, normalizeReduction(minimumReduction || 0));
   const reducedDamage = Math.max(
     1,
-    Math.round(normalizedDamage * (1 - guard.damageReduction))
+    Math.round(normalizedDamage * (1 - damageReduction))
   );
   const preventedDamage = Math.max(0, normalizedDamage - reducedDamage);
   hero.guardState.preventedDamage = guard.preventedDamage + preventedDamage;
@@ -60,7 +61,7 @@ export function applyGuardToDirectDamage({ hero, damage, log } = {}) {
     damage: reducedDamage,
     preventedDamage,
     guarded: true,
-    damageReduction: guard.damageReduction
+    damageReduction
   };
 }
 

@@ -15,6 +15,7 @@ import { getWeaponActions, resetWeaponTechnique, runWeaponAttack, finishWeaponTu
 import { highlandActions, highlandIntents, canReachHighlandTarget, actOnHighland, resolveHighlandWind, resolveHighlandEnemyIntent, updateHighlandProtection, lockHighlandIntents, projectHighlandWind } from "../../core/highlandBattle.js";
 import { canTakeBattleAction } from "../../core/battleActions.js";
 import { HAMMER_TRAINING_WEAPON } from "../../core/hammerTraining.js";
+import { getChargeBrace, isChargeTurn } from "../../core/chargeBrace.js";
 
 export function createBattleTurnController({
   state,
@@ -92,9 +93,12 @@ export function createBattleTurnController({
     if (!heroEntangled) {
       if (["guard", "hold"].includes(playerAction)) {
         const guard = beginGuard(state.hero, playerAction === "hold" || isSwiftRiposte(state.hero) ? .2 : DEFAULT_GUARD_DAMAGE_REDUCTION);
+        const braceReduction = Math.max(0, ...getLivingEnemies(state.enemies)
+          .filter(enemy => !state.highlandBattle && isChargeTurn(enemy, state.turn))
+          .map(enemy => getChargeBrace(enemy)?.damageReduction || 0));
         log.fixed(
           "status",
-          `你採取守勢，本回合直接傷害降低 ${Math.round(guard.damageReduction * 100)}%。`
+          `你採取守勢，本回合直接傷害降低 ${Math.round(guard.damageReduction * 100)}%${braceReduction > guard.damageReduction ? `；撐住衝鋒時降低 ${Math.round(braceReduction * 100)}%` : ""}。`
         );
       }
 

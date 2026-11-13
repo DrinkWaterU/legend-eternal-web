@@ -9,6 +9,7 @@ import {
 import { getParalysisDamageMultiplier } from "./combatStatusEffects.js";
 import { consumePreparationParalysisPenaltyPrevention } from "./preparationEffects.js";
 import { roll } from "../utils.js";
+import { consumeStagger, getStaggerDamageBonus } from "./chargeBrace.js";
 
 const HEAVY_STRIKE_CHANCE = 0.2;
 const HEAVY_STRIKE_MULTIPLIER = 1.4;
@@ -107,6 +108,10 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
   const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
   const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
   let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier: damageMultiplier * caveModifiers.damageMultiplier, attackMultiplier }) + caveModifiers.extraDamage;
+  if (source === "original" && getStaggerDamageBonus(enemy) > 0) {
+    damage = Math.max(1, Math.round(damage * (1 + consumeStagger(enemy))));
+    log.fixed("status", `${enemyName}還沒站穩，這一擊打得更重。`);
+  }
   if (source === "original" && enemy.weaponBreach) {
     damage += Math.max(3, Math.round((Number(enemy.defense) || 0) * .25 * enemy.weaponBreach.strength));
   }

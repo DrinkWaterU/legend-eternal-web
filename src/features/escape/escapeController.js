@@ -56,7 +56,8 @@ export function createEscapeController({
     const log = createCombatLogger();
     resolveEnemyAction({
       hero: state.hero,
-      enemy: attacker,
+      // 逃跑失敗不推進回合，所以固定為普通攻擊：不重複上一回合的衝鋒／特殊攻擊，也不搶先打出預告中的招式。
+      enemy: { ...attacker, chargeEvery: null, specialAttack: null },
       turn: Math.max(1, state.turn),
       log,
       modifyDirectDamage: modifyIncomingDirectDamage

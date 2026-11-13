@@ -4,6 +4,7 @@ import { roll } from "../utils.js";
 import { registerShieldDepletedByDirectAttack } from "./caveBlessingEffects.js";
 import { applyGuardToDirectDamage } from "./guard.js";
 import { getScheduledSpecialAttack } from "./enemyIntent.js";
+import { applyStagger, getChargeBrace } from "./chargeBrace.js";
 
 const DEFAULT_CHARGE_MULTIPLIER = 1.6;
 const ENEMY_CRIT_MULTIPLIER = 1.6;
@@ -43,7 +44,9 @@ function resolveStandardEnemyAttack({ hero, enemy, turn, log, modifyDirectDamage
   let damage = getEnemyDirectDamage({ hero, enemy });
   const damageSource = { type: "attack", label: `${enemyName}的攻擊` };
 
+  let brace = null;
   if (enemy.chargeEvery && turn % enemy.chargeEvery === 0) {
+    brace = hero.guardState?.active ? getChargeBrace(enemy) : null;
     log.template("status", "charge", { actor: enemyName });
     damage = Math.round(damage * (enemy.chargeMultiplier || DEFAULT_CHARGE_MULTIPLIER));
     damageSource.type = "charge";
@@ -68,8 +71,14 @@ function resolveStandardEnemyAttack({ hero, enemy, turn, log, modifyDirectDamage
     log,
     modifyDirectDamage
   });
-  damage = applyGuardToDirectDamage({ hero, damage, log }).damage;
+  damage = applyGuardToDirectDamage({ hero, damage, log, minimumReduction: brace?.damageReduction }).damage;
   applyEnemyDamageSegment({ hero, enemyName, damage, log });
+  if (brace && hero.hp > 0 && applyStagger(enemy, brace)) {
+    log.fixed(
+      "status",
+      `你撐住了衝鋒，${enemyName}失衡：你下一次主攻牠的傷害 +${Math.round(brace.staggerDamageBonus * 100)}%。`
+    );
+  }
   return damageSource;
 }
 

@@ -142,6 +142,9 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
   if (protection.protected) {
     statuses.push({ label: protection.label, className: "is-protected" });
   }
+  if (enemy.stagger?.damageBonus > 0) {
+    statuses.push({ label: `失衡 · 下一擊 +${Math.round(enemy.stagger.damageBonus * 100)}%`, className: "is-negative" });
+  }
   if (enemy.poison > 0) {
     statuses.push({ label: `中毒 ${enemy.poison} · 預計 -${getEnemyPendingHpLoss(enemy)}`, className: "is-negative" });
   }

@@ -1,4 +1,5 @@
 import { getEnemySupportPlan } from "./enemySupport.js";
+import { getChargeBrace } from "./chargeBrace.js";
 
 export function getScheduledSpecialAttack(enemy, turn) {
   const specialAttack = enemy?.specialAttack;
@@ -23,6 +24,10 @@ export function getEnemyIntent(enemy, completedTurn, enemies = []) {
     return text ? `下回合：${special.name || "特殊攻擊"}。${text}` : null;
   }
   if (enemy.chargeEvery > 0 && nextTurn % enemy.chargeEvery === 0) {
+    const brace = getChargeBrace(enemy);
+    if (brace) {
+      return `下回合：衝鋒。用守勢撐住可少受 ${Math.round(brace.damageReduction * 100)}% 傷害，牠會失衡，你下一擊 +${Math.round(brace.staggerDamageBonus * 100)}%；這回合先打倒牠也能免掉這一撞。`;
+    }
     return "下回合：衝鋒。可考慮守勢減輕直接傷害，或優先擊倒敵人。";
   }
   return null;
