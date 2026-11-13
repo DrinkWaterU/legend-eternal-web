@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>傳說永恆｜戰鬥介面範例</title>
+<!-- 可拋棄的視覺範例：不載入正式遊戲模組，不讀寫存檔，數值為固定展示。 -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;color:#f4ecd8;background:#0b0e10}
+button{font:inherit;color:inherit;cursor:pointer}
+.switch{position:fixed;z-index:50;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.18)}
+.switch button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-size:13px;color:#cfc8b8;white-space:nowrap}
+.switch button[aria-pressed=true]{background:#f1d386;color:#1b1608;font-weight:700}
+.sample{display:none;min-height:100vh;position:relative;overflow:hidden}
+body[data-v=a] .sample.a,body[data-v=b] .sample.b,body[data-v=c] .sample.c{display:block}
+.bg{position:absolute;inset:0;background:url("../../assets/images/regions/plains/plains-morning.webp") center/cover no-repeat}
+@media (max-width:700px){.bg{background-image:url("../../assets/images/regions/plains/plains-morning-mobile.webp")}}
+
+/* ============ A：像素冒險 ============ */
+.a{--ink:#f6edd0;--navy:#141a2e;--navy2:#1f2847;--line:#0a0d18;--gold:#f6c453;--red:#e0584f;--green:#7ed06a;--teal:#58c7c0;
+  font-weight:700;image-rendering:pixelated}
+.a .bg{image-rendering:pixelated}
+.a .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,13,24,.25) 0%,rgba(10,13,24,0) 30%,rgba(10,13,24,.55) 100%)}
+.a .wrap{position:relative;display:grid;grid-template-rows:auto 1fr auto;min-height:100vh;max-width:1040px;margin:0 auto;padding:56px 20px 20px;gap:16px}
+.a .px{background:var(--navy);color:var(--ink);padding:12px 14px;
+  box-shadow:0 -4px 0 0 var(--line),0 4px 0 0 var(--line),-4px 0 0 0 var(--line),4px 0 0 0 var(--line),inset 0 0 0 2px #3b4a7a}
+.a .num{font-family:"Silkscreen",monospace;font-weight:400;letter-spacing:.02em}
+.a .top{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.a .top .px{padding:6px 12px}
+.a .stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:8px 0}
+.a .foe{width:min(460px,100%)}
+.a .foe-head{display:flex;align-items:center;gap:12px}
+.a .crest{width:56px;height:56px;display:grid;place-items:center;font-size:30px;background:#7a2f2a;color:#ffe7b0;flex:none;
+  box-shadow:0 -4px 0 0 var(--line),0 4px 0 0 var(--line),-4px 0 0 0 var(--line),4px 0 0 0 var(--line),inset 0 0 0 2px #c96a4f}
+.a .foe-name{font-size:20px;line-height:1.2}
+.a .tag{display:inline-block;font-size:11px;padding:1px 6px;background:var(--gold);color:#2a1d00;margin-left:6px;vertical-align:middle}
+.a .bar{height:14px;margin-top:8px;background:#0a0d18;position:relative;box-shadow:inset 0 0 0 2px #3b4a7a}
+.a .bar i{position:absolute;inset:2px auto 2px 2px;background:var(--red);
+  -webkit-mask:repeating-linear-gradient(90deg,#000 0 10px,transparent 10px 12px);mask:repeating-linear-gradient(90deg,#000 0 10px,transparent 10px 12px)}
+.a .bar.hp i{background:var(--green)}
+.a .row{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:#b9c2e6}
+.a .intent{width:min(460px,100%);background:#3a2408;color:#ffe2a6;font-size:14px;line-height:1.55;padding:10px 12px;
+  box-shadow:0 -4px 0 0 var(--line),0 4px 0 0 var(--line),-4px 0 0 0 var(--line),4px 0 0 0 var(--line),inset 0 0 0 2px var(--gold)}
+.a .intent b{color:#fff;background:var(--red);padding:0 6px;margin-right:6px}
+.a .bottom{display:grid;grid-template-columns:240px 1fr 200px;gap:20px;align-items:stretch}
+.a .hero h3{margin:0 0 2px;font-size:16px;display:flex;justify-content:space-between}
+.a .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;font-size:11px;color:#b9c2e6;text-align:center}
+.a .stats b{display:block;font-size:16px;color:var(--ink)}
+.a .log{font-size:15px;line-height:1.9;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end}
+.a .log p{margin:0;color:#aab3d8}
+.a .log p:last-child{color:var(--ink)}
+.a .log p.dmg-in span{color:var(--red)} .a .log p.dmg-out span{color:var(--green)}
+.a .log p:last-child::after{content:"▼";font-size:10px;margin-left:8px;color:var(--gold);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.a .cmd{display:flex;flex-direction:column;gap:10px;padding:0;background:none;box-shadow:none}
+.a .cmd button{border:0;text-align:left;font-size:17px;font-weight:700;padding:11px 14px 11px 34px;position:relative;background:var(--navy2);color:var(--ink);
+  box-shadow:0 -4px 0 0 var(--line),0 4px 0 0 var(--line),-4px 0 0 0 var(--line),4px 0 0 0 var(--line),inset 0 -4px 0 0 #121831,inset 0 0 0 2px #3b4a7a}
+.a .cmd button:hover::before,.a .cmd button.rec::before{content:"▶";position:absolute;left:12px;color:var(--gold)}
+.a .cmd button.rec{background:#18424a;box-shadow:0 -4px 0 0 var(--line),0 4px 0 0 var(--line),-4px 0 0 0 var(--line),4px 0 0 0 var(--line),inset 0 -4px 0 0 #0f2c32,inset 0 0 0 2px var(--teal)}
+.a .cmd button:active{transform:translateY(2px)}
+.a .cmd small{display:block;font-size:11px;font-weight:400;color:#9fe3dd;margin-top:2px}
+.a .cmd .dim{color:#aab3d8}
+@media (max-width:760px){
+  .a .wrap{padding:56px 14px 16px;gap:14px}
+  .a .bottom{grid-template-columns:1fr;gap:16px}
+  .a .cmd{flex-direction:row}.a .cmd button{flex:1;padding:12px 8px;text-align:center;font-size:16px}
+  .a .cmd button::before{display:none}
+  .a .log{min-height:0;font-size:14px}.a .log p:nth-child(-n+2){display:none}
+  .a .hero{order:-1}
+}
+
+/* ============ B：旅人手札 ============ */
+.b{--paper:#efe4c8;--paper2:#e4d6b3;--ink:#2c241a;--soft:#6b5d47;--red:#a8322a;--green:#3f6b3a;--gold:#9a7421;
+  font-family:"Noto Serif TC","PMingLiU","Songti TC",serif;color:var(--ink)}
+.b .bg{filter:blur(3px) brightness(.5) saturate(.8);transform:scale(1.05)}
+.b .wrap{position:relative;max-width:1000px;margin:0 auto;padding:60px 20px 28px;min-height:100vh;display:grid;grid-template-columns:1.25fr 1fr;gap:0}
+.b .page{background:
+   radial-gradient(120% 80% at 0% 0%,rgba(255,255,255,.35),transparent 60%),
+   repeating-linear-gradient(0deg,transparent 0 31px,rgba(90,70,40,.10) 31px 32px),var(--paper);
+  padding:28px 30px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.b .left{border-radius:6px 0 0 6px;border-right:1px solid rgba(90,70,40,.25);box-shadow:inset -18px 0 24px -18px rgba(60,40,10,.35),0 20px 60px rgba(0,0,0,.55)}
+.b .right{border-radius:0 6px 6px 0;background-color:var(--paper2);box-shadow:inset 18px 0 24px -18px rgba(60,40,10,.35),0 20px 60px rgba(0,0,0,.55);display:flex;flex-direction:column}
+.b .kicker{font-size:13px;letter-spacing:.3em;color:var(--soft)}
+.b h2{margin:4px 0 18px;font-size:30px;font-weight:900;letter-spacing:.06em}
+.b .foe{display:flex;gap:16px;align-items:flex-start}
+.b .seal{flex:none;width:58px;height:58px;display:grid;place-items:center;font-size:32px;font-weight:900;color:#fbeedd;background:var(--red);border-radius:6px;transform:rotate(-4deg);
+  box-shadow:inset 0 0 0 3px var(--red),inset 0 0 0 4px rgba(255,235,210,.75);opacity:.92}
+.b .foe p{margin:0;font-size:14px;line-height:1.7;color:var(--soft)}
+.b .ink-bar{height:10px;border:1.5px solid var(--ink);border-radius:2px 8px 3px 7px;margin:14px 0 4px;position:relative;overflow:hidden}
+.b .ink-bar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(-55deg,var(--red) 0 5px,#8a2620 5px 7px)}
+.b .ink-bar.hp i{background:repeating-linear-gradient(-55deg,var(--green) 0 5px,#2f5a2c 5px 7px)}
+.b .nums{display:flex;justify-content:space-between;font-size:13px;color:var(--soft)}
+.b .nums b{color:var(--ink);font-size:15px}
+.b .note{margin:22px 0 0;padding:12px 16px;border-left:4px solid var(--red);background:rgba(168,50,42,.08);font-size:15.5px;line-height:1.8}
+.b .note strong{color:var(--red)}
+.b .note em{font-style:normal;border-bottom:2px solid var(--gold)}
+.b .story{margin-top:22px;font-size:16px;line-height:2.0}
+.b .story p{margin:0;text-indent:2em;color:var(--soft)}
+.b .story p.now{color:var(--ink)}
+.b .story .in{color:var(--red);font-weight:700}.b .story .out{color:var(--green);font-weight:700}
+.b .right h3{margin:0 0 10px;font-size:20px;font-weight:900;display:flex;justify-content:space-between;align-items:baseline}
+.b .right h3 small{font-size:13px;color:var(--soft);font-weight:500}
+.b .traits{display:grid;grid-template-columns:repeat(4,1fr);margin:18px 0 0;border-top:1.5px solid var(--ink);border-bottom:1px solid rgba(44,36,26,.35)}
+.b .traits div{padding:8px 0;text-align:center;font-size:12px;color:var(--soft)}
+.b .traits b{display:block;font-size:19px;color:var(--ink)}
+.b .acts{margin-top:auto;padding-top:26px;display:grid;gap:12px}
+.b .acts button{border:1.5px solid var(--ink);background:transparent;color:var(--ink);padding:12px 16px;font-size:18px;font-weight:700;letter-spacing:.2em;border-radius:3px 9px 4px 8px;display:flex;justify-content:space-between;align-items:center;transition:background .15s}
+.b .acts button small{font-size:12.5px;letter-spacing:0;font-weight:500;color:var(--soft)}
+.b .acts button:hover{background:rgba(44,36,26,.08)}
+.b .acts .rec{background:var(--ink);color:var(--paper)}
+.b .acts .rec small{color:#e8cf8f}
+.b .acts .rec:hover{background:#3d3226}
+.b .acts .quiet{border-style:dashed;font-size:15px;color:var(--soft)}
+@media (max-width:760px){
+  .b .wrap{grid-template-columns:1fr;padding:56px 12px 16px}
+  .b .page{padding:20px 18px}
+  .b .left{border-radius:6px 6px 0 0;border-right:0;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+  .b .right{border-radius:0 0 6px 6px;box-shadow:inset 0 14px 18px -14px rgba(60,40,10,.35),0 20px 60px rgba(0,0,0,.55)}
+  .b h2{font-size:25px}.b .story p:first-child{display:none}
+  .b .acts{grid-template-columns:1fr 1fr;padding-top:18px}.b .acts .quiet{grid-column:1/-1}
+  .b .acts button{flex-direction:column;gap:2px;letter-spacing:.1em}
+}
+
+/* ============ C：場景優先 ============ */
+.c{--ink:#fbf6e9;--soft:rgba(251,246,233,.72);--glass:rgba(12,16,18,.58);--edge:rgba(255,255,255,.14);--gold:#f1d386;--red:#ee6a5c;--green:#8fd07a;--teal:#7fd3cf}
+.c .bg::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(90% 60% at 50% 45%,transparent 40%,rgba(4,6,8,.55) 100%),
+  linear-gradient(180deg,rgba(4,6,8,.55) 0%,transparent 22%,transparent 55%,rgba(4,6,8,.82) 100%)}
+.c .wrap{position:relative;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;padding:56px 28px 24px;max-width:1240px;margin:0 auto}
+.c .glass{background:var(--glass);border:1px solid var(--edge);border-radius:16px;-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2)}
+.c .foe{justify-self:center;width:min(560px,100%);text-align:center}
+.c .where{font-size:12px;letter-spacing:.28em;color:var(--soft)}
+.c .foe h2{margin:6px 0 10px;font-size:30px;font-weight:800;letter-spacing:.08em;text-shadow:0 2px 18px rgba(0,0,0,.8)}
+.c .foe h2 span{font-size:12px;letter-spacing:.1em;vertical-align:middle;margin-left:10px;padding:3px 10px;border-radius:999px;background:rgba(241,211,134,.18);border:1px solid rgba(241,211,134,.5);color:var(--gold)}
+.c .track{height:10px;border-radius:999px;background:rgba(0,0,0,.55);border:1px solid var(--edge);overflow:hidden}
+.c .track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#c9463b,var(--red))}
+.c .track.hp i{background:linear-gradient(90deg,#5fae55,var(--green))}
+.c .sub{display:flex;justify-content:center;gap:18px;margin-top:8px;font-size:13px;color:var(--ink);text-shadow:0 1px 3px #000,0 0 12px rgba(0,0,0,.9)}
+.c .where{text-shadow:0 1px 3px #000,0 0 12px rgba(0,0,0,.9)}
+.c .sub b{color:var(--ink)}
+.c .intent{display:inline-flex;align-items:center;gap:12px;margin-top:16px;padding:10px 18px 10px 12px;border-radius:999px;background:rgba(60,34,6,.78);border:1px solid rgba(241,211,134,.55);box-shadow:0 0 28px rgba(241,160,60,.28);font-size:14.5px;text-align:left}
+.c .intent i{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;background:var(--gold);color:#2a1d00}
+.c .intent b{color:var(--gold)}
+.c .mid{display:grid;grid-template-columns:1fr 320px;align-items:end;gap:24px;padding:18px 0}
+.c .feed{justify-self:end;width:100%;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.5;
+  -webkit-mask:linear-gradient(180deg,transparent 0,#000 45%);mask:linear-gradient(180deg,transparent 0,#000 45%)}
+.c .feed p{margin:0;padding:7px 12px;border-radius:10px;background:rgba(8,10,12,.5);color:var(--soft);border-left:3px solid transparent}
+.c .feed p.in{border-left-color:var(--red)} .c .feed p.out{border-left-color:var(--green)}
+.c .feed p:last-child{color:var(--ink);background:rgba(8,10,12,.72)}
+.c .feed b{color:var(--ink)}
+.c .dock{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:end}
+.c .hero{padding:14px 16px}
+.c .hero h3{margin:0 0 8px;font-size:16px;display:flex;justify-content:space-between;align-items:baseline}
+.c .hero h3 small{font-weight:500;color:var(--gold)}
+.c .hero .track{height:14px}
+.c .hero .line{display:flex;justify-content:space-between;margin-top:8px;font-size:12.5px;color:var(--soft)}
+.c .hero .line b{color:var(--ink);font-size:14px}
+.c .acts{display:grid;grid-template-columns:1.25fr 1.25fr .8fr;gap:12px}
+.c .acts button{border:1px solid var(--edge);border-radius:16px;padding:14px 16px;text-align:left;background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:transform .12s,background .12s,border-color .12s}
+.c .acts button:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.35)}
+.c .acts b{display:block;font-size:19px;letter-spacing:.12em}
+.c .acts small{display:block;margin-top:3px;font-size:12.5px;color:var(--soft)}
+.c .acts .atk{background:linear-gradient(180deg,rgba(241,211,134,.95),rgba(212,160,70,.95));color:#231803;border-color:transparent}
+.c .acts .atk small{color:rgba(35,24,3,.75)}
+.c .acts .rec{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal),0 0 26px rgba(127,211,207,.3);background:rgba(18,56,60,.72)}
+.c .acts .rec small{color:var(--teal)}
+@media (max-width:760px){
+  .c .wrap{padding:54px 14px 14px}
+  .c .foe h2{font-size:24px}
+  .c .intent{border-radius:16px;font-size:13.5px}
+  .c .mid{grid-template-columns:1fr;padding:14px 0}.c .mid>div:first-child{display:none}
+  .c .feed p:nth-child(-n+2){display:none}
+  .c .dock{grid-template-columns:1fr;gap:12px}
+  .c .acts{grid-template-columns:1fr 1fr}.c .acts .run{grid-column:1/-1;padding:10px 16px}
+  .c .acts .run small{display:inline;margin-left:8px}.c .acts .run b{display:inline;font-size:15px}
+}
+</style>
+</head>
+<body data-v="a">
+<nav class="switch" aria-label="切換範例">
+  <button data-v="a" aria-pressed="true">A 像素冒險</button>
+  <button data-v="b" aria-pressed="false">B 旅人手札</button>
+  <button data-v="c" aria-pressed="false">C 場景優先</button>
+</nav>
+
+<!-- A -->
+<section class="sample a">
+  <div class="bg"></div>
+  <div class="wrap">
+    <div class="top"><span class="px">平原　<span class="num">4/8</span></span><span class="px">第 <span class="num">2</span> 回合</span></div>
+    <div class="stage">
+      <div class="px foe">
+        <div class="foe-head">
+          <div class="crest">豬</div>
+          <div style="flex:1">
+            <div class="foe-name">巨大野豬<span class="tag">精英</span></div>
+            <div class="bar"><i style="width:calc(78% - 4px)"></i></div>
+            <div class="row"><span class="num">HP 64/82</span><span>攻 <span class="num">12</span>　防 <span class="num">2</span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="intent"><b>下回合</b>衝鋒，預計 <span class="num">15</span> 傷害。守勢可撐住，只受 <span class="num">5</span>，牠會失衡。</div>
+    </div>
+    <div class="bottom">
+      <div class="px hero">
+        <h3>冒險者 <span class="num">LV 2</span></h3>
+        <div class="bar hp"><i style="width:calc(42% - 4px)"></i></div>
+        <div class="row"><span class="num">HP 50/118</span><span>祝福 <span class="num">3</span></span></div>
+        <div class="stats"><div><b class="num">10</b>攻擊</div><div><b class="num">2</b>防禦</div><div><b class="num">5%</b>暴擊</div></div>
+      </div>
+      <div class="px log">
+        <p class="dmg-out">你攻擊了巨大野豬，造成 <span class="num">8</span> 點傷害。</p>
+        <p class="dmg-in">巨大野豬撞了過來，你受到 <span class="num">10</span> 點傷害。</p>
+        <p>巨大野豬壓低身體，前蹄刮過草地。</p>
+      </div>
+      <div class="cmd">
+        <button>攻擊</button>
+        <button class="rec">守勢<small>可撐住衝鋒</small></button>
+        <button class="dim">逃跑 <span class="num">2/2</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- B -->
+<section class="sample b">
+  <div class="bg"></div>
+  <div class="wrap">
+    <div class="page left">
+      <div class="kicker">平原・第四場・第二回合</div>
+      <h2>巨大野豬</h2>
+      <div class="foe">
+        <div class="seal">豬</div>
+        <div style="flex:1">
+          <p>精英。背上有道淺淺的紋路，不像是傷疤。</p>
+          <div class="ink-bar"><i style="width:78%"></i></div>
+          <div class="nums"><span>生命 <b>64</b> / 82</span><span>攻擊 <b>12</b>　防禦 <b>2</b></span></div>
+        </div>
+      </div>
+      <div class="note"><strong>牠壓低了身體。</strong>下回合會衝鋒，硬吃約 15 點。<em>用守勢撐住只受 5 點</em>，牠還會失衡，你的下一擊更重。</div>
+      <div class="story">
+        <p>你的劍劃過牠的側腹，留下 <span class="out">8 點</span>傷害。</p>
+        <p>牠掉頭撞了回來，你退了兩步，失去 <span class="in">10 點</span>生命。</p>
+        <p class="now">沉重的鼻息震動草梗，前蹄開始刮地。</p>
+      </div>
+    </div>
+    <div class="page right">
+      <h3>冒險者 <small>等級 2・祝福 3</small></h3>
+      <div class="ink-bar hp"><i style="width:42%"></i></div>
+      <div class="nums"><span>生命 <b>50</b> / 118</span><span>還撐得住三、四下</span></div>
+      <div class="traits"><div><b>10</b>攻擊</div><div><b>2</b>防禦</div><div><b>5%</b>暴擊</div><div><b>3</b>祝福</div></div>
+      <div class="acts">
+        <button>攻擊 <small>約 8 點傷害</small></button>
+        <button class="rec">守勢 <small>撐住衝鋒</small></button>
+        <button class="quiet">逃跑 <small>還能試 2 次</small></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- C -->
+<section class="sample c">
+  <div class="bg"></div>
+  <div class="wrap">
+    <div class="foe">
+      <div class="where">平原　4 / 8　・　第 2 回合</div>
+      <h2>巨大野豬<span>精英</span></h2>
+      <div class="track"><i style="width:78%"></i></div>
+      <div class="sub"><span>生命 <b>64</b> / 82</span><span>攻擊 <b>12</b></span><span>防禦 <b>2</b></span></div>
+      <div class="intent"><i>!</i><span>下回合<b>衝鋒</b>，預計 15 傷害。守勢撐住只受 <b>5</b>，並讓牠失衡。</span></div>
+    </div>
+    <div class="mid">
+      <div></div>
+      <div class="feed">
+        <p class="out">你攻擊了巨大野豬，造成 <b>8</b> 點傷害。</p>
+        <p class="in">巨大野豬撞了過來，你受到 <b>10</b> 點傷害。</p>
+        <p>巨大野豬壓低身體，前蹄刮過草地。</p>
+      </div>
+    </div>
+    <div class="dock">
+      <div class="glass hero">
+        <h3>冒險者 <small>Lv. 2</small></h3>
+        <div class="track hp"><i style="width:42%"></i></div>
+        <div class="line"><span>生命 <b>50</b> / 118</span><span>攻 <b>10</b>　防 <b>2</b>　暴 <b>5%</b>　祝福 <b>3</b></span></div>
+      </div>
+      <div class="acts">
+        <button class="atk"><b>攻擊</b><small>約 8 點傷害</small></button>
+        <button class="rec"><b>守勢</b><small>可撐住衝鋒</small></button>
+        <button class="run"><b>逃跑</b><small>剩 2 次</small></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const set = v => {
+    document.body.dataset.v = v;
+    document.querySelectorAll(".switch button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+    history.replaceState(null, "", "?v=" + v);
+  };
+  document.querySelectorAll(".switch button").forEach(b => b.addEventListener("click", () => set(b.dataset.v)));
+  set(["a", "b", "c"].includes(params.get("v")) ? params.get("v") : "a");
+</script>
+</body>
+</html>
