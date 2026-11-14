@@ -1,6 +1,7 @@
 import { createWeaponIcon, getWeaponRarityLabel } from "./weaponViewHelpers.js";
 import { getCharacterOtherRuns, safeStatisticCount } from "./statisticsMetrics.js";
 import { createCharacterEmblem, renderDefinitionList } from "./statisticsViewHelpers.js";
+import { getCampExperienceSummary } from "../features/safeArea/campController.js";
 
 export function renderStatisticsCharacterBrowser({
   els,
@@ -75,32 +76,32 @@ function renderCharacterDetail({ element, characterId, character, progress, stat
   identity.append(copy);
   header.append(identity);
 
+  // 等級已寫在標題列；經驗與營地同一種寫法（含分母，已滿時提示下次結算升級）。
+  const experience = getCampExperienceSummary(progress, character);
   const growth = createDetailSection("永久成長", [
-    ["目前等級", `Lv. ${Math.max(1, progress.level || 1)}`],
-    ["目前經驗", safeStatisticCount(progress.exp)],
-    ["已學技能", Array.isArray(progress.learnedSkills) ? progress.learnedSkills.length : 0],
-    ["目前武器", weapon?.name || "未裝備"]
+    [experience.title, experience.value],
+    ["已學技能", Array.isArray(progress.learnedSkills) ? progress.learnedSkills.length : 0]
   ]);
   const record = createDetailSection("冒險紀錄", [
     ["出戰次數", safeStatisticCount(stats.runs)],
     ["通關次數", safeStatisticCount(stats.clears)],
     ["撤退次數", safeStatisticCount(stats.retreats)],
-    ["其他出戰", getCharacterOtherRuns(stats)],
+    // 出戰次數扣掉通關與撤退：冒險失敗，或結束旅程等沒有結算的出戰。
+    ["失敗或中斷", getCharacterOtherRuns(stats)],
     ["冒險最高等級", safeStatisticCount(stats.highestRunLevel) > 0 ? `Lv. ${safeStatisticCount(stats.highestRunLevel)}` : "尚未記錄"]
   ]);
 
-  if (weapon) {
-    const weaponRow = document.createElement("div");
-    weaponRow.className = "statistics-equipped-weapon";
-    const weaponCopy = document.createElement("div");
-    const label = document.createElement("span");
-    const name = document.createElement("strong");
-    label.textContent = `${getWeaponRarityLabel(weapon)}品級武器`;
-    name.textContent = weapon.name;
-    weaponCopy.append(label, name);
-    weaponRow.append(createWeaponIcon(weapon, { className: "weapon-icon statistics-weapon-icon" }), weaponCopy);
-    growth.append(weaponRow);
-  }
+  // 武器只用這張卡顯示一次；沒有裝備時也留卡片，寫「未裝備武器」。
+  const weaponRow = document.createElement("div");
+  weaponRow.className = "statistics-equipped-weapon";
+  const weaponCopy = document.createElement("div");
+  const label = document.createElement("span");
+  const name = document.createElement("strong");
+  label.textContent = weapon ? `${getWeaponRarityLabel(weapon)}品級武器` : "目前武器";
+  name.textContent = weapon?.name || "未裝備武器";
+  weaponCopy.append(label, name);
+  weaponRow.append(createWeaponIcon(weapon, { className: "weapon-icon statistics-weapon-icon" }), weaponCopy);
+  growth.append(weaponRow);
   element.append(header, growth, record);
 }
 

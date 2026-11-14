@@ -361,6 +361,7 @@ export const els = {
   statisticsJourneySummary: document.querySelector("#statisticsJourneySummary"),
   statisticsKeyMetrics: document.querySelector("#statisticsKeyMetrics"),
   statisticsResolvedRuns: document.querySelector("#statisticsResolvedRuns"),
+  statisticsOutcomeStack: document.querySelector("#statisticsOutcomeStack"),
   statisticsOutcomeList: document.querySelector("#statisticsOutcomeList"),
   statisticsCombatMetrics: document.querySelector("#statisticsCombatMetrics"),
   statisticsEscapeRate: document.querySelector("#statisticsEscapeRate"),

@@ -230,12 +230,9 @@ button:disabled {
 .save-management-card,
 .achievement-index-panel,
 .achievement-detail-panel {
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 11px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 44%),
-    rgba(13, 19, 20, 0.91);
-  box-shadow: var(--inner-light), 0 14px 30px rgba(0, 0, 0, 0.16);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .character-identity-panel,
@@ -784,15 +781,15 @@ button:disabled {
 .statistics-journey-summary {
   margin-bottom: 13px;
   padding: 16px;
-  border: 1px solid rgba(241, 211, 134, 0.24);
-  border-radius: 10px;
-  background: linear-gradient(120deg, rgba(241, 211, 134, 0.08), transparent 58%), rgba(12, 18, 19, 0.76);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
   text-align: left;
 }
 
 .statistics-journey-summary h3 {
   margin: 0;
-  color: #fff4d8;
+  color: var(--px-ink);
   line-height: 1.65;
 }
 
@@ -809,25 +806,25 @@ button:disabled {
   display: grid;
   gap: 4px;
   padding: 11px 12px;
-  border: 1px solid rgba(217, 199, 150, 0.14);
-  border-radius: 8px;
-  background: rgba(6, 11, 12, 0.46);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .statistics-key-metric dt,
 .statistics-compact-row dt,
 .statistics-detail-stat dt {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .statistics-key-metric dd,
 .statistics-compact-row dd,
 .statistics-detail-stat dd {
   margin: 0;
-  color: var(--gold);
-  font-size: 1.1rem;
-  font-weight: 900;
+  color: var(--px-gold);
+  font-size: 18px;
+  font-weight: 400;
 }
 
 .statistics-dashboard-grid {
@@ -862,32 +859,39 @@ button:disabled {
 }
 
 .statistics-outcome-row strong {
-  color: var(--ink);
+  color: var(--px-ink);
 }
 
 .statistics-meter {
   height: 9px;
   overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 0;
+  background: transparent;
 }
 
 .statistics-meter > span {
   display: block;
   width: 0;
   height: 100%;
-  border-radius: inherit;
-  background: var(--sky);
-  transition: width 280ms ease;
+  border-radius: 0;
+  background: var(--px-guard);
 }
 
-.outcome-clear .statistics-meter > span { background: var(--ui-success); }
-.outcome-retreat .statistics-meter > span { background: var(--sky); }
-.outcome-defeat .statistics-meter > span { background: var(--ui-error); }
-.outcome-other .statistics-meter > span { background: var(--ui-disabled); }
+.outcome-clear .statistics-meter > span {
+  background: var(--px-go);
+}
+.outcome-retreat .statistics-meter > span {
+  background: var(--px-guard);
+}
+.outcome-defeat .statistics-meter > span {
+  background: var(--px-danger);
+}
+.outcome-other .statistics-meter > span {
+  background: var(--px-navy-2);
+}
 
 .statistics-escape-summary {
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .statistics-escape-breakdown {
@@ -922,10 +926,10 @@ button:disabled {
   align-items: center;
   min-height: 88px;
   padding: 11px;
-  border: 1px solid rgba(217, 199, 150, 0.16);
-  border-radius: 9px;
-  background: rgba(6, 11, 12, 0.58);
-  color: var(--ink);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-ink);
   text-align: left;
   cursor: pointer;
 }
@@ -948,14 +952,13 @@ button:disabled {
 .statistics-character-card > span:last-child > span,
 .statistics-region-card small,
 .statistics-region-card span {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .statistics-character-card.is-selected,
 .statistics-region-card.is-selected {
-  border-color: rgba(241, 211, 134, 0.68);
-  box-shadow: inset 3px 0 0 var(--gold);
+  border-color: var(--px-gold);
 }
 
 .statistics-character-emblem {
@@ -1034,8 +1037,8 @@ button:disabled {
   gap: 12px;
   min-height: 112px;
   padding: 14px;
-  border-radius: 9px;
-  background: rgba(5, 10, 11, 0.54);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .statistics-detail-heading > div:first-child {
@@ -1046,12 +1049,12 @@ button:disabled {
 
 .statistics-detail-heading span,
 .statistics-detail-heading p {
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .statistics-detail-heading h3 {
   margin: 3px 0;
-  color: #fff4d8;
+  color: var(--px-ink);
 }
 
 .statistics-region-detail-heading {
@@ -1064,12 +1067,12 @@ button:disabled {
 .statistics-region-progress {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(217, 199, 150, 0.14);
+  border-top: 2px solid var(--px-rim);
 }
 
 .statistics-detail-section h4 {
   margin: 0 0 9px;
-  color: var(--gold);
+  color: var(--px-gold);
 }
 
 .statistics-detail-grid {
@@ -1085,8 +1088,8 @@ button:disabled {
   gap: 10px;
   margin-top: 10px;
   padding: 10px;
-  border: 1px solid rgba(241, 211, 134, 0.16);
-  border-radius: 8px;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
 }
 
 .statistics-equipped-weapon > div {
@@ -1094,8 +1097,8 @@ button:disabled {
 }
 
 .statistics-equipped-weapon span {
-  color: var(--muted);
-  font-size: 0.7rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .statistics-weapon-icon {
@@ -1115,9 +1118,9 @@ button:disabled {
 
 .statistics-panel .danger-zone {
   margin-top: 14px;
-  border: 1px solid rgba(224, 111, 98, 0.3);
-  border-radius: 10px;
-  background: rgba(60, 22, 24, 0.22);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-alert);
 }
 
 .save-management-card h3,
@@ -1128,7 +1131,7 @@ button:disabled {
 .save-management-card p,
 .statistics-panel .danger-zone p {
   margin: 0;
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 /* Achievements */

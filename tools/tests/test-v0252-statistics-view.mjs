@@ -51,7 +51,7 @@ saveData.statistics.totalEnemiesDefeated = 0;
 saveData.statistics.highestRunLevel = 1;
 renderStatisticsView({ els, uiState, saveData, characterDefinitions: characters, regionDefinitions: regions });
 assert.equal(els.statisticsKeyMetrics.children.length, 4, "重繪總覽不得累加重複卡片");
-assert.equal(els.statisticsCombatMetrics.children.length, 3, "戰鬥足跡重繪不得累加舊資料");
+assert.equal(els.statisticsCombatMetrics.children.length, 2, "戰鬥足跡重繪不得累加舊資料（擊敗敵人只在關鍵數字顯示一次）");
 assert.match(els.statisticsJourneySummary.textContent, /尚未留下冒險紀錄/);
 uiState.statisticsView = "characters";
 renderStatisticsView({ els, uiState, saveData, characterDefinitions: characters, regionDefinitions: regions });

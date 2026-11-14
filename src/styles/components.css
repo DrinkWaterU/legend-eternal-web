@@ -347,7 +347,7 @@
 .danger-zone {
   margin-top: 26px;
   padding-top: 18px;
-  border-top: 1px solid rgba(224, 111, 98, 0.25);
+  border-top: 2px solid var(--px-rim);
 }
 
 .danger-zone .danger-button {

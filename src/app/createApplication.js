@@ -226,6 +226,8 @@ function createEventActions({ foundation, world, profile, battle, adventure, scr
     showRegionList: world.showRegionList,
     showFacilityList: world.showFacilityList,
     showSafeAreaTravelScreen: world.showSafeAreaTravelScreen,
+    // 營地「任務紀錄」鈕綁定這個函式；先前漏傳，按鈕綁到 undefined，點了沒反應也不報錯。
+    showStoryQuestScreen: world.showStoryQuestScreen,
     handleSafeAreaTravel: world.handleSafeAreaTravel,
     restart: adventure.restart,
     getNavigationReturnTarget: foundation.getNavigationReturnTarget,

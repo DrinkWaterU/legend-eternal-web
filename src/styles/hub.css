@@ -84,7 +84,9 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #safeAreaTravelScreen,
 #characterScreen,
 #storageScreen,
-#facilityScreen {
+#facilityScreen,
+#statisticsScreen,
+#storyQuestScreen {
   color: var(--px-ink);
   font-family: var(--px-font);
   font-size: var(--px-text-m);
@@ -96,6 +98,8 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #characterScreen .eyebrow,
 #storageScreen .eyebrow,
 #facilityScreen .eyebrow,
+#statisticsScreen .eyebrow,
+#storyQuestScreen .eyebrow,
 #safeAreaTravelScreen .eyebrow {
   margin: 0 0 6px;
   color: var(--px-gold);
@@ -109,6 +113,8 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #characterScreen .body-text,
 #storageScreen .body-text,
 #facilityScreen .body-text,
+#statisticsScreen .body-text,
+#storyQuestScreen .body-text,
 #safeAreaTravelScreen .body-text {
   color: var(--px-dim);
   font-size: var(--px-text-m);
@@ -126,10 +132,14 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #characterScreen .primary-button,
 #storageScreen .primary-button,
 #facilityScreen .primary-button,
+#statisticsScreen .primary-button,
+#storyQuestScreen .primary-button,
 #regionScreen .secondary-button,
 #characterScreen .secondary-button,
 #storageScreen .secondary-button,
 #facilityScreen .secondary-button,
+#statisticsScreen .secondary-button,
+#storyQuestScreen .secondary-button,
 #safeAreaTravelScreen .secondary-button {
   min-height: 44px;
   padding: 8px 16px 10px;
@@ -149,7 +159,9 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #regionScreen .primary-button,
 #characterScreen .primary-button,
 #storageScreen .primary-button,
-#facilityScreen .primary-button {
+#facilityScreen .primary-button,
+#statisticsScreen .primary-button,
+#storyQuestScreen .primary-button {
   background: var(--px-primary);
   color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
@@ -168,6 +180,8 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #characterScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
 #storageScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
 #facilityScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
+#statisticsScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
+#storyQuestScreen :is(.primary-button, .secondary-button):is(:hover, :focus-visible):not(:disabled),
 #safeAreaTravelScreen .secondary-button:is(:hover, :focus-visible):not(:disabled) {
   transform: none;
   outline: none;
@@ -180,7 +194,9 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #regionScreen :is(.primary-button, .secondary-button):disabled,
 #characterScreen :is(.primary-button, .secondary-button):disabled,
 #storageScreen :is(.primary-button, .secondary-button):disabled,
-#facilityScreen :is(.primary-button, .secondary-button):disabled {
+#facilityScreen :is(.primary-button, .secondary-button):disabled,
+#statisticsScreen :is(.primary-button, .secondary-button):disabled,
+#storyQuestScreen :is(.primary-button, .secondary-button):disabled {
   background: var(--px-navy-2);
   color: var(--px-disabled);
   cursor: not-allowed;
@@ -788,6 +804,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 #characterScreen .selection-panel,
 #storageScreen .selection-panel,
 #facilityScreen .selection-panel,
+#statisticsScreen .selection-panel,
+#storyQuestScreen .selection-panel,
 #safeAreaTravelScreen .selection-panel {
   padding: 22px 24px 24px;
   border: 0;
@@ -802,6 +820,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 #characterScreen .app-page-heading,
 #storageScreen .app-page-heading,
 #facilityScreen .app-page-heading,
+#statisticsScreen .app-page-heading,
+#storyQuestScreen .app-page-heading,
 #safeAreaTravelScreen .app-page-heading {
   flex-direction: row;
   align-items: flex-start;
@@ -816,6 +836,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 #characterScreen .app-page-heading h2,
 #storageScreen .app-page-heading h2,
 #facilityScreen .app-page-heading h2,
+#statisticsScreen .app-page-heading h2,
+#storyQuestScreen .app-page-heading h2,
 #safeAreaTravelScreen .app-page-heading h2 {
   margin: 0;
   font-size: var(--px-text-l);
@@ -827,6 +849,8 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 #characterScreen .app-page-heading .secondary-button,
 #storageScreen .app-page-heading .secondary-button,
 #facilityScreen .app-page-heading .secondary-button,
+#statisticsScreen .app-page-heading .secondary-button,
+#storyQuestScreen .app-page-heading .secondary-button,
 #safeAreaTravelScreen .app-page-heading .secondary-button {
   width: auto;
   flex: none;

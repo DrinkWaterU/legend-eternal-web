@@ -153,18 +153,18 @@ body[data-safe-area="anping-town"] #campDescription {
 .tab-button {
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgba(33, 40, 42, 0.95), rgba(16, 20, 21, 0.95));
-  color: var(--muted);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-2);
+  color: var(--px-dim);
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 400;
 }
 
 .tab-button.is-active {
-  border-color: rgba(241, 211, 134, 0.7);
-  background: linear-gradient(180deg, rgba(76, 68, 44, 0.96), rgba(34, 29, 24, 0.96));
-  color: var(--gold);
+  border-color: var(--px-gold);
+  background: var(--px-navy-2);
+  color: var(--px-gold);
 }
 
 .inline-back-button {

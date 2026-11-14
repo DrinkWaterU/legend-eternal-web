@@ -1473,9 +1473,9 @@
   display: grid;
   gap: 0.75rem;
   padding: 1rem;
-  border: 1px solid rgba(192, 160, 102, 0.2);
-  border-radius: 12px;
-  background: rgba(8, 13, 14, 0.7);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .story-quest-list {
@@ -1487,11 +1487,9 @@
   display: grid;
   gap: 0.65rem;
   padding: 0.95rem;
-  border: 1px solid rgba(211, 165, 91, 0.32);
-  border-radius: 10px;
-  background:
-    linear-gradient(135deg, rgba(129, 73, 37, 0.1), transparent 62%),
-    rgba(13, 19, 20, 0.88);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .story-quest-card header {
@@ -1508,27 +1506,27 @@
 
 .story-quest-status {
   flex: 0 0 auto;
-  border: 1px solid rgba(224, 173, 91, 0.45);
-  border-radius: 999px;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
   padding: 0.25rem 0.55rem;
-  color: #e8c88f;
-  font-size: 0.75rem;
-  font-weight: 800;
+  color: var(--px-gold);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .story-quest-objective {
-  border-left: 3px solid rgba(218, 112, 70, 0.72);
+  border-left: 3px solid var(--px-red);
   padding-left: 0.7rem;
-  color: #f0d9bb;
-  font-weight: 700;
+  color: var(--px-orange);
+  font-weight: 400;
 }
 
 .story-quest-card.is-completed {
-  border-color: rgba(104, 158, 121, 0.35);
+  border-color: var(--px-rim);
   opacity: 0.86;
 }
 
 .story-quest-card.is-completed .story-quest-status {
-  border-color: rgba(104, 190, 137, 0.42);
-  color: #9bd6ad;
+  border-color: var(--px-rim);
+  color: var(--px-green);
 }
