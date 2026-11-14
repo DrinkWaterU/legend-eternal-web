@@ -1,6 +1,6 @@
 export function createRunResumeView({ documentRef = document, onResume, onDiscard }) {
   const panels = [];
-  for (const selector of ["#menuScreen .menu-layout", "#campScreen .camp-layout"]) {
+  for (const selector of ["#menuScreen .menu-layout", "#campScreen .camp-command"]) {
     const host = documentRef.querySelector(selector);
     if (!host) continue;
     const panel = documentRef.createElement("section");

@@ -440,9 +440,11 @@ body[data-scene="camp"] {
   padding: 8px 12px 32px;
 }
 
+/* 版面：左邊是場景與標題，右邊是一個指令視窗。
+   手機上標題在上、指令視窗在下，中間留一段讓場景露出來。 */
 .camp-layout {
   display: flex;
-  max-width: 620px;
+  max-width: 560px;
   flex-direction: column;
   gap: 20px;
   margin: 0 auto;
@@ -474,73 +476,111 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #campScreen .camp-copy .body-text {
-  max-width: 520px;
+  max-width: 30em;
   margin: 0 auto;
   color: var(--px-ink);
+  font-size: var(--px-text-s);
+  line-height: 1.8;
   text-shadow: 0 2px 0 var(--px-edge), 0 0 12px rgba(0, 0, 0, 0.9);
 }
 
-#campScreen .camp-status {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
+/* ---------- 指令視窗 ---------- */
+
+.camp-command {
+  display: flex;
+  flex-direction: column;
   background: var(--px-navy);
   box-shadow: var(--px-frame), var(--px-rim-inset);
 }
 
-#campScreen .camp-status div {
-  min-height: 0;
-  padding: 10px 14px;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  text-align: left;
+/* 隊伍狀態 */
+.camp-party {
+  padding: 14px 16px 12px;
+  border-bottom: 2px solid var(--px-rim);
 }
 
-#campScreen .camp-status div:nth-child(n + 3) {
-  border-top: 2px dotted var(--px-rim);
+.camp-party-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
-#campScreen .camp-status dt {
+.camp-party-line strong {
+  color: var(--px-ink);
+  font-size: var(--px-text-l);
+  font-weight: 400;
+}
+
+.camp-party-level {
+  color: var(--px-gold);
+  font-size: var(--px-text-m);
+}
+
+.camp-party-gold {
+  margin-left: auto;
+  color: var(--px-gold);
+  font-size: var(--px-text-m);
+}
+
+.camp-party-gold[hidden] {
+  display: none;
+}
+
+.camp-party-exp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.camp-party-meter {
+  flex: 1;
+  height: 12px;
+}
+
+.camp-party-meter > span {
+  display: block;
+  height: 100%;
+  background: var(--px-sky);
+}
+
+.camp-party-exp small {
+  flex: none;
   color: var(--px-dim);
   font-size: var(--px-text-s);
-  font-weight: 400;
 }
 
-#campScreen .camp-status dd {
-  margin: 2px 0 0;
-  color: var(--px-ink);
-  font-size: var(--px-text-m);
-  font-weight: 400;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
+/* 加護後只是一句提醒；加護前的死亡懲罰很重，維持紅框。 */
 .camp-warning {
-  margin: 0;
-  padding: 10px 12px;
+  margin: 10px 0 0;
+  padding: 0;
+  color: var(--px-warn-ink);
+  font-size: var(--px-text-s);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.camp-warning[data-type="danger"] {
+  padding: 8px 10px;
   background: var(--px-alert);
   color: var(--px-danger-ink);
-  font-size: var(--px-text-m);
-  line-height: 1.6;
-  text-align: center;
-  box-shadow: var(--px-frame), inset 0 0 0 2px var(--px-red);
+  box-shadow: inset 0 0 0 2px var(--px-red);
 }
 
-.camp-warning[data-type="blessed"] {
-  background: var(--px-warn);
-  color: var(--px-warn-ink);
-  box-shadow: var(--px-frame), inset 0 0 0 2px var(--px-gold);
+.camp-warning[data-type="blessed"]::before {
+  content: "✦ ";
+  color: var(--px-gold);
 }
 
 .camp-warning:empty {
   display: none;
 }
 
+/* 出發 */
 #campScreen .camp-primary-action {
-  padding: 18px 20px 20px;
+  width: auto;
+  margin: 16px 16px 4px;
+  padding: 14px 16px 16px;
   background: var(--px-primary);
   color: var(--px-primary-ink);
   box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
@@ -551,58 +591,101 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #campScreen .camp-primary-action > span {
+  margin-bottom: 2px;
   font-size: 36px;
 }
 
 #campScreen .camp-primary-action small {
   color: var(--px-primary-sub);
-  font-size: var(--px-text-m);
+  font-size: var(--px-text-s);
 }
 
+/* 有待續旅程時：營地的待續面板只顯示旅程資訊與「結束這段旅程」，
+   「繼續冒險」由出發鈕負責（第 4a 階段的決定），所以面板排在出發鈕上方。 */
+#campScreen .camp-command .run-resume-panel {
+  order: 1;
+  margin: 16px 16px 0;
+}
+
+#campScreen .camp-party { order: 0; }
+#campScreen .camp-primary-action { order: 2; }
+#campScreen .camp-feature-section { order: 3; }
+#campScreen .camp-menu-return { order: 4; }
+
+/* 指令清單：一行一個，左邊指令、右邊目前狀態，選到時左側出現游標。 */
 .camp-feature-section {
   margin: 0;
-  padding: 14px;
-  background: var(--px-navy);
-  box-shadow: var(--px-frame), var(--px-rim-inset);
+  padding: 12px 8px 4px;
 }
 
 .camp-feature-title {
-  margin: 0 0 12px;
+  margin: 0 8px 6px;
   color: var(--px-gold);
   font-size: var(--px-text-s);
-  text-align: center;
 }
 
 .camp-feature-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  padding: 4px;
+  display: flex;
+  flex-direction: column;
 }
 
-.camp-feature-button span {
+#campScreen .camp-feature-button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px 9px 8px;
+  background: transparent;
+  text-align: left;
+  box-shadow: none;
+}
+
+#campScreen .camp-feature-button + .camp-feature-button:not([hidden]),
+#campScreen .camp-feature-button:not([hidden]) ~ .camp-feature-button:not([hidden]) {
+  border-top: 2px dotted var(--px-rim);
+}
+
+#campScreen .camp-feature-button > span:first-child {
+  flex: none;
+  margin: 0;
   font-size: var(--px-text-m);
 }
 
-.camp-feature-wide {
-  grid-column: 1 / -1;
+#campScreen .camp-feature-button > span:first-child::after {
+  content: none;
 }
 
-
-.camp-travel-button > span:first-child {
-  padding: 0 64px;
+#campScreen .camp-feature-button small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--px-dim);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.camp-travel-button[data-new-location="true"] {
-  box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
+#campScreen .camp-feature-button:is(:hover, :focus-visible):not(:disabled) {
+  background: var(--px-hover);
+  box-shadow: none;
+}
+
+#campScreen .camp-feature-button:is(:hover, :focus-visible):not(:disabled) small {
+  color: var(--px-ink);
+}
+
+#campScreen .camp-feature-button:active:not(:disabled) {
+  transform: none;
+}
+
+/* 有事要處理的指令（未完成任務、新據點）右側改用金色。 */
+#campScreen .camp-feature-button[data-attention="true"] small,
+#campScreen .camp-travel-button[data-new-location="true"] small {
+  color: var(--px-gold);
 }
 
 .camp-travel-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   display: inline-flex;
-  width: fit-content;
+  flex: none;
   margin: 0;
   padding: 2px 6px;
   background: var(--px-gold);
@@ -614,53 +697,74 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
   display: none;
 }
 
+#campScreen .camp-travel-button[data-new-location="true"] {
+  box-shadow: none;
+}
+
 #campScreen .camp-menu-return {
-  width: fit-content;
+  align-self: flex-start;
+  width: auto;
+  min-height: 0;
+  margin: 4px 16px 14px;
+  padding: 4px 8px 6px;
+  background: transparent;
   color: var(--px-dim);
+  font-size: var(--px-text-s);
+  box-shadow: none;
+}
+
+#campScreen .camp-menu-return:is(:hover, :focus-visible) {
+  color: var(--px-ink);
+  filter: none;
+  box-shadow: none;
+}
+
+#campScreen .camp-menu-return::before {
+  content: "◀ ";
 }
 
 @media (min-width: 960px) {
   .camp-screen {
     min-height: calc(100vh - 150px);
-    padding: 24px 24px 48px;
+    padding: 24px 32px 48px;
   }
 
+  /* 指令視窗靠右，左邊整片留給場景；標題放在左上的夜空。 */
   #campScreen .camp-layout {
     display: grid;
-    max-width: 1120px;
-    grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.9fr);
-    grid-template-areas:
-      "intro departure"
-      "stats resume"
-      "warning facilities"
-      "back travel";
+    max-width: 1180px;
+    grid-template-columns: minmax(0, 1fr) 420px;
     align-items: start;
-    gap: 22px 56px;
+    gap: 0 56px;
   }
 
-  #campScreen .camp-copy { grid-area: intro; }
-  #campScreen .camp-status { grid-area: stats; }
-  #campScreen .camp-warning { grid-area: warning; }
-  #campScreen .camp-primary-action { grid-area: departure; }
-  #campScreen .run-resume-panel { grid-area: resume; }
-  #campScreen .camp-feature-section { grid-area: facilities; }
-  #campScreen .camp-menu-return { grid-area: back; justify-self: start; }
-  #campScreen .camp-travel-button { grid-area: travel; }
+  #campScreen .camp-copy {
+    padding-top: 12px;
+  }
+
+  #campScreen .camp-command {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
+
+/* 寬螢幕：營火在左、帳篷在右，指令視窗放在兩者之間，不蓋住任何一個。 */
+@media (min-width: 1200px) {
+  #campScreen .camp-layout {
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) 420px minmax(0, 0.6fr);
+  }
 }
 
 @media (max-width: 959px) {
-  #campScreen .camp-copy { order: 0; }
-  #campScreen .camp-status { order: 1; }
-  #campScreen .camp-warning { order: 2; }
-  #campScreen .camp-primary-action { order: 3; }
-  #campScreen .run-resume-panel { order: 4; }
-  #campScreen .camp-feature-section { order: 5; }
-  #campScreen .camp-travel-button { order: 6; }
-  #campScreen .camp-menu-return { order: 7; }
-
   .camp-copy h2,
   .menu-copy h2 {
     font-size: var(--px-text-l);
+  }
+
+  /* 標題與指令視窗之間留一段，讓營火或街景露出來。 */
+  #campScreen .camp-copy {
+    padding-bottom: 72px;
   }
 
   #campScreen .camp-primary-action > span {
@@ -675,17 +779,6 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
     display: block;
     width: calc(100% - 8px);
     margin: 14px 4px 4px;
-  }
-}
-
-@media (max-width: 380px) {
-  .camp-travel-button > span:first-child {
-    padding-right: 0;
-  }
-
-  .camp-travel-badge {
-    position: static;
-    margin-top: 4px;
   }
 }
 

@@ -73,50 +73,63 @@
             </p>
           </div>
 
-          <dl id="campStatusList" class="stat-list camp-status"></dl>
-          <p id="campWarning" class="camp-warning" data-type="danger"></p>
+          <!-- 指令視窗：隊伍狀態 → 出發 → 指令清單。地區與角色只在指令列右側顯示一次。 -->
+          <div class="camp-command" aria-label="營地指令">
+            <section class="camp-party" aria-label="目前角色">
+              <div class="camp-party-line">
+                <strong id="campPartyName">冒險者</strong>
+                <span id="campPartyLevel" class="camp-party-level">Lv.1</span>
+                <span id="campPartyGold" class="camp-party-gold" hidden>0 G</span>
+              </div>
+              <div class="camp-party-exp">
+                <span class="px-meter camp-party-meter" aria-hidden="true"><span id="campPartyExpBar"></span></span>
+                <small id="campPartyExp">經驗 0／0</small>
+              </div>
+              <p id="campWarning" class="camp-warning" data-type="danger"></p>
+            </section>
 
-          <button id="campStartButton" class="menu-button primary-menu-button camp-primary-action" type="button">
-            <span>出發冒險</span>
-            <small id="campStartHint">前往目前地區繼續旅程</small>
-          </button>
+            <button id="campStartButton" class="menu-button primary-menu-button camp-primary-action" type="button">
+              <span>出發冒險</span>
+              <small id="campStartHint">前往目前地區繼續旅程</small>
+            </button>
 
-          <section class="camp-feature-section" aria-label="營地功能">
-            <p id="campFeatureTitle" class="camp-feature-title">營地功能</p>
-            <nav id="campFeatureGrid" class="camp-feature-grid">
-              <button id="campRegionButton" class="camp-feature-button" data-feature="region" type="button">
-                <span>選擇地區</span>
-                <small id="campRegionHint">目前：平原</small>
-              </button>
-              <button id="campCharacterButton" class="camp-feature-button" data-feature="character" type="button">
-                <span>切換角色</span>
-                <small id="campCharacterHint">冒險者 Lv.1</small>
-              </button>
-              <button id="campStorageButton" class="camp-feature-button" data-feature="storage" type="button" hidden>
-                <span>倉庫</span>
-                <small id="campStorageHint">0 個素材</small>
-              </button>
-              <button id="campPlacesButton" class="camp-feature-button" data-feature="places" type="button" hidden>
-                <span>四處看看</span>
-                <small id="campPlacesHint">看看營地周圍</small>
-              </button>
-              <button id="campRecordButton" class="camp-feature-button camp-feature-wide" data-feature="records" type="button">
-                <span>冒險紀錄</span>
-                <small id="campRecordHint">最近：尚無紀錄</small>
-              </button>
-              <button id="campStoryQuestButton" class="camp-feature-button camp-feature-wide" data-feature="story-quests" type="button" hidden>
-                <span>任務紀錄</span>
-                <small id="campStoryQuestHint">查看劇情任務</small>
-              </button>
+            <nav class="camp-feature-section" aria-label="營地功能">
+              <p id="campFeatureTitle" class="camp-feature-title">營地功能</p>
+              <div id="campFeatureGrid" class="camp-feature-grid">
+                <button id="campRegionButton" class="camp-feature-button" data-feature="region" type="button">
+                  <span>選擇地區</span>
+                  <small id="campRegionHint">平原</small>
+                </button>
+                <button id="campCharacterButton" class="camp-feature-button" data-feature="character" type="button">
+                  <span>切換角色</span>
+                  <small id="campCharacterHint">冒險者</small>
+                </button>
+                <button id="campStorageButton" class="camp-feature-button" data-feature="storage" type="button" hidden>
+                  <span>倉庫</span>
+                  <small id="campStorageHint">0 種素材</small>
+                </button>
+                <button id="campPlacesButton" class="camp-feature-button" data-feature="places" type="button" hidden>
+                  <span>四處看看</span>
+                  <small id="campPlacesHint">看看營地周圍</small>
+                </button>
+                <button id="campRecordButton" class="camp-feature-button" data-feature="records" type="button">
+                  <span>冒險紀錄</span>
+                  <small id="campRecordHint">尚無紀錄</small>
+                </button>
+                <button id="campStoryQuestButton" class="camp-feature-button" data-feature="story-quests" type="button" hidden>
+                  <span>任務紀錄</span>
+                  <small id="campStoryQuestHint">查看劇情任務</small>
+                </button>
+                <button id="campTravelButton" class="camp-feature-button camp-travel-button" data-feature="travel" type="button" hidden>
+                  <span>移動據點</span>
+                  <small id="campTravelHint">前往其他已解鎖的據點</small>
+                  <span id="campTravelBadge" class="camp-travel-badge" hidden>新地點</span>
+                </button>
+              </div>
             </nav>
-          </section>
 
-          <button id="campTravelButton" class="camp-feature-button camp-feature-wide camp-travel-button" data-feature="travel" type="button" hidden>
-            <span>移動據點</span>
-            <small id="campTravelHint">前往其他已解鎖的據點</small>
-            <span id="campTravelBadge" class="camp-travel-badge" hidden>新地點</span>
-          </button>
-          <button id="campBackButton" class="secondary-button camp-menu-return" type="button">返回主選單</button>
+            <button id="campBackButton" class="secondary-button camp-menu-return" type="button">返回主選單</button>
+          </div>
         </div>
       </section>
 

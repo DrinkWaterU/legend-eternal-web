@@ -76,7 +76,7 @@ export function createSafeAreaController({
     )).length;
 
     els.campTravelButton.hidden = destinations.length === 0;
-    els.campTravelHint.textContent = "前往其他已解鎖的據點";
+    els.campTravelHint.textContent = `${destinations.length} 個據點`;
     els.campTravelBadge.hidden = newLocationCount === 0;
     els.campTravelBadge.textContent = newLocationCount > 1
       ? `${newLocationCount} 個新地點`

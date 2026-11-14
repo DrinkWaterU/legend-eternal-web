@@ -59,6 +59,15 @@
   font-size: var(--px-text-s);
 }
 
+/* 公會交付確認框：價差為正綠、為負紅（5～9 件級距低於商人價）。 */
+.guild-bulk-confirm-totals dd.is-positive {
+  color: var(--px-green);
+}
+
+.guild-bulk-confirm-totals dd.is-negative {
+  color: var(--px-loss);
+}
+
 /* 製作確認框的扣除量原本和配方的「數量足夠」共用綠色，看起來像得到東西；扣除改用中性白。 */
 .blacksmith-craft-dialog .blacksmith-craft-cost-list strong {
   color: var(--px-ink);

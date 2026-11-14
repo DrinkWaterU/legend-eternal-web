@@ -176,8 +176,15 @@ assert.match(eventRuntimeSource, /beginBattleRuntime\(\{[\s\S]*source: "event"[\
 assert.doesNotMatch(eventRuntimeSource, /resetHeroBattleState|beginRunPreparationBattle|applyBattleStartSkills/);
 assert.match(debugRuntimeSource, /beginBattleRuntime\(\{[\s\S]*encounterType: "normal"/);
 
-for (const label of ["目前角色", "目前地區", "經驗", "目前金幣"]) {
-  assert.match(game, new RegExp(label), `Camp 核心摘要缺少：${label}`);
+// 營地核心摘要（2026-11-14 改為指令視窗）：角色與等級、經驗條、金幣在隊伍列，地區寫在出發鈕上，各只出現一次。
+for (const pattern of [
+  /els\.campPartyName\.textContent = character\.name/,
+  /els\.campPartyLevel\.textContent = `Lv\.\$\{progress\.level\}`/,
+  /els\.campPartyExp\.textContent = `\$\{experienceSummary\.title\} \$\{experienceSummary\.value\}`/,
+  /els\.campPartyGold\.textContent = `\$\{inventorySummary\.gold\} G`/,
+  /前往\$\{regionName\}/
+]) {
+  assert.match(game, pattern, `Camp 核心摘要缺少：${pattern}`);
 }
 assert.doesNotMatch(game, /地區難度/, "Camp 核心摘要不應退回舊版長清單");
 
@@ -199,9 +206,10 @@ assert.match(html, /id="combatPreparationCharges"/);
 assert.match(html, /id="merchantSalePanel"/);
 assert.match(html, />四處看看</);
 assert.match(html, />營地去處</);
-assert.match(layoutCss, /\.camp-feature-grid[\s\S]*grid-template-columns: repeat\(2/);
-assert.match(layoutCss, /\.camp-status\s*\{[\s\S]*grid-template-columns: repeat\(2/);
-assert.doesNotMatch(responsiveCss, /\.camp-feature-grid\s*\{[\s\S]*grid-template-columns:\s*1fr/, "手機版不可把營地功能格退回單欄");
+// 營地功能改為單欄指令清單：每列一行高（約 40px），左指令右狀態，比兩欄大卡片更矮，手機上也不會變長。
+assert.match(layoutCss, /\.camp-feature-grid \{\s*display: flex;\s*flex-direction: column;/);
+assert.match(layoutCss, /#campScreen \.camp-feature-button \{[^}]*justify-content: space-between;/);
+assert.match(html, /class="camp-command"[\s\S]*id="campPartyName"[\s\S]*id="campStartButton"[\s\S]*id="campFeatureGrid"/);
 assert.doesNotMatch(layoutCss, /(?:^|\n)\.(?:primary|secondary|danger)-button(?:\s*[,:{])/m, "layout.css 不應以頂層 selector 覆寫全域 action button class");
 assert.match(layoutCss, /\.camp-primary-action\s*\{/);
 assert.match(componentsCss, /\.region-detail-heading\s*\{/);
