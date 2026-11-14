@@ -17,9 +17,9 @@
 | 位置 | 內容 | 說明 |
 | --- | --- | --- |
 | `dev`／`origin/dev` | `v0.2.12.0-alpha` | 開發主線。以 `git log -1` 為準。 |
-| `master`／`origin/master` | 合併前是 `v0.2.7.3-alpha`（`f49668e`） | **正式站**。GitHub Pages 從 `master` 發布：<https://drinkwateru.github.io/legend-eternal-web/>。推送 `master` 等於更新公開網站，須作者同意。 |
+| `master`／`origin/master` | `v0.2.12.0-alpha`（2026-11-14 合併 `2534129`，前一版 `v0.2.7.3-alpha`） | **正式站**。GitHub Pages 從 `master` 發布：<https://drinkwateru.github.io/legend-eternal-web/>。推送 `master` 等於更新公開網站，須作者同意。 |
 
-- `master` 是 `dev` 的祖先，可以直接快轉；過去的慣例是建立「合併：vX」合併 commit。
+- 合併慣例：在 `master` 建立「合併：vX」合併 commit（`--no-ff`）。2026-11-14 合併後正式站已確認顯示 v0.2.12.0、主控台無錯誤。
 - 舊版存檔（例如正式站的 Schema 10）會自動遷移到 Schema 14。2026-11-14 已用 Schema 10 存檔實測：資料保留、可正常載入、主控台無錯誤。
 - 本機沒有安裝 `gh` CLI。
 
