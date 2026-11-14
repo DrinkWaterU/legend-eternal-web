@@ -1205,3 +1205,34 @@
 #regionScreen .preparation-marker {
   border-radius: 0;
 }
+
+/* 整備選項的三種狀態要分得出來（2026-11-14 可讀性審查）：
+   滑過／鍵盤焦點：只換底色與白框；選中：暗金底、金框、方塊填滿金色；
+   展開說明不等於選中；「可強化」只靠標籤標示，不再用跟選中一樣的金框。 */
+#regionScreen .preparation-option:is(:hover, :focus-visible),
+#regionScreen .preparation-option.is-detail-open,
+#regionScreen .preparation-option.is-enhanced {
+  border-color: var(--px-rim);
+  background: var(--px-navy-2);
+}
+
+#regionScreen .preparation-option:is(:hover, :focus-visible) {
+  border-color: var(--px-ink);
+}
+
+#regionScreen .preparation-option.is-selected {
+  border-color: var(--px-gold);
+  background: var(--px-picked);
+}
+
+#regionScreen .preparation-option .preparation-marker,
+#regionScreen .preparation-option.is-enhanced .preparation-marker {
+  background: transparent;
+  border-color: var(--px-dim);
+}
+
+#regionScreen .preparation-option.is-selected .preparation-marker {
+  border-color: var(--px-gold);
+  background: var(--px-gold);
+  box-shadow: inset 0 0 0 3px var(--px-picked);
+}

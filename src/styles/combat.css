@@ -336,7 +336,8 @@
   line-height: 1.5;
 }
 
-.turn-forecast[hidden] {
+.turn-forecast[hidden],
+.turn-forecast.is-empty {
   display: none;
 }
 
@@ -440,7 +441,8 @@
   box-shadow: inset 0 0 0 2px var(--px-gold);
 }
 
-.enemy-intent[hidden] {
+.enemy-intent[hidden],
+.enemy-intent.is-empty {
   display: none;
 }
 
@@ -1152,3 +1154,62 @@ body[data-region="highlands"] #gameScreen:has([data-path-choice="true"]) .log-pa
   }
 }
 
+
+/* ---------- 手機：指令不跟著預告上下跳（2026-11-14 操作流程審查） ----------
+   原本衝鋒回合的預告長句、回合結束預估、開場敘述會把敵人卡片從約 225px 撐到 369px，
+   指令鈕被推下約 140px，連點時容易誤觸。單一敵人時改為固定預留高度：
+   開場敘述只留在戰報（開場已寫入）；預告縮成 12px 並固定三行；預估與守勢提示各固定一行。 */
+@media (max-width: 900px) {
+  body:not([data-region="highlands"]) .enemy-card.is-single .enemy-intro {
+    display: none;
+  }
+
+  body:not([data-region="highlands"]) .enemy-card.is-single .enemy-intent {
+    min-height: calc(3 * 1.6em + 16px);
+    font-size: var(--px-text-s);
+  }
+
+  body:not([data-region="highlands"]) .enemy-card.is-single .enemy-intent.is-empty,
+  body:not([data-region="highlands"]) .enemy-card.is-single .turn-forecast.is-empty {
+    display: block;
+    visibility: hidden;
+  }
+
+  body:not([data-region="highlands"]) .enemy-card.is-single .turn-forecast {
+    min-height: 1.5em;
+  }
+
+  body:not([data-region="highlands"]) .combat-actions .action-guard::after {
+    content: attr(data-hint);
+    display: block;
+    min-height: 1.5em;
+    margin-top: 2px;
+    color: #a9d3cc;
+    font-size: var(--px-text-s);
+  }
+}
+
+@media (max-width: 900px) {
+  /* 狀態標籤（中毒、護盾等）與角色的回合結束預估：沒有內容時也保留一行，指令鈕才不會被推動。 */
+  body:not([data-region="highlands"]) .enemy-card.is-single .enemy-statuses,
+  body:not([data-region="highlands"]) #heroStatusList {
+    min-height: 24px;
+  }
+
+  body:not([data-region="highlands"]) .battle-hero .turn-forecast {
+    min-height: 1.5em;
+  }
+
+  body:not([data-region="highlands"]) .battle-hero .turn-forecast.is-empty {
+    display: block;
+    visibility: hidden;
+  }
+}
+
+@media (max-width: 900px) {
+  /* 「狀態正常」的敵人狀態列平時藏起來；手機單一敵人時改為保留空位（不顯示文字），避免中毒等狀態出現時推動指令。 */
+  body:not([data-region="highlands"]) .enemy-card.is-single .enemy-statuses:has(.is-normal:only-child) {
+    display: flex;
+    visibility: hidden;
+  }
+}

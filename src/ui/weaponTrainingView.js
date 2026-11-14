@@ -213,7 +213,7 @@ function createRegionList(training, regions) {
     const complete = training.regions?.[id] === true;
     const item = document.createElement("li");
     item.dataset.complete = String(complete);
-    const icon = createText("span", complete ? "✓" : "○", "weapon-training-region-icon");
+    const icon = createText("span", complete ? "√" : "○", "weapon-training-region-icon");
     icon.setAttribute("aria-hidden", "true");
     const status = createText("span", `${label}：${complete ? "已完成" : "尚未完成"}`, "weapon-training-region-label");
     item.append(icon, status);
@@ -226,7 +226,7 @@ function createStatus(text, state) {
   const status = document.createElement("div");
   status.className = "weapon-training-status";
   status.dataset.state = state;
-  const icon = createText("span", state === "complete" ? "✓" : state === "ready" ? "!" : "→", "weapon-training-status-icon");
+  const icon = createText("span", state === "complete" ? "√" : state === "ready" ? "!" : "→", "weapon-training-status-icon");
   icon.setAttribute("aria-hidden", "true");
   const label = createText("span", text, "weapon-training-status-copy");
   status.append(icon, label);

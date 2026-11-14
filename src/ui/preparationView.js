@@ -190,7 +190,7 @@ function createEnhancementSection({
     row.classList.toggle("is-ready", item.enough);
     row.classList.toggle("is-missing", !item.enough);
     name.textContent = item.name;
-    quantity.textContent = `${item.owned} / ${item.quantity}`;
+    quantity.textContent = `持有 ${item.owned}／需要 ${item.quantity}`;
     row.append(name, quantity);
     materialList.append(row);
   });

@@ -563,15 +563,15 @@
                     <button class="blacksmith-filter-tab" type="button" data-blacksmith-filter="owned" aria-pressed="false">已擁有</button>
                   </div>
                   <div class="blacksmith-category-filter" aria-label="武器類別篩選">
-                    <button id="blacksmithCategoryPrev" class="blacksmith-category-arrow" type="button" aria-label="往左查看武器類別" hidden>‹</button>
+                    <button id="blacksmithCategoryPrev" class="blacksmith-category-arrow" type="button" aria-label="往左查看武器類別" hidden>&lt;</button>
                     <div id="blacksmithCategoryScroller" class="blacksmith-category-scroller">
                       <div id="blacksmithCategoryList" class="blacksmith-category-list" role="tablist" aria-label="武器類別"></div>
                     </div>
-                    <button id="blacksmithCategoryNext" class="blacksmith-category-arrow" type="button" aria-label="往右查看武器類別" hidden>›</button>
+                    <button id="blacksmithCategoryNext" class="blacksmith-category-arrow" type="button" aria-label="往右查看武器類別" hidden>&gt;</button>
                   </div>
                   <label class="blacksmith-search-field">
                     <span class="sr-only">搜尋武器</span>
-                    <span aria-hidden="true">⌕</span>
+                    
                     <input id="blacksmithSearchInput" type="search" placeholder="搜尋武器或類別" autocomplete="off">
                   </label>
                 </div>
@@ -886,15 +886,15 @@
                 <small>點擊查看完整資訊</small>
               </div>
               <div class="summary-grid">
-                <button id="openAbilityFromAttack" class="summary-tile" type="button">
+                <button id="openAbilityFromAttack" class="summary-tile" type="button" aria-label="查看攻擊與目前能力">
                   <span class="summary-label">攻擊</span>
                   <span id="currentAttackSummary" class="summary-value">0</span>
                 </button>
-                <button id="openAbilityFromDefense" class="summary-tile" type="button">
+                <button id="openAbilityFromDefense" class="summary-tile" type="button" aria-label="查看防禦與目前能力">
                   <span class="summary-label">防禦</span>
                   <span id="currentDefenseSummary" class="summary-value">0</span>
                 </button>
-                <button id="openAbilityFromCrit" class="summary-tile" type="button">
+                <button id="openAbilityFromCrit" class="summary-tile" type="button" aria-label="查看暴擊率與目前能力">
                   <span class="summary-label">暴擊率</span>
                   <span id="currentCritSummary" class="summary-value">0%</span>
                 </button>
@@ -918,13 +918,13 @@
               aria-expanded="false"
               hidden
             >
-              <span class="quest-combat-toggle-mark" aria-hidden="true">✦</span>
+              <span class="quest-combat-toggle-mark" aria-hidden="true">◆</span>
               <span class="quest-combat-toggle-copy">
                 <span class="eyebrow">目前委託</span>
                 <strong id="questCombatSummaryName">目前委託</strong>
               </span>
               <span id="questCombatSummaryProgress" class="quest-combat-toggle-progress">0 / 0</span>
-              <span class="quest-combat-toggle-chevron" aria-hidden="true">↗</span>
+              <span class="quest-combat-toggle-chevron" aria-hidden="true">→</span>
             </button>
             <ol id="battleLog" class="battle-log"></ol>
           </section>

@@ -58,7 +58,9 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
     updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies, turn);
     const intent = card.querySelector("[data-enemy-intent]");
     intent.textContent = (phase === "danger" || phase === "combat") ? getEnemyIntent(enemy, turn, enemies) || "" : "";
-    intent.hidden = !intent.textContent;
+    // 用 is-empty 而不是 hidden：手機單一敵人時要保留位置，避免指令鈕上下跳（全域 [hidden] 會強制 display:none）。
+    intent.hidden = false;
+    intent.classList.toggle("is-empty", !intent.textContent);
   });
   keepTargetVisible(roster, targetEnemyId);
 }
@@ -147,7 +149,8 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies, turn = 0) {
   const forecastLine = card.querySelector("[data-enemy-forecast]");
   if (forecastLine) {
     forecastLine.textContent = describeTurnForecast(forecast);
-    forecastLine.hidden = !forecastLine.textContent;
+    forecastLine.hidden = false;
+    forecastLine.classList.toggle("is-empty", !forecastLine.textContent);
   }
   const statuses = [];
   if (enemy.shield > 0) statuses.push({ label: `護盾 ${enemy.shield}`, className: "is-shield" });

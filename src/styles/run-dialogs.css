@@ -995,9 +995,15 @@
     gap: 0 8px;
   }
 
+  /* 手機上三格各約 98px；「第 12 / 16 場」放不下時換行，不要溢出框外。 */
+  .end-summary div.is-headline {
+    padding: 10px 2px;
+  }
+
   .end-summary div.is-headline dd {
     font-size: var(--px-text-m);
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .event-actions,
@@ -1038,4 +1044,16 @@
     align-items: flex-start;
     gap: 2px;
   }
+}
+
+/* 對話框內容比畫面長時（例如倒下的結算），按鈕固定在對話框底部，不必先捲到最下面才找得到出口。
+   2026-11-14 操作流程審查：手機上倒下結算的「回到營地」原本在第一屏外。 */
+.end-dialog.px-dialog > .end-actions {
+  position: sticky;
+  bottom: -16px;
+  z-index: 2;
+  margin: 12px -20px -20px;
+  padding: 12px 20px 16px;
+  background: var(--px-navy);
+  box-shadow: 0 -2px 0 0 var(--px-rim);
 }

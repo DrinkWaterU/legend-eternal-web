@@ -190,7 +190,7 @@ function createQuantityInput({ item, quantity, onQuantityInput }) {
   field.addEventListener("input", () => {
     const parsed = Number(field.value);
     if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > item.quantity) {
-      error.textContent = `請輸入 1～${item.quantity} 的整數。`;
+      error.textContent = `請輸入 1～${item.quantity} 的整數；同一種素材至少 5 件公會才收購。`;
       field.setAttribute("aria-invalid", "true");
     } else {
       error.textContent = "";

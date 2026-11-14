@@ -580,7 +580,7 @@
   right: 20px;
   transform: translateY(-54%);
   color: var(--px-gold);
-  content: "›";
+  content: "→";
   font-size: 36px;
   line-height: 1;
 }
@@ -1067,7 +1067,7 @@
 }
 
 .preparation-card-hint::after {
-  content: "›";
+  content: "→";
   font-size: 18px;
   line-height: 0.8;
 }

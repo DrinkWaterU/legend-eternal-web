@@ -11,6 +11,7 @@ import { describeUpcomingEncounter } from "../../core/upcomingEncounter.js";
 import { renderCombatView, renderCurrentAbilityView } from "../../ui/combatView.js";
 import { renderBattleLog } from "../../ui/renderHelpers.js";
 import { getChargeBrace, isChargeTurn } from "../../core/chargeBrace.js";
+import { getHeroDirectAttackDamage } from "../../core/combat.js";
 
 export function createCombatRenderer({
   state,
@@ -47,9 +48,15 @@ export function createCombatRenderer({
       els.guardButton.disabled = !canFight;
       els.guardButton.hidden = !canFight;
       // 下回合有可撐住的衝鋒時，直接在守勢按鈕上寫出來。
-      const canBrace = canFight && !state.highlandBattle && (state.enemies || []).some(enemy =>
-        enemy.hp > 0 && isChargeTurn(enemy, (state.turn || 0) + 1) && getChargeBrace(enemy));
-      if (canBrace) els.guardButton.dataset.hint = "可撐住衝鋒";
+      const chargers = canFight && !state.highlandBattle
+        ? (state.enemies || []).filter(enemy => enemy.hp > 0 && isChargeTurn(enemy, (state.turn || 0) + 1) && getChargeBrace(enemy))
+        : [];
+      // 唯一會衝鋒的敵人就是目前目標、而且一般攻擊（不算暴擊）就能打倒時，提示改成也可直接擊倒，
+      // 不要讓按鈕提示把玩家推向守勢（2026-11-14 操作流程審查）。閃避仍可能讓這一擊落空。
+      const onlyCharger = chargers.length === 1 ? chargers[0] : null;
+      const killable = onlyCharger && onlyCharger.runtimeId === state.targetEnemyId && state.hero
+        && getHeroDirectAttackDamage({ hero: state.hero, enemy: onlyCharger }) >= onlyCharger.hp;
+      if (chargers.length > 0) els.guardButton.dataset.hint = killable ? "也可直接擊倒" : "可撐住衝鋒";
       else if (els.guardButton.dataset) delete els.guardButton.dataset.hint;
     }
     els.fleeButton.disabled = !(canFight && (isDuel || !isBoss));
@@ -64,9 +71,10 @@ export function createCombatRenderer({
     els.continueButton.hidden = !canContinue;
     els.continueButton.disabled = !canContinue;
     els.continueButton.textContent = hasPendingThreat("safeEscape") ? "繼續挑戰" : "繼續前進";
-    els.restButton.hidden = !canContinue;
+    // 只有逃跑後的安全路段能修整；不能修整的路段直接不顯示，避免寫「已修整」讓玩家以為補過血。
+    els.restButton.hidden = !canContinue || (!state.canRest && !state.hasRested);
     els.restButton.disabled = !canRest;
-    els.restButton.textContent = state.canRest && !state.hasRested ? "原地修整" : "已修整";
+    els.restButton.textContent = state.hasRested ? "已修整" : "原地修整";
     els.retreatButton.hidden = !canContinue;
     els.retreatButton.disabled = !canContinue;
     els.viewBlessingsButton.disabled = !canViewBlessings || isDuel;
@@ -166,6 +174,12 @@ export function createCombatRenderer({
         ? "安全路段：可以繼續前進、原地修整，或撤退回營地。"
         : "安全路段：可以繼續前進，或撤退回營地。";
       els.combatActionHint.dataset.action = "safe";
+      return;
+    }
+    // 戰鬥結束或場上沒有敵人時，不再提示「選擇本回合行動」。
+    if (state.ended || !(state.enemies || []).some((enemy) => enemy.hp > 0)) {
+      els.combatActionHint.textContent = "";
+      els.combatActionHint.dataset.action = "none";
       return;
     }
     if (state.lastPlayerAction === "guard") {

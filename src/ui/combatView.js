@@ -21,7 +21,7 @@ export function renderCombatView({
   questSnapshot = null
 }) {
   if (!hero) return;
-  renderHeroStatus(els, hero, characterStatusEntries, turn);
+  renderHeroStatus(els, hero, characterStatusEntries, turn, phase);
   renderPreparationStatus(els, preparationStatus);
   renderEnemyRoster({
     roster: els.enemyRoster,
@@ -86,7 +86,7 @@ export function renderQuestCombatDetails({ els, snapshot }) {
   heading.className = "quest-info-card-heading";
   const mark = document.createElement("span");
   mark.className = "quest-info-mark";
-  mark.textContent = "✦";
+  mark.textContent = "◆";
   mark.setAttribute("aria-hidden", "true");
   const titleGroup = document.createElement("div");
   titleGroup.className = "quest-info-title-group";
@@ -151,8 +151,9 @@ export function getHeroRuntimeCritChance(hero) {
   return (Number(hero?.critChance) || 0) + (Number(hero?.battleCritBonus) || 0);
 }
 
-function renderHeroStatus(els, hero, characterStatusEntries, turn = 0) {
-  const forecast = getHeroTurnForecast(hero, turn);
+function renderHeroStatus(els, hero, characterStatusEntries, turn = 0, phase = "combat") {
+  // 回合結束的中毒／回復預估只在戰鬥中有意義；下一場開始時中毒會清掉，戰鬥外顯示會誤導。
+  const forecast = (phase === "combat" || phase === "danger") ? getHeroTurnForecast(hero, turn) : { loss: 0, gain: 0, hpAfter: hero.hp };
   els.heroName.textContent = hero.name;
   els.heroLevel.textContent = `角色 Lv. ${hero.level || 1}`;
   renderLayeredMeter({
@@ -170,7 +171,9 @@ function renderHeroStatus(els, hero, characterStatusEntries, turn = 0) {
   const forecastLine = els.heroHealthMeter.parentElement?.querySelector?.("[data-turn-forecast]");
   if (forecastLine) {
     forecastLine.textContent = describeTurnForecast(forecast);
-    forecastLine.hidden = !forecastLine.textContent;
+    // 同敵人卡片：手機上保留這一行的位置，避免指令鈕被推動。
+    forecastLine.hidden = false;
+    forecastLine.classList.toggle("is-empty", !forecastLine.textContent);
   }
   const criticalHealth = hero.hp > 0 && hero.hp / hero.maxHp <= 0.25;
   els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}${criticalHealth ? " · 生命危急" : ""}`;
