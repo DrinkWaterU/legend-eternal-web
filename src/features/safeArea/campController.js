@@ -129,8 +129,16 @@ export function getCampExperienceSummary(progress, character) {
       value: `儲備 ${Math.min(exp, storageLimit)}／${storageLimit}`
     };
   }
+  const expToNext = getExpToNextLevel(level, character);
+  // 升級只在冒險結算時發生；上限提高前儲滿的經驗會停在滿條，要說清楚不是卡住。
+  if (exp >= expToNext) {
+    return {
+      title: "經驗已滿",
+      value: "下次結算升級"
+    };
+  }
   return {
     title: "經驗",
-    value: `${exp}／${getExpToNextLevel(level, character)}`
+    value: `${exp}／${expToNext}`
   };
 }

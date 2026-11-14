@@ -27,6 +27,12 @@ assert.deepEqual(
   { title: "經驗", value: "120／2859" },
   "營地未封頂 EXP 應使用簡短數值"
 );
+// 上限由 25 提高到 30 前儲滿的經驗（例如弓箭手 Lv.25 的 2309）要等下次結算才升級，營地應說明而不是顯示卡住的滿條。
+assert.deepEqual(
+  getCampExperienceSummary({ level: 25, exp: 2309 }, characterDefinitions.archer),
+  { title: "經驗已滿", value: "下次結算升級" },
+  "營地經驗已滿但尚未結算時，應提示下次結算升級"
+);
 assert.deepEqual(
   getCampExperienceSummary({ level: 30, exp: 0 }, characterDefinitions.adventurer),
   { title: "經驗（已達上限）", value: "儲備 0／3003" },
