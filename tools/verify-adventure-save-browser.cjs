@@ -144,7 +144,8 @@ async function main() {
                 assert.equal(saved.statistics.totalEnemiesDefeated, 1);
                 assert.equal(saved.quests.active.progress, 1);
                 assert.equal(saved.inventory.gold, JSON.parse(before).inventory.gold);
-                assert.ok(Object.keys(saved.inventory.materials).length > 0);
+                // 冒險改用固定種子亂數（withRunRandom），Math.random 不再決定掉落；改驗存檔庫存與本輪紀錄的掉落一致。
+                assert.deepEqual(Object.fromEntries(Object.entries(saved.inventory.materials).map(([id, m]) => [id, m.quantity])), Object.fromEntries(Object.entries(saved.activeRun.state.runStats.rewards.materials).map(([id, m]) => [id, m.quantity])));
                 assert.ok(saved.progression.characters.adventurer.exp > 0);
               }
             } else if (scenario === 'retreat') {

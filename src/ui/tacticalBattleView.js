@@ -9,7 +9,10 @@ export function renderTacticalBattle({ state, els, canFight, choosePath }) {
   const panel = els.highlandBattlePanel, controls = els.tacticalActions;
   const text = getWeaponStatus(state.hero);
   for (const [button, type] of [[els.nextButton, "attack"], [els.guardButton, "guard"]]) if (button) {
-    button.onmouseenter = button.onfocus = () => updateHighlandPreview(state, panel, { type });
+    // 窄版面點按也會先觸發滑過：預覽變高把按鈕推走，點守勢可能落在攻擊上。
+    // 只在桌機版面（棋盤已預留高度）用滑過／聚焦預覽；手機改用棋盤上的「看攻擊後／看守勢後」。
+    const wide = button.ownerDocument.defaultView?.matchMedia?.("(min-width: 901px)")?.matches;
+    button.onmouseenter = button.onfocus = wide ? () => updateHighlandPreview(state, panel, { type }) : null;
   }
   if (els.weaponTechniqueStatus) {
     els.weaponTechniqueStatus.textContent = text;

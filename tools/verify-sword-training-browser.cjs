@@ -33,7 +33,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       await page.click('#campPlacesButton');
       await page.locator('#facilityList button').filter({ hasText: /瑟琳|公會接待員/ }).click();
       await page.locator('#dialogueChoices button').filter({ hasText: '查看公會委託' }).click();
-      assert.match(await page.locator('#guildQuestContent').innerText(), /守隘劍研修/);
+      assert.match(await page.locator('#guildQuestContent').innerText(), /守隘劍專精/);
       assert.match(await page.locator('#guildQuestContent').innerText(), /斷風高地：已完成/);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
       if (process.env.GAME_TEST_OUTPUT) await page.screenshot({ path: `${process.env.GAME_TEST_OUTPUT}/guild-${width}.png`, fullPage: true });

@@ -116,7 +116,8 @@ async function main() {
           await page.click('#startButton');
           assert.equal((await save(page)).activeRun.state.activeRouteId, 'windbreak-ascent');
           await page.locator('.highland-path-choice').first().click();
-          await page.click('#guardButton');
+          // 手機用點按：觸控沒有滑過，與真實操作一致。
+          if (width < 960) await page.locator('#guardButton').tap(); else await page.click('#guardButton');
           assert.match(await page.locator('#battleLog').textContent(), /守勢/);
           await capture('outer-battle');
           const before = await save(page); await resume();
@@ -183,9 +184,9 @@ async function main() {
             await page.locator('#blacksmithWeaponList button').filter({ hasText: name }).screenshot({ path: path.join(output, `weapon-card-${id}-${width}.png`) });
             await page.locator('#blacksmithWeaponList button').filter({hasText:name}).click();
             assert.match(await page.locator('#blacksmithDetail .weapon-base-stats').innerText(),/攻擊.*1/);
-            await page.locator('#blacksmithDetail details summary').click();
+            await page.locator('#blacksmithDetail details summary').filter({ hasText: '查看完整規則' }).click();
             const weapon=await page.evaluate(async id=>(await import('/src/data/weapons.js')).weaponDefinitions[id],id);
-            assert.equal(await page.locator('#blacksmithDetail details p').innerText(),weapon.effectText);
+            assert.equal(await page.locator('#blacksmithDetail details').filter({ has: page.locator('summary', { hasText: '查看完整規則' }) }).locator('p').first().innerText(),weapon.effectText);
             await page.locator('#blacksmithDetailPanel').screenshot({path:path.join(output,`market-weapon-${id}-${width}.png`)});
             if(!(await save(page)).inventory.weapons[id]) {
               const before=await save(page);await page.click('#blacksmithCraftButton');await page.click('#confirmBlacksmithCraftButton');const after=await save(page);
@@ -283,12 +284,12 @@ async function main() {
             s.awaitingBlessing=false;s.blessingChoices=[];s.hero.blessings=highlandsRegion.blessings.map(b=>b.name);
             localStorage.setItem('legendEternalSave',JSON.stringify(d));
           });await resume();await page.click('#viewBlessingsButton');
-          assert.equal(await page.locator('#blessingInfoList .blessing-info-card').count(),18);
-          for(const c of await page.locator('#blessingInfoList .blessing-info-card').evaluateAll(cards=>cards.map(c=>({children:c.children.length,names:c.querySelectorAll('strong').length,stories:c.querySelectorAll('.blessing-info-story').length,flavors:c.querySelectorAll('em').length})))) {
+          assert.equal(await page.locator('#blessingInfoList .blessing-info-row').count(),18);
+          for(const c of await page.locator('#blessingInfoList .blessing-info-row').evaluateAll(cards=>cards.map(c=>({children:c.children.length,names:c.querySelectorAll('strong').length,stories:c.querySelectorAll('.blessing-info-story').length,flavors:c.querySelectorAll('em').length})))) {
             assert.deepEqual(c,{children:3,names:1,stories:1,flavors:0});
           }
           await capture('owned-blessings');
-          for(const dy of await page.locator('#blessingInfoList .blessing-info-card').evaluateAll(cards=>cards.map(c=>Math.abs(c.querySelector('strong').getBoundingClientRect().y-c.querySelector('.blessing-info-rarity-tag').getBoundingClientRect().y)))) assert.ok(dy<=8,'Owned blessing name and rarity share a row');
+          for(const dy of await page.locator('#blessingInfoList .blessing-info-row').evaluateAll(cards=>cards.map(c=>Math.abs(c.querySelector('strong').getBoundingClientRect().y-c.querySelector('.blessing-info-rarity-tag').getBoundingClientRect().y)))) assert.ok(dy<=8,'Owned blessing name and rarity share a row');
           await page.locator('#blessingInfoPanel .combat-info-body').evaluate(e=>{e.scrollTop=e.scrollHeight;});
           await capture('owned-blessings-bottom');
         });

@@ -919,6 +919,7 @@ body[data-region="highlands"] #gameScreen .combat-layout {
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
+    justify-content: flex-start;
     gap: 14px;
   }
 
@@ -976,6 +977,11 @@ body[data-region="highlands"] #gameScreen:has([data-path-choice="true"]) .log-pa
     display: contents;
   }
 
+  /* 高地棋盤較高，間距收緊，三名敵人時攻擊鈕才留在 320×800 第一屏。 */
+  body[data-region="highlands"] #gameScreen .combat-layout {
+    gap: 12px;
+  }
+
   .enemy-zone { order: 1; }
   .battle-hero { order: 2; }
   .combat-command-panel { order: 3; }
@@ -994,6 +1000,8 @@ body[data-region="highlands"] #gameScreen:has([data-path-choice="true"]) .log-pa
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
+    /* 直排時不能置中：卡片超出可捲動高度時，置中會把第一張推到框外、捲不回去。 */
+    justify-content: flex-start;
     gap: 14px;
   }
 
@@ -1179,7 +1187,7 @@ body[data-region="highlands"] #gameScreen:has([data-path-choice="true"]) .log-pa
     min-height: 1.5em;
   }
 
-  body:not([data-region="highlands"]) .combat-actions .action-guard::after {
+  body:not([data-region="highlands"]) #gameScreen:has(.enemy-card.is-single) .combat-actions .action-guard::after {
     content: attr(data-hint);
     display: block;
     min-height: 1.5em;
@@ -1192,15 +1200,16 @@ body[data-region="highlands"] #gameScreen:has([data-path-choice="true"]) .log-pa
 @media (max-width: 900px) {
   /* 狀態標籤（中毒、護盾等）與角色的回合結束預估：沒有內容時也保留一行，指令鈕才不會被推動。 */
   body:not([data-region="highlands"]) .enemy-card.is-single .enemy-statuses,
-  body:not([data-region="highlands"]) #heroStatusList {
+  body:not([data-region="highlands"]) #gameScreen:has(.enemy-card.is-single) #heroStatusList {
     min-height: 24px;
   }
 
-  body:not([data-region="highlands"]) .battle-hero .turn-forecast {
+  /* 多敵戰鬥的敵人卡片高度本來就會變，不另外保留，避免窄螢幕（320px）指令被擠出第一屏。 */
+  body:not([data-region="highlands"]) #gameScreen:has(.enemy-card.is-single) .battle-hero .turn-forecast {
     min-height: 1.5em;
   }
 
-  body:not([data-region="highlands"]) .battle-hero .turn-forecast.is-empty {
+  body:not([data-region="highlands"]) #gameScreen:has(.enemy-card.is-single) .battle-hero .turn-forecast.is-empty {
     display: block;
     visibility: hidden;
   }

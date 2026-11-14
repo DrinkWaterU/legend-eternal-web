@@ -65,15 +65,36 @@ export function renderHighlandBoard(state, panel, rulesContainer = panel) {
   damageRules.append(line(doc, "summary", "", "祝福的固定加傷怎麼算？"), line(doc, "p", "", "這筆傷害不扣敵人的防禦，也不會暴擊或引發追擊；護衛仍能減少它。不同來源可以合計，每種只存一次，下一次攻擊出手就會用掉。"));
   rulesContainer.append(damageRules);
   panel.append(line(doc, "small", "highland-rules", "實心人＝現在　虛線圈＝風後　劍＝敵人攻擊位置。先打倒敵人，就能取消牠的攻擊。"));
-  updateHighlandPreview(state, panel, { type: "attack" });
+  reserveAttackGuardPreviewHeight(state, panel);
+}
+
+// 滑過或按下攻擊／守勢會切換預覽。棋盤和說明若因此變高，下方的按鈕會在放開滑鼠前被推走，
+// 點擊落到別的按鈕或落空。先量兩種預覽，保留較高者的高度，最後停在攻擊預覽。
+// 只在桌機版面預留：窄畫面預留會把攻擊鈕推出第一屏（守勢預覽的棋盤可高出約 50px），
+// 所以窄畫面改為不讓攻擊／守勢按鈕觸發預覽（見 tacticalBattleView）。
+function reserveAttackGuardPreviewHeight(state, panel) {
+  const canHover = panel.ownerDocument.defaultView?.matchMedia?.("(min-width: 901px) and (hover: hover)")?.matches;
+  if (!canHover) {
+    updateHighlandPreview(state, panel, { type: "attack" });
+    return;
+  }
+  const parts = [".highland-board", ".highland-reading-copy"].map((selector) => panel.querySelector(selector)).filter(Boolean);
+  const heights = parts.map(() => 0);
+  for (const type of ["guard", "attack"]) {
+    updateHighlandPreview(state, panel, { type });
+    if (panel.isConnected) parts.forEach((part, index) => { heights[index] = Math.max(heights[index], part.getBoundingClientRect().height); });
+  }
+  parts.forEach((part, index) => { if (heights[index] > 0) part.style.minHeight = `${Math.ceil(heights[index])}px`; });
 }
 
 export function updateHighlandPreview(state, panel, action) {
   if (!state.highlandBattle || !panel?.querySelector(".highland-board")) return;
-  const selection = panel.parentElement?.querySelector(".tactical-selection"), confirm = selection?.querySelector("[data-action-confirm]");
+  // 像素版面把戰術指令移到指令區，不再和棋盤同一個父層；改從整份文件找。
+  const doc0 = panel.ownerDocument;
+  const selection = doc0.querySelector("#tacticalActions .tactical-selection"), confirm = selection?.querySelector("[data-action-confirm]");
   if (confirm && (confirm.dataset.actionType !== action.type || confirm.dataset.column !== (action.column === undefined ? undefined : String(action.column)))) {
     selection.hidden = true;
-    for (const choice of panel.parentElement.querySelectorAll('[data-preview-only]')) choice.setAttribute("aria-pressed", "false");
+    for (const choice of doc0.querySelectorAll('#tacticalActions [data-preview-only]')) choice.setAttribute("aria-pressed", "false");
   }
   const doc = panel.ownerDocument, intents = highlandIntents(state), preview = previewHighlandTurn(state, action), projected = preview.wind;
   const mine = projected[0], free = ["slip", "tool-step"].includes(action.type);
