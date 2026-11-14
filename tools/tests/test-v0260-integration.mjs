@@ -63,7 +63,8 @@ assert.match(componentsCss, /\.dialogue-portrait-card img[\s\S]*object-fit: cove
 assert.match(componentsCss, /\.facility-panel\.is-dialogue-mode/);
 assert.match(componentsCss, /\.dialogue-choice-list[\s\S]*overflow-y: auto/);
 assert.match(componentsCss, /\.dialogue-text-region\.is-typing #dialogueText::after/);
-assert.match(componentsCss, /\.dialogue-skip-button[\s\S]*backdrop-filter: blur\(10px\)/);
+// 像素轉移後不用毛玻璃模糊；跳過鈕改用實心底，同樣不會被底下的對話文字干擾。
+assert.match(componentsCss, /\.dialogue-skip-button \{[^}]*background: var\(--px-navy-3\)/);
 assert.match(responsiveCss, /\.dialogue-layout[\s\S]*grid-template-columns: 1fr[\s\S]*height: auto/);
 assert.match(responsiveCss, /\.dialogue-content-card[\s\S]*height: 560px/);
 assert.match(responsiveCss, /@media \(max-width: 520px\)[\s\S]*\.dialogue-content-card[\s\S]*height: 540px/);

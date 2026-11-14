@@ -439,13 +439,13 @@
   }
 
   .dialogue-text-region p {
-    font-size: 0.98rem;
+    font-size: 18px;
     line-height: 1.75;
   }
 
   .quest-briefing-progress span {
     min-height: 34px;
-    font-size: 0.7rem;
+    font-size: 12px;
   }
 
   .quest-paper-stack {
@@ -457,7 +457,7 @@
   .quest-rarity-seals span {
     width: 52px;
     height: 52px;
-    font-size: 0.69rem;
+    font-size: 12px;
   }
 
   .quest-mini-board {

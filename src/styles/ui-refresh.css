@@ -1374,10 +1374,9 @@ button:disabled {
   gap: 16px;
   width: min(380px, calc(100vw - 32px));
   padding: 14px 15px;
-  border: 1px solid rgba(241, 211, 134, 0.64);
-  border-radius: 11px;
-  background: linear-gradient(130deg, rgba(100, 72, 29, 0.92), rgba(16, 21, 21, 0.98));
-  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.46), var(--inner-light);
+  border: 2px solid var(--px-gold);
+  border-radius: 0;
+  background: var(--px-navy);
   animation: achievement-toast-in 220ms ease both;
 }
 
@@ -1394,27 +1393,27 @@ button:disabled {
 }
 
 .achievement-unlock-toast span {
-  color: var(--gold);
-  font-size: 0.7rem;
-  font-weight: 900;
+  color: var(--px-gold);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .achievement-unlock-toast strong {
-  color: #fff4d8;
+  color: var(--px-ink);
 }
 
 .achievement-unlock-toast small {
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .achievement-unlock-toast button {
   width: 34px;
   height: 34px;
   flex: 0 0 auto;
-  border: 1px solid rgba(241, 211, 134, 0.28);
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.2);
-  color: var(--gold);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-gold);
   cursor: pointer;
 }
 
@@ -1428,7 +1427,7 @@ button:disabled {
 .region-detail-view > .body-text,
 .preparation-section,
 .merchant-summary {
-  border-radius: 9px;
+  border-radius: 0;
 }
 
 .save-notice:not(:empty) {

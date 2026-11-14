@@ -558,23 +558,19 @@
   min-height: 96px;
   padding: 18px 54px 17px 20px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background:
-    linear-gradient(135deg, rgba(224, 179, 93, 0.08), transparent 48%),
-    rgba(27, 32, 33, 0.92);
-  color: var(--ink);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy);
+  color: var(--px-ink);
   cursor: pointer;
   text-align: left;
-  box-shadow: var(--inner-light), 0 14px 30px rgba(0, 0, 0, 0.18);
-  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
 }
 
 .facility-button::before {
   position: absolute;
   inset: 0 auto 0 0;
   width: 5px;
-  background: var(--gold);
+  background: var(--px-primary);
   content: "";
 }
 
@@ -583,21 +579,16 @@
   top: 50%;
   right: 20px;
   transform: translateY(-54%);
-  color: var(--gold);
+  color: var(--px-gold);
   content: "›";
-  font-family: Georgia, serif;
-  font-size: 2.2rem;
+  font-size: 36px;
   line-height: 1;
 }
 
 .facility-button:hover,
 .facility-button:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(241, 211, 134, 0.76);
-  background:
-    linear-gradient(135deg, rgba(224, 179, 93, 0.14), transparent 52%),
-    rgba(37, 43, 45, 0.96);
-  box-shadow: var(--inner-light), 0 18px 36px rgba(0, 0, 0, 0.25);
+  border-color: var(--px-gold);
+  background: var(--px-navy-2);
   outline: none;
 }
 
@@ -609,15 +600,15 @@
 
 .facility-button strong {
   align-self: end;
-  color: #fff4d8;
-  font-size: 1.08rem;
-  font-weight: 900;
+  color: var(--px-ink);
+  font-size: 18px;
+  font-weight: 400;
 }
 
 .facility-button small {
   align-self: start;
-  color: var(--muted);
-  font-size: 0.88rem;
+  color: var(--px-dim);
+  font-size: 12px;
   line-height: 1.55;
 }
 
@@ -626,9 +617,9 @@
   grid-row: 1 / span 2;
   align-self: center;
   margin-right: 8px;
-  color: var(--gold);
-  font-size: 0.78rem;
-  font-weight: 800;
+  color: var(--px-gold);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .merchant-summary {
@@ -647,10 +638,9 @@
   align-items: center;
   width: min(100%, 680px);
   padding: 14px;
-  border: 1px solid rgba(241, 211, 134, 0.38);
-  border-radius: 10px;
-  background: rgba(16, 23, 22, 0.92);
-  box-shadow: var(--inner-light), 0 12px 28px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy);
 }
 
 .merchant-batch-bar > div:first-child {
@@ -659,13 +649,13 @@
 }
 
 .merchant-batch-bar strong {
-  color: #fff4d8;
+  color: var(--px-ink);
 }
 
 .merchant-batch-bar span {
-  color: var(--gold);
-  font-size: 0.88rem;
-  font-weight: 800;
+  color: var(--px-gold);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .merchant-batch-actions {
@@ -686,8 +676,8 @@
 }
 
 .merchant-slot {
-  --slot-border: rgba(241, 211, 134, 0.24);
-  --slot-glow: rgba(241, 211, 134, 0.08);
+  --slot-border: var(--px-gold);
+  --slot-glow: transparent;
   position: relative;
   display: grid;
   grid-template-rows: auto minmax(2.7em, 1fr) auto auto;
@@ -695,25 +685,16 @@
   min-height: 138px;
   padding: 0.75rem;
   border: 2px solid var(--slot-border);
-  border-radius: 8px;
-  background: linear-gradient(145deg, rgba(13, 21, 21, 0.96), rgba(23, 29, 27, 0.9));
+  border-radius: 0;
+  background: var(--px-navy-3);
   color: var(--text);
   cursor: pointer;
   text-align: left;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
-    0 0 14px var(--slot-glow);
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .merchant-slot:hover,
 .merchant-slot:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(241, 211, 134, 0.58);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
-    0 0 18px var(--slot-glow),
-    0 12px 28px rgba(0, 0, 0, 0.28);
+  border-color: var(--px-gold);
   outline: none;
 }
 
@@ -722,12 +703,8 @@
 }
 
 .merchant-slot.is-selected {
-  border-color: rgba(124, 191, 235, 0.92);
-  background:
-    linear-gradient(145deg, rgba(39, 78, 93, 0.52), rgba(18, 34, 38, 0.94));
-  box-shadow:
-    inset 0 0 0 1px rgba(196, 232, 255, 0.16),
-    0 0 20px rgba(124, 191, 235, 0.2);
+  border-color: var(--px-sky);
+  background: var(--px-navy);
 }
 
 .merchant-selection-mark {
@@ -735,43 +712,57 @@
   top: 0.65rem;
   right: 0.65rem;
   padding: 0.18rem 0.45rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.34);
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 900;
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-dim);
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1.2;
 }
 
 .merchant-slot.is-selected .merchant-selection-mark {
-  background: rgba(124, 191, 235, 0.18);
-  color: #dff4ff;
+  background: var(--px-guard);
+  color: var(--px-ink);
 }
 
 .merchant-slot strong {
-  font-size: 0.96rem;
+  font-size: 18px;
   line-height: 1.35;
 }
 
 .merchant-slot small {
-  color: var(--gold);
-  font-size: 0.82rem;
+  color: var(--px-gold);
+  font-size: 12px;
 }
 
 .merchant-slot b {
   justify-self: end;
   padding: 0.12rem 0.45rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.28);
-  color: var(--sky);
-  font-size: 0.82rem;
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-sky);
+  font-size: 12px;
 }
 
-.merchant-slot.rarity-common { --slot-border: rgba(200, 208, 202, 0.34); }
-.merchant-slot.rarity-uncommon { --slot-border: rgba(127, 218, 160, 0.62); --slot-glow: rgba(127, 218, 160, 0.14); }
-.merchant-slot.rarity-rare { --slot-border: rgba(241, 211, 134, 0.7); --slot-glow: rgba(241, 211, 134, 0.18); }
-.merchant-slot.rarity-epic { --slot-border: rgba(201, 167, 255, 0.7); --slot-glow: rgba(201, 167, 255, 0.2); }
-.merchant-slot.rarity-quest { --slot-border: rgba(124, 191, 235, 0.86); --slot-glow: rgba(124, 191, 235, 0.22); }
+.merchant-slot.rarity-common {
+  --slot-border: var(--px-rim);
+}
+.merchant-slot.rarity-uncommon {
+  --slot-border: var(--px-green);
+  --slot-glow: transparent;
+}
+.merchant-slot.rarity-rare {
+  --slot-border: var(--px-gold);
+  --slot-glow: transparent;
+}
+.merchant-slot.rarity-epic {
+  --slot-border: var(--px-violet);
+  --slot-glow: transparent;
+}
+.merchant-slot.rarity-quest {
+  --slot-border: var(--px-sky);
+  --slot-glow: transparent;
+}
 
 .merchant-sale-dialog {
   max-width: 560px;
@@ -781,7 +772,7 @@
   display: grid;
   gap: 10px;
   margin: 18px 0;
-  color: var(--muted);
+  color: var(--px-dim);
   text-align: center;
 }
 
@@ -801,20 +792,19 @@
   width: 100%;
   min-width: 0;
   min-height: 42px;
-  border: 1px solid rgba(241, 211, 134, 0.42);
-  border-radius: 8px;
-  background: rgba(8, 14, 14, 0.9);
-  color: var(--ink);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-ink);
   padding: 0 0.5rem;
-  font-size: 1.35rem;
-  font-weight: 900;
+  font-size: 24px;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
 .merchant-quantity-control input:focus {
-  border-color: rgba(241, 211, 134, 0.8);
-  box-shadow: 0 0 0 3px rgba(241, 211, 134, 0.12);
+  border-color: var(--px-gold);
   outline: none;
 }
 
@@ -838,18 +828,18 @@
   gap: 12px;
   align-items: center;
   padding: 10px 12px;
-  border: 1px solid rgba(241, 211, 134, 0.18);
-  border-radius: 8px;
-  background: rgba(8, 14, 14, 0.58);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .merchant-batch-sale-list span {
-  color: var(--muted);
+  color: var(--px-dim);
   line-height: 1.45;
 }
 
 .merchant-batch-sale-list strong {
-  color: var(--gold);
+  color: var(--px-gold);
   white-space: nowrap;
 }
 
@@ -1543,11 +1533,8 @@
   width: min(100%, 1180px);
   max-width: 1180px;
   padding: 34px 30px 40px;
-  border: 1px solid var(--line);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 28%),
-    var(--panel);
-  box-shadow: var(--shadow), var(--inner-light);
+  border: 2px solid var(--px-rim);
+  background: var(--px-navy);
   text-align: left;
 }
 
@@ -1567,10 +1554,9 @@
   gap: 18px;
   margin-bottom: 18px;
   padding: 12px 14px;
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 12px;
-  background: rgba(8, 15, 14, 0.78);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .blacksmith-resource-item {
@@ -1586,13 +1572,13 @@
 }
 
 .blacksmith-resource-item small {
-  color: var(--muted);
-  font-size: 0.7rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .blacksmith-resource-item strong {
-  color: #fff4da;
-  font-size: 0.95rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .blacksmith-resource-icon {
@@ -1600,15 +1586,15 @@
   width: 31px;
   height: 31px;
   place-items: center;
-  border: 1px solid rgba(111, 176, 193, 0.35);
-  border-radius: 50%;
-  color: var(--sky);
-  font-weight: 800;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-sky);
+  font-weight: 400;
 }
 
 .blacksmith-resource-item--gold .blacksmith-resource-icon {
-  border-color: rgba(241, 211, 134, 0.44);
-  color: var(--gold);
+  border-color: var(--px-rim);
+  color: var(--px-gold);
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-layout {
@@ -1621,7 +1607,7 @@
 
 .facility-panel.is-blacksmith-mode .blacksmith-catalog,
 .facility-panel.is-blacksmith-mode .blacksmith-detail-panel {
-  border-radius: 15px;
+  border-radius: 0;
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-catalog {
@@ -1633,19 +1619,12 @@
   top: 18px;
   min-height: 620px;
   padding: 24px;
-  background:
-    radial-gradient(circle at 92% 4%, rgba(144, 184, 116, 0.1), transparent 36%),
-    rgba(18, 29, 27, 0.98);
+  background: var(--px-navy);
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-detail-panel[data-rarity="rare"] {
-  border-color: rgba(207, 156, 255, 0.68);
-  background:
-    radial-gradient(circle at 92% 4%, rgba(207, 156, 255, 0.18), transparent 38%),
-    linear-gradient(145deg, rgba(55, 34, 68, 0.96), rgba(24, 21, 31, 0.98));
-  box-shadow:
-    inset 0 0 0 1px rgba(232, 204, 255, 0.08),
-    0 16px 34px rgba(20, 8, 29, 0.28);
+  border-color: var(--px-violet);
+  background: var(--px-navy);
 }
 
 .blacksmith-detail-topline {
@@ -1658,21 +1637,21 @@
 
 .blacksmith-state-badge {
   padding: 6px 10px;
-  border: 1px solid rgba(127, 218, 160, 0.45);
-  border-radius: 999px;
-  color: var(--grass);
-  font-size: 0.72rem;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-green);
+  font-size: 12px;
   white-space: nowrap;
 }
 
 .blacksmith-state-badge[data-state="locked"] {
-  border-color: rgba(224, 111, 98, 0.4);
-  color: var(--clay);
+  border-color: var(--px-rim);
+  color: var(--px-red);
 }
 
 .blacksmith-state-badge[data-state="owned"] {
-  border-color: rgba(111, 176, 193, 0.42);
-  color: var(--sky);
+  border-color: var(--px-rim);
+  color: var(--px-sky);
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-detail {
@@ -1700,35 +1679,33 @@
 
 .facility-panel.is-blacksmith-mode .blacksmith-detail-heading h3 {
   margin: 0;
-  color: #fff5df;
-  font-family: Georgia, "Noto Serif TC", serif;
-  font-size: clamp(1.55rem, 3vw, 2.1rem);
-  letter-spacing: 0.03em;
+  color: var(--px-ink);
+  font-size: 36px;
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-detail-heading span {
-  color: var(--gold);
-  font-size: 0.75rem;
-  font-weight: 900;
+  color: var(--px-gold);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-weapon-description {
   max-width: 580px;
   min-height: 52px;
   margin-bottom: 24px;
-  color: #c6d0c6;
+  color: var(--px-dim);
   line-height: 1.8;
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-detail-section {
   padding-top: 18px;
-  border-top: 1px solid rgba(217, 199, 150, 0.17);
+  border-top: 2px solid var(--px-rim);
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-detail-section h4 {
   margin: 0 0 12px;
   color: var(--gold-soft);
-  font-size: 0.98rem;
+  font-size: 18px;
 }
 
 .blacksmith-effect-list {
@@ -1741,29 +1718,29 @@
   display: grid;
   gap: 4px;
   padding: 11px 12px;
-  border: 1px solid rgba(127, 218, 160, 0.25);
-  border-radius: 8px;
-  background: rgba(50, 91, 55, 0.15);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-go);
 }
 
 .blacksmith-effect-item small {
-  color: var(--muted);
-  font-size: 0.7rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .blacksmith-effect-item strong {
-  color: var(--grass);
-  font-size: 0.86rem;
+  color: var(--px-green);
+  font-size: 12px;
   line-height: 1.5;
 }
 
 .blacksmith-detail-panel[data-rarity="rare"] .blacksmith-effect-item {
-  border-color: rgba(207, 156, 255, 0.38);
-  background: rgba(112, 66, 137, 0.16);
+  border-color: var(--px-rim);
+  background: var(--px-navy-2);
 }
 
 .blacksmith-detail-panel[data-rarity="rare"] .blacksmith-effect-item strong {
-  color: #e7c9ff;
+  color: var(--px-ink);
 }
 
 .blacksmith-recipe-list {
@@ -1777,13 +1754,13 @@
   align-items: center;
   gap: 9px;
   padding: 9px 10px;
-  border: 1px solid rgba(217, 199, 150, 0.14);
-  border-radius: 8px;
-  background: rgba(5, 11, 10, 0.44);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .blacksmith-recipe-row.is-missing {
-  border-color: rgba(224, 111, 98, 0.26);
+  border-color: var(--px-rim);
 }
 
 .blacksmith-material-symbol {
@@ -1791,16 +1768,16 @@
   width: 27px;
   height: 27px;
   place-items: center;
-  border: 1px solid rgba(111, 176, 193, 0.32);
-  border-radius: 7px;
-  color: var(--sky);
-  font-size: 0.68rem;
-  font-weight: 800;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-sky);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .blacksmith-recipe-row--gold .blacksmith-material-symbol {
-  border-color: rgba(241, 211, 134, 0.4);
-  color: var(--gold);
+  border-color: var(--px-rim);
+  color: var(--px-gold);
 }
 
 .blacksmith-recipe-copy {
@@ -1811,47 +1788,47 @@
 
 .blacksmith-recipe-copy strong {
   overflow: hidden;
-  color: var(--ink);
-  font-size: 0.8rem;
+  color: var(--px-ink);
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .blacksmith-recipe-copy span {
   overflow: hidden;
-  color: var(--muted);
-  font-size: 0.68rem;
+  color: var(--px-dim);
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .blacksmith-recipe-amount {
-  color: var(--grass);
-  font-size: 0.82rem;
+  color: var(--px-green);
+  font-size: 12px;
   white-space: nowrap;
 }
 
 .blacksmith-recipe-row.is-missing .blacksmith-recipe-amount {
-  color: var(--clay);
+  color: var(--px-red);
 }
 
 .blacksmith-recipe-progress {
   grid-column: 2 / -1;
   height: 3px;
   overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+  background: transparent;
 }
 
 .blacksmith-recipe-progress span {
   display: block;
   height: 100%;
-  border-radius: inherit;
-  background: var(--grass);
+  border-radius: 0;
+  background: var(--px-go);
 }
 
 .blacksmith-recipe-row.is-missing .blacksmith-recipe-progress span {
-  background: var(--clay);
+  background: var(--px-danger);
 }
 
 .blacksmith-detail-actions {
@@ -1861,7 +1838,7 @@
   gap: 16px;
   margin-top: 26px;
   padding-top: 18px;
-  border-top: 1px solid rgba(217, 199, 150, 0.17);
+  border-top: 2px solid var(--px-rim);
 }
 
 .blacksmith-detail-actions > div {
@@ -1871,12 +1848,12 @@
 
 .blacksmith-detail-actions strong {
   color: var(--gold-soft);
-  font-size: 0.82rem;
+  font-size: 12px;
 }
 
 .blacksmith-detail-actions span {
-  color: var(--muted);
-  font-size: 0.68rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .facility-panel.is-blacksmith-mode .blacksmith-detail-actions .primary-button {
@@ -1931,7 +1908,7 @@
   .facility-panel.is-blacksmith-mode .blacksmith-catalog,
   .facility-panel.is-blacksmith-mode .blacksmith-detail-panel {
     padding: 15px;
-    border-radius: 12px;
+    border-radius: 0;
   }
 
   .facility-panel.is-blacksmith-mode .blacksmith-weapon-card {
@@ -2047,12 +2024,9 @@
 .equipment-character-panel,
 .equipment-preview-panel,
 .equipment-inventory {
-  border: 1px solid rgba(217, 199, 150, 0.22);
-  border-radius: 11px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 44%),
-    rgba(14, 20, 20, 0.9);
-  box-shadow: var(--inner-light), 0 14px 30px rgba(0, 0, 0, 0.18);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .blacksmith-catalog,
@@ -2071,7 +2045,7 @@
 .blacksmith-catalog-heading h3,
 .blacksmith-detail-section h4 {
   margin: 0 0 12px;
-  color: var(--gold);
+  color: var(--px-gold);
 }
 
 .blacksmith-catalog-heading h3 {
@@ -2088,26 +2062,26 @@
   display: inline-flex;
   width: fit-content;
   padding: 3px;
-  border: 1px solid rgba(217, 199, 150, 0.16);
-  border-radius: 8px;
-  background: rgba(5, 10, 10, 0.46);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .blacksmith-filter-tab {
   padding: 6px 10px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 0;
   background: transparent;
-  color: var(--muted);
+  color: var(--px-dim);
   cursor: pointer;
-  font-size: 0.76rem;
+  font-size: 12px;
 }
 
 .blacksmith-filter-tab:hover,
 .blacksmith-filter-tab:focus-visible,
 .blacksmith-filter-tab.is-active {
-  background: rgba(241, 211, 134, 0.12);
-  color: var(--gold);
+  background: var(--px-picked);
+  color: var(--px-gold);
   outline: none;
 }
 
@@ -2140,21 +2114,21 @@
 .blacksmith-category-tab {
   min-height: 31px;
   padding: 6px 10px;
-  border: 1px solid rgba(111, 176, 193, 0.22);
-  border-radius: 7px;
-  background: rgba(5, 10, 10, 0.46);
-  color: var(--muted);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-dim);
   cursor: pointer;
-  font-size: 0.74rem;
+  font-size: 12px;
   white-space: nowrap;
 }
 
 .blacksmith-category-tab:hover,
 .blacksmith-category-tab:focus-visible,
 .blacksmith-category-tab.is-active {
-  border-color: rgba(111, 176, 193, 0.56);
-  background: rgba(111, 176, 193, 0.1);
-  color: var(--sky);
+  border-color: var(--px-sky);
+  background: var(--px-guard);
+  color: var(--px-sky);
   outline: none;
 }
 
@@ -2165,19 +2139,19 @@
   flex: 0 0 auto;
   place-items: center;
   padding: 0;
-  border: 1px solid rgba(111, 176, 193, 0.28);
-  border-radius: 7px;
-  background: rgba(5, 10, 10, 0.48);
-  color: var(--sky);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-sky);
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 18px;
   line-height: 1;
 }
 
 .blacksmith-category-arrow:hover,
 .blacksmith-category-arrow:focus-visible {
-  border-color: rgba(111, 176, 193, 0.62);
-  background: rgba(111, 176, 193, 0.1);
+  border-color: var(--px-sky);
+  background: var(--px-guard);
   outline: none;
 }
 
@@ -2192,10 +2166,10 @@
   min-width: 0;
   gap: 7px;
   padding: 0 10px;
-  border: 1px solid rgba(217, 199, 150, 0.17);
-  border-radius: 7px;
-  background: rgba(5, 10, 10, 0.48);
-  color: var(--muted);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-dim);
 }
 
 .blacksmith-search-field input {
@@ -2205,12 +2179,12 @@
   border: 0;
   outline: none;
   background: transparent;
-  color: var(--ink);
-  font-size: 0.76rem;
+  color: var(--px-ink);
+  font-size: 12px;
 }
 
 .blacksmith-search-field:focus-within {
-  border-color: rgba(241, 211, 134, 0.56);
+  border-color: var(--px-gold);
 }
 
 .blacksmith-weapon-list {
@@ -2225,39 +2199,32 @@
   align-items: center;
   min-height: 98px;
   padding: 12px;
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 9px;
-  background: rgba(8, 14, 14, 0.62);
-  color: var(--ink);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-ink);
   cursor: pointer;
   text-align: left;
-  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
 }
 
 .blacksmith-weapon-card:hover,
 .blacksmith-weapon-card:focus-visible,
 .blacksmith-weapon-card.is-selected {
-  transform: translateY(-1px);
-  border-color: rgba(241, 211, 134, 0.64);
-  background: rgba(35, 42, 39, 0.88);
+  border-color: var(--px-gold);
+  background: var(--px-navy-2);
   outline: none;
 }
 
 .blacksmith-weapon-card.rarity-uncommon,
 .equipment-weapon-card.rarity-uncommon {
-  border-color: rgba(127, 183, 127, 0.48);
-  background:
-    linear-gradient(145deg, rgba(94, 145, 96, 0.08), transparent 46%),
-    rgba(8, 14, 14, 0.68);
+  border-color: var(--px-rim);
+  background: var(--px-navy-3);
 }
 
 .blacksmith-weapon-card.rarity-rare,
 .equipment-weapon-card.rarity-rare {
-  border-color: rgba(207, 156, 255, 0.72);
-  background:
-    radial-gradient(circle at 14% 18%, rgba(207, 156, 255, 0.15), transparent 42%),
-    linear-gradient(145deg, rgba(66, 38, 82, 0.78), rgba(31, 24, 42, 0.94));
-  box-shadow: inset 0 0 0 1px rgba(232, 204, 255, 0.08);
+  border-color: var(--px-violet);
+  background: var(--px-navy-2);
 }
 
 .blacksmith-weapon-card.rarity-rare:hover,
@@ -2266,17 +2233,14 @@
 .equipment-weapon-card.rarity-rare:hover,
 .equipment-weapon-card.rarity-rare:focus-visible,
 .equipment-weapon-card.rarity-rare.is-selected {
-  border-color: rgba(226, 190, 255, 0.96);
-  box-shadow:
-    0 0 0 1px rgba(226, 190, 255, 0.2),
-    0 12px 26px rgba(23, 8, 35, 0.32);
+  border-color: var(--px-violet);
 }
 
 .blacksmith-weapon-card.rarity-rare strong,
 .equipment-weapon-card.rarity-rare strong,
 .blacksmith-detail-panel[data-rarity="rare"] .blacksmith-detail-heading span,
 .equipment-preview-panel[data-rarity="rare"] .equipment-preview-heading small {
-  color: #e7c9ff;
+  color: var(--px-ink);
 }
 
 .blacksmith-weapon-card.rarity-uncommon:hover,
@@ -2285,17 +2249,15 @@
 .equipment-weapon-card.rarity-uncommon:hover,
 .equipment-weapon-card.rarity-uncommon:focus-visible,
 .equipment-weapon-card.rarity-uncommon.is-selected {
-  border-color: rgba(168, 215, 154, 0.82);
-  background:
-    linear-gradient(145deg, rgba(94, 145, 96, 0.16), transparent 48%),
-    rgba(29, 43, 34, 0.9);
+  border-color: var(--px-green);
+  background: var(--px-navy-2);
 }
 
 .blacksmith-weapon-card.rarity-uncommon strong,
 .equipment-weapon-card.rarity-uncommon strong,
 .blacksmith-detail-panel[data-rarity="uncommon"] .blacksmith-detail-heading span,
 .equipment-preview-panel[data-rarity="uncommon"] .equipment-preview-heading small {
-  color: #a8d79a;
+  color: var(--px-green);
 }
 
 .blacksmith-card-copy {
@@ -2305,30 +2267,30 @@
 }
 
 .blacksmith-card-copy strong {
-  color: #fff4d8;
-  font-size: 1rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .blacksmith-card-copy small,
 .blacksmith-card-copy span {
-  color: var(--muted);
-  font-size: 0.78rem;
+  color: var(--px-dim);
+  font-size: 12px;
   line-height: 1.45;
 }
 
 .blacksmith-card-status {
   align-self: start;
   padding: 4px 7px;
-  border: 1px solid rgba(241, 211, 134, 0.28);
-  border-radius: 999px;
-  color: var(--gold);
-  font-size: 0.7rem;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-gold);
+  font-size: 12px;
   white-space: nowrap;
 }
 
 .blacksmith-weapon-card[data-state="owned"] .blacksmith-card-status {
-  border-color: rgba(127, 218, 160, 0.38);
-  color: var(--grass);
+  border-color: var(--px-rim);
+  color: var(--px-green);
 }
 
 .blacksmith-weapon-card[data-state="locked"] {
@@ -2336,8 +2298,8 @@
 }
 
 .blacksmith-weapon-card[data-state="locked"] .blacksmith-card-status {
-  border-color: rgba(184, 176, 160, 0.2);
-  color: var(--muted);
+  border-color: var(--px-rim);
+  color: var(--px-dim);
 }
 
 .blacksmith-detail-panel {
@@ -2362,21 +2324,21 @@
 .blacksmith-detail-heading h3,
 .equipment-preview-heading h3 {
   margin: 2px 0;
-  color: #fff4d8;
-  font-size: 1.24rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .blacksmith-detail-heading span,
 .equipment-preview-heading span {
-  color: var(--gold);
-  font-size: 0.75rem;
-  font-weight: 900;
+  color: var(--px-gold);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .blacksmith-detail-heading p,
 .equipment-preview-heading small {
   margin: 0;
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .blacksmith-weapon-description {
@@ -2385,12 +2347,12 @@
 
 .blacksmith-detail-section {
   padding-top: 12px;
-  border-top: 1px solid rgba(217, 199, 150, 0.16);
+  border-top: 2px solid var(--px-rim);
 }
 
 .blacksmith-detail-section p {
   margin: 0;
-  color: var(--sky);
+  color: var(--px-sky);
   line-height: 1.65;
 }
 
@@ -2407,23 +2369,23 @@
   justify-content: space-between;
   gap: 12px;
   padding: 9px 11px;
-  border: 1px solid rgba(217, 199, 150, 0.17);
-  border-radius: 8px;
-  background: rgba(5, 10, 10, 0.45);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .blacksmith-recipe-row span,
 .blacksmith-craft-cost-list span {
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .blacksmith-recipe-row strong,
 .blacksmith-craft-cost-list strong {
-  color: var(--grass);
+  color: var(--px-green);
 }
 
 .blacksmith-recipe-row.is-missing strong {
-  color: var(--clay);
+  color: var(--px-red);
 }
 
 .blacksmith-craft-dialog {
@@ -2431,14 +2393,12 @@
 }
 
 .blacksmith-craft-panel[data-rarity="uncommon"] .blacksmith-craft-dialog {
-  border-color: rgba(127, 183, 127, 0.5);
+  border-color: var(--px-green);
 }
 
 .blacksmith-craft-panel[data-rarity="rare"] .blacksmith-craft-dialog {
-  border-color: rgba(207, 156, 255, 0.72);
-  background:
-    radial-gradient(circle at 92% 4%, rgba(207, 156, 255, 0.16), transparent 38%),
-    linear-gradient(145deg, rgba(50, 31, 62, 0.98), rgba(20, 18, 27, 0.99));
+  border-color: var(--px-violet);
+  background: var(--px-navy);
 }
 
 .blacksmith-craft-cost-list {
@@ -2584,20 +2544,15 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  border: 1px solid rgba(217, 199, 150, 0.24);
-  border-radius: 12px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 46%),
-    rgba(12, 18, 18, 0.94);
-  box-shadow: var(--inner-light), 0 18px 38px rgba(0, 0, 0, 0.24);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .dialogue-portrait-card {
   position: relative;
   margin: 0;
-  background:
-    radial-gradient(circle at 68% 24%, rgba(224, 179, 93, 0.18), transparent 42%),
-    rgba(9, 14, 14, 0.96);
+  background: var(--px-navy-3);
 }
 
 .dialogue-portrait-card::after {
@@ -2629,9 +2584,8 @@
   min-height: 0;
   place-items: center;
   padding: 28px;
-  color: rgba(241, 211, 134, 0.86);
-  font-weight: 900;
-  letter-spacing: 0.08em;
+  color: var(--px-gold);
+  font-weight: 400;
   text-align: center;
 }
 
@@ -2643,7 +2597,7 @@
 
 .dialogue-speaker-heading {
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(217, 199, 150, 0.18);
+  border-bottom: 2px solid var(--px-rim);
 }
 
 .dialogue-speaker-heading .eyebrow {
@@ -2652,8 +2606,8 @@
 
 .dialogue-speaker-heading h3 {
   margin: 0;
-  color: #fff4d8;
-  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  color: var(--px-ink);
+  font-size: 24px;
 }
 
 .dialogue-text-region {
@@ -2666,22 +2620,21 @@
   margin: 18px 0 12px;
   padding: 22px 22px 34px;
   overflow-y: auto;
-  border: 1px solid rgba(111, 176, 193, 0.2);
-  border-radius: 10px;
-  background: rgba(5, 10, 10, 0.5);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
   outline: none;
 }
 
 .dialogue-text-region:focus-visible {
-  border-color: rgba(111, 176, 193, 0.68);
-  box-shadow: 0 0 0 3px rgba(111, 176, 193, 0.12);
+  border-color: var(--px-sky);
 }
 
 .dialogue-text-region p {
   width: 100%;
   margin: 0;
-  color: var(--ink);
-  font-size: 1.05rem;
+  color: var(--px-ink);
+  font-size: 18px;
   line-height: 1.9;
   white-space: pre-wrap;
 }
@@ -2690,8 +2643,8 @@
   position: absolute;
   right: 14px;
   bottom: 10px;
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .dialogue-skip-button {
@@ -2702,21 +2655,14 @@
   min-width: 0;
   min-height: 30px;
   padding: 5px 11px;
-  border: 1px solid rgba(241, 211, 134, 0.3);
-  border-radius: 999px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.09), transparent 56%),
-    rgba(12, 19, 19, 0.58);
-  -webkit-backdrop-filter: blur(10px) saturate(115%);
-  backdrop-filter: blur(10px) saturate(115%);
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.28);
-  color: rgba(255, 244, 216, 0.88);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-ink);
   cursor: pointer;
-  font-size: 0.76rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
 }
 
 .dialogue-skip-button[hidden] {
@@ -2725,12 +2671,9 @@
 
 .dialogue-skip-button:hover,
 .dialogue-skip-button:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(241, 211, 134, 0.72);
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.14), transparent 58%),
-    rgba(26, 34, 33, 0.72);
-  color: #fff4d8;
+  border-color: var(--px-gold);
+  background: var(--px-navy);
+  color: var(--px-ink);
   outline: none;
 }
 
@@ -2757,25 +2700,19 @@
 .dialogue-choice-button {
   min-height: 48px;
   padding: 11px 15px;
-  border: 1px solid rgba(217, 199, 150, 0.24);
-  border-radius: 9px;
-  background:
-    linear-gradient(135deg, rgba(224, 179, 93, 0.08), transparent 54%),
-    rgba(22, 28, 28, 0.92);
-  color: #fff4d8;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy);
+  color: var(--px-ink);
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 400;
   text-align: left;
-  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
 }
 
 .dialogue-choice-button:hover,
 .dialogue-choice-button:focus-visible {
-  transform: translateY(-1px);
-  border-color: rgba(241, 211, 134, 0.72);
-  background:
-    linear-gradient(135deg, rgba(224, 179, 93, 0.15), transparent 58%),
-    rgba(35, 42, 40, 0.96);
+  border-color: var(--px-gold);
+  background: var(--px-navy-2);
   outline: none;
 }
 
@@ -2788,7 +2725,7 @@
   display: inline-block;
   width: 0.55em;
   margin-left: 0.12em;
-  border-bottom: 2px solid rgba(241, 211, 134, 0.82);
+  border-bottom: 2px solid var(--px-gold);
   content: "";
   animation: dialogue-caret 760ms steps(1, end) infinite;
   transform: translateY(-0.08em);
@@ -2815,9 +2752,9 @@
 
 .guild-record-section {
   padding: 17px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.025);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: transparent;
 }
 
 .guild-record-section h3 {
@@ -2830,9 +2767,9 @@
   place-items: center;
   flex: 0 0 auto;
   overflow: hidden;
-  border-radius: 50%;
-  border: 1px solid rgba(215, 181, 112, 0.35);
-  background: rgba(6, 10, 14, 0.75);
+  border-radius: 0;
+  border: 2px solid var(--px-rim);
+  background: var(--px-navy-3);
   color: var(--gold-soft);
 }
 
@@ -2858,8 +2795,8 @@
   justify-content: space-between;
   gap: 14px;
   padding: 11px 13px;
-  border-radius: 11px;
-  background: rgba(0, 0, 0, 0.18);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-record-character-list {
@@ -2871,8 +2808,8 @@
   align-items: center;
   gap: 11px;
   padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.18);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-record-character-list > div > span:last-child {
@@ -2915,9 +2852,9 @@
 .guild-record-celine-note {
   margin: 0;
   padding: 17px 18px;
-  border-left: 3px solid rgba(215, 181, 112, 0.64);
-  border-radius: 0 13px 13px 0;
-  background: rgba(215, 181, 112, 0.065);
+  border-left: 3px solid var(--px-gold);
+  border-radius: 0;
+  background: transparent;
   color: var(--text-soft);
   line-height: 1.75;
 }
@@ -2942,7 +2879,7 @@
   justify-content: space-between;
   margin-bottom: 18px;
   padding-bottom: 18px;
-  border-bottom: 1px solid rgba(217, 199, 150, 0.16);
+  border-bottom: 2px solid var(--px-rim);
   text-align: left;
 }
 
@@ -2968,12 +2905,9 @@
 .guild-record-sheet {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid rgba(217, 199, 150, 0.22);
-  border-radius: 12px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.028), transparent 48%),
-    rgba(10, 16, 17, 0.94);
-  box-shadow: var(--inner-light), 0 18px 38px rgba(0, 0, 0, 0.24);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-record-reception-card {
@@ -2985,9 +2919,7 @@
   height: 400px;
   margin: 0;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 68% 24%, rgba(224, 179, 93, 0.18), transparent 42%),
-    rgba(9, 14, 14, 0.96);
+  background: var(--px-navy-3);
 }
 
 .guild-record-portrait-card::after {
@@ -3012,8 +2944,8 @@
   width: 100%;
   height: 100%;
   place-items: center;
-  color: var(--gold);
-  font-weight: 900;
+  color: var(--px-gold);
+  font-weight: 400;
 }
 
 .guild-record-reception-copy {
@@ -3022,13 +2954,13 @@
 
 .guild-record-reception-copy h3 {
   margin: 4px 0 8px;
-  color: #fff4d8;
-  font-size: 1.45rem;
+  color: var(--px-ink);
+  font-size: 24px;
 }
 
 .guild-record-reception-copy p:last-child {
   margin: 0;
-  color: var(--ink);
+  color: var(--px-ink);
   line-height: 1.75;
 }
 
@@ -3042,19 +2974,19 @@
   gap: 18px;
   align-items: flex-start;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(217, 199, 150, 0.16);
+  border-bottom: 2px solid var(--px-rim);
 }
 
 .guild-record-sheet-heading h3 {
   margin: 4px 0 6px;
-  color: #fff4d8;
-  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  color: var(--px-ink);
+  font-size: 24px;
 }
 
 .guild-record-sheet-heading p:last-child {
   max-width: 640px;
   margin: 0;
-  color: var(--muted);
+  color: var(--px-dim);
   line-height: 1.6;
 }
 
@@ -3065,11 +2997,9 @@
   align-items: center;
   margin-top: 16px;
   padding: 15px;
-  border: 1px solid rgba(241, 211, 134, 0.22);
-  border-radius: 10px;
-  background:
-    linear-gradient(120deg, rgba(241, 211, 134, 0.08), transparent 62%),
-    rgba(5, 10, 11, 0.58);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-record-current-emblem,
@@ -3077,17 +3007,17 @@
   display: grid;
   overflow: hidden;
   place-items: center;
-  border: 1px solid rgba(241, 211, 134, 0.28);
-  border-radius: 50%;
-  background: rgba(5, 10, 11, 0.82);
-  color: var(--gold);
-  font-weight: 900;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-gold);
+  font-weight: 400;
 }
 
 .guild-record-current-emblem {
   width: 64px;
   height: 64px;
-  font-size: 1.25rem;
+  font-size: 18px;
 }
 
 .guild-record-character-emblem {
@@ -3104,19 +3034,19 @@
 
 .guild-record-identity-card h4 {
   margin: 3px 0;
-  color: #fff4d8;
-  font-size: 1.2rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .guild-record-identity-card p:last-child {
   margin: 0;
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .guild-record-status {
   align-self: center;
-  color: var(--gold);
-  font-size: 0.8rem;
+  color: var(--px-gold);
+  font-size: 12px;
   text-align: right;
 }
 
@@ -3131,27 +3061,27 @@
   display: grid;
   gap: 4px;
   padding: 11px 12px;
-  border: 1px solid rgba(217, 199, 150, 0.14);
-  border-radius: 8px;
-  background: rgba(6, 11, 12, 0.46);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-record-metrics dt {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .guild-record-metrics dd {
   margin: 0;
-  color: var(--gold);
-  font-size: 1.1rem;
-  font-weight: 900;
+  color: var(--px-gold);
+  font-size: 18px;
+  font-weight: 400;
 }
 
 .guild-record-section {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(217, 199, 150, 0.14);
+  border-top: 2px solid var(--px-rim);
 }
 
 .guild-record-section .browser-panel-heading {
@@ -3163,7 +3093,7 @@
 
 .guild-record-section h4 {
   margin: 2px 0 0;
-  color: #fff4d8;
+  color: var(--px-ink);
 }
 
 .guild-record-milestone-list,
@@ -3181,9 +3111,9 @@
   align-items: center;
   min-width: 0;
   padding: 11px;
-  border: 1px solid rgba(127, 218, 160, 0.18);
-  border-radius: 9px;
-  background: rgba(13, 30, 23, 0.38);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-guard);
 }
 
 .guild-record-milestone-marker {
@@ -3191,10 +3121,10 @@
   width: 28px;
   height: 28px;
   place-items: center;
-  border: 1px solid rgba(127, 218, 160, 0.42);
-  border-radius: 50%;
-  color: #75d59b;
-  font-weight: 900;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-green);
+  font-weight: 400;
 }
 
 .guild-record-milestone > div,
@@ -3207,13 +3137,13 @@
 .guild-record-milestone strong,
 .guild-record-character-card strong {
   overflow-wrap: anywhere;
-  color: var(--ink);
+  color: var(--px-ink);
 }
 
 .guild-record-milestone small,
 .guild-record-character-card small {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -3224,18 +3154,18 @@
   align-items: center;
   min-width: 0;
   padding: 10px;
-  border: 1px solid rgba(217, 199, 150, 0.16);
-  border-radius: 9px;
-  background: rgba(6, 11, 12, 0.52);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-record-celine-note {
   margin: 16px 0 0;
   padding: 14px 16px;
-  border-left: 3px solid var(--gold);
-  border-radius: 0 8px 8px 0;
-  background: rgba(224, 179, 93, 0.07);
-  color: #fff4d8;
+  border-left: 3px solid var(--px-gold);
+  border-radius: 0;
+  background: transparent;
+  color: var(--px-ink);
   line-height: 1.75;
 }
 
@@ -3246,12 +3176,9 @@
   align-items: center;
   margin-bottom: 14px;
   padding: 13px 14px;
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 11px;
-  background:
-    linear-gradient(120deg, rgba(240, 207, 116, 0.06), transparent 60%),
-    rgba(8, 13, 14, 0.86);
-  box-shadow: var(--inner-light);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-clerk-portrait {
@@ -3260,11 +3187,11 @@
   height: 68px;
   overflow: hidden;
   place-items: center;
-  border: 1px solid rgba(240, 207, 116, 0.3);
-  border-radius: 50%;
-  background: rgba(5, 10, 11, 0.82);
-  color: var(--gold);
-  font-weight: 900;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-gold);
+  font-weight: 400;
 }
 
 .guild-clerk-portrait img {
@@ -3285,9 +3212,9 @@
   margin-top: 5px;
   padding: 13px 14px;
   overflow: auto;
-  border: 1px solid rgba(109, 170, 183, 0.28);
-  border-radius: 9px;
-  background: rgba(4, 9, 10, 0.66);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .clerk-dialogue-region.is-typing {
@@ -3296,8 +3223,8 @@
 
 .clerk-dialogue-region p {
   margin: 0;
-  color: var(--ink);
-  font-size: 0.94rem;
+  color: var(--px-ink);
+  font-size: 18px;
   line-height: 1.72;
   white-space: pre-wrap;
 }
@@ -3312,20 +3239,20 @@
   gap: 2px;
   min-width: 116px;
   padding: 10px 13px;
-  border: 1px solid rgba(240, 207, 116, 0.22);
-  border-radius: 8px;
-  background: rgba(4, 9, 10, 0.58);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
   text-align: right;
 }
 
 .wallet-card span {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .wallet-card strong {
-  color: var(--gold);
-  font-size: 1.15rem;
+  color: var(--px-gold);
+  font-size: 18px;
 }
 
 .bulk-tier-guide {
@@ -3335,15 +3262,15 @@
   align-items: center;
   margin-bottom: 16px;
   padding: 13px 14px;
-  border: 1px solid rgba(217, 199, 150, 0.16);
-  border-radius: 10px;
-  background: rgba(7, 12, 13, 0.58);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .tier-guide-heading p:last-child {
   margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 0.78rem;
+  color: var(--px-dim);
+  font-size: 12px;
   line-height: 1.55;
 }
 
@@ -3357,25 +3284,36 @@
   display: grid;
   gap: 2px;
   padding: 9px 10px;
-  border: 1px solid rgba(217, 199, 150, 0.18);
-  border-radius: 8px;
-  background: rgba(5, 10, 11, 0.64);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
   text-align: center;
 }
 
 .tier-chip strong {
-  font-size: 0.76rem;
+  font-size: 12px;
 }
 
 .tier-chip span {
-  font-size: 0.9rem;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 400;
 }
 
-.tier-ineligible { color: #aaa59c; }
-.tier-low { border-color: rgba(226, 154, 143, 0.28); color: #dfaca4; }
-.tier-standard { border-color: rgba(117, 213, 155, 0.3); color: #75d59b; }
-.tier-bulk { border-color: rgba(240, 207, 116, 0.36); color: var(--gold); }
+.tier-ineligible {
+  color: var(--px-dim);
+}
+.tier-low {
+  border-color: var(--px-rim);
+  color: var(--px-red);
+}
+.tier-standard {
+  border-color: var(--px-rim);
+  color: var(--px-green);
+}
+.tier-bulk {
+  border-color: var(--px-rim);
+  color: var(--px-gold);
+}
 
 .guild-bulk-notice {
   min-height: 1.45em;
@@ -3392,10 +3330,9 @@
 .material-browser,
 .sale-summary {
   min-width: 0;
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 11px;
-  background: rgba(8, 13, 14, 0.85);
-  box-shadow: var(--inner-light);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .material-browser {
@@ -3408,15 +3345,15 @@
   gap: 10px;
   margin-bottom: 14px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(217, 199, 150, 0.13);
+  border-bottom: 2px solid var(--px-rim);
 }
 
 .is-guild-sale-mode .material-toolbar label {
   display: grid;
   gap: 5px;
   min-width: 0;
-  color: var(--muted);
-  font-size: 0.7rem;
+  color: var(--px-dim);
+  font-size: 12px;
   text-align: left;
 }
 
@@ -3426,10 +3363,10 @@
   min-width: 0;
   min-height: 38px;
   padding: 8px 10px;
-  border: 1px solid rgba(217, 199, 150, 0.23);
-  border-radius: 7px;
-  color: var(--ink);
-  background: #0b1213;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-ink);
+  background: var(--px-navy-3);
 }
 
 .material-browser-heading,
@@ -3443,7 +3380,7 @@
 .material-browser-heading h3,
 .summary-heading h3 {
   margin: 3px 0 0;
-  color: #fff4d8;
+  color: var(--px-ink);
 }
 
 .guild-material-list {
@@ -3453,34 +3390,29 @@
 }
 
 .guild-material-card {
-  --rarity-border: rgba(200, 208, 202, 0.27);
+  --rarity-border: var(--px-rim);
   --rarity-glow: transparent;
   position: relative;
   overflow: hidden;
   padding: 13px;
-  border: 1px solid var(--rarity-border);
-  border-radius: 10px;
-  background:
-    radial-gradient(circle at 100% 0, var(--rarity-glow), transparent 40%),
-    rgba(10, 16, 17, 0.86);
-  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+  border: 2px solid var(--rarity-border);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-material-card.rarity-uncommon {
-  --rarity-border: rgba(127, 218, 160, 0.36);
-  --rarity-glow: rgba(127, 218, 160, 0.08);
+  --rarity-border: var(--px-green);
+  --rarity-glow: transparent;
 }
 
 .guild-material-card.rarity-rare {
-  --rarity-border: rgba(241, 211, 134, 0.5);
-  --rarity-glow: rgba(241, 211, 134, 0.11);
+  --rarity-border: var(--px-gold);
+  --rarity-glow: transparent;
 }
 
 .guild-material-card.is-selected {
-  border-color: rgba(240, 207, 116, 0.62);
-  background:
-    linear-gradient(115deg, rgba(240, 207, 116, 0.07), transparent 58%),
-    rgba(10, 16, 17, 0.95);
+  border-color: var(--px-gold);
+  background: var(--px-navy-3);
 }
 
 .guild-material-card.is-ineligible {
@@ -3503,26 +3435,30 @@
 
 .material-title-line h4 {
   margin: 0;
-  color: #fff4d8;
-  font-size: 1rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .rarity-label {
   padding: 3px 7px;
-  border: 1px solid var(--rarity-border);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.64rem;
-  font-weight: 900;
+  border: 2px solid var(--rarity-border);
+  border-radius: 0;
+  color: var(--px-dim);
+  font-size: 12px;
+  font-weight: 400;
 }
 
-.rarity-uncommon .rarity-label { color: #8edeb0; }
-.rarity-rare .rarity-label { color: var(--gold); }
+.rarity-uncommon .rarity-label {
+  color: var(--px-green);
+}
+.rarity-rare .rarity-label {
+  color: var(--px-gold);
+}
 
 .material-source {
   margin: 5px 0 0;
-  color: var(--muted);
-  font-size: 0.73rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .material-held {
@@ -3532,13 +3468,13 @@
 }
 
 .material-held span {
-  color: var(--muted);
-  font-size: 0.67rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .material-held strong {
-  color: var(--ink);
-  font-size: 1rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .material-card-body {
@@ -3547,7 +3483,7 @@
   gap: 12px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid rgba(217, 199, 150, 0.12);
+  border-top: 2px solid var(--px-rim);
 }
 
 .material-price-reference {
@@ -3555,8 +3491,8 @@
   gap: 7px;
   align-content: start;
   padding: 10px;
-  border-radius: 8px;
-  background: rgba(4, 9, 10, 0.46);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .reference-row,
@@ -3569,18 +3505,18 @@
 
 .reference-row span,
 .quote-row span {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .reference-row strong {
-  color: var(--ink);
-  font-size: 0.82rem;
+  color: var(--px-ink);
+  font-size: 12px;
 }
 
 .quote-row strong {
-  color: var(--gold);
-  font-size: 1rem;
+  color: var(--px-gold);
+  font-size: 18px;
 }
 
 .tier-status {
@@ -3589,36 +3525,54 @@
   gap: 8px;
   align-items: center;
   padding-top: 7px;
-  border-top: 1px solid rgba(217, 199, 150, 0.1);
+  border-top: 2px solid var(--px-rim);
 }
 
 .tier-badge {
   padding: 4px 7px;
-  border: 1px solid rgba(217, 199, 150, 0.3);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 900;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-dim);
+  font-size: 12px;
+  font-weight: 400;
 }
 
-.tier-badge.is-low { border-color: rgba(226, 154, 143, 0.35); color: #dfaca4; }
-.tier-badge.is-standard { border-color: rgba(117, 213, 155, 0.4); color: #75d59b; }
-.tier-badge.is-bulk { border-color: rgba(240, 207, 116, 0.48); color: var(--gold); }
-.tier-badge.is-ineligible { border-color: rgba(226, 154, 143, 0.35); color: #dfaca4; }
+.tier-badge.is-low {
+  border-color: var(--px-rim);
+  color: var(--px-red);
+}
+.tier-badge.is-standard {
+  border-color: var(--px-rim);
+  color: var(--px-green);
+}
+.tier-badge.is-bulk {
+  border-color: var(--px-rim);
+  color: var(--px-gold);
+}
+.tier-badge.is-ineligible {
+  border-color: var(--px-rim);
+  color: var(--px-red);
+}
 
 .price-difference {
-  font-size: 0.7rem;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 400;
 }
 
-.price-difference.is-positive { color: #75d59b; }
-.price-difference.is-negative { color: #e29a8f; }
-.price-difference.is-neutral { color: var(--muted); }
+.price-difference.is-positive {
+  color: var(--px-green);
+}
+.price-difference.is-negative {
+  color: var(--px-red);
+}
+.price-difference.is-neutral {
+  color: var(--px-dim);
+}
 
 .next-tier-hint {
   margin: 0;
-  color: var(--muted);
-  font-size: 0.7rem;
+  color: var(--px-dim);
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -3632,25 +3586,25 @@
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border-radius: 7px;
-  font-weight: 900;
+  border-radius: 0;
+  font-weight: 400;
 }
 
 .add-material-button {
-  border: 1px solid rgba(109, 170, 183, 0.36);
-  color: #b6d5db;
-  background: rgba(11, 25, 27, 0.76);
+  border: 2px solid var(--px-rim);
+  color: var(--px-sky);
+  background: var(--px-navy);
 }
 
 .add-material-button:hover {
-  border-color: rgba(240, 207, 116, 0.44);
-  color: var(--gold);
+  border-color: var(--px-rim);
+  color: var(--px-gold);
 }
 
 .remove-material-button {
-  border: 1px solid rgba(226, 154, 143, 0.24);
-  color: #d9aaa3;
-  background: rgba(44, 17, 15, 0.4);
+  border: 2px solid var(--px-rim);
+  color: var(--px-red);
+  background: var(--px-alert);
 }
 
 .quantity-panel {
@@ -3666,12 +3620,12 @@
 }
 
 .quantity-panel-heading span {
-  color: var(--muted);
-  font-size: 0.7rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .quantity-panel-heading strong {
-  color: var(--gold);
+  color: var(--px-gold);
 }
 
 .quantity-control {
@@ -3683,11 +3637,11 @@
 .quantity-button {
   min-height: 38px;
   padding: 0;
-  border: 1px solid rgba(109, 170, 183, 0.29);
-  border-radius: 6px;
-  color: #b6d5db;
-  background: rgba(11, 25, 27, 0.72);
-  font-weight: 900;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-sky);
+  background: var(--px-navy);
+  font-weight: 400;
   touch-action: manipulation;
   user-select: none;
 }
@@ -3700,12 +3654,12 @@
 .quantity-input {
   width: 100%;
   min-width: 0;
-  border: 1px solid rgba(240, 207, 116, 0.3);
-  border-radius: 6px;
-  color: #fff4d8;
-  background: rgba(4, 9, 10, 0.72);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-ink);
+  background: var(--px-navy-3);
   text-align: center;
-  font-weight: 900;
+  font-weight: 400;
   appearance: textfield;
 }
 
@@ -3723,18 +3677,18 @@
 
 .quantity-secondary-actions button {
   min-height: 32px;
-  border: 1px solid rgba(217, 199, 150, 0.17);
-  border-radius: 6px;
-  color: var(--muted);
-  background: rgba(5, 10, 11, 0.5);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-dim);
+  background: var(--px-navy-3);
   cursor: pointer;
 }
 
 .input-error {
   min-height: 1.2em;
   margin: 0;
-  color: var(--danger);
-  font-size: 0.68rem;
+  color: var(--px-red);
+  font-size: 12px;
 }
 
 .sale-summary {
@@ -3749,9 +3703,9 @@
   min-height: 210px;
   margin-top: 12px;
   padding: 20px;
-  border: 1px dashed rgba(217, 199, 150, 0.18);
-  border-radius: 9px;
-  color: var(--muted);
+  border: 2px dashed var(--px-rim);
+  border-radius: 0;
+  color: var(--px-dim);
   text-align: center;
 }
 
@@ -3765,10 +3719,10 @@
   width: 48px;
   height: 48px;
   place-items: center;
-  border: 1px solid rgba(109, 170, 183, 0.28);
-  border-radius: 50%;
-  color: #b6d5db;
-  font-size: 1.5rem;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-sky);
+  font-size: 24px;
 }
 
 .summary-empty p {
@@ -3790,33 +3744,33 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   padding: 9px 10px;
-  border: 1px solid rgba(217, 199, 150, 0.13);
-  border-radius: 7px;
-  background: rgba(4, 9, 10, 0.48);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .summary-item strong {
   display: block;
-  color: var(--ink);
-  font-size: 0.8rem;
+  color: var(--px-ink);
+  font-size: 12px;
 }
 
 .summary-item small {
-  color: var(--muted);
-  font-size: 0.66rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .summary-item b {
-  color: var(--gold);
-  font-size: 0.8rem;
+  color: var(--px-gold);
+  font-size: 12px;
 }
 
 .summary-item.is-invalid {
-  border-color: rgba(226, 154, 143, 0.32);
+  border-color: var(--px-rim);
 }
 
 .summary-item.is-invalid b {
-  color: var(--danger);
+  color: var(--px-red);
 }
 
 .summary-totals {
@@ -3830,18 +3784,18 @@
   justify-content: space-between;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(217, 199, 150, 0.11);
+  border-bottom: 2px solid var(--px-rim);
 }
 
 .summary-totals dt {
-  color: var(--muted);
-  font-size: 0.75rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .summary-totals dd {
   margin: 0;
-  color: var(--ink);
-  font-weight: 900;
+  color: var(--px-ink);
+  font-weight: 400;
 }
 
 .summary-totals .summary-primary {
@@ -3849,22 +3803,26 @@
 }
 
 .summary-primary dt {
-  color: #fff0c7;
-  font-weight: 900;
+  color: var(--px-ink);
+  font-weight: 400;
 }
 
 .summary-primary dd {
-  color: var(--gold);
-  font-size: 1.22rem;
+  color: var(--px-gold);
+  font-size: 18px;
 }
 
-.summary-totals dd.is-positive { color: #75d59b; }
-.summary-totals dd.is-negative { color: var(--danger); }
+.summary-totals dd.is-positive {
+  color: var(--px-green);
+}
+.summary-totals dd.is-negative {
+  color: var(--px-red);
+}
 
 .summary-hint {
   margin: 12px 0 0;
-  color: var(--muted);
-  font-size: 0.68rem;
+  color: var(--px-dim);
+  font-size: 12px;
   line-height: 1.55;
 }
 
@@ -3881,9 +3839,9 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   padding: 10px 11px;
-  border: 1px solid rgba(217, 199, 150, 0.14);
-  border-radius: 8px;
-  background: rgba(5, 10, 11, 0.54);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-bulk-confirm-list .confirm-item strong,
@@ -3892,11 +3850,11 @@
 }
 
 .guild-bulk-confirm-list .confirm-item small {
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .guild-bulk-confirm-list .confirm-item > b {
-  color: var(--gold);
+  color: var(--px-gold);
 }
 
 /* v0.2.6.3 公會委託與冒險資歷 */
@@ -3915,10 +3873,9 @@
 .guild-quest-active-section,
 .guild-quest-board-section {
   padding: 16px;
-  border: 1px solid rgba(217, 199, 150, 0.18);
-  border-radius: 12px;
-  background: rgba(7, 12, 13, 0.78);
-  box-shadow: var(--inner-light);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-quest-section-heading {
@@ -3931,7 +3888,7 @@
 
 .guild-quest-section-heading h3 {
   margin: 3px 0 0;
-  color: #fff4d8;
+  color: var(--px-ink);
 }
 
 .guild-quest-history-metrics,
@@ -3947,23 +3904,23 @@
   display: grid;
   gap: 4px;
   padding: 11px 12px;
-  border: 1px solid rgba(217, 199, 150, 0.14);
-  border-radius: 8px;
-  background: rgba(6, 11, 12, 0.5);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-quest-history-metrics dt,
 .guild-record-quest-metrics dt {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .guild-quest-history-metrics dd,
 .guild-record-quest-metrics dd {
   margin: 0;
-  color: var(--gold);
-  font-size: 1.05rem;
-  font-weight: 900;
+  color: var(--px-gold);
+  font-size: 18px;
+  font-weight: 400;
 }
 
 .guild-quest-board {
@@ -3980,11 +3937,9 @@
   min-width: 0;
   padding: 15px;
   overflow: hidden;
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 11px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 50%),
-    rgba(7, 13, 14, 0.88);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-quest-card::before,
@@ -3992,50 +3947,49 @@
   position: absolute;
   inset: 0 auto 0 0;
   width: 3px;
-  background: rgba(217, 199, 150, 0.45);
+  background: var(--px-picked);
   content: "";
 }
 
 .guild-quest-card.rarity-advanced::before,
 .guild-quest-active-card.rarity-advanced::before {
-  background: #77bdd6;
+  background: var(--px-guard);
 }
 
 .guild-quest-card.rarity-rare::before,
 .guild-quest-active-card.rarity-rare::before {
-  background: #d1a5ec;
+  background: var(--px-navy-2);
 }
 
 .guild-quest-card.is-active {
-  border-color: rgba(240, 207, 116, 0.45);
-  box-shadow: 0 0 0 1px rgba(240, 207, 116, 0.08) inset;
+  border-color: var(--px-rim);
 }
 
 .guild-quest-card-heading h4 {
   margin: 5px 0 0;
-  color: #fff4d8;
-  font-size: 1.05rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .guild-quest-rarity {
   display: inline-flex;
   width: fit-content;
   padding: 3px 8px;
-  border: 1px solid rgba(217, 199, 150, 0.2);
-  border-radius: 999px;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
   color: var(--gold-soft);
-  font-size: 0.68rem;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .guild-quest-rarity.rarity-advanced {
-  border-color: rgba(119, 189, 214, 0.42);
-  color: #a7dcf0;
+  border-color: var(--px-rim);
+  color: var(--px-sky);
 }
 
 .guild-quest-rarity.rarity-rare {
-  border-color: rgba(209, 165, 236, 0.46);
-  color: #e6c5f8;
+  border-color: var(--px-rim);
+  color: var(--px-ink);
 }
 
 .guild-quest-card-details {
@@ -4046,12 +4000,12 @@
 
 .guild-quest-card-details p {
   margin: 0;
-  color: var(--muted);
+  color: var(--px-dim);
   line-height: 1.6;
 }
 
 .guild-quest-card-details strong {
-  color: var(--ink);
+  color: var(--px-ink);
   line-height: 1.55;
 }
 
@@ -4062,17 +4016,17 @@
   gap: 10px;
   margin: 0;
   padding-top: 10px;
-  border-top: 1px solid rgba(217, 199, 150, 0.12);
+  border-top: 2px solid var(--px-rim);
 }
 
 .guild-quest-reward span,
 .guild-quest-completion-count {
-  color: var(--muted);
-  font-size: 0.72rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .guild-quest-reward strong {
-  color: var(--gold);
+  color: var(--px-gold);
 }
 
 .guild-quest-card > button,
@@ -4095,31 +4049,30 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  color: var(--muted);
-  font-size: 0.78rem;
+  color: var(--px-dim);
+  font-size: 12px;
 }
 
 .guild-quest-progress > div:first-child strong {
-  color: var(--gold);
+  color: var(--px-gold);
 }
 
 .guild-quest-progress > div:last-child {
   height: 7px;
   overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  border-radius: 0;
+  background: transparent;
 }
 
 .guild-quest-progress i {
   display: block;
   height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #8b6e2c, var(--gold));
-  transition: width 220ms ease;
+  border-radius: 0;
+  background: var(--px-primary);
 }
 
 .guild-quest-progress.is-complete i {
-  background: linear-gradient(90deg, #347957, #75d59b);
+  background: var(--px-guard);
 }
 
 .guild-quest-empty {
@@ -4129,9 +4082,9 @@
 .guild-record-collapsible {
   padding: 0;
   overflow: hidden;
-  border: 1px solid rgba(217, 199, 150, 0.16);
-  border-radius: 11px;
-  background: rgba(6, 11, 12, 0.44);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
 }
 
 .guild-record-collapse-toggle {
@@ -4151,7 +4104,7 @@
 
 .guild-record-collapse-toggle:hover,
 .guild-record-collapse-toggle:focus-visible {
-  background: rgba(240, 207, 116, 0.045);
+  background: transparent;
 }
 
 .guild-record-collapse-toggle:disabled {
@@ -4165,8 +4118,8 @@
 }
 
 .guild-record-collapse-copy strong {
-  color: #fff4d8;
-  font-size: 1rem;
+  color: var(--px-ink);
+  font-size: 18px;
 }
 
 .guild-record-collapse-arrow {
@@ -4174,10 +4127,9 @@
   width: 30px;
   height: 30px;
   place-items: center;
-  border: 1px solid rgba(240, 207, 116, 0.3);
-  border-radius: 50%;
-  color: var(--gold);
-  transition: transform 220ms ease;
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  color: var(--px-gold);
 }
 
 .guild-record-collapsible.is-open .guild-record-collapse-arrow {
@@ -4187,8 +4139,7 @@
 .guild-record-collapse-content {
   height: 0;
   overflow: hidden;
-  border-top: 1px solid rgba(217, 199, 150, 0.12);
-  transition: height 280ms ease;
+  border-top: 2px solid var(--px-rim);
 }
 
 .guild-record-collapse-content > * {
@@ -4207,10 +4158,18 @@
   animation: guild-record-reveal 180ms ease forwards;
 }
 
-.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(2) { animation-delay: 45ms; }
-.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(3) { animation-delay: 90ms; }
-.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(4) { animation-delay: 135ms; }
-.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(5) { animation-delay: 180ms; }
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(2) {
+  animation-delay: 45ms;
+}
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(3) {
+  animation-delay: 90ms;
+}
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(4) {
+  animation-delay: 135ms;
+}
+.guild-record-collapsible.is-revealed .guild-record-reveal-item:nth-child(5) {
+  animation-delay: 180ms;
+}
 
 .guild-record-quest-history {
   display: grid;
@@ -4228,8 +4187,8 @@
   gap: 12px;
   align-items: center;
   padding: 11px 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.025);
+  border-radius: 0;
+  background: transparent;
 }
 
 .guild-record-quest-total > div {
@@ -4238,11 +4197,11 @@
 }
 
 .guild-record-quest-total small {
-  color: var(--muted);
+  color: var(--px-dim);
 }
 
 .guild-record-quest-total b {
-  color: var(--gold);
+  color: var(--px-gold);
 }
 
 .dialogue-portrait-card {
@@ -4268,34 +4227,32 @@
   place-items: center;
   padding: 7px 6px;
   overflow: hidden;
-  border: 1px solid rgba(217, 199, 150, 0.16);
-  border-radius: 8px;
-  background: rgba(8, 13, 14, 0.72);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
   color: var(--text-muted, var(--muted));
-  font-size: 0.76rem;
-  font-weight: 700;
-  transition: border-color 220ms ease, color 220ms ease, background 220ms ease, transform 220ms ease;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .quest-briefing-progress span::after {
   position: absolute;
   inset: auto 0 0;
   height: 2px;
-  background: var(--gold);
+  background: var(--px-primary);
   content: "";
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 260ms ease;
 }
 
 .quest-briefing-progress span.is-complete {
-  color: rgba(241, 211, 134, 0.72);
+  color: var(--px-gold);
 }
 
 .quest-briefing-progress span.is-active {
-  border-color: rgba(241, 211, 134, 0.48);
-  background: rgba(85, 65, 28, 0.28);
-  color: #fff4d8;
+  border-color: var(--px-rim);
+  background: var(--px-picked);
+  color: var(--px-ink);
   transform: translateY(-1px);
 }
 
@@ -4312,18 +4269,11 @@
   isolation: isolate;
 }
 
-.quest-intro-portrait-card img {
-  filter: saturate(0.86) brightness(0.78);
-  transition: filter 420ms ease, transform 520ms ease, object-position 520ms ease;
-}
-
 .quest-intro-portrait-card[data-intro-step="4"] img {
-  filter: saturate(0.74) brightness(0.62);
   transform: scale(1.035);
 }
 
 .quest-intro-portrait-card[data-intro-step="5"] img {
-  filter: saturate(0.94) brightness(0.84);
   transform: scale(1.02);
 }
 
@@ -4348,11 +4298,10 @@
   bottom: 14px;
   width: 76%;
   height: 120px;
-  border-radius: 50%;
+  border-radius: 0;
   background: radial-gradient(ellipse, rgba(224, 179, 93, 0.23), transparent 68%);
   opacity: 0;
   transform: translateX(-50%) scale(0.72);
-  transition: opacity 480ms ease, transform 480ms ease;
 }
 
 .quest-paper-stack {
@@ -4363,25 +4312,28 @@
   height: 122px;
   opacity: 0;
   transform: translate(-50%, 72px) rotate(-2deg);
-  transition: opacity 320ms ease, transform 520ms cubic-bezier(.2,.8,.2,1);
 }
 
 .quest-paper-stack span {
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(87, 57, 25, 0.78);
-  border-radius: 7px;
-  background:
-    linear-gradient(90deg, transparent 0 9%, rgba(101, 67, 32, 0.12) 9% 10%, transparent 10% 100%),
-    linear-gradient(180deg, rgba(255,255,255,.14), transparent 24%),
-    #c8b184;
-  box-shadow: 0 16px 28px rgba(0,0,0,.3);
+  border: 2px solid var(--px-orange);
+  border-radius: 0;
+  background: var(--px-primary);
 }
 
-.quest-paper-stack span:nth-child(1) { transform: rotate(-8deg) translate(-18px, 6px); }
-.quest-paper-stack span:nth-child(2) { transform: rotate(5deg) translate(14px, 3px); }
-.quest-paper-stack span:nth-child(3) { transform: rotate(-2deg) translate(-2px, -4px); }
-.quest-paper-stack span:nth-child(4) { transform: rotate(1deg) translate(4px, -10px); }
+.quest-paper-stack span:nth-child(1) {
+  transform: rotate(-8deg) translate(-18px, 6px);
+}
+.quest-paper-stack span:nth-child(2) {
+  transform: rotate(5deg) translate(14px, 3px);
+}
+.quest-paper-stack span:nth-child(3) {
+  transform: rotate(-2deg) translate(-2px, -4px);
+}
+.quest-paper-stack span:nth-child(4) {
+  transform: rotate(1deg) translate(4px, -10px);
+}
 
 .quest-source-stamps,
 .quest-rarity-seals {
@@ -4392,7 +4344,6 @@
   gap: 9px;
   opacity: 0;
   transform: translate(-50%, 20px);
-  transition: opacity 280ms ease, transform 420ms ease;
 }
 
 .quest-source-stamps span,
@@ -4401,22 +4352,23 @@
   width: 62px;
   height: 62px;
   place-items: center;
-  border: 2px solid rgba(113, 55, 36, .7);
-  border-radius: 50%;
-  background: rgba(188, 152, 93, .92);
-  color: #5d2f26;
-  font-size: .78rem;
-  font-weight: 900;
-  letter-spacing: .08em;
-  box-shadow: 0 7px 18px rgba(0,0,0,.32);
+  border: 2px solid var(--px-red);
+  border-radius: 0;
+  background: var(--px-primary);
+  color: var(--px-red);
+  font-size: 12px;
+  font-weight: 400;
   transform: rotate(-8deg) scale(.72);
-  transition: transform 360ms cubic-bezier(.17,.89,.32,1.35);
 }
 
 .quest-source-stamps span:nth-child(2),
-.quest-rarity-seals span:nth-child(2) { transform: rotate(5deg) scale(.72); }
+.quest-rarity-seals span:nth-child(2) {
+  transform: rotate(5deg) scale(.72);
+}
 .quest-source-stamps span:nth-child(3),
-.quest-rarity-seals span:nth-child(3) { transform: rotate(-2deg) scale(.72); }
+.quest-rarity-seals span:nth-child(3) {
+  transform: rotate(-2deg) scale(.72);
+}
 
 .quest-single-slot {
   position: absolute;
@@ -4428,47 +4380,43 @@
   align-items: center;
   opacity: 0;
   transform: translate(-50%, 18px);
-  transition: opacity 280ms ease, transform 420ms ease;
 }
 
 .quest-single-slot .slot-card {
   display: grid;
   min-height: 88px;
   place-items: center;
-  border: 1px solid rgba(241, 211, 134, 0.48);
-  border-radius: 9px;
-  background:
-    linear-gradient(145deg, rgba(241,211,134,.12), transparent 50%),
-    rgba(13,18,18,.94);
-  color: #fff4d8;
-  box-shadow: 0 14px 24px rgba(0,0,0,.3);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
+  color: var(--px-ink);
 }
 
 .quest-single-slot strong {
   padding: 8px 10px;
-  border: 1px solid rgba(224, 179, 93, .36);
-  border-radius: 999px;
-  background: rgba(51, 38, 19, .84);
-  color: var(--gold);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-2);
+  color: var(--px-gold);
   white-space: nowrap;
 }
 
 .quest-rarity-seals .common {
-  border-color: rgba(195, 202, 199, .7);
-  background: #a8afac;
-  color: #18201f;
+  border-color: var(--px-rim);
+  background: var(--px-navy-2);
+  color: var(--px-disabled);
 }
 
 .quest-rarity-seals .advanced {
-  border-color: rgba(111, 190, 143, .8);
-  background: #6fbe8f;
-  color: #10271a;
+  border-color: var(--px-green);
+  background: var(--px-go);
+  color: var(--px-green);
 }
 
 .quest-rarity-seals .rare {
-  border-color: rgba(241, 211, 134, .9);
-  background: #d9b857;
-  color: #3a260d;
+  border-color: var(--px-gold);
+  background: var(--px-primary);
+  color: var(--px-orange);
 }
 
 .quest-danger-seal {
@@ -4479,15 +4427,13 @@
   width: 142px;
   height: 142px;
   place-items: center;
-  border: 4px double rgba(227, 112, 94, .88);
-  border-radius: 50%;
-  background: rgba(69, 19, 15, .8);
-  color: #ffc0b5;
-  font-weight: 900;
-  letter-spacing: .16em;
+  border: 4px double var(--px-red);
+  border-radius: 0;
+  background: var(--px-navy-2);
+  color: var(--px-ink);
+  font-weight: 400;
   opacity: 0;
   transform: translate(-50%, 18px) rotate(-13deg) scale(.68);
-  transition: opacity 280ms ease, transform 460ms cubic-bezier(.17,.89,.32,1.35);
 }
 
 .quest-mini-board {
@@ -4498,22 +4444,18 @@
   grid-template-columns: repeat(2, 96px);
   gap: 9px;
   padding: 14px;
-  border: 1px solid rgba(241, 211, 134, .34);
-  border-radius: 12px;
-  background: rgba(8, 12, 13, .9);
-  box-shadow: 0 20px 38px rgba(0,0,0,.42);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy-3);
   opacity: 0;
   transform: translate(-50%, 42px) scale(.8);
-  transition: opacity 320ms ease, transform 520ms cubic-bezier(.2,.85,.2,1);
 }
 
 .quest-mini-board span {
   height: 82px;
-  border: 1px solid rgba(217, 199, 150, .26);
-  border-radius: 7px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.045), transparent 32%),
-    rgba(32, 30, 23, .95);
+  border: 2px solid var(--px-rim);
+  border-radius: 0;
+  background: var(--px-navy);
 }
 
 .quest-intro-portrait-card[data-intro-step="0"] .quest-desk-glow,
@@ -4583,7 +4525,6 @@
   .quest-intro-portrait-card img,
   .quest-briefing-progress span,
   .quest-briefing-progress span::after {
-    transition: none;
     animation: none !important;
   }
 

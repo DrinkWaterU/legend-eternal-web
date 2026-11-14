@@ -6,26 +6,67 @@
    稀有度一律用 --rarity：普通灰、優良綠、稀有金、史詩紫、傳說橘、任務藍，與祝福卡相同。
    技能階段用 --tier：基礎灰、強化 I 綠、強化 II 藍、強化 III 紫。 */
 
-:is(#characterScreen, #storageScreen) {
+:is(#characterScreen, #storageScreen, #facilityScreen) {
   --rarity: var(--px-rim);
   --tier: var(--px-dim);
 }
 
-:is(#characterScreen, #storageScreen) :is(.rarity-common, [data-rarity="common"]) { --rarity: var(--px-dim); }
-:is(#characterScreen, #storageScreen) :is(.rarity-uncommon, [data-rarity="uncommon"]) { --rarity: var(--px-green); }
-:is(#characterScreen, #storageScreen) :is(.rarity-rare, [data-rarity="rare"]) { --rarity: var(--px-gold); }
-:is(#characterScreen, #storageScreen) :is(.rarity-epic, [data-rarity="epic"]) { --rarity: var(--px-violet); }
-:is(#characterScreen, #storageScreen) :is(.rarity-legendary, [data-rarity="legendary"]) { --rarity: var(--px-orange); }
-:is(#characterScreen, #storageScreen) :is(.rarity-quest, [data-rarity="quest"]) { --rarity: var(--px-sky); }
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.rarity-common, [data-rarity="common"]) { --rarity: var(--px-dim); }
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.rarity-uncommon, [data-rarity="uncommon"]) { --rarity: var(--px-green); }
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.rarity-rare, [data-rarity="rare"]) { --rarity: var(--px-gold); }
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.rarity-epic, [data-rarity="epic"]) { --rarity: var(--px-violet); }
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.rarity-legendary, [data-rarity="legendary"]) { --rarity: var(--px-orange); }
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.rarity-quest, [data-rarity="quest"]) { --rarity: var(--px-sky); }
 
 #characterScreen .upgrade-tier-0 { --tier: var(--px-dim); }
 #characterScreen .upgrade-tier-1 { --tier: var(--px-green); }
 #characterScreen .upgrade-tier-2 { --tier: var(--px-sky); }
 #characterScreen .upgrade-tier-3 { --tier: var(--px-violet); }
 
+/* 點陣字加粗會糊，標題與強調一律用正常字重，以字級和顏色分層。 */
+:is(#characterScreen, #storageScreen, #facilityScreen, .px-dialog) :is(h2, h3, h4, h5, strong, b, th, button) {
+  font-weight: 400;
+}
+
+/* 舊規則沒指定字級的標題會吃瀏覽器預設（例如 h3 是 1.17em），不在 12 的倍數上。
+   用 :where 壓低權重，只補預設值，不蓋過有指定字級的規則。 */
+:where(#characterScreen, #storageScreen, #facilityScreen) :is(h3, h4) {
+  font-size: var(--px-text-m);
+}
+
+/* layout.css 對所有 dt／dd 設了 0.82rem 與 1.24rem 加粗，這裡換回像素字級。 */
+:where(#characterScreen, #storageScreen, #facilityScreen, .px-dialog) dt {
+  color: var(--px-dim);
+  font-size: var(--px-text-s);
+}
+
+:where(#characterScreen, #storageScreen, #facilityScreen, .px-dialog) dd {
+  font-size: var(--px-text-m);
+  font-weight: 400;
+}
+
+/* 設施確認框（出售、交付、放棄委託、製作）裡的數字格沿用 layout.css 的圓角 .stat-list，這裡換成像素格。 */
+.px-dialog .stat-list div {
+  min-height: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--px-navy-3);
+  box-shadow: inset 0 0 0 2px var(--px-rim);
+}
+
+:where(.px-dialog) small {
+  font-size: var(--px-text-s);
+}
+
+/* 製作確認框的扣除量原本和配方的「數量足夠」共用綠色，看起來像得到東西；扣除改用中性白。 */
+.blacksmith-craft-dialog .blacksmith-craft-cost-list strong {
+  color: var(--px-ink);
+}
+
 /* ---------- 共用：區塊、標題、標籤、輸入欄 ---------- */
 
-:is(#characterScreen, #storageScreen) :is(
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(
   .character-identity-panel,
   .character-equipment-overview,
   .character-growth-panel,
@@ -43,7 +84,7 @@
 }
 
 /* 舊版頁首是置中的直排，hub.css 改成左標題右按鈕後，說明也跟著靠左。 */
-:is(#characterScreen, #storageScreen) .app-page-heading .page-heading-description {
+:is(#characterScreen, #storageScreen, #facilityScreen) .app-page-heading .page-heading-description {
   max-width: 650px;
   margin: 8px 0 0;
   text-align: left;
@@ -51,26 +92,26 @@
 
 /* 手機上返回鈕會把說明擠成一行七八個字；改成標題與按鈕同列，說明獨占下一列。 */
 @media (max-width: 540px) {
-  :is(#characterScreen, #storageScreen) .app-page-heading {
+  :is(#characterScreen, #storageScreen, #facilityScreen) .app-page-heading {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     column-gap: 12px;
   }
 
-  :is(#characterScreen, #storageScreen) .app-page-heading > div {
+  :is(#characterScreen, #storageScreen, #facilityScreen) .app-page-heading > div {
     display: contents;
   }
 
-  :is(#characterScreen, #storageScreen) .app-page-heading > div > * {
+  :is(#characterScreen, #storageScreen, #facilityScreen) .app-page-heading > div > * {
     grid-column: 1;
   }
 
-  :is(#characterScreen, #storageScreen) .app-page-heading > .secondary-button {
+  :is(#characterScreen, #storageScreen, #facilityScreen) .app-page-heading > .secondary-button {
     grid-column: 2;
     grid-row: 1 / span 2;
   }
 
-  :is(#characterScreen, #storageScreen) .app-page-heading .page-heading-description {
+  :is(#characterScreen, #storageScreen, #facilityScreen) .app-page-heading .page-heading-description {
     grid-column: 1 / -1;
   }
 
@@ -85,7 +126,7 @@
   }
 }
 
-:is(#characterScreen, #storageScreen) :is(
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(
   .browser-panel-heading,
   .character-section-heading,
   .equipment-overview-heading,
@@ -100,13 +141,13 @@
   line-height: 1.3;
 }
 
-:is(#characterScreen, #storageScreen) :is(.equipment-library-heading, .skill-section-heading) p:not(.eyebrow) {
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.equipment-library-heading, .skill-section-heading) p:not(.eyebrow) {
   color: var(--px-dim);
   font-size: var(--px-text-s);
   line-height: 1.6;
 }
 
-:is(#characterScreen, #storageScreen) .result-count-badge {
+:is(#characterScreen, #storageScreen, #facilityScreen) .result-count-badge {
   min-height: 24px;
   padding: 2px 8px;
   border: 0;
@@ -119,7 +160,7 @@
 }
 
 /* 篩選鈕：按下的那顆用金色。 */
-:is(#characterScreen, #storageScreen) .filter-chip {
+:is(#characterScreen, #storageScreen, #facilityScreen) .filter-chip {
   min-height: 32px;
   padding: 4px 10px 6px;
   border: 0;
@@ -133,27 +174,27 @@
   transition: none;
 }
 
-:is(#characterScreen, #storageScreen) .filter-chip:is(:hover, :focus-visible):not(:disabled) {
+:is(#characterScreen, #storageScreen, #facilityScreen) .filter-chip:is(:hover, :focus-visible):not(:disabled) {
   background: var(--px-hover);
   color: var(--px-ink);
   outline: none;
   box-shadow: inset 0 0 0 2px var(--px-ink);
 }
 
-:is(#characterScreen, #storageScreen) .filter-chip.is-active {
+:is(#characterScreen, #storageScreen, #facilityScreen) .filter-chip.is-active {
   background: var(--px-picked);
   color: var(--px-gold);
   box-shadow: inset 0 0 0 2px var(--px-gold);
 }
 
 /* 搜尋與排序欄 */
-:is(#characterScreen, #storageScreen) :is(.storage-toolbar, .skill-toolbar, .equipment-toolbar) label > span {
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.storage-toolbar, .skill-toolbar, .equipment-toolbar) label > span {
   color: var(--px-dim);
   font-size: var(--px-text-s);
   font-weight: 400;
 }
 
-:is(#characterScreen, #storageScreen) :is(.storage-toolbar, .skill-toolbar, .equipment-toolbar) :is(input, select) {
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.storage-toolbar, .skill-toolbar, .equipment-toolbar) :is(input, select) {
   min-height: 40px;
   border: 0;
   border-radius: 0;
@@ -164,30 +205,30 @@
   box-shadow: inset 0 0 0 2px var(--px-rim);
 }
 
-:is(#characterScreen, #storageScreen) :is(.storage-toolbar, .skill-toolbar, .equipment-toolbar) :is(input, select):focus {
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.storage-toolbar, .skill-toolbar, .equipment-toolbar) :is(input, select):focus {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--px-gold);
 }
 
-:is(#characterScreen, #storageScreen) :is(input, select)::placeholder {
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(input, select)::placeholder {
   color: var(--px-disabled);
 }
 
 /* 概況數字格（倉庫摘要、角色能力） */
-:is(#characterScreen, #storageScreen) .stat-list div {
+:is(#characterScreen, #storageScreen, #facilityScreen) .stat-list div {
   border: 0;
   border-radius: 0;
   background: var(--px-navy-3);
   box-shadow: inset 0 0 0 2px var(--px-rim);
 }
 
-:is(#characterScreen, #storageScreen) .stat-list dt {
+:is(#characterScreen, #storageScreen, #facilityScreen) .stat-list dt {
   color: var(--px-dim);
   font-size: var(--px-text-s);
   font-weight: 400;
 }
 
-:is(#characterScreen, #storageScreen) .stat-list dd {
+:is(#characterScreen, #storageScreen, #facilityScreen) .stat-list dd {
   color: var(--px-ink);
   font-size: var(--px-text-m);
   font-weight: 400;
@@ -205,7 +246,7 @@
   }
 }
 
-:is(#characterScreen, #storageScreen) :is(.empty-state, .browser-detail-empty, .character-skill-detail.is-empty) {
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.empty-state, .browser-detail-empty, .character-skill-detail.is-empty) {
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -215,7 +256,7 @@
   box-shadow: none;
 }
 
-:is(#characterScreen, #storageScreen) .save-notice {
+:is(#characterScreen, #storageScreen, #facilityScreen) .save-notice {
   color: var(--px-gold);
   font-size: var(--px-text-s);
 }
@@ -237,7 +278,7 @@
 }
 
 /* 武器圖示（與鐵匠鋪共用類別，這裡只改本頁） */
-:is(#characterScreen, #storageScreen) .weapon-icon {
+:is(#characterScreen, #storageScreen, #facilityScreen) .weapon-icon {
   border: 0;
   border-radius: 0;
   background: var(--px-edge);
@@ -248,7 +289,7 @@
   box-shadow: inset 0 0 0 2px var(--rarity);
 }
 
-:is(#characterScreen, #storageScreen) .weapon-icon-fallback {
+:is(#characterScreen, #storageScreen, #facilityScreen) .weapon-icon-fallback {
   font-size: var(--px-text-m);
 }
 
@@ -915,7 +956,13 @@
   text-decoration: underline;
 }
 
+/* 商人的素材格與倉庫共用 .inventory-slot-rarity。 */
+#facilityScreen .inventory-slot-rarity {
+  color: var(--rarity);
+  font-size: var(--px-text-s);
+}
+
 /* 捲動列也換成方塊 */
-:is(#characterScreen, #storageScreen) :is(.skill-index-list, .equipment-scroll-list, .storage-inventory-grid, .material-usage-list) {
+:is(#characterScreen, #storageScreen, #facilityScreen) :is(.skill-index-list, .equipment-scroll-list, .storage-inventory-grid, .material-usage-list) {
   scrollbar-color: var(--px-rim) var(--px-edge);
 }
