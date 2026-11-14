@@ -41,8 +41,10 @@ export function createCampController({
     const character = characterDefinitions[state.selectedHeroId];
     const progress = normalizeCharacterProgress(state.selectedHeroId);
     const experienceSummary = getCampExperienceSummary(progress, character);
-    const lastResult = state.lastRunSummary
-      ? `${state.lastRunSummary.sourceName} ${state.lastRunSummary.reachedEncounter} / ${state.lastRunSummary.encounterTotal} 場${state.lastRunSummary.result}`
+    // 這一輪剛結束的結果優先；重新整理後改讀存檔裡的最近一次冒險。
+    const lastRun = state.lastRunSummary || saveStore.current.statistics?.lastRun || null;
+    const lastResult = lastRun
+      ? `${lastRun.sourceName} ${lastRun.reachedEncounter} / ${lastRun.encounterTotal} 場${lastRun.result}`
       : "尚無紀錄";
     const inventorySummary = formatInventorySummary(saveStore.current.inventory, materialDefinitions);
     const safeArea = getCurrentSafeArea();
@@ -78,7 +80,7 @@ export function createCampController({
     els.campPlacesHint.textContent = facilities.length > 0
       ? `${facilities.length} 處可去`
       : safeArea.placesLockedDescription || "目前沒有可前往的地方";
-    els.campRecordHint.textContent = state.lastRunSummary ? `最近：${lastResult}` : "尚無紀錄";
+    els.campRecordHint.textContent = lastRun ? `最近：${lastResult}` : "尚無紀錄";
     const storyQuestSnapshot = storyQuestRuntime.getSnapshot();
     const activeQuestCount = storyQuestSnapshot.entries.filter(({ record }) => record.status !== "completed").length;
     els.campStoryQuestButton.hidden = !storyQuestSnapshot.hasRecords;

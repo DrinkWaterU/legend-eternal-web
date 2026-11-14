@@ -704,7 +704,14 @@
 }
 
 .battle-log li:first-child::after {
-  content: " ◀";
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 12px;
+  margin-left: 8px;
+  background: currentColor;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  vertical-align: -1px;
   color: var(--px-gold);
   font-size: var(--px-text-s);
   animation: px-pending-blink 1s steps(2, jump-none) infinite;

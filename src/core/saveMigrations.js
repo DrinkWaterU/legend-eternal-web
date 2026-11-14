@@ -125,6 +125,25 @@ function migrateAchievements(save, rawSave) {
   });
 }
 
+const LAST_RUN_RESULTS = new Set(["成功", "段落完成", "撤離", "撤退", "失敗"]);
+
+// 最近一次冒險摘要只用來顯示；格式不對就丟掉，不影響其他存檔內容。
+export function normalizeLastRunSummary(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  if (!LAST_RUN_RESULTS.has(raw.result)) return null;
+  const sourceName = typeof raw.sourceName === "string" ? raw.sourceName.trim().slice(0, 40) : "";
+  const encounterTotal = toSafeInteger(raw.encounterTotal);
+  if (!sourceName || encounterTotal <= 0) return null;
+  return {
+    result: raw.result,
+    sourceName,
+    reachedEncounter: Math.min(toSafeInteger(raw.reachedEncounter), encounterTotal),
+    encounterTotal,
+    runLevel: Math.max(1, toSafeInteger(raw.runLevel, 1)),
+    endedAt: typeof raw.endedAt === "string" && !Number.isNaN(Date.parse(raw.endedAt)) ? raw.endedAt : null
+  };
+}
+
 function migrateStatistics(save, rawSave, options = {}) {
   const { rawSchemaVersion = 0 } = options;
   const rawStats = rawSave.statistics || {};
@@ -136,6 +155,7 @@ function migrateStatistics(save, rawSave, options = {}) {
     save.statistics[field] = toSafeInteger(rawStats[field]);
   }
   save.statistics.highestRunLevel = Math.max(1, toSafeInteger(rawStats.highestRunLevel, 1));
+  save.statistics.lastRun = normalizeLastRunSummary(rawStats.lastRun);
 
   Object.keys(regionDefinitions).forEach((regionId) => {
     const rawRegionStats = rawStats.regions?.[regionId] || rawSave.progression?.regions?.[regionId] || {};

@@ -95,6 +95,8 @@ function fixture({ blessing = true } = {}) {
   assert.equal(f.disk.statistics.totalEnemiesDefeated, 2);
   assert.equal(f.disk.quests.active.progress, 2);
   assert.equal(f.disk.statistics.totalClears, 1);
+  assert.equal(f.disk.statistics.lastRun?.result, "成功", "最近一次冒險與結算一起寫入存檔");
+  assert.equal(f.disk.statistics.lastRun?.sourceName, "平原");
   assert.equal(f.els.endPanel.classList.contains("is-visible"), true);
   assert.equal(actions, 1, "Retry must not rerun attacks or random rewards");
   for (const attempt of f.attempts) assert.deepEqual(attempt, f.disk);

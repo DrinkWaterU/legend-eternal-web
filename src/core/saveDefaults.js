@@ -50,6 +50,8 @@ export function createDefaultSave() {
       counterEscapes: 0,
       evacuationEscapes: 0,
       highestRunLevel: 1,
+      // 最近一次結束的冒險（營地「冒險紀錄」右側顯示）；尚未冒險時為 null。
+      lastRun: null,
       regions: createDefaultRegionStatistics(),
       characters: createDefaultCharacterStatistics()
     },

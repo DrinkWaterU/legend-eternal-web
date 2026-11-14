@@ -237,14 +237,28 @@ body:has(#menuScreen.is-active) .topbar h1 {
 #menuScreen .menu-button span::before,
 #campScreen .menu-button span::before,
 .camp-feature-button span::before {
-  content: "▶ ";
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 12px;
+  margin-right: 8px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  vertical-align: -1px;
   color: transparent;
 }
 
 #menuScreen .menu-button span::after,
 #campScreen .menu-button span::after,
 .camp-feature-button span::after {
-  content: " ◀";
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 12px;
+  margin-left: 8px;
+  background: currentColor;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  vertical-align: -1px;
   color: transparent;
 }
 
@@ -584,7 +598,7 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 .camp-warning[data-type="blessed"]::before {
-  content: "✦ ";
+  content: "◆ ";
   color: var(--px-gold);
 }
 
@@ -736,7 +750,14 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
 }
 
 #campScreen .camp-menu-return::before {
-  content: "◀ ";
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 12px;
+  margin-right: 8px;
+  background: currentColor;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  vertical-align: -1px;
 }
 
 @media (min-width: 960px) {

@@ -731,7 +731,14 @@
 }
 
 .event-prompt::before {
-  content: "▶ ";
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 12px;
+  margin-right: 8px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  vertical-align: -1px;
   color: var(--px-gold);
 }
 
@@ -949,7 +956,7 @@
 }
 
 .camp-transition-layout .camp-blessing-card.is-retained::after {
-  content: "✓ 已保留";
+  content: "√ 已保留";
   display: block;
   margin-top: 8px;
   color: var(--px-gold);

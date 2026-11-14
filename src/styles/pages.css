@@ -1191,3 +1191,17 @@
     grid-column: auto;
   }
 }
+
+/* ---------- 地區詳情：出發前整備 ---------- */
+/* 舊規則已就地轉成像素外觀；這裡補上沒指定字重、字級的標題與圓形標記。 */
+#regionScreen .preparation-section :is(h3, h4, strong, b) {
+  font-weight: 400;
+}
+
+:where(#regionScreen .preparation-section) h3 {
+  font-size: var(--px-text-m);
+}
+
+#regionScreen .preparation-marker {
+  border-radius: 0;
+}

@@ -103,12 +103,29 @@ export function createRunResultController({
     return Math.min(getAdventureEncounterIndex() + 1, getAdventureEncounterCount());
   }
 
+  // 最近一次冒險摘要：在結算存檔的同一個操作裡寫入，與其他結算紀錄一起成功或一起重試。
+  function recordLastRunSummary(outcome) {
+    if (state.debugBuildRun) return;
+    const completed = outcome === "clear" || outcome === "segmentClear";
+    const retreated = outcome === "retreat";
+    const evacuated = retreated && Boolean(state.runStats?.evacuated);
+    state.lastRunSummary = {
+      result: outcome === "clear" ? "成功" : outcome === "segmentClear" ? "段落完成" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
+      sourceName: getAdventureSourceName(),
+      reachedEncounter: getReachedEncounter(completed),
+      encounterTotal: getAdventureEncounterCount(),
+      runLevel: state.runStats?.endLevel || getCharacterProgress().level
+    };
+    if (saveStore.current?.statistics) {
+      saveStore.current.statistics.lastRun = { ...state.lastRunSummary, endedAt: new Date().toISOString() };
+    }
+  }
+
   function renderEndSummary(outcome) {
     const cleared = outcome === "clear";
     const segmentCleared = outcome === "segmentClear";
     const completed = cleared || segmentCleared;
     const retreated = outcome === "retreat";
-    const evacuated = retreated && Boolean(state.runStats?.evacuated);
     const sourceName = getAdventureSourceName();
     const encounterTotal = getAdventureEncounterCount();
     const reachedEncounter = getReachedEncounter(completed);
@@ -118,15 +135,6 @@ export function createRunResultController({
     const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
     const progress = getCharacterProgress();
     const displayLevel = state.debugBuildRun ? state.hero.level : progress.level;
-    if (!state.debugBuildRun) {
-      state.lastRunSummary = {
-        result: cleared ? "成功" : segmentCleared ? "段落完成" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
-        sourceName,
-        reachedEncounter,
-        encounterTotal,
-        runLevel: state.runStats?.endLevel || displayLevel
-      };
-    }
     const items = [
       ["路線", sourceName],
       ["抵達", `第 ${reachedEncounter} / ${encounterTotal} 場${showsRegionRecord && state.runStats?.newBestEncounter ? "（新紀錄）" : ""}`],
@@ -188,6 +196,7 @@ export function createRunResultController({
     state.phase = "ended";
     if (defeated) handleDefeatProgression();
     recordRunFinished(outcome, options);
+    recordLastRunSummary(outcome);
     state.pendingAnpingArrival = shouldOfferAnpingArrivalAfterRun(outcome);
     clearPendingThreat();
     state.blessingContext = "normal";
