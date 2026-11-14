@@ -114,23 +114,22 @@ export function renderCampBlessingChoices(element, instances, selectedIds, onTog
     button.setAttribute("aria-pressed", String(isSelected));
     button.setAttribute("aria-label", `${blessing.name}，來源：${instance.sourceLabel || "冒險途中"}`);
 
-    const meta = document.createElement("small");
-    const source = document.createElement("span");
-    const rarityLabel = document.createElement("i");
-    source.textContent = instance.sourceLabel || "冒險途中";
-    rarityLabel.textContent = rarity.label;
-    meta.append(source, rarityLabel);
-
+    // 扎營是從已持有的祝福中挑要保留的，比較時需要的是名稱、稀有度與效果；
+    // 情境與敘述在取得時已讀過，這裡不再重複（2026-11-14 作者同意精簡）。來源放在最下方小字。
+    const heading = document.createElement("span");
+    heading.className = "blessing-heading";
     const name = document.createElement("strong");
-    const eventText = document.createElement("span");
-    const flavor = document.createElement("em");
-    const effect = document.createElement("b");
+    const rarityLabel = document.createElement("i");
     name.textContent = blessing.name || "未命名祝福";
-    eventText.textContent = blessing.eventText || "";
-    flavor.textContent = blessing.flavorText !== blessing.eventText ? blessing.flavorText || "" : "";
-    flavor.hidden = !flavor.textContent;
+    rarityLabel.textContent = rarity.label;
+    heading.append(name, rarityLabel);
+
+    const effect = document.createElement("b");
     effect.textContent = blessing.effectText || "";
-    button.append(meta, name, eventText, flavor, effect);
+    const source = document.createElement("small");
+    source.className = "camp-blessing-source";
+    source.textContent = `來源：${instance.sourceLabel || "冒險途中"}`;
+    button.append(heading, effect, source);
     button.addEventListener("click", () => onToggle(instance.instanceId));
     element.append(button);
   });

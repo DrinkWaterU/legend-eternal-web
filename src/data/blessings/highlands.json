@@ -213,11 +213,11 @@
     },
     {
       "id": "highlands-wind-heal",
-      "name": "順勢推搡",
+      "name": "順勢推擠",
       "category": "attack",
       "rarity": "uncommon",
       "primaryFlow": "attack",
-      "eventTitle": "順勢推搡",
+      "eventTitle": "順勢推擠",
       "eventText": "你貼近對手肩側，趁牠沒站穩，往風裡送了一把。",
       "flavorText": "",
       "effectText": "解鎖推敵：花1回合，把身旁敵人推1格。\n推撞岩石可打斷本次衝撞，但會耗掉整塊岩；無岩則推不斷。",

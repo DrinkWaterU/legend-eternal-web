@@ -186,7 +186,7 @@ assert.ok(inferBlessingFlows(goblinBlessings.find((item) => item.id === "pick-th
 const testHero = { defense: 4, blessings: [], blessingFlows: [], blessingFlowMomentum: {} };
 applyBlessingEffects(testHero, goblinBlessings.find((item) => item.id === "reckless-gamble"));
 assert.equal(testHero.attack, 4, "add effect 應能從未定義 attack 安全加值");
-assert.equal(testHero.defense, 2, "鋌而走險應套用防禦 -2");
+assert.equal(testHero.defense, 2, "孤注一擲應套用防禦 -2");
 const newStatHero = { blessings: [], blessingFlows: [], blessingFlowMomentum: {} };
 applyBlessingEffects(newStatHero, goblinBlessings.find((item) => item.id === "strike-in-chaos"));
 applyBlessingEffects(newStatHero, goblinBlessings.find((item) => item.id === "acrid-hemostatic-powder"));

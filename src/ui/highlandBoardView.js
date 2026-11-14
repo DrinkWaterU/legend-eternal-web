@@ -78,7 +78,7 @@ export function updateHighlandPreview(state, panel, action) {
   const doc = panel.ownerDocument, intents = highlandIntents(state), preview = previewHighlandTurn(state, action), projected = preview.wind;
   const mine = projected[0], free = ["slip", "tool-step"].includes(action.type);
   const threats = preview.threats;
-  const names = { attack: "攻擊", guard: "守勢", hold: "沉身守隘", shove: "順勢推搡", "gust-break": "破岩引風", move: "移位", break: "拆岩", slip: "換位", ride: "借風移動", lunge: "突進", demolish: "拆岩突入", "tool-step": "踏釘", "tool-rock": "加固", "tool-brace": "繩索固定" };
+  const names = { attack: "攻擊", guard: "守勢", hold: "沉身守隘", shove: "順勢推擠", "gust-break": "破岩引風", move: "移位", break: "拆岩", slip: "換位", ride: "借風移動", lunge: "突進", demolish: "拆岩突入", "tool-step": "踏釘", "tool-rock": "加固", "tool-brace": "繩索固定" };
   const label = panel.querySelector(".highland-preview-label");
   label.textContent = `目前預覽：${names[action.type] || "武器招式"}`;
   label.hidden = ["attack", "guard"].includes(action.type);

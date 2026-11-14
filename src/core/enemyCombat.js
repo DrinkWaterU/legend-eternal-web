@@ -76,7 +76,7 @@ function resolveStandardEnemyAttack({ hero, enemy, turn, log, modifyDirectDamage
   if (brace && hero.hp > 0 && applyStagger(enemy, brace)) {
     log.fixed(
       "status",
-      `你撐住了衝鋒，${enemyName}失衡：你下一次主攻牠的傷害 +${Math.round(brace.staggerDamageBonus * 100)}%。`
+      `你撐住了衝鋒，${enemyName}失衡：你下一次主攻牠至少打出 ${(1 + brace.staggerDamageBonus).toFixed(2).replace(/0$/, "")} 倍傷害。`
     );
   }
   return damageSource;

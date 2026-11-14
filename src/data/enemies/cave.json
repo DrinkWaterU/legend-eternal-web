@@ -128,6 +128,7 @@
       "critChance": 0.08,
       "chargeEvery": 4,
       "chargeMultiplier": 1.45,
+      "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
       "paralysisChance": 0.2,
       "expReward": 292,
       "rewards": {

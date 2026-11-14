@@ -90,17 +90,40 @@ const createBoar = (extra = {}) => ({
   const enemy = createBoar();
   assert.equal(getEnemyIntent(enemy, 1, [enemy]), null);
   const text = getEnemyIntent(enemy, 2, [enemy]);
-  assert.match(text, /70%/); assert.match(text, /\+75%/); assert.match(text, /先打倒/);
+  assert.match(text, /70%/); assert.match(text, /至少 1\.75 倍/, "失衡與技能倍率取較高者，預告寫「至少」才準確"); assert.match(text, /先打倒/);
 }
 
-// 8. 平原資料：會衝鋒的敵人都有 chargeBrace；樣片沒有動到其他地區的資料。
+// 8. 全部會衝鋒的敵人都能撐住（2026-11-14 作者同意正式採用並擴大到海岸洞穴首領），
+//    避免玩家在平原學到「守勢撐衝鋒」，到別區卻只剩一般守勢。
 {
   const plains = JSON.parse(await readFile(new URL("../../src/data/regions/plains.json", import.meta.url), "utf8"));
-  const chargers = [...plains.enemies, ...plains.elites, plains.boss].filter(e => e.chargeEvery);
-  assert.deepEqual(chargers.map(e => e.id).sort(), ["boar", "boar-king", "giant-boar", "horn-rabbit"]);
+  const cave = JSON.parse(await readFile(new URL("../../src/data/enemies/cave.json", import.meta.url), "utf8"));
+  const collect = (node, out = []) => {
+    if (Array.isArray(node)) node.forEach((item) => collect(item, out));
+    else if (node && typeof node === "object") { if (node.chargeEvery) out.push(node); Object.values(node).forEach((value) => collect(value, out)); }
+    return out;
+  };
+  const chargers = [...collect(plains), ...collect(cave)];
+  assert.deepEqual(chargers.map(e => e.id).sort(), ["boar", "boar-king", "cave-fishman-boss", "giant-boar", "horn-rabbit"]);
   chargers.forEach(e => assert.deepEqual(e.chargeBrace, { damageReduction: 0.7, staggerDamageBonus: 0.75 }, e.id));
-  const cave = await readFile(new URL("../../src/data/enemies/cave.json", import.meta.url), "utf8");
-  assert.ok(!cave.includes("chargeBrace"));
+}
+
+// 10. 失衡與技能倍率（凱哥終結技）取較高者，不相乘（2026-11-14 實測後改規則）。
+{
+  const strike = (multiplier, stagger) => {
+    const random = Math.random; Math.random = () => 0.99; // 不觸發暴擊、重擊、閃避
+    try {
+      const hero = createHero(), enemy = createBoar({ stagger: stagger ? { damageBonus: 0.75 } : null }), log = createLogger();
+      resolveHeroStrike({ hero, enemy, log, options: { damageMultiplier: multiplier, allowHeavyStrike: false } });
+      return { damage: 100 - enemy.hp, stagger: getStaggerDamageBonus(enemy) };
+    } finally { Math.random = random; }
+  };
+  const plain = strike(1, false).damage;
+  assert.equal(strike(1, true).damage, Math.round(plain * 1.75), "普通攻擊吃完整 +75%");
+  assert.equal(strike(1.75, true).damage, strike(1.75, false).damage, "終結技 ×1.75 已不低於失衡，失衡不再加成");
+  const finisher15 = strike(1.5, false).damage;
+  assert.equal(strike(1.5, true).damage, Math.round(finisher15 * (1.75 / 1.5)), "終結技 ×1.5 只補到 ×1.75");
+  assert.equal(strike(1.75, true).stagger, 0, "失衡仍會被這一擊用掉");
 }
 
 // 9. 逃跑失敗固定為普通攻擊：不重複剛結束回合的衝鋒，也不打出特殊攻擊。

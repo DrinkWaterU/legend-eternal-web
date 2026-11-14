@@ -161,7 +161,7 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies, turn = 0) {
     statuses.push({ label: protection.label, className: "is-protected" });
   }
   if (enemy.stagger?.damageBonus > 0) {
-    statuses.push({ label: `失衡 · 下一擊 +${Math.round(enemy.stagger.damageBonus * 100)}%`, className: "is-negative" });
+    statuses.push({ label: `失衡 · 下一擊至少 ${(1 + enemy.stagger.damageBonus).toFixed(2).replace(/0$/, "")} 倍`, className: "is-negative" });
   }
   if (enemy.poison > 0) {
     statuses.push({ label: `中毒 ${enemy.poison}`, className: "is-negative" });

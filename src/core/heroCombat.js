@@ -109,8 +109,16 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
   const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
   let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier: damageMultiplier * caveModifiers.damageMultiplier, attackMultiplier }) + caveModifiers.extraDamage;
   if (source === "original" && getStaggerDamageBonus(enemy) > 0) {
-    damage = Math.max(1, Math.round(damage * (1 + consumeStagger(enemy))));
-    log.fixed("status", `${enemyName}還沒站穩，這一擊打得更重。`);
+    // 失衡與技能本身的倍率（例如凱哥戰意終結技 ×1.5／×1.75）取較高者，不相乘。
+    // 實測（2026-11-14）：相乘時凱哥 Lv.10 撐衝鋒後首領通關率 97%，冒險者 5%、弓箭手 76%；
+    // 原因是守勢挨衝鋒同時累積戰意，下一擊常剛好是終結技。普通攻擊仍吃完整 +75%。
+    const staggerMultiplier = 1 + consumeStagger(enemy);
+    const skillMultiplier = Math.max(1, Number(damageMultiplier) || 1);
+    const extra = Math.max(skillMultiplier, staggerMultiplier) / skillMultiplier;
+    damage = Math.max(1, Math.round(damage * extra));
+    log.fixed("status", extra > 1
+      ? `${enemyName}還沒站穩，這一擊打得更重。`
+      : `${enemyName}還沒站穩，但這一擊本來就夠重了。`);
   }
   if (source === "original" && enemy.weaponBreach) {
     damage += Math.max(3, Math.round((Number(enemy.defense) || 0) * .25 * enemy.weaponBreach.strength));
