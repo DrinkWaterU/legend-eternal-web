@@ -496,7 +496,8 @@ body[data-scene="camp"] {
   font-size: 36px;
   font-weight: 400;
   line-height: 1.3;
-  text-shadow: 0 3px 0 var(--px-edge), 0 0 18px rgba(0, 0, 0, 0.85);
+  /* 硬邊描邊取代柔光暈（2026-11-14 美術審查）。 */
+  text-shadow: 0 3px 0 var(--px-edge), 2px 0 0 var(--px-edge), -2px 0 0 var(--px-edge), 0 -2px 0 var(--px-edge);
   text-wrap: balance;
 }
 
@@ -511,7 +512,7 @@ body[data-safe-area="anping-town"] .camp-copy h2 {
   color: var(--px-ink);
   font-size: var(--px-text-s);
   line-height: 1.8;
-  text-shadow: 0 2px 0 var(--px-edge), 0 0 12px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 2px 0 var(--px-edge), 2px 0 0 var(--px-edge), -2px 0 0 var(--px-edge), 0 -2px 0 var(--px-edge);
 }
 
 /* ---------- 指令視窗 ---------- */

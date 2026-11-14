@@ -29,8 +29,7 @@
   max-width: none;
   padding: 18px;
   background:
-    linear-gradient(rgba(8, 10, 12, 0.78), rgba(8, 10, 12, 0.86)),
-    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 16px);
+    linear-gradient(rgba(8, 10, 12, 0.78), rgba(8, 10, 12, 0.86));
 }
 
 .blessing-panel.is-visible,

@@ -1236,3 +1236,151 @@
   background: var(--px-gold);
   box-shadow: inset 0 0 0 3px var(--px-picked);
 }
+
+/* ---------- 美術審查第二批（2026-11-14） ---------- */
+
+/* 對話文字框：原本 align-items:center，台詞超過框高時頂端被切掉且捲不回去。
+   改為從頂端排起，短台詞用 auto 邊距置中（溢出時邊距歸零，可正常捲動）。 */
+#facilityScreen .dialogue-text-region {
+  align-items: flex-start;
+}
+
+#facilityScreen .dialogue-text-region > p {
+  margin-block: auto;
+}
+
+/* 對話選項套用像素按鈕：硬外框、下緣暗邊。 */
+#facilityScreen .dialogue-choice-button {
+  border: 0;
+  background: var(--px-navy-2);
+  font-family: var(--px-font);
+  box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), var(--px-rim-inset);
+}
+
+#facilityScreen .dialogue-choice-button:is(:hover, :focus-visible) {
+  background: var(--px-hover);
+  outline: none;
+  box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-gold);
+}
+
+/* 鎮內去處卡片：手機上 36px 的「→」壓到說明文字，縮成 24px。 */
+#facilityScreen .facility-button::after {
+  right: 14px;
+  font-size: var(--px-text-l);
+}
+
+/* 選中狀態統一用金框＋暗金底；天藍只留給資訊。 */
+#facilityScreen .blacksmith-category-tab:is(:hover, :focus-visible) {
+  border-color: var(--px-ink);
+  background: var(--px-hover);
+  color: var(--px-ink);
+}
+
+#facilityScreen .blacksmith-category-tab.is-active {
+  border-color: var(--px-gold);
+  background: var(--px-picked);
+  color: var(--px-gold);
+}
+
+#facilityScreen .merchant-slot.is-selected {
+  border-color: var(--px-gold);
+  background: var(--px-picked);
+}
+
+#facilityScreen .merchant-slot.is-selected .merchant-selection-mark {
+  background: var(--px-gold);
+  color: var(--px-edge);
+}
+
+/* 鐵匠配方：圖示欄、數量欄固定寬度，名稱左緣對齊。 */
+#facilityScreen .blacksmith-recipe-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+#facilityScreen .blacksmith-recipe-amount {
+  justify-self: end;
+  text-align: right;
+}
+
+#facilityScreen .blacksmith-recipe-progress {
+  grid-column: 1 / -1;
+}
+
+/* 冒險紀錄「地區」詳情標題：原本橫排擠成三欄，改為直排，地名 24px。 */
+#statisticsScreen .statistics-region-detail-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#statisticsScreen .statistics-region-detail-heading h3 {
+  font-size: var(--px-text-l);
+}
+
+/* 存檔管理的刪除鈕：改用像素危險按鈕，不再是漸層。 */
+#statisticsScreen .danger-button {
+  min-height: 44px;
+  padding: 8px 16px 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--px-danger);
+  color: var(--px-danger-ink);
+  font-family: var(--px-font);
+  font-size: var(--px-text-m);
+  font-weight: 400;
+  box-shadow: var(--px-frame), inset 0 -4px 0 0 rgba(0, 0, 0, 0.35), inset 0 0 0 2px var(--px-red);
+}
+
+/* 沒有內容的提示列不佔位（例如裝備頁頂端空的 save-notice）。 */
+:is(#characterScreen, #storageScreen, #facilityScreen, #statisticsScreen) .save-notice:empty {
+  display: none;
+}
+
+/* 倉庫篩選晶片與排序鈕之間留距。 */
+#storageScreen #storageRarityFilters {
+  margin-top: 12px;
+}
+
+/* 表單控制項：原本是 Arial 13.33px。統一像素字，下拉選單改用自畫箭頭。 */
+:is(#characterScreen, #storageScreen, #facilityScreen, #statisticsScreen, #storyQuestScreen, #regionScreen) :is(input, select, textarea) {
+  font-family: var(--px-font);
+  font-size: var(--px-text-m);
+}
+
+:is(#characterScreen, #storageScreen, #facilityScreen, #statisticsScreen, #regionScreen) select {
+  appearance: none;
+  padding-right: 32px;
+  border-radius: 0;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--px-gold) 50%),
+    linear-gradient(135deg, var(--px-gold) 50%, transparent 50%) !important;
+  background-position: right 16px center, right 10px center !important;
+  background-size: 6px 6px !important;
+  background-repeat: no-repeat !important;
+}
+
+:is(#characterScreen, #storageScreen, #facilityScreen, #statisticsScreen, #regionScreen) select option {
+  background: var(--px-navy-3);
+  color: var(--px-ink);
+}
+
+/* 戰鬥紀錄：系統訊息的左條改成灰色，金色留給重要事件（暴擊）。 */
+.battle-log li.system {
+  border-color: var(--px-rim);
+}
+
+/* 音樂開關不加粗。 */
+.music-toggle-button {
+  font-weight: 400;
+}
+
+#statisticsScreen .statistics-region-detail-heading > div > span {
+  color: var(--px-gold);
+  font-size: var(--px-text-s);
+}
+
+#statisticsScreen .statistics-region-detail-heading > div > p {
+  font-size: var(--px-text-s);
+}

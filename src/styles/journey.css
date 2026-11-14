@@ -177,7 +177,7 @@ body[data-region="highlands"] .tactical-actions { order:2; }
   background: transparent;
   content: "";
 }
-.weapon-training-card--hammer { --training-accent: #8bc2b1; background: linear-gradient(150deg, rgba(29, 47, 44, .98), rgba(13, 20, 19, .98) 68%); }
+.weapon-training-card--hammer { --training-accent: var(--px-teal); background: var(--px-navy-3); }
 .weapon-training-card--blacksmith { margin: 12px 0; }
 .weapon-training-header {
   display: grid;
