@@ -1,4 +1,4 @@
-import { getHeroPendingHpLoss } from "../core/combat.js";
+import { describeTurnForecast, getHeroTurnForecast } from "../core/combat.js";
 import { formatQuestObjective, getQuestTarget } from "../core/questRules.js";
 import { materialDefinitions } from "../data/materials.js";
 import { getQuestRarity } from "../data/questRarities.js";
@@ -12,13 +12,16 @@ export function renderCombatView({
   enemies,
   targetEnemyId,
   phase,
+  turn = 0,
+  safeNotice = "",
+  suppressRosterSummary = false,
   preparationStatus = null,
   characterStatusEntries = [],
   onTargetSelect,
   questSnapshot = null
 }) {
   if (!hero) return;
-  renderHeroStatus(els, hero, characterStatusEntries);
+  renderHeroStatus(els, hero, characterStatusEntries, turn, phase);
   renderPreparationStatus(els, preparationStatus);
   renderEnemyRoster({
     roster: els.enemyRoster,
@@ -26,6 +29,9 @@ export function renderCombatView({
     enemies,
     targetEnemyId,
     phase,
+    turn,
+    safeNotice,
+    suppressRosterSummary,
     onTargetSelect
   });
   renderStatusSummary(els, hero);
@@ -80,7 +86,7 @@ export function renderQuestCombatDetails({ els, snapshot }) {
   heading.className = "quest-info-card-heading";
   const mark = document.createElement("span");
   mark.className = "quest-info-mark";
-  mark.textContent = "✦";
+  mark.textContent = "◆";
   mark.setAttribute("aria-hidden", "true");
   const titleGroup = document.createElement("div");
   titleGroup.className = "quest-info-title-group";
@@ -125,7 +131,7 @@ export function renderQuestCombatDetails({ els, snapshot }) {
 export function renderCurrentAbilityView(element, hero) {
   renderStatList(element, [
     ["角色等級", `Lv. ${hero.level || 1}`],
-    ["經驗", `${hero.exp || 0} / ${hero.expToNext || "-"}`],
+    ["經驗", hero.expStatus || `${hero.exp || 0} / ${hero.expToNext || "-"}`],
     ["攻擊", getHeroRuntimeAttack(hero)],
     ["防禦", hero.defense],
     ["暴擊", `${Math.round(getHeroRuntimeCritChance(hero) * 100)}%`],
@@ -145,7 +151,9 @@ export function getHeroRuntimeCritChance(hero) {
   return (Number(hero?.critChance) || 0) + (Number(hero?.battleCritBonus) || 0);
 }
 
-function renderHeroStatus(els, hero, characterStatusEntries) {
+function renderHeroStatus(els, hero, characterStatusEntries, turn = 0, phase = "combat") {
+  // 回合結束的中毒／回復預估只在戰鬥中有意義；下一場開始時中毒會清掉，戰鬥外顯示會誤導。
+  const forecast = (phase === "combat" || phase === "danger") ? getHeroTurnForecast(hero, turn) : { loss: 0, gain: 0, hpAfter: hero.hp };
   els.heroName.textContent = hero.name;
   els.heroLevel.textContent = `角色 Lv. ${hero.level || 1}`;
   renderLayeredMeter({
@@ -155,14 +163,25 @@ function renderHeroStatus(els, hero, characterStatusEntries) {
     shieldLayer: els.heroShieldBar,
     value: hero.hp,
     max: hero.maxHp,
-    pendingLoss: getHeroPendingHpLoss(hero),
+    gainLayer: els.heroHealthMeter.querySelector?.(".pending-gain") || null,
+    pendingLoss: forecast.loss,
+    pendingGain: forecast.gain,
     shield: hero.shield || 0
   });
-  els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}`;
+  const forecastLine = els.heroHealthMeter.parentElement?.querySelector?.("[data-turn-forecast]");
+  if (forecastLine) {
+    forecastLine.textContent = describeTurnForecast(forecast);
+    // 同敵人卡片：手機上保留這一行的位置，避免指令鈕被推動。
+    forecastLine.hidden = false;
+    forecastLine.classList.toggle("is-empty", !forecastLine.textContent);
+  }
+  const criticalHealth = hero.hp > 0 && hero.hp / hero.maxHp <= 0.25;
+  els.heroHealthText.textContent = `${hero.hp} / ${hero.maxHp}${criticalHealth ? " · 生命危急" : ""}`;
+  els.heroHealthText.classList.toggle("is-critical", criticalHealth);
   const statuses = [];
   if (hero.shield > 0) statuses.push({ label: `護盾 ${hero.shield}`, className: "is-shield" });
   if (hero.poison > 0) {
-    statuses.push({ label: `中毒 ${hero.poison} · 預計 -${getHeroPendingHpLoss(hero)}`, className: "is-negative" });
+    statuses.push({ label: `中毒 ${hero.poison}`, className: "is-negative" });
   }
   if (hero.entangle) statuses.push({ label: "纏繞", className: "is-negative" });
   if (hero.saltErosion?.remainingTurns > 0) {

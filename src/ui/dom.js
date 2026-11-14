@@ -1,5 +1,6 @@
 import { getSaveTransferElements } from "./saveTransferDom.js";
 import { getStoryQuestElements } from "./storyQuestDom.js";
+import { getCombatElements } from "./combatDom.js";
 
 export const els = {
   statisticsScreen: document.querySelector("#statisticsScreen"),
@@ -30,7 +31,11 @@ export const els = {
   campTitle: document.querySelector("#campTitle"),
   campDescription: document.querySelector("#campDescription"),
   campFeatureTitle: document.querySelector("#campFeatureTitle"),
-  campStatusList: document.querySelector("#campStatusList"),
+  campPartyName: document.querySelector("#campPartyName"),
+  campPartyLevel: document.querySelector("#campPartyLevel"),
+  campPartyGold: document.querySelector("#campPartyGold"),
+  campPartyExp: document.querySelector("#campPartyExp"),
+  campPartyExpBar: document.querySelector("#campPartyExpBar"),
   campStartButton: document.querySelector("#campStartButton"),
   campStartHint: document.querySelector("#campStartHint"),
   campRegionButton: document.querySelector("#campRegionButton"),
@@ -289,17 +294,7 @@ export const els = {
   campTransitionReadyText: document.querySelector("#campTransitionReadyText"),
   eventTransition: document.querySelector("#eventTransition"),
   eventTransitionText: document.querySelector("#eventTransitionText"),
-  nextButton: document.querySelector("#nextButton"),
-  fleeButton: document.querySelector("#fleeButton"),
-  continueButton: document.querySelector("#continueButton"),
-  restButton: document.querySelector("#restButton"),
-  retreatButton: document.querySelector("#retreatButton"),
-  returnToEndSummaryButton: document.querySelector("#returnToEndSummaryButton"),
-  combatHomeButton: document.querySelector("#combatHomeButton"),
-  viewBlessingsButton: document.querySelector("#viewBlessingsButton"),
-  battleLogTitle: document.querySelector("#battleLogTitle"),
-  encounterLabel: document.querySelector("#encounterLabel"),
-  resultLabel: document.querySelector("#resultLabel"),
+  ...getCombatElements(document),
   musicToggleButton: document.querySelector("#musicToggleButton"),
   musicVolumeInput: document.querySelector("#musicVolumeInput"),
   musicVolumeValue: document.querySelector("#musicVolumeValue"),
@@ -366,6 +361,7 @@ export const els = {
   statisticsJourneySummary: document.querySelector("#statisticsJourneySummary"),
   statisticsKeyMetrics: document.querySelector("#statisticsKeyMetrics"),
   statisticsResolvedRuns: document.querySelector("#statisticsResolvedRuns"),
+  statisticsOutcomeStack: document.querySelector("#statisticsOutcomeStack"),
   statisticsOutcomeList: document.querySelector("#statisticsOutcomeList"),
   statisticsCombatMetrics: document.querySelector("#statisticsCombatMetrics"),
   statisticsEscapeRate: document.querySelector("#statisticsEscapeRate"),

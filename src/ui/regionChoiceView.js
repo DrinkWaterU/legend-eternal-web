@@ -1,9 +1,11 @@
 import { getRegionDisplayName, getRegionSegmentName } from "../data/regions/regionDefinition.js";
+import { getRegionAccess } from "../core/regionAccess.js";
 
 export function renderRegionChoiceList({
   element,
   regions,
   documentRef = document,
+  save = null,
   onSelect
 }) {
   element.replaceChildren();
@@ -39,7 +41,8 @@ export function renderRegionChoiceList({
     description.textContent = segmentName === getRegionDisplayName(region)
       ? `${region.encounterCount} 場遭遇，首領：${region.bossName}`
       : `${segmentName}段落｜${region.encounterCount} 場遭遇，首領：${region.bossName}`;
-    action.textContent = "查看地區";
+    const access = getRegionAccess(region, save);
+    action.textContent = access.unlocked ? "查看地區" : "尚未開放 · 查看條件";
     heading.append(title, meta);
     button.append(heading, description, action);
     button.addEventListener("click", () => onSelect?.(regionId));

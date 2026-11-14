@@ -1,10 +1,10 @@
+import { createBlacksmithEffectList } from "./blacksmithWeaponEffects.js";
 import { getInventoryCostStatus } from "../core/commerce.js";
+import { createSwordTrainingCard, createHammerTrainingCard } from "./weaponTrainingView.js";
 import {
   createWeaponIcon,
   formatWeaponCategory,
-  formatWeaponEffect,
   formatWeaponEffects,
-  getWeaponEffects,
   getWeaponRarityClass,
   getWeaponRarityLabel,
   setWeaponRarityData
@@ -39,7 +39,11 @@ export function renderBlacksmithView({
   noticeType = "status",
   onWeaponSelect,
   onCraftRequest,
-  onCategorySelect = () => {}
+  onCategorySelect = () => {},
+  swordTraining = null,
+  onUnlockSwordTraining = () => {},
+  hammerTraining = null,
+  onUnlockHammerTraining = () => {}
 }) {
   const weapons = Object.values(weaponDefinitions);
   const selectedWeapon = weaponDefinitions[selectedWeaponId] || weapons[0] || null;
@@ -109,7 +113,7 @@ export function renderBlacksmithView({
     const effect = document.createElement("span");
     name.textContent = weapon.name;
     meta.textContent = `${formatWeaponCategory(weapon, weaponCategoryDefinitions)}｜${getWeaponRarityLabel(weapon)}品級`;
-    effect.textContent = formatWeaponEffects(weapon);
+    effect.textContent = weapon.effectSummary || formatWeaponEffects(weapon);
     copy.append(name, meta, effect);
 
     const status = document.createElement("b");
@@ -126,7 +130,11 @@ export function renderBlacksmithView({
     inventory,
     weaponCategoryDefinitions,
     materialDefinitions,
-    onCraftRequest
+    onCraftRequest,
+    swordTraining,
+    onUnlockSwordTraining,
+    hammerTraining,
+    onUnlockHammerTraining
   });
 }
 
@@ -195,7 +203,11 @@ export function renderBlacksmithDetail({
   inventory,
   weaponCategoryDefinitions,
   materialDefinitions,
-  onCraftRequest
+  onCraftRequest,
+  swordTraining = null,
+  onUnlockSwordTraining = () => {},
+  hammerTraining = null,
+  onUnlockHammerTraining = () => {}
 }) {
   els.blacksmithDetail.replaceChildren();
   setWeaponRarityData(els.blacksmithDetailPanel, weapon);
@@ -245,35 +257,8 @@ export function renderBlacksmithDetail({
   const effectSection = document.createElement("section");
   effectSection.className = "blacksmith-detail-section";
   const effectTitle = document.createElement("h4");
-  const effectList = document.createElement("div");
-  effectTitle.textContent = "武器效果";
-  effectList.className = "blacksmith-effect-list";
-  if (weapon.effectText) {
-    const item = document.createElement("div");
-    item.className = "blacksmith-effect-item";
-    const label = document.createElement("small");
-    const value = document.createElement("strong");
-    label.textContent = weapon.effectName || "特殊效果";
-    value.textContent = weapon.effectText;
-    item.append(label, value);
-    effectList.append(item);
-  } else {
-    getWeaponEffects(weapon).forEach((effect) => {
-      const item = document.createElement("div");
-      item.className = "blacksmith-effect-item";
-      const label = document.createElement("small");
-      const value = document.createElement("strong");
-      label.textContent = effect.stat === "attack" ? "基礎能力" : "特殊效果";
-      value.textContent = formatWeaponEffect(effect);
-      item.append(label, value);
-      effectList.append(item);
-    });
-  }
-  if (!effectList.children.length) {
-    const effectText = document.createElement("p");
-    effectText.textContent = formatWeaponEffects(weapon);
-    effectList.append(effectText);
-  }
+  const effectList = createBlacksmithEffectList(weapon);
+  effectTitle.textContent = weapon.id === "windbreak-sword" ? "武器效果（原始打法）" : "武器效果";
   effectSection.append(effectTitle, effectList);
 
   const recipeSection = document.createElement("section");
@@ -300,7 +285,16 @@ export function renderBlacksmithDetail({
   });
   recipeSection.append(recipeTitle, recipeList);
 
-  els.blacksmithDetail.append(heading, description, effectSection, recipeSection);
+  const trainingCards = [];
+  if (weapon.id === "windbreak-sword") {
+    const training = createSwordTrainingCard({ training: swordTraining, owned, location: "blacksmith", onUnlock: onUnlockSwordTraining });
+    if (training) trainingCards.push(training);
+  }
+  if (weapon.id === "cairn-warhammer") {
+    const training = createHammerTrainingCard({ training: hammerTraining, owned, location: "blacksmith", onUnlock: onUnlockHammerTraining });
+    if (training) trainingCards.push(training);
+  }
+  els.blacksmithDetail.append(heading, description, effectSection, ...trainingCards, recipeSection);
   if (els.blacksmithCraftHint) {
     els.blacksmithCraftHint.textContent = owned
       ? "這把武器已經登錄在你的武器庫。"

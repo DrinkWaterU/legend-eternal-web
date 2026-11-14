@@ -15,6 +15,8 @@ import { createBattleSettlement } from "../features/battle/battleSettlement.js";
 import { createBattleTurnController } from "../features/battle/battleTurnController.js";
 import { createCombatRenderer } from "../features/battle/combatRenderer.js";
 import { templates } from "../data/templates.js";
+import { recordSwordTraining } from "../core/weaponTraining.js";
+import { recordHammerBreak } from "../core/hammerTraining.js";
 
 export function createBattleFeatures({
   foundation,
@@ -54,6 +56,7 @@ export function createBattleFeatures({
   });
   const bossSelection = createBossSelection({ state });
   let battleState;
+  let encounterController;
 
   const combatRenderer = createCombatRenderer({
     state,
@@ -61,9 +64,13 @@ export function createBattleFeatures({
     runStartingFlees: RUN_STARTING_FLEES,
     getAdventureEncounterCount,
     getAdventureEncounterIndex,
+    getAdventureEncounterType,
+    // Only the region's own boss has a recommended level; routes have their own endings.
+    getBossRecommendedLevel: () => (currentRoute?.() ? null : Number(currentRegion?.()?.bossRecommendedLevel) || null),
     getAdventureSourceName,
     hasPendingThreat: (...args) => battleState.hasPendingThreat(...args),
     selectEnemyTarget: (...args) => battleState.selectEnemyTarget(...args),
+    choosePath: id => encounterController.chooseHighlandPath(id),
     questRuntime: world?.questRuntime
   });
 
@@ -82,6 +89,7 @@ export function createBattleFeatures({
 
   battleState = createBattleState({
     state,
+    runSaveOperation: foundation.runSaveOperation,
     counterEscapeScalingOffset: COUNTER_ESCAPE_SCALING_OFFSET,
     currentRoute,
     getAdventureEncounterType,
@@ -108,7 +116,8 @@ export function createBattleFeatures({
     showBlessings
   });
 
-  const encounterController = createEncounterController({
+  encounterController = createEncounterController({
+    runSaveOperation: foundation.runSaveOperation,
     state,
     els,
     currentRegion,
@@ -127,7 +136,9 @@ export function createBattleFeatures({
 
   const battleTurnController = createBattleTurnController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
     createCombatLogger: battleLog.createCombatLogger,
+    withLogBatch: battleLog.withLogBatch,
     currentTargetEnemy: battleState.currentTargetEnemy,
     runHeroPlayerAction: preparationBattleEffects.runHeroPlayerAction,
     modifyIncomingDirectDamage: preparationBattleEffects.modifyIncomingDirectDamage,
@@ -137,6 +148,9 @@ export function createBattleFeatures({
     settleDefeatedEnemies: battleSettlement.settleDefeatedEnemies,
     applyEmergencyBandage: battleSkills.applyEmergencyBandage,
     tryLastStand: battleSkills.tryLastStand,
+    recordTactic: event => world?.questRuntime?.recordHighlandTactic(event),
+    recordSwordRiposte: event => recordSwordTraining(saveStore.current, event),
+    recordHammerBreak: event => recordHammerBreak(saveStore.current, event),
     prepareEnemyAction,
     completeEnemyAction,
     winEncounter,

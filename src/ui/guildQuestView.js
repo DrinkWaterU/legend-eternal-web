@@ -1,5 +1,6 @@
 import { formatQuestObjective, getQuestTarget, isQuestComplete } from "../core/questRules.js";
 import { getQuestRarity } from "../data/questRarities.js";
+import { createSwordTrainingCard, createHammerTrainingCard } from "./weaponTrainingView.js";
 
 export function renderGuildQuestView({
   els,
@@ -8,7 +9,11 @@ export function renderGuildQuestView({
   materialDefinitions,
   onAccept,
   onReport,
-  onAbandon
+  onAbandon,
+  swordTraining = null,
+  ownsSword = false,
+  hammerTraining = null,
+  ownsHammer = false
 }) {
   els.guildQuestContent.replaceChildren();
   els.guildQuestGold.textContent = String(snapshot.inventoryGold || 0);
@@ -17,11 +22,32 @@ export function renderGuildQuestView({
 
   const root = document.createElement("div");
   root.className = "guild-quest-layout";
+  const trainingCard = createSwordTrainingCard({ training: swordTraining, owned: ownsSword, location: "guild" });
+  const hammerCard = createHammerTrainingCard({ training: hammerTraining, owned: ownsHammer, location: "guild" });
+  let trainingOverview = null;
+  if (trainingCard || hammerCard) {
+    trainingOverview = document.createElement("section");
+    trainingOverview.className = "weapon-training-overview";
+    trainingOverview.setAttribute("aria-label", "武器專精總覽");
+    const heading = document.createElement("div");
+    heading.className = "weapon-training-overview-heading";
+    const title = document.createElement("h3");
+    title.textContent = "武器專精";
+    const description = document.createElement("p");
+    description.textContent = "完成指定連招，解鎖武器的新打法。";
+    heading.append(title, description);
+    const grid = document.createElement("div");
+    grid.className = "weapon-training-grid";
+    if (trainingCard) grid.append(trainingCard);
+    if (hammerCard) grid.append(hammerCard);
+    trainingOverview.append(heading, grid);
+  }
   root.append(
-    createHistory(snapshot.statistics),
     createActiveQuest({ snapshot, materialDefinitions, onReport, onAbandon }),
     createBoard({ snapshot, questDefinitions, materialDefinitions, onAccept })
   );
+  if (trainingOverview) root.append(trainingOverview);
+  root.append(createHistory(snapshot.statistics));
   els.guildQuestContent.append(root);
 }
 

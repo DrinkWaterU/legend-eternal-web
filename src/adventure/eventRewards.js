@@ -39,6 +39,7 @@ export function createEventRewards({
   function buildRewardLines(appliedEffects) {
     const rewards = [];
     appliedEffects.forEach((effect) => {
+      if (effect.type === "highlandTerrain") rewards.push(`下場地形｜${{ exposed: "雙岩全毀", reinforced: "左右岩耐久3", draft: "強風交錯" }[effect.mode]}`);
       if (effect.type === "recoverHp" && effect.amount > 0) {
         rewards.push(`恢復生命｜${effect.amount}`);
       }

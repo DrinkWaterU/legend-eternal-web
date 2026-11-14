@@ -2,7 +2,7 @@ export function getCharacterPortraitPath(character, characterId) {
   if (Object.prototype.hasOwnProperty.call(character || {}, "portrait")) {
     return String(character?.portrait || "").trim();
   }
-  return characterId ? `./assets/images/characters/${characterId}/emblem.png` : "";
+  return characterId ? `./assets/images/characters/${characterId}/emblem.webp` : "";
 }
 
 export function applyCharacterPortraitFocus(image, character) {

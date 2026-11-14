@@ -71,7 +71,9 @@ export function renderCharacterEquipmentView({
   onCategoryChange,
   onWeaponSelect,
   onEquip,
-  onUnequip
+  onUnequip,
+  swordTraining,
+  onSwordTrainingMode
 }) {
   els.equipmentCharacterName.textContent = character?.name || "角色裝備";
   els.equipmentCharacterRole.textContent = `${character?.role || ""}｜Lv. ${Math.max(1, Math.floor(progress?.level || 1))}`;
@@ -89,7 +91,7 @@ export function renderCharacterEquipmentView({
     weaponCategoryDefinitions,
     onCategoryChange
   });
-  renderCurrentWeaponSlot({ element: els.equipmentCurrentSlot, weapon: equippedWeapon, weaponCategoryDefinitions });
+  renderCurrentWeaponSlot({ element: els.equipmentCurrentSlot, weapon: equippedWeapon, weaponCategoryDefinitions, swordTraining });
   renderWeaponLibrary({
     element: els.equipmentWeaponGrid,
     visibleWeapons,
@@ -113,8 +115,38 @@ export function renderCharacterEquipmentView({
     equippedWeapon,
     currentHero,
     previewHero,
-    weaponCategoryDefinitions
+    weaponCategoryDefinitions,
+    swordTraining
   });
+
+  if (selectedWeapon?.id === "windbreak-sword" && swordTraining?.unlocked) {
+    const section = document.createElement("section");
+    section.className = "sword-training-options";
+    const title = document.createElement("strong");
+    title.textContent = "守隘劍打法｜下次冒險生效";
+    section.append(title);
+    for (const option of [
+      { id: "steady", label: "穩守反攻", detail: "普通守勢減傷 35%；扎穩守勢減傷 20%。守勢成功後，下一次攻擊命中時追加攻擊力 70% ＋ 4 點傷害。" },
+      { id: "swift", label: "冒險反攻", detail: "普通守勢減傷 20%。守勢成功後，下一回合攻擊命中時追加攻擊力 110% ＋ 4 點傷害。若下一回合沒有攻擊，反攻就會失效。扎穩守勢不會取得反攻。" }
+    ]) {
+      const row = document.createElement("div");
+      const description = document.createElement("p");
+      description.textContent = option.detail;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "secondary-button";
+      button.textContent = swordTraining.mode === option.id ? `已選擇：${option.label}` : `選擇${option.label}`;
+      button.disabled = swordTraining.mode === option.id;
+      button.setAttribute("aria-pressed", String(swordTraining.mode === option.id));
+      button.addEventListener("click", () => onSwordTrainingMode?.(option.id));
+      row.append(description, button);
+      section.append(row);
+    }
+    const note = document.createElement("p");
+    note.textContent = "守勢成功：減輕敵人的直接傷害。追加傷害受敵人防禦和護衛影響，不觸發暴擊、追擊或吸血。";
+    section.append(note);
+    els.equipmentPreview.append(section);
+  }
 
   els.equipWeaponButton.hidden = !selectedWeapon;
   els.equipWeaponButton.disabled = !selectedWeapon || selectedWeapon.id === equippedWeapon?.id;
@@ -177,7 +209,7 @@ function renderWeaponLibrary({ element, visibleWeapons, equippedWeapon, selected
   });
 }
 
-function renderCurrentWeaponSlot({ element, weapon, weaponCategoryDefinitions }) {
+function renderCurrentWeaponSlot({ element, weapon, weaponCategoryDefinitions, swordTraining }) {
   element.replaceChildren();
   const icon = createWeaponIcon(weapon, { className: "weapon-icon equipment-slot-icon" });
   const copy = document.createElement("div");
@@ -187,7 +219,7 @@ function renderCurrentWeaponSlot({ element, weapon, weaponCategoryDefinitions })
   label.textContent = "武器欄位";
   name.textContent = weapon?.name || "未裝備武器";
   effect.textContent = weapon
-    ? `${formatWeaponCategory(weapon, weaponCategoryDefinitions)}｜${getWeaponRarityLabel(weapon)}品級｜${formatWeaponEffects(weapon)}`
+    ? `${formatWeaponCategory(weapon, weaponCategoryDefinitions)}｜${getWeaponRarityLabel(weapon)}品級｜${weapon.id === "windbreak-sword" && swordTraining?.mode === "swift" ? "冒險反攻：普通守勢減傷 20%，下一回合攻擊可打出反攻。" : formatWeaponEffects(weapon)}`
     : "選擇武器庫中的相容武器。";
   copy.append(label, name, effect);
   element.classList.toggle("is-empty", !weapon);
@@ -195,7 +227,7 @@ function renderCurrentWeaponSlot({ element, weapon, weaponCategoryDefinitions })
   element.append(icon, copy);
 }
 
-function renderPreview({ element, selectedWeapon, equippedWeapon, currentHero, previewHero, weaponCategoryDefinitions }) {
+function renderPreview({ element, selectedWeapon, equippedWeapon, currentHero, previewHero, weaponCategoryDefinitions, swordTraining }) {
   element.replaceChildren();
   setWeaponRarityData(element, selectedWeapon);
   if (!selectedWeapon) {
@@ -223,13 +255,17 @@ function renderPreview({ element, selectedWeapon, equippedWeapon, currentHero, p
   description.textContent = selectedWeapon.description || "";
   const effect = document.createElement("p");
   effect.className = "equipment-preview-effect";
-  effect.textContent = formatWeaponEffects(selectedWeapon);
+  effect.textContent = selectedWeapon.id === "windbreak-sword" && swordTraining?.unlocked
+    ? "武器效果依下方所選打法生效。攻擊 +1。"
+    : formatWeaponEffects(selectedWeapon);
 
   const statList = document.createElement("div");
   statList.className = "equipment-comparison-list";
   createEquipmentComparison(currentHero, previewHero).forEach((entry) => {
     const row = document.createElement("div");
     row.classList.toggle("is-changed", entry.changed);
+    // 比較欄位都是越高越好；標出升降，避免下降也被看成「有變化＝變好」。
+    if (entry.changed) row.dataset.direction = entry.difference > 0 ? "up" : "down";
     const label = document.createElement("span");
     const values = document.createElement("strong");
     label.textContent = entry.label;

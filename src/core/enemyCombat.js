@@ -2,6 +2,9 @@ import { getEnemyDisplayName } from "./enemyGroups.js";
 import { applyParalysis, applySaltErosion, getParalysisDamageMultiplier } from "./combatStatusEffects.js";
 import { roll } from "../utils.js";
 import { registerShieldDepletedByDirectAttack } from "./caveBlessingEffects.js";
+import { applyGuardToDirectDamage } from "./guard.js";
+import { getScheduledSpecialAttack } from "./enemyIntent.js";
+import { applyStagger, getChargeBrace } from "./chargeBrace.js";
 
 const DEFAULT_CHARGE_MULTIPLIER = 1.6;
 const ENEMY_CRIT_MULTIPLIER = 1.6;
@@ -41,7 +44,9 @@ function resolveStandardEnemyAttack({ hero, enemy, turn, log, modifyDirectDamage
   let damage = getEnemyDirectDamage({ hero, enemy });
   const damageSource = { type: "attack", label: `${enemyName}的攻擊` };
 
+  let brace = null;
   if (enemy.chargeEvery && turn % enemy.chargeEvery === 0) {
+    brace = hero.guardState?.active ? getChargeBrace(enemy) : null;
     log.template("status", "charge", { actor: enemyName });
     damage = Math.round(damage * (enemy.chargeMultiplier || DEFAULT_CHARGE_MULTIPLIER));
     damageSource.type = "charge";
@@ -66,7 +71,14 @@ function resolveStandardEnemyAttack({ hero, enemy, turn, log, modifyDirectDamage
     log,
     modifyDirectDamage
   });
+  damage = applyGuardToDirectDamage({ hero, damage, log, minimumReduction: brace?.damageReduction }).damage;
   applyEnemyDamageSegment({ hero, enemyName, damage, log });
+  if (brace && hero.hp > 0 && applyStagger(enemy, brace)) {
+    log.fixed(
+      "status",
+      `你撐住了衝鋒，${enemyName}失衡：你下一次主攻牠至少打出 ${(1 + brace.staggerDamageBonus).toFixed(2).replace(/0$/, "")} 倍傷害。`
+    );
+  }
   return damageSource;
 }
 
@@ -116,6 +128,7 @@ function resolveMultiHitSpecialAttack({ hero, enemy, specialAttack, log, modifyD
         }
       });
     }
+    damage = applyGuardToDirectDamage({ hero, damage, log }).damage;
 
     applyEnemyDamageSegment({
       hero,
@@ -228,20 +241,9 @@ function applyEnemyAttackStatusEffects({ hero, enemy, log }) {
   return enemyName;
 }
 
-function getScheduledSpecialAttack(enemy, turn) {
-  const specialAttack = enemy?.specialAttack;
-  const everyTurns = Math.max(0, Math.floor(Number(specialAttack?.everyTurns) || 0));
-  return everyTurns > 0 && turn % everyTurns === 0
-    ? specialAttack
-    : null;
-}
-
 function logUpcomingSpecialAttack({ enemy, turn, log }) {
-  const specialAttack = enemy?.specialAttack;
-  const everyTurns = Math.max(0, Math.floor(Number(specialAttack?.everyTurns) || 0));
-  if (everyTurns <= 0 || (turn + 1) % everyTurns !== 0) {
-    return;
-  }
+  const specialAttack = getScheduledSpecialAttack(enemy, turn + 1);
+  if (!specialAttack) return;
 
   const telegraphText = String(specialAttack.telegraphText || "").trim();
   if (telegraphText) {

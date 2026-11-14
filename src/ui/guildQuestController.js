@@ -1,5 +1,7 @@
 import { renderStandaloneDialogueText } from "./dialogueView.js";
 import { renderGuildQuestView } from "./guildQuestView.js";
+import { getSwordTraining } from "../core/weaponTraining.js";
+import { getHammerTraining } from "../core/hammerTraining.js";
 
 const SPEECH = Object.freeze({
   idle: "今天能接的單子都在這裡了。先掂量一下自己的斤兩再決定，別被上面寫的數字沖昏頭喔。",
@@ -47,6 +49,10 @@ export function createGuildQuestController({
       snapshot,
       questDefinitions,
       materialDefinitions,
+      swordTraining: getSwordTraining(getSave()),
+      ownsSword: getSave().inventory?.weapons?.["windbreak-sword"] === true,
+      hammerTraining: getHammerTraining(getSave()),
+      ownsHammer: getSave().inventory?.weapons?.["cairn-warhammer"] === true,
       onAccept: acceptQuest,
       onReport: reportQuest,
       onAbandon: openAbandonConfirm
@@ -55,17 +61,21 @@ export function createGuildQuestController({
   }
 
   function acceptQuest(questId) {
-    const result = questRuntime.acceptQuest(questId);
-    setResult(result, result.ok ? "委託已承接。" : result.reason);
-    if (result.ok) speechOverride = SPEECH.accepted;
-    render();
+    const result = questRuntime.acceptQuest(questId, (saved) => {
+      setResult(saved, "委託已承接。");
+      speechOverride = SPEECH.accepted;
+      render();
+    });
+    showRuleError(result);
   }
 
   function reportQuest() {
-    const result = questRuntime.reportQuest();
-    setResult(result, result.ok ? `委託完成，獲得 ${result.reward.gold} G。` : result.reason);
-    if (result.ok) speechOverride = SPEECH.completed;
-    render();
+    const result = questRuntime.reportQuest((saved) => {
+      setResult(saved, `委託完成，獲得 ${saved.reward.gold} G。`);
+      speechOverride = SPEECH.completed;
+      render();
+    });
+    showRuleError(result);
   }
 
   function openAbandonConfirm(questId) {
@@ -78,10 +88,19 @@ export function createGuildQuestController({
 
   function confirmAbandon() {
     if (!pendingAbandonQuestId) return;
-    const result = questRuntime.abandonQuest();
-    closeAbandonConfirm();
-    setResult(result, result.ok ? "已放棄目前委託。" : result.reason);
-    if (result.ok) speechOverride = SPEECH.abandoned;
+    const result = questRuntime.abandonQuest((saved) => {
+      closeAbandonConfirm();
+      setResult(saved, "已放棄目前委託。");
+      speechOverride = SPEECH.abandoned;
+      render();
+    });
+    if (!result.ok && !result.pending) closeAbandonConfirm();
+    showRuleError(result);
+  }
+
+  function showRuleError(result) {
+    if (result.ok || result.pending) return;
+    setResult(result, result.reason);
     render();
   }
 

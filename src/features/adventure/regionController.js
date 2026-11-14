@@ -1,4 +1,5 @@
 import { DEFAULT_REGION_ID } from "../../config.js";
+import { getRegionAccess } from "../../core/regionAccess.js";
 import { normalizeInventory } from "../../core/rewards.js";
 import { getRegionPreparation } from "../../core/preparations.js";
 import {
@@ -64,6 +65,7 @@ export function createRegionController({
       element: els.regionChoiceList,
       regions: regionDefinitions,
       documentRef,
+      save: saveStore.current,
       onSelect: showRegionDetail
     });
 
@@ -102,7 +104,8 @@ export function createRegionController({
       ["遭遇", segmentName === displayName ? `${region.encounterCount} 場` : `${segmentName}段落｜${region.encounterCount} 場`],
       ["難度", region.difficulty],
       ["推薦等級", region.recommendedLevel || "Lv.1+"],
-      ["首領", segmentName === displayName ? region.bossName : `${segmentName}首領：${region.bossName}`]
+      ["首領", segmentName === displayName ? region.bossName : `${segmentName}首領：${region.bossName}`],
+      ["最遠紀錄", describeRegionRecord(saveStore.current?.progression?.regions?.[region.id], region.encounterCount)]
     ]);
 
     renderRegionTraits(traits);
@@ -113,6 +116,13 @@ export function createRegionController({
     }
 
     renderPreparationSection({ region, preparations, inventory, phoenixUnlocked });
+  }
+
+  function describeRegionRecord(progress, encounterCount) {
+    const clears = Math.max(0, Number(progress?.clears) || 0);
+    if (clears > 0) return `已通關 ${clears} 次`;
+    const best = Math.min(Math.max(0, Number(progress?.bestEncounter) || 0), encounterCount);
+    return best > 0 ? `尚未通關｜最遠抵達第 ${best} / ${encounterCount} 場` : "尚未出發";
   }
 
   function renderRegionTraits(traits) {
@@ -155,7 +165,12 @@ export function createRegionController({
         ? `花費 ${activePreparation.cost} 金幣＋素材並開始${getRegionSegmentName(region)}冒險`
         : `花費 ${activePreparation.cost} 金幣並開始${getRegionSegmentName(region)}冒險`
       : `開始${getRegionSegmentName(region)}冒險`;
-    els.startButton.disabled = uiState.runStartLocked;
+    const access = getRegionAccess(region, saveStore.current);
+    els.startButton.disabled = uiState.runStartLocked || !access.unlocked;
+    if (!access.unlocked) {
+      els.regionStartNotice.textContent = access.reason;
+      els.regionStartNotice.hidden = false;
+    }
   }
 
   function renderPreparationSelection({ region, preparations, inventory }) {

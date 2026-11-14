@@ -123,15 +123,28 @@ export function runDebugPanelActionSafely(context, action) {
     setDebugPanelStatus(context.status, "找不到指定 Debug 操作。", "error");
     return;
   }
-  try {
-    const result = action();
+  const showResult = (result) => {
     if (result === false) {
       setDebugPanelStatus(context.status, "操作已取消。", "warn");
       return;
     }
     setDebugPanelStatus(context.status, result || "操作完成。", "ok");
+  };
+  const showError = (error) => setDebugPanelStatus(
+    context.status,
+    `操作失敗：${error?.message || "未知錯誤"}`,
+    "error"
+  );
+  try {
+    const result = action();
+    if (result && typeof result.then === "function") {
+      setDebugPanelStatus(context.status, "操作執行中……", "status");
+      Promise.resolve(result).then(showResult, showError);
+      return;
+    }
+    showResult(result);
   } catch (error) {
-    setDebugPanelStatus(context.status, `操作失敗：${error?.message || "未知錯誤"}`, "error");
+    showError(error);
   }
 }
 

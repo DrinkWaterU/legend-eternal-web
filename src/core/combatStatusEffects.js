@@ -1,12 +1,13 @@
 import { getEnemyDisplayName } from "./enemyGroups.js";
 import { applyEnemyDamageProtection } from "./enemyProtection.js";
-import { resolvePreparationSaltErosionInitialTurns } from "./preparationEffects.js";
+import { previewPreparationPoisonDamage, resolvePreparationSaltErosionInitialTurns } from "./preparationEffects.js";
 
 const SALT_EROSION_INITIAL_TURNS = 5;
 const SALT_EROSION_MAX_TURNS = 7;
 const PARALYSIS_INITIAL_TURNS = 2;
 const PARALYSIS_MAX_TURNS = 3;
 const DEFAULT_SALT_HEALING_REDUCTION = 0.3;
+const PERIODIC_RECOVERY_LIMIT = 4;
 
 export function getHeroPendingHpLoss(hero) {
   if (!hero || hero.poison <= 0) {
@@ -20,6 +21,78 @@ export function getEnemyPendingHpLoss(enemy) {
     return 0;
   }
   return Math.max(0, Number(enemy.poison) || 0);
+}
+
+// 回合結束時「確定會發生」的生命變化：中毒與週期回復。只看目前已有的狀態，
+// 不含敵人攻擊（有暴擊、減傷等變數）與本回合才會被施加的效果。
+// 計算順序必須與 applyHeroEndOfTurnNegativeEffects → applyHeroEndOfTurnRecoveryEffects 相同。
+export function getHeroTurnForecast(hero, completedTurn = 0) {
+  const empty = { loss: 0, gain: 0, hpAfter: Math.max(0, Number(hero?.hp) || 0) };
+  if (!hero || !(hero.hp > 0)) return empty;
+  let hp = hero.hp;
+  const loss = Math.min(hp, previewPreparationPoisonDamage({
+    preparation: hero.activePreparation,
+    damage: getHeroPendingHpLoss(hero)
+  }));
+  hp -= loss;
+  let gain = 0;
+  if (hp > 0) {
+    const turn = Math.max(0, Math.floor(Number(completedTurn) || 0)) + 1;
+    const recover = (requested, key) => {
+      if (!canUsePeriodicRecovery(hero, key)) return;
+      const amount = Math.min(hero.maxHp - hp, getHeroBattleHealingAmount(hero, requested));
+      if (amount > 0) { hp += amount; gain += amount; }
+    };
+    if (hero.regenEvery > 0 && turn % hero.regenEvery === 0) recover(hero.regenAmount, "base");
+    (Array.isArray(hero.periodicRegens) ? hero.periodicRegens : []).forEach((effect) => {
+      if (effect.everyTurns > 0 && turn % effect.everyTurns === 0) recover(effect.amount, `periodic:${effect.id}`);
+    });
+    (Array.isArray(hero.timedRegens) ? hero.timedRegens : []).forEach((effect, index) => {
+      if (effect.remainingEncounters > 0 && effect.everyTurns > 0 && turn % effect.everyTurns === 0) {
+        recover(Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio)), `timed:${effect.id || index}`);
+      }
+    });
+  }
+  return { loss, gain, hpAfter: hp };
+}
+
+// 敵人版：中毒會先扣前衛保護的減傷，再看下回合是否輪到自我回復。
+export function getEnemyTurnForecast(enemy, enemies = [], completedTurn = 0) {
+  const empty = { loss: 0, gain: 0, hpAfter: Math.max(0, Number(enemy?.hp) || 0) };
+  if (!enemy || !(enemy.hp > 0)) return empty;
+  const poison = getEnemyPendingHpLoss(enemy);
+  const loss = poison > 0
+    ? Math.min(enemy.hp, applyEnemyDamageProtection({ enemy, enemies, damage: poison }).damage)
+    : 0;
+  let hp = enemy.hp - loss;
+  let gain = 0;
+  const turn = Math.max(0, Math.floor(Number(completedTurn) || 0)) + 1;
+  if (hp > 0 && enemy.regenEvery > 0 && turn % enemy.regenEvery === 0) {
+    gain = Math.max(0, Math.min(enemy.maxHp - hp, Number(enemy.regenAmount) || 0));
+    hp += gain;
+  }
+  return { loss, gain, hpAfter: hp };
+}
+
+export function describeTurnForecast({ loss, gain, hpAfter }) {
+  const parts = [];
+  if (loss > 0) parts.push(`中毒 -${loss}`);
+  if (gain > 0) parts.push(`回復 +${gain}`);
+  return parts.length ? `回合結束：${parts.join("、")} → ${hpAfter}` : "";
+}
+
+export function applyEnemyPoisonDamage({ enemy, enemies = [] }) {
+  const poisonDamage = getEnemyPendingHpLoss(enemy);
+  if (poisonDamage <= 0) {
+    return 0;
+  }
+  const effectiveDamage = applyEnemyDamageProtection({
+    enemy,
+    enemies,
+    damage: poisonDamage
+  }).damage;
+  enemy.hp = Math.max(0, enemy.hp - effectiveDamage);
+  return effectiveDamage;
 }
 
 export function applySaltErosion(hero, log) {
@@ -122,16 +195,10 @@ export function applyHeroEndOfTurnNegativeEffects({ hero, log, modifyPoisonDamag
 }
 
 export function applyEnemyEndOfTurnNegativeEffects({ enemy, enemies = [], log }) {
-  const poisonDamage = getEnemyPendingHpLoss(enemy);
-  if (poisonDamage <= 0) {
+  const effectiveDamage = applyEnemyPoisonDamage({ enemy, enemies });
+  if (effectiveDamage <= 0) {
     return;
   }
-  const effectiveDamage = applyEnemyDamageProtection({
-    enemy,
-    enemies,
-    damage: poisonDamage
-  }).damage;
-  enemy.hp = Math.max(0, enemy.hp - effectiveDamage);
   log.template("hero-damage", "poisonTick", {
     target: getEnemyDisplayName(enemy),
     amount: effectiveDamage
@@ -139,10 +206,15 @@ export function applyEnemyEndOfTurnNegativeEffects({ enemy, enemies = [], log })
 }
 
 export function applyHeroEndOfTurnRecoveryEffects({ hero, turn, log }) {
-  if (hero.regenEvery > 0 && turn % hero.regenEvery === 0 && hero.hp > 0) {
+  if (hero.regenEvery > 0 && turn % hero.regenEvery === 0 && hero.hp > 0
+      && canUsePeriodicRecovery(hero, "base")) {
     const amount = applyHeroBattleHealing(hero, hero.regenAmount);
-    if (amount > 0) log.template("heal", "heal", { target: hero.name, amount });
+    if (amount > 0) {
+      recordPeriodicRecovery(hero, "base");
+      log.template("heal", "heal", { target: hero.name, amount });
+    }
   }
+  applyPeriodicRegens(hero, turn, log);
   applyTimedRegens(hero, turn, log);
 }
 
@@ -162,16 +234,32 @@ function calculateHeroPoisonDamage(hero) {
   return poison > 0 ? Math.max(1, Math.round(poison * (1 - damageReduction))) : 0;
 }
 
+function applyPeriodicRegens(hero, turn, log) {
+  if (!Array.isArray(hero.periodicRegens) || hero.hp <= 0) return;
+  hero.periodicRegens.forEach((effect) => {
+    const key = `periodic:${effect.id}`;
+    if (effect.everyTurns <= 0 || turn % effect.everyTurns !== 0 || !canUsePeriodicRecovery(hero, key)) return;
+    const amount = applyHeroBattleHealing(hero, effect.amount);
+    if (amount > 0) {
+      recordPeriodicRecovery(hero, key);
+      log.template("heal", "heal", { target: hero.name, amount });
+    }
+  });
+}
+
 function applyTimedRegens(hero, turn, log) {
   if (!Array.isArray(hero.timedRegens) || hero.hp <= 0) {
     return;
   }
-  hero.timedRegens.forEach((effect) => {
-    if (effect.remainingEncounters <= 0 || effect.everyTurns <= 0 || turn % effect.everyTurns !== 0) {
+  hero.timedRegens.forEach((effect, index) => {
+    const key = `timed:${effect.id || index}`;
+    if (effect.remainingEncounters <= 0 || effect.everyTurns <= 0 || turn % effect.everyTurns !== 0
+        || !canUsePeriodicRecovery(hero, key)) {
       return;
     }
     const amount = applyHeroBattleHealing(hero, Math.max(1, Math.round(hero.maxHp * effect.maxHpRatio)));
     if (amount > 0) {
+      recordPeriodicRecovery(hero, key);
       log.template("heal", "timedRegen", {
         source: effect.source,
         target: hero.name,
@@ -179,4 +267,19 @@ function applyTimedRegens(hero, turn, log) {
       });
     }
   });
+}
+
+function periodicRecoveryCounts(hero) {
+  hero.blessingBattleState ??= {};
+  hero.blessingBattleState.periodicRecoveryCounts ??= {};
+  return hero.blessingBattleState.periodicRecoveryCounts;
+}
+
+function canUsePeriodicRecovery(hero, key) {
+  return (Number(periodicRecoveryCounts(hero)[key]) || 0) < PERIODIC_RECOVERY_LIMIT;
+}
+
+function recordPeriodicRecovery(hero, key) {
+  const counts = periodicRecoveryCounts(hero);
+  counts[key] = (Number(counts[key]) || 0) + 1;
 }

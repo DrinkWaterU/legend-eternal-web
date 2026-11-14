@@ -7,13 +7,15 @@
     "野獸出沒",
     "強敵衝擊"
   ],
+  "recommendedLevel": "首領 Lv.9",
+  "bossRecommendedLevel": 9,
   "audio": {
     "bgmId": "plains"
   },
   "visual": {
     "background": {
-      "desktop": "assets/images/regions/plains/plains-morning.png",
-      "mobile": "assets/images/regions/plains/plains-morning-mobile.png",
+      "desktop": "assets/images/regions/plains/plains-morning.webp",
+      "mobile": "assets/images/regions/plains/plains-morning-mobile.webp",
       "tone": "morning-plains"
     }
   },
@@ -21,9 +23,9 @@
     {
       "id": "simple-bandage",
       "name": "簡易繃帶",
-      "summary": "傷勢恢復",
+      "summary": "戰後低血補回 6% 生命，整輪一次",
       "cost": 4,
-      "description": "生命低於 80% 時，戰鬥結束後自動恢復少量生命。每次冒險最多發動一次。",
+      "description": "戰鬥勝利後，生命低於 80% 時自動恢復最大生命的 6%。每次冒險最多一次；事件戰鬥及最終戰後不觸發。",
       "effect": {
         "type": "postEncounterLowHpHeal",
         "hpThresholdRatio": 0.8,
@@ -42,7 +44,7 @@
             "quantity": 1
           }
         ],
-        "description": "生命低於 80% 時，戰鬥結束後自動恢復 10% 最大生命。每次冒險最多發動一次。",
+        "description": "戰鬥勝利後，生命低於 80% 時自動恢復 10% 最大生命。每次冒險最多一次；事件戰鬥及最終戰後不觸發。",
         "changedFragments": [
           "10%"
         ],
@@ -57,9 +59,9 @@
     {
       "id": "beast-repellent-herb",
       "name": "驅獸香草",
-      "summary": "野獸對策",
+      "summary": "每場首度受到野獸直接攻擊時減傷 15%",
       "cost": 6,
-      "description": "面對野獸時，每場第一次受到的攻擊傷害降低 15%。",
+      "description": "每場第一次受到野獸的直接攻擊時，該次傷害降低 15%；不減少中毒等持續傷害。",
       "effect": {
         "type": "firstFamilyDirectDamageReduction",
         "targetFamily": "beast",
@@ -77,7 +79,7 @@
             "quantity": 1
           }
         ],
-        "description": "面對野獸時，每場第一次受到的攻擊傷害降低 22%。",
+        "description": "每場第一次受到野獸的直接攻擊時，該次傷害降低 22%；不減少中毒等持續傷害。",
         "changedFragments": [
           "22%"
         ],
@@ -91,7 +93,7 @@
     {
       "id": "weapon-maintenance",
       "name": "武器保養",
-      "summary": "強敵攻勢",
+      "summary": "精英／首領戰首次出手攻擊 +2",
       "cost": 6,
       "description": "遇上菁英或首領時，開戰後第一次出手會獲得 2 點攻擊加成。",
       "effect": {
@@ -147,7 +149,10 @@
       "family": "beast",
       "weight": 100,
       "maxHp": 34,
-      "attack": 8,
+      "attack": 7,
+      "chargeEvery": 3,
+      "chargeMultiplier": 1.5,
+      "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
       "defense": 1,
       "critChance": 0.03,
       "expReward": 9,
@@ -265,7 +270,10 @@
       "family": "beast",
       "weight": 100,
       "maxHp": 22,
-      "attack": 7,
+      "attack": 6,
+      "chargeEvery": 3,
+      "chargeMultiplier": 1.5,
+      "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
       "defense": 0,
       "critChance": 0.1,
       "dodgeChance": 0.15,
@@ -302,7 +310,8 @@
       "critChance": 0.03,
       "chargeEvery": 3,
       "chargeMultiplier": 1.45,
-      "expReward": 28,
+      "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
+      "expReward": 40,
       "rewards": {
         "materials": [
           {
@@ -319,7 +328,7 @@
           }
         ]
       },
-      "intro": "巨大野豬用沉重鼻息震動草梗。"
+      "intro": "巨大野豬用沉重鼻息震動草梗。牠背上有道淺淺的紋路，不像是傷疤。"
     },
     {
       "id": "mutant-slime",
@@ -333,7 +342,7 @@
       "critChance": 0,
       "regenEvery": 3,
       "regenAmount": 6,
-      "expReward": 26,
+      "expReward": 38,
       "rewards": {
         "materials": [
           {
@@ -356,7 +365,7 @@
           }
         ]
       },
-      "intro": "變異史萊姆的核心在半透明身體裡閃動。"
+      "intro": "變異史萊姆的核心在半透明身體裡閃動，深處偶爾閃過一點冷白的光。"
     }
   ],
   "boss": {
@@ -365,12 +374,13 @@
     "kind": "首領",
     "family": "beast",
     "weight": 100,
-    "maxHp": 118,
-    "attack": 12,
+    "maxHp": 108,
+    "attack": 11,
     "defense": 3,
     "critChance": 0.06,
     "chargeEvery": 3,
     "chargeMultiplier": 1.6,
+    "chargeBrace": { "damageReduction": 0.7, "staggerDamageBonus": 0.75 },
     "expReward": 48,
     "rewards": {
       "materials": [
@@ -394,7 +404,7 @@
         }
       ]
     },
-    "intro": "魔化野豬王踏碎土丘，闖入你的視線。"
+    "intro": "魔化野豬王踏碎土丘，闖入你的視線。牠身上的紋路在暗處泛著沒有溫度的光。"
   },
   "blessings": [
     {
@@ -500,18 +510,9 @@
       "eventTitle": "野草繃帶",
       "eventText": "你採下柔韌的長草與乾淨布條，做成方便替換的臨時繃帶。",
       "flavorText": "不算精緻，但冒險者常常就是靠這種小準備活下來。",
-      "effectText": "每 3 回合恢復 5 點生命。",
+      "effectText": "每 3 回合恢復 5 點生命；每份祝福每場最多恢復 4 次，滿血不消耗次數。",
       "effects": [
-        {
-          "type": "set",
-          "stat": "regenEvery",
-          "value": 3
-        },
-        {
-          "type": "add",
-          "stat": "regenAmount",
-          "amount": 5
-        }
+        { "type": "addPeriodicRegen", "everyTurns": 3, "amount": 5 }
       ]
     },
     {
@@ -872,11 +873,11 @@
     "resultLabel": "命運覺醒",
     "encounterLabel": "星穹之外",
     "lines": [
-      "魔化野豬王倒下後，牠身上的紋路化作無溫的<span class=\"story-mark-star\">星光</span>。",
-      "平原的風停了，你在<span class=\"story-mark-star\">星穹之外</span>看見<span class=\"story-mark-star\">某個存在</span>睜開了眼。",
-      "你的思緒被那道<span class=\"story-mark-star\">目光</span>壓碎，<span class=\"story-mark-death\">死亡</span>隨之降臨。",
-      "<span class=\"story-mark-phoenix\">灰燼般的微光</span>在黑暗中燃起。",
-      "<span class=\"story-mark-phoenix\">鳳凰的加護</span>回應了死亡，將你帶回<span class=\"story-mark-phoenix\">營地</span>。"
+      "魔化野豬王倒下後，牠身上的紋路化作無溫的<span class=\"story-mark-star\" data-fx=\"twinkle\">星光</span>。",
+      "平原的<span class=\"story-cue story-cue-still\" data-fx=\"still\">風停了</span>，你在<span class=\"story-mark-star\">星穹之外</span>看見<span class=\"story-mark-star\">某個存在</span><span class=\"story-cue story-cue-gaze\" data-beat=\"gaze\" data-fx=\"quake\">睜開</span>了眼。",
+      "你的思緒被那道<span class=\"story-mark-star\">目光</span><span class=\"story-cue story-cue-shatter\" data-fx=\"shatter\">壓碎</span>，<span class=\"story-mark-death\" data-beat=\"death\" data-fx=\"toll\">死亡</span>隨之降臨。",
+      "<span class=\"story-mark-phoenix\" data-beat=\"ember\">灰燼般的微光</span>在黑暗中燃起。",
+      "<span class=\"story-mark-phoenix\" data-beat=\"phoenix\" data-fx=\"bloom\">鳳凰的加護</span>回應了死亡，將你帶回<span class=\"story-mark-phoenix\">營地</span>。"
     ]
   }
 }

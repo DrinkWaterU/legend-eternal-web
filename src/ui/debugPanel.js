@@ -48,6 +48,8 @@ function createDebugContext(panel, actions) {
     routeEntryRow: panel.querySelector(".debug-route-entry-row"),
     routeEntrySelect: panel.querySelector(".debug-route-entry"),
     midChoiceRow: panel.querySelector(".debug-mid-choice-row"),
+    storyDefeatsRow: panel.querySelector(".debug-story-defeats-row"),
+    storyDefeatsSelect: panel.querySelector(".debug-story-defeats"),
     midChoiceSelect: panel.querySelector(".debug-mid-choice"),
     hpRow: panel.querySelector(".debug-hp-row"),
     hpInput: panel.querySelector(".debug-scenario-hp"),

@@ -19,7 +19,9 @@ export function createRunRecords({
     regionStats.runs += 1;
     characterStats.runs += 1;
     characterProgress.runs += 1;
-    saveGameSafe();
+    if (saveGameSafe() === false) {
+      throw new Error("瀏覽器無法保存出發紀錄，這次冒險尚未開始。");
+    }
   }
 
   function captureRunStartPermanentState() {
@@ -104,6 +106,11 @@ export function createRunRecords({
         ? currentRegion().encounterCount
         : state.encounterIndex + 1;
 
+    if (state.runStats) {
+      const previousBest = Number(regionProgress.bestEncounter) || 0;
+      state.runStats.previousBestEncounter = previousBest;
+      state.runStats.newBestEncounter = previousBest > 0 && bestEncounter > previousBest;
+    }
     if (segmentCleared) recordBeachSegmentCompleted();
 
     regionStats.bestEncounter = Math.max(regionStats.bestEncounter, bestEncounter);

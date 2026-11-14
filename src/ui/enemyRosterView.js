@@ -1,12 +1,22 @@
-import { getEnemyPendingHpLoss, getEnemyProtectionState } from "../core/combat.js";
+import { describeTurnForecast, getEnemyProtectionState, getEnemyTurnForecast } from "../core/combat.js";
 import { getEnemyDisplayName, getLivingEnemies } from "../core/enemyGroups.js";
 import { renderLayeredMeter, renderStatusChips } from "./combatMeterView.js";
+import { getEnemyIntent } from "../core/enemyIntent.js";
 
 const rosterTargetState = new WeakMap();
 
-export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, onTargetSelect }) {
+export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, phase, turn = 0, safeNotice = "", onTargetSelect, suppressRosterSummary = false }) {
   const livingEnemies = getLivingEnemies(enemies);
   countLabel.textContent = livingEnemies.length > 0 ? `${livingEnemies.length} 名敵人` : "暫無遭遇";
+  const summary = roster.closest?.(".enemy-zone")?.querySelector(".enemy-intent-summary");
+  if (summary) {
+    const intents = !suppressRosterSummary && livingEnemies.length >= 3 && (phase === "danger" || phase === "combat")
+      ? livingEnemies.map(enemy => ({ enemy, text: getEnemyIntent(enemy, turn, enemies) }))
+        .filter(item => item.text && item.text !== "下回合：攻擊。")
+      : [];
+    summary.textContent = intents.length ? `下回合｜${intents.map(({ enemy, text }) => `${getEnemyDisplayName(enemy)}：${text.replace(/^下回合：/, "").split("。")[0]}`).join("；")}` : "";
+    summary.hidden = !intents.length;
+  }
   const existingCards = new Map(
     [...roster.querySelectorAll(".enemy-card[data-runtime-id]")]
       .map((card) => [card.dataset.runtimeId, card])
@@ -24,6 +34,12 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
     const empty = document.createElement("p");
     empty.className = "enemy-roster-empty";
     empty.textContent = phase === "safe" ? "目前位於安全路段。" : "目前沒有可戰鬥的敵人。";
+    if (phase === "safe" && safeNotice) {
+      const upcoming = document.createElement("strong");
+      upcoming.className = "enemy-roster-upcoming";
+      upcoming.textContent = safeNotice;
+      empty.append(upcoming);
+    }
     roster.append(empty);
     rosterTargetState.set(roster, null);
     return;
@@ -39,7 +55,12 @@ export function renderEnemyRoster({ roster, countLabel, enemies, targetEnemyId, 
   });
   orderedCards.forEach(({ enemy, card }) => {
     card._onTargetSelect = onTargetSelect;
-    updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies);
+    updateEnemyCard(card, enemy, livingEnemies.length, enemy.runtimeId === targetEnemyId, enemies, turn);
+    const intent = card.querySelector("[data-enemy-intent]");
+    intent.textContent = (phase === "danger" || phase === "combat") ? getEnemyIntent(enemy, turn, enemies) || "" : "";
+    // 用 is-empty 而不是 hidden：手機單一敵人時要保留位置，避免指令鈕上下跳（全域 [hidden] 會強制 display:none）。
+    intent.hidden = false;
+    intent.classList.toggle("is-empty", !intent.textContent);
   });
   keepTargetVisible(roster, targetEnemyId);
 }
@@ -50,16 +71,25 @@ function createEnemyCard(runtimeId) {
   card.className = "enemy-card";
   card.dataset.runtimeId = runtimeId;
   card.innerHTML = `
-    <span class="enemy-card-heading">
-      <span class="enemy-name-line"><strong data-enemy-name></strong><span class="target-mark">目標</span></span>
-      <span class="enemy-kind" data-enemy-kind></span>
+    <span class="enemy-card-top">
+      <span class="enemy-crest" data-enemy-crest aria-hidden="true"></span>
+      <span class="enemy-card-main">
+        <span class="enemy-card-heading">
+          <span class="enemy-name-line"><strong data-enemy-name></strong><span class="target-mark">目標</span></span>
+          <span class="enemy-kind" data-enemy-kind></span>
+        </span>
+        <span class="enemy-role" data-enemy-role hidden></span>
+        <span class="layered-meter enemy-meter px-meter" data-enemy-meter role="meter">
+          <span class="meter-layer enemy-hp" data-enemy-hp></span>
+          <span class="meter-layer pending-loss" data-enemy-pending></span>
+          <span class="meter-layer pending-gain" data-enemy-gain></span>
+          <span class="meter-layer shield" data-enemy-shield></span>
+        </span>
+        <span class="meter-text" data-enemy-health-text></span>
+        <span class="turn-forecast" data-enemy-forecast hidden></span>
+      </span>
     </span>
-    <span class="layered-meter enemy-meter" data-enemy-meter role="meter">
-      <span class="meter-layer enemy-hp" data-enemy-hp></span>
-      <span class="meter-layer pending-loss" data-enemy-pending></span>
-      <span class="meter-layer shield" data-enemy-shield></span>
-    </span>
-    <span class="meter-text" data-enemy-health-text></span>
+    <span class="enemy-intent" data-enemy-intent hidden></span>
     <span class="enemy-card-detail"><span class="enemy-card-detail-inner"><span class="enemy-detail-content">
       <span class="enemy-stats">
         <span><small>攻擊</small><b data-enemy-attack></b></span>
@@ -74,12 +104,25 @@ function createEnemyCard(runtimeId) {
   return card;
 }
 
-function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
+function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies, turn = 0) {
+  const forecast = getEnemyTurnForecast(enemy, enemies, turn);
   card.classList.toggle("is-target", isTarget);
+  card.setAttribute("aria-pressed", String(isTarget));
   card.classList.toggle("is-single", enemyCount === 1);
   card.disabled = enemy.hp <= 0;
   card.querySelector("[data-enemy-name]").textContent = getEnemyDisplayName(enemy);
   card.querySelector("[data-enemy-kind]").textContent = enemy.kind || "普通";
+  card.dataset.kind = enemy.kind === "首領" ? "boss" : enemy.kind === "精英" ? "elite" : "normal";
+  const crest = card.querySelector("[data-enemy-crest]");
+  if (crest) crest.textContent = getEnemyCrest(enemy);
+  const role = card.querySelector("[data-enemy-role]");
+  const roles = { frontline: "前衛", output: "攻手", support: "輔助", control: "牽制" };
+  const protection = getEnemyProtectionState({ enemy, enemies });
+  role.textContent = roles[enemy.combatRole] || "";
+  if (protection.protected) role.textContent += `・受前衛保護，減傷 ${Math.round(protection.reductionRatio * 100)}%`;
+  else if (enemy.combatRole === "frontline" && enemies.some(other => other !== enemy
+    && getEnemyProtectionState({ enemy: other, enemies: [enemy, other] }).protected)) role.textContent += "・保護同隊後排";
+  role.hidden = !role.textContent;
   card.querySelector("[data-enemy-health-text]").textContent = `${enemy.hp} / ${enemy.maxHp}`;
   card.querySelector("[data-enemy-attack]").textContent = enemy.attack ?? 0;
   card.querySelector("[data-enemy-defense]").textContent = enemy.defense ?? 0;
@@ -87,7 +130,6 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
   const intro = card.querySelector("[data-enemy-intro]");
   intro.textContent = enemy.intro || "";
   intro.hidden = !intro.textContent;
-  const protection = getEnemyProtectionState({ enemy, enemies });
   const protectionDetail = card.querySelector("[data-enemy-protection]");
   protectionDetail.textContent = protection.description;
   protectionDetail.hidden = !protection.protected;
@@ -98,10 +140,18 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
     shieldLayer: card.querySelector("[data-enemy-shield]"),
     value: enemy.hp,
     max: enemy.maxHp,
-    pendingLoss: getEnemyPendingHpLoss(enemy),
+    gainLayer: card.querySelector("[data-enemy-gain]"),
+    pendingLoss: forecast.loss,
+    pendingGain: forecast.gain,
     shield: enemy.shield || 0,
     enemy: true
   });
+  const forecastLine = card.querySelector("[data-enemy-forecast]");
+  if (forecastLine) {
+    forecastLine.textContent = describeTurnForecast(forecast);
+    forecastLine.hidden = false;
+    forecastLine.classList.toggle("is-empty", !forecastLine.textContent);
+  }
   const statuses = [];
   if (enemy.shield > 0) statuses.push({ label: `護盾 ${enemy.shield}`, className: "is-shield" });
   if (enemy.supportAttackBonus > 0) {
@@ -113,8 +163,11 @@ function updateEnemyCard(card, enemy, enemyCount, isTarget, enemies) {
   if (protection.protected) {
     statuses.push({ label: protection.label, className: "is-protected" });
   }
+  if (enemy.stagger?.damageBonus > 0) {
+    statuses.push({ label: `失衡 · 下一擊至少 ${(1 + enemy.stagger.damageBonus).toFixed(2).replace(/0$/, "")} 倍`, className: "is-negative" });
+  }
   if (enemy.poison > 0) {
-    statuses.push({ label: `中毒 ${enemy.poison} · 預計 -${getEnemyPendingHpLoss(enemy)}`, className: "is-negative" });
+    statuses.push({ label: `中毒 ${enemy.poison}`, className: "is-negative" });
   }
   if (enemy.paralysis?.remainingTurns > 0) {
     statuses.push({ label: `麻痺 ${enemy.paralysis.remainingTurns}`, className: "is-negative" });
@@ -165,9 +218,24 @@ function alignCardWithinRoster(roster, card) {
   const rosterRect = roster.getBoundingClientRect();
   const cardRect = card.getBoundingClientRect();
   const padding = 4;
-  if (cardRect.bottom > rosterRect.bottom - padding) {
+  if (cardRect.height > rosterRect.height - padding * 2) {
+    // A tall selected card cannot fit: keep its name and target marker visible.
+    roster.scrollTop += cardRect.top - rosterRect.top - padding;
+  } else if (cardRect.bottom > rosterRect.bottom - padding) {
     roster.scrollTop += cardRect.bottom - rosterRect.bottom + padding;
   } else if (cardRect.top < rosterRect.top + padding) {
     roster.scrollTop -= rosterRect.top - cardRect.top + padding;
   }
+}
+
+// 目前沒有敵人圖像，先用一個字的紋章代表。資料可用 crest 指定；否則取名稱結尾的動物字，再退回族群字。
+const CREST_TAIL = new Set([..."豬狼兔蟹鷹羊犬鹿蛛蜂王后"]);
+const CREST_BY_FAMILY = Object.freeze({ beast: "獸", slime: "黏", fishman: "鱗", insect: "蟲", plant: "木", goblin: "鬼", construct: "岩", highlander: "哨" });
+
+export function getEnemyCrest(enemy) {
+  if (typeof enemy?.crest === "string" && enemy.crest) return [...enemy.crest][0];
+  const name = String(enemy?.name || "");
+  const tail = [...name].pop();
+  if (tail && CREST_TAIL.has(tail)) return tail;
+  return CREST_BY_FAMILY[enemy?.family] || [...name][0] || "?";
 }

@@ -1,12 +1,17 @@
+import { applyEmberExpBonus, rememberEmberLevel, settleEmberRecovery } from "../../core/emberRecovery.js";
 import {
   applyProgressionEffects,
   buildHeroFromProgression as buildHeroFromProgressionCore,
+  getCharacterExperienceLabel,
   getCharacterMaxLevel,
+  getExpStorageLimit,
   getExpToNextLevel,
   getGrowthForLevel,
   getSkillsForLevel,
   normalizeCharacterProgress as normalizeCharacterProgressCore
 } from "../../core/progression.js";
+import { getSwordTraining } from "../../core/weaponTraining.js";
+import { getHammerTraining } from "../../core/hammerTraining.js";
 
 export function createCharacterProgression({
   state,
@@ -33,10 +38,13 @@ export function createCharacterProgression({
   function buildHeroFromProgression(characterId = state.selectedHeroId) {
     const character = getCharacterDefinition(characterId);
     const progress = normalizeCharacterProgress(characterId);
-    return buildHeroFromProgressionCore(character, progress, {
+    const hero = buildHeroFromProgressionCore(character, progress, {
       inventory: saveStore.current.inventory,
       weaponDefinitions
     });
+    if (hero.equipment.weaponId === "windbreak-sword") hero.equipment.trainingMode = getSwordTraining(saveStore.current).mode;
+    if (hero.equipment.weaponId === "cairn-warhammer") hero.equipment.hammerTechniqueUnlocked = getHammerTraining(saveStore.current).unlocked;
+    return hero;
   }
 
   function gainCharacterExp(amount) {
@@ -46,10 +54,21 @@ export function createCharacterProgression({
       return;
     }
 
-    const progress = getCharacterProgress();
-    progress.exp += amount;
-    state.runStats.expGained += amount;
-    addLog("system", "expGain", { amount });
+    const character = getCharacterDefinition();
+    const progress = normalizeCharacterProgress();
+    const currentExp = progress.exp;
+    const expLimit = progress.level >= getCharacterMaxLevel(character)
+      ? getExpStorageLimit(progress.level, character)
+      : Number.POSITIVE_INFINITY;
+    const { total, bonus } = applyEmberExpBonus(amount, progress);
+    progress.exp = Math.min(expLimit, currentExp + total);
+    state.runStats.expGained += total;
+    if (bonus > 0) {
+      state.runStats.emberExpBonus = (state.runStats.emberExpBonus || 0) + bonus;
+      addLog("system", "expGainEmber", { amount: total, bonus });
+    } else {
+      addLog("system", "expGain", { amount: total });
+    }
     saveGameSafe();
   }
 
@@ -60,6 +79,7 @@ export function createCharacterProgression({
 
     const character = getCharacterDefinition();
     const progress = getCharacterProgress();
+    normalizeCharacterProgressCore(progress, character);
     const previousLevelUpCount = state.runStats?.levelUps.length || 0;
     const previousSkillCount = state.runStats?.learnedSkills.length || 0;
     applyCharacterLevelUps(character, progress);
@@ -88,6 +108,10 @@ export function createCharacterProgression({
       });
       learnSkillsForLevel(character, progress);
     }
+    const recoveredLevel = Number(progress.emberLevel) || 0;
+    if (settleEmberRecovery(progress)) {
+      addLog("system", "emberRecovered", { level: recoveredLevel });
+    }
   }
 
   function learnSkillsForLevel(character, progress) {
@@ -109,6 +133,7 @@ export function createCharacterProgression({
     state.hero.level = progress.level;
     state.hero.exp = progress.exp;
     state.hero.expToNext = getExpToNextLevel(progress.level, character);
+    state.hero.expStatus = getCharacterExperienceLabel(progress, character);
     state.hero.skills = [...progress.learnedSkills];
     if (state.runStats) {
       state.runStats.endLevel = progress.level;
@@ -121,6 +146,7 @@ export function createCharacterProgression({
 
   function resetCharacterProgress(characterId = state.selectedHeroId) {
     const progress = getCharacterProgress(characterId);
+    rememberEmberLevel(progress);
     progress.level = 1;
     progress.exp = 0;
     progress.learnedSkills = [];

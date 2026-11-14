@@ -29,10 +29,16 @@ export function scheduleRegionEvent(region, randomFn = Math.random, options = {}
       Math.floor(randomFn() * triggerBeforeEncounters.length)
     ];
 
-  return {
-    eventId: event.id,
-    triggerBeforeEncounter
-  };
+  const selected = { eventId: event.id, triggerBeforeEncounter };
+  if (Number(config.eventsPerRun) > 1) {
+    const another = scheduleRegionEvent({ ...region, events: { ...config, eventsPerRun: 1,
+      pool: pool.filter(id => id !== event.id && (Number(getEventDefinition(id)?.triggerBeforeEncounter) <= 6) !== (triggerBeforeEncounter <= 6)) } }, randomFn, { scheduleChance: 1 });
+    if (another && another.triggerBeforeEncounter !== triggerBeforeEncounter) {
+      const sorted = [selected, another].sort((a, b) => a.triggerBeforeEncounter - b.triggerBeforeEncounter);
+      return { ...sorted[0], remaining: [sorted[1]] };
+    }
+  }
+  return selected;
 }
 
 export function shouldTriggerScheduledEvent(schedule, encounterIndex) {
@@ -122,6 +128,12 @@ export function applyEventEffects({ effects = [], hero, grantBlessing, grantMate
   const applied = [];
 
   for (const effect of Array.isArray(effects) ? effects : []) {
+    if (effect?.type === "highlandTerrain") {
+      if (!["exposed", "reinforced", "draft"].includes(effect.mode)) throw new Error("高地事件地形無效。");
+      hero.nextHighlandTerrain = effect.mode;
+      applied.push({ type: effect.type, mode: effect.mode });
+      continue;
+    }
     if (effect?.type === "recoverHp") {
       const hasAmount = effect.amount !== undefined;
       const hasMaxHpRatio = effect.maxHpRatio !== undefined;

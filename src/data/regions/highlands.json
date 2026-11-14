@@ -1,0 +1,544 @@
+{
+  "id": "highlands",
+  "name": "斷風高地",
+  "description": "離開潮濕的海岸，山路沿著灰白岩層一路抬升。風不停地穿過隘口，哨聲、翼影與石甲的腳步在其中交錯。",
+  "difficulty": "挑戰",
+  "traits": [
+    "借風換位",
+    "共享可拆地形",
+    "分岔與武器技"
+  ],
+  "recommendedLevel": "Lv.28–30",
+  "note": "完整通關海岸後開放。12場戰鬥與3次選路，風會推動敵我；可拆岩、誘導衝撞與安排武器爆發。",
+  "unlockRequirement": {
+    "regionId": "beach",
+    "clears": 1
+  },
+  "startRouteId": "windbreak-ascent",
+  "audio": {
+    "bgmId": "highlands"
+  },
+  "visual": {
+    "background": {
+      "desktop": "assets/images/regions/highlands/outer-desktop.webp",
+      "mobile": "assets/images/regions/highlands/outer-mobile.webp",
+      "tone": "highlands"
+    },
+    "backgroundStages": [
+      {
+        "id": "outer",
+        "fromEncounter": 1,
+        "toEncounter": 6,
+        "desktop": "assets/images/regions/highlands/outer-desktop.webp",
+        "mobile": "assets/images/regions/highlands/outer-mobile.webp",
+        "tone": "highlands-outer"
+      },
+      {
+        "id": "summit",
+        "fromEncounter": 7,
+        "toEncounter": 12,
+        "desktop": "assets/images/regions/highlands/summit-desktop.webp",
+        "mobile": "assets/images/regions/highlands/summit-mobile.webp",
+        "tone": "highlands-summit"
+      }
+    ]
+  },
+  "preparations": [
+    {
+      "id": "ridge-anchor",
+      "name": "守隘繩索",
+      "summary": "花一回合固定：本回合與下回合不被風推移，不提供守勢減傷。整輪可用2次。",
+      "description": "花一回合固定：本回合與下回合不被風推移，不提供守勢減傷。整輪可用2次。",
+      "cost": 12,
+      "effect": {
+        "type": "highlandTool",
+        "tool": "brace",
+        "charges": 2
+      },
+      "enhancement": {
+        "title": "加固繫岩腰索",
+        "description": "花一回合固定：本回合與下回合不被風推移，不提供守勢減傷。整輪可用3次。",
+        "changedFragments": [
+          "3次"
+        ],
+        "materialCosts": [
+          {
+            "materialId": "highland_hide",
+            "quantity": 2
+          }
+        ],
+        "effect": {
+          "type": "highlandTool",
+          "tool": "brace",
+          "charges": 3
+        }
+      }
+    },
+    {
+      "id": "slope-rations",
+      "name": "層岩支架",
+      "summary": "花一回合加固相鄰或腳下現存岩石，耐久+1，上限3；不能重建已毀岩。整輪2次。",
+      "cost": 12,
+      "description": "花一回合加固相鄰或腳下現存岩石，耐久+1，上限3；不能重建已毀岩。整輪2次。",
+      "effect": {
+        "type": "highlandTool",
+        "tool": "rock",
+        "charges": 2
+      },
+      "enhancement": {
+        "title": "加厚層岩支架",
+        "description": "花一回合加固相鄰或腳下現存岩石，耐久+2，上限3；不能重建已毀岩。整輪3次。",
+        "changedFragments": [
+          "+2",
+          "3次"
+        ],
+        "materialCosts": [
+          {
+            "materialId": "highland_hide",
+            "quantity": 1
+          },
+          {
+            "materialId": "slate_shard",
+            "quantity": 1
+          }
+        ],
+        "effect": {
+          "type": "highlandTool",
+          "tool": "rock",
+          "charges": 3
+        }
+      }
+    },
+    {
+      "id": "ridge-whetstone",
+      "name": "移步踏釘",
+      "summary": "可移至另一欄而不耗回合，不重置已鎖定敵意、不充武器資源。整輪2次。",
+      "cost": 12,
+      "description": "可移至另一欄而不耗回合，不重置已鎖定敵意、不充武器資源。整輪2次。",
+      "effect": {
+        "type": "highlandTool",
+        "tool": "step",
+        "charges": 2
+      },
+      "enhancement": {
+        "title": "備用移步踏釘",
+        "description": "可移至另一欄而不耗回合，不重置已鎖定敵意、不充武器資源。整輪3次。",
+        "changedFragments": [
+          "3次"
+        ],
+        "materialCosts": [
+          {
+            "materialId": "gale_feather",
+            "quantity": 1
+          }
+        ],
+        "effect": {
+          "type": "highlandTool",
+          "tool": "step",
+          "charges": 3
+        }
+      }
+    }
+  ],
+  "encounterPlan": [
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "normal",
+    "boss",
+    "normal",
+    "elite",
+    "elite",
+    "normal",
+    "elite",
+    "boss"
+  ],
+  "scaling": {
+    "hpPerEncounter": 0.006,
+    "attackPerEncounter": 0.004
+  },
+  "enemies": [
+    {
+      "id": "highland-ram",
+      "name": "碎岩角羊",
+      "kind": "普通",
+      "family": "beast",
+      "combatRole": "frontline",
+      "weight": 100,
+      "maxHp": 145,
+      "attack": 24,
+      "defense": 7,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "highland_hide",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "牠會先盯住一處再衝過去。看看風會把你帶去哪，也留意牠的同伴站在哪。",
+      "windRole": "ram"
+    },
+    {
+      "id": "highland-hound",
+      "name": "灰脊獵犬",
+      "kind": "普通",
+      "family": "beast",
+      "combatRole": "output",
+      "weight": 100,
+      "maxHp": 100,
+      "attack": 28,
+      "defense": 3,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "highland_hide",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "牠會撲向預告的位置，也會繞到你身側；別一直守著同一邊。",
+      "windRole": "hunter"
+    },
+    {
+      "id": "highland-hawk",
+      "name": "脊羽鷹",
+      "kind": "普通",
+      "family": "beast",
+      "combatRole": "output",
+      "weight": 100,
+      "maxHp": 92,
+      "attack": 27,
+      "defense": 2,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "gale_feather",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "有時掃過兩側，有時盯著你追。看清這次是打位置，還是追著人打。",
+      "windRole": "hawk"
+    },
+    {
+      "id": "highland-slate-guard",
+      "name": "層岩衛",
+      "kind": "普通",
+      "family": "construct",
+      "combatRole": "frontline",
+      "weight": 100,
+      "maxHp": 165,
+      "attack": 22,
+      "defense": 10,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "slate_shard",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "站穩時能護住同伴；出刀時瞄準中間，不會臨時轉向。",
+      "windRole": "guard"
+    },
+    {
+      "id": "highland-signal-keeper",
+      "name": "結繩哨衛",
+      "kind": "普通",
+      "family": "highlander",
+      "combatRole": "support",
+      "weight": 100,
+      "maxHp": 88,
+      "attack": 17,
+      "defense": 3,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "watcher_knot",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "牠會替同伴加固，也會攔在下風處出手。別以為順風飄過去就安全。",
+      "windRole": "signal"
+    },
+    {
+      "id": "highland-wind-chime",
+      "name": "裂風鳴石",
+      "kind": "普通",
+      "family": "construct",
+      "combatRole": "control",
+      "weight": 100,
+      "maxHp": 105,
+      "attack": 23,
+      "defense": 4,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "slate_shard",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "鳴聲會改變下一回合的風。碎石落在哪裡，也會先讓你看見。",
+      "windRole": "chime"
+    },
+    {
+      "id": "highland-moss-carrier",
+      "name": "苔背搬石獸",
+      "kind": "普通",
+      "family": "construct",
+      "combatRole": "frontline",
+      "weight": 100,
+      "maxHp": 170,
+      "attack": 20,
+      "defense": 8,
+      "critChance": 0,
+      "expReward": 70,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "slate_shard",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "牠只帶一塊岩石，架好後敵我都能用；砸下來的重擊也會波及同伴。",
+      "windRole": "carrier"
+    }
+  ],
+  "elites": [
+    {
+      "id": "highland-veteran-ram",
+      "name": "裂角領羊",
+      "kind": "精英",
+      "family": "beast",
+      "combatRole": "frontline",
+      "weight": 100,
+      "maxHp": 285,
+      "attack": 34,
+      "defense": 9,
+      "critChance": 0,
+      "expReward": 130,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "gale_feather",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "衝撞與掃邊輪流來，沒有一個位置能永遠安穩。",
+      "windRole": "veteran"
+    },
+    {
+      "id": "highland-ridge-captain",
+      "name": "隘口岩衛長",
+      "kind": "精英",
+      "family": "construct",
+      "combatRole": "frontline",
+      "weight": 100,
+      "maxHp": 310,
+      "attack": 33,
+      "defense": 12,
+      "critChance": 0,
+      "expReward": 130,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "watcher_knot",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "牠會守住同伴，也會朝固定位置重砸；把牠的隊友送進去試試。",
+      "windRole": "captain"
+    },
+    {
+      "id": "highland-storm-hawk",
+      "name": "暴風脊羽鷹",
+      "kind": "精英",
+      "family": "construct",
+      "combatRole": "output",
+      "weight": 100,
+      "maxHp": 230,
+      "attack": 36,
+      "defense": 5,
+      "critChance": 0,
+      "expReward": 130,
+      "rewards": {
+        "gold": {
+          "min": 4,
+          "max": 7
+        },
+        "materials": [
+          {
+            "id": "gale_feather",
+            "chance": 0.65,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "雙段攻擊先畫好範圍，連自己的同伴也可能受傷；下一步還可能繞到別處。",
+      "windRole": "storm"
+    }
+  ],
+  "bosses": [
+    {
+      "id": "highland-horn-king",
+      "name": "裂嶺角王",
+      "kind": "首領",
+      "family": "beast",
+      "combatRole": "frontline",
+      "weight": 100,
+      "maxHp": 240,
+      "attack": 28,
+      "defense": 6,
+      "critChance": 0,
+      "expReward": 220,
+      "rewards": {
+        "gold": {
+          "min": 12,
+          "max": 18
+        },
+        "materials": [
+          {
+            "id": "ram_horn_core",
+            "chance": 1,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "體型大，風只能推得動一點。衝撞與掃擊都會波及同伴。",
+      "windRole": "boss"
+    },
+    {
+      "id": "highland-windwarden",
+      "name": "斷風守望者",
+      "kind": "首領",
+      "family": "construct",
+      "combatRole": "frontline",
+      "weight": 100,
+      "maxHp": 330,
+      "attack": 32,
+      "defense": 8,
+      "critChance": 0,
+      "expReward": 220,
+      "rewards": {
+        "gold": {
+          "min": 12,
+          "max": 18
+        },
+        "materials": [
+          {
+            "id": "windheart_core",
+            "chance": 1,
+            "min": 1,
+            "max": 1
+          }
+        ]
+      },
+      "intro": "呼風、兩段橫掃、衝撞與追擊輪流來。先看這次打哪裡，再決定順風還是站穩。",
+      "windRole": "warden"
+    }
+  ],
+  "boss": {
+    "id": "highland-windwarden",
+    "name": "斷風守望者",
+    "kind": "首領",
+    "family": "construct",
+    "combatRole": "frontline",
+    "weight": 100,
+    "maxHp": 330,
+    "attack": 32,
+    "defense": 8,
+    "critChance": 0,
+    "expReward": 220,
+    "rewards": {
+      "gold": {
+        "min": 12,
+        "max": 18
+      },
+      "materials": [
+        {
+          "id": "windheart_core",
+          "chance": 1,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    "intro": "呼風、兩段橫掃、衝撞與追擊輪流來。先看這次打哪裡，再決定順風還是站穩。",
+    "windRole": "warden"
+  }
+}

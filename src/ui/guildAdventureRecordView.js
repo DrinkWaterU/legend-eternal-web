@@ -20,7 +20,7 @@ function createReceptionCard(npc) {
   portrait.className = "guild-record-portrait-card";
   const image = document.createElement("img");
   const displayName = String(npc?.name || "瑟琳");
-  image.src = String(npc?.portrait || "./assets/images/npcs/anping/celine.png");
+  image.src = String(npc?.portrait || "./assets/images/npcs/anping/celine.webp");
   image.alt = `${displayName}的立繪`;
   const fallback = document.createElement("span");
   fallback.className = "guild-record-portrait-fallback";
@@ -98,7 +98,9 @@ function createIdentityCard(character) {
 
   const status = document.createElement("strong");
   status.className = "guild-record-status";
-  status.textContent = character.atMaxLevel ? "已達現階段上限" : `等級上限 ${character.maxLevel}`;
+  status.textContent = character.atMaxLevel
+    ? character.experienceStatus
+    : `等級上限 ${character.maxLevel}`;
   card.append(emblem, copy, status);
   return card;
 }
@@ -134,7 +136,7 @@ function createExperienceSection(experiences) {
       row.className = "guild-record-milestone guild-record-reveal-item";
       const marker = document.createElement("span");
       marker.className = "guild-record-milestone-marker";
-      marker.textContent = "✓";
+      marker.textContent = "√";
       const copy = document.createElement("div");
       const label = document.createElement("strong");
       const status = document.createElement("small");
@@ -243,7 +245,7 @@ function createCollapsibleSection(eyebrowText, titleText, badgeText, content) {
   badge.textContent = badgeText;
   const arrow = document.createElement("span");
   arrow.className = "guild-record-collapse-arrow";
-  arrow.textContent = "⌄";
+  arrow.textContent = "▼";
   button.append(copy, badge, arrow);
 
   const wrapper = document.createElement("div");

@@ -13,7 +13,8 @@ export function createBlessingController({
   hasPendingThreat,
   resumePendingThreat,
   enterSafeState,
-  onBeachBossBlessingChosen
+  onBeachBossBlessingChosen,
+  runSaveOperation = (action) => action()
 }) {
   function getWeightedBlessingIndex(pool) {
     const totalWeight = pool.reduce((total, blessing) => total + getBlessingRarity(blessing.rarity).weight, 0);
@@ -26,8 +27,14 @@ export function createBlessingController({
   }
 
   function getBlessingChoices(count, poolId = null, rarity = null) {
-    const pool = getAdventureBlessingDefinitions(poolId)
-      .filter((blessing) => !rarity || blessing.rarity === rarity);
+    const available = getAdventureBlessingDefinitions(poolId)
+      .filter(blessing => !blessing.maxStacks || (getOwnedBlessingCounts()[blessing.id] || 0) < blessing.maxStacks);
+    let pool = available.filter(blessing => !rarity || blessing.rarity === rarity);
+    state.blessingFallbackNote = "";
+    if (!pool.length && available.length) {
+      pool = available;
+      state.blessingFallbackNote = "稀有祝福已集齊，改選其他祝福";
+    }
     const choices = [];
     while (choices.length < count && pool.length > 0) {
       choices.push(pool.splice(getWeightedBlessingIndex(pool), 1)[0]);
@@ -73,10 +80,15 @@ export function createBlessingController({
   }
 
   function chooseBlessing(blessing) {
+    return runSaveOperation(() => chooseBlessingOperation(blessing));
+  }
+
+  function chooseBlessingOperation(blessing) {
     if (state.blessingInputLocked) return;
     state.blessingInputLocked = true;
     const context = state.blessingContext;
     grantBlessing(blessing);
+    state.blessingChoices = [];
     if (context === "beachBoss") {
       state.awaitingBlessing = false;
       state.blessingContext = "normal";
@@ -119,14 +131,34 @@ export function createBlessingController({
     els.nextButton.disabled = true;
     els.blessingPanel.classList.add("is-visible");
     els.resultLabel.textContent = context === "beachBoss" ? "選擇 Boss 後祝福" : "選擇祝福";
-    renderBlessingChoices(els.blessingChoices, getBlessingChoices(count, poolId, rarity), chooseBlessing, {
-      reveal: true,
+    state.blessingChoices = getBlessingChoices(count, poolId, rarity);
+    restoreBlessingChoices(true);
+  }
+
+  function restoreBlessingChoices(reveal = false) {
+    els.resultLabel.textContent = state.blessingContext === "beachBoss" ? "選擇 Boss 後祝福" : "選擇祝福";
+    if (state.blessingFallbackNote) els.resultLabel.textContent = state.blessingFallbackNote;
+    state.blessingInputLocked = reveal;
+    els.blessingPanel.classList.add("is-visible");
+    renderBlessingChoices(els.blessingChoices, state.blessingChoices, chooseBlessing, {
+      reveal,
       ownedCounts: getOwnedBlessingCounts(),
       onRevealComplete: () => {
         state.blessingInputLocked = false;
       }
     });
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(updateScrollHint);
   }
 
-  return Object.freeze({ showBlessings, grantBlessing });
+  function updateScrollHint() {
+    const dialog = els.blessingPanel.querySelector?.(".blessing-dialog");
+    const hint = els.blessingPanel.querySelector?.(".blessing-scroll-hint");
+    if (!dialog || !hint) return;
+    hint.hidden = true;
+    hint.hidden = dialog.scrollHeight > dialog.clientHeight + 1 ? false : true;
+  }
+
+  globalThis.addEventListener?.("resize", updateScrollHint);
+
+  return Object.freeze({ showBlessings, chooseBlessing, grantBlessing, restoreBlessingChoices });
 }

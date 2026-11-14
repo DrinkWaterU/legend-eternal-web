@@ -1,5 +1,7 @@
+import { describeEmberRecovery } from "../../core/emberRecovery.js";
 import { formatRewards } from "../../core/rewards.js";
 import { getPreparationSummary } from "../../core/preparations.js";
+import { getPrePhoenixDeathEmberLine } from "../../core/phoenixForeshadowing.js";
 import { isSafeAreaUnlocked, isSafeAreaVisited } from "../../core/safeAreaProgression.js";
 import { ANPING_TOWN_SAFE_AREA_ID, DEFAULT_SAFE_AREA_ID, getSafeAreaDefinition } from "../../data/safeAreas.js";
 import { renderStatList } from "../../ui/renderHelpers.js";
@@ -21,6 +23,8 @@ export function createRunResultController({
   settleCharacterProgression,
   recordRunFinished,
   saveGameSafe,
+  runSaveOperation = (action) => action(),
+  afterAdventureSaved = (effect) => effect(),
   clearEnemyGroup,
   clearPendingThreat,
   addLog,
@@ -88,7 +92,10 @@ export function createRunResultController({
     if (hasPhoenixBlessing()) {
       return `你倒下了。鳳凰的加護在灰燼般的微光中甦醒，將你帶回${getRunOriginSafeAreaName()}。`;
     }
-    return "你倒在野外，這段旅途累積的等級與經驗已經失去。";
+    const ember = getPrePhoenixDeathEmberLine(saveStore.current?.statistics?.totalDefeats);
+    return ember
+      ? `你倒在野外，這段旅途累積的等級與經驗已經失去。\n${ember}`
+      : "你倒在野外，這段旅途累積的等級與經驗已經失去。";
   }
 
   function getReachedEncounter(completed) {
@@ -96,40 +103,56 @@ export function createRunResultController({
     return Math.min(getAdventureEncounterIndex() + 1, getAdventureEncounterCount());
   }
 
+  // 最近一次冒險摘要：在結算存檔的同一個操作裡寫入，與其他結算紀錄一起成功或一起重試。
+  function recordLastRunSummary(outcome) {
+    if (state.debugBuildRun) return;
+    const completed = outcome === "clear" || outcome === "segmentClear";
+    const retreated = outcome === "retreat";
+    const evacuated = retreated && Boolean(state.runStats?.evacuated);
+    state.lastRunSummary = {
+      result: outcome === "clear" ? "成功" : outcome === "segmentClear" ? "段落完成" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
+      sourceName: getAdventureSourceName(),
+      reachedEncounter: getReachedEncounter(completed),
+      encounterTotal: getAdventureEncounterCount(),
+      runLevel: state.runStats?.endLevel || getCharacterProgress().level
+    };
+    if (saveStore.current?.statistics) {
+      saveStore.current.statistics.lastRun = { ...state.lastRunSummary, endedAt: new Date().toISOString() };
+    }
+  }
+
   function renderEndSummary(outcome) {
     const cleared = outcome === "clear";
     const segmentCleared = outcome === "segmentClear";
     const completed = cleared || segmentCleared;
     const retreated = outcome === "retreat";
-    const evacuated = retreated && Boolean(state.runStats?.evacuated);
     const sourceName = getAdventureSourceName();
     const encounterTotal = getAdventureEncounterCount();
     const reachedEncounter = getReachedEncounter(completed);
+    // Region records count main-path encounters; route runs use a different index.
+    const showsRegionRecord = !state.debugBuildRun && !completed && !currentRoute();
+    const previousBest = Math.min(Number(state.runStats?.previousBestEncounter) || 0, encounterTotal);
     const blessings = state.hero.blessings.length > 0 ? state.hero.blessings.join("、") : "無";
     const progress = getCharacterProgress();
     const displayLevel = state.debugBuildRun ? state.hero.level : progress.level;
-    if (!state.debugBuildRun) {
-      state.lastRunSummary = {
-        result: cleared ? "成功" : segmentCleared ? "段落完成" : evacuated ? "撤離" : retreated ? "撤退" : "失敗",
-        sourceName,
-        reachedEncounter,
-        encounterTotal,
-        runLevel: state.runStats?.endLevel || displayLevel
-      };
-    }
     const items = [
-      ["結果", cleared ? "冒險成功" : segmentCleared ? "海灘段落完成" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗"],
       ["路線", sourceName],
-      ["抵達", `第 ${reachedEncounter} / ${encounterTotal} 場`],
-      ["角色等級", `Lv. ${displayLevel}`],
-      ["本輪經驗", `${state.runStats?.expGained || 0}`],
+      ["抵達", `第 ${reachedEncounter} / ${encounterTotal} 場${showsRegionRecord && state.runStats?.newBestEncounter ? "（新紀錄）" : ""}`],
+      ["角色等級", `Lv. ${displayLevel}`, "is-headline"],
+      ["本輪經驗", `${state.runStats?.expGained || 0}`, "is-headline"],
       ["擊敗敵人", `${state.defeatedEnemies} 隻`],
       ["擊敗首領", state.defeatedBoss ? "是" : "否"],
       ["逃跑", `成功 ${state.runStats?.fleeSuccesses || 0} / 失敗 ${state.runStats?.fleeFailures || 0}`],
       ["選擇祝福", blessings]
     ];
-    if (state.runStats?.evacuationEscapes) items.splice(8, 0, ["撤離逃跑", `${state.runStats.evacuationEscapes} 次`]);
-    if (state.runStats?.bossName) items.splice(7, 0, ["本輪首領", state.runStats.bossName]);
+    // Show the ember bonus right under the reset level, where a defeated player looks first.
+    const emberText = !state.debugBuildRun && state.runStats?.progressReset ? describeEmberRecovery(progress) : "";
+    if (emberText) items.splice(items.findIndex(([label]) => label === "角色等級") + 1, 0, ["灰燼回復", emberText]);
+    if (state.runStats?.evacuationEscapes) items.splice(7, 0, ["撤離逃跑", `${state.runStats.evacuationEscapes} 次`]);
+    if (state.runStats?.bossName) items.splice(6, 0, ["本輪首領", state.runStats.bossName]);
+    if (showsRegionRecord && !state.runStats?.newBestEncounter && previousBest > reachedEncounter) {
+      items.splice(items.findIndex(([label]) => label === "抵達") + 1, 0, ["最遠紀錄", `第 ${previousBest} / ${encounterTotal} 場`]);
+    }
     if (hasPhoenixBlessing()) {
       const rewards = formatRewards(state.runStats?.rewards, materialDefinitions);
       if (rewards.gold > 0) items.push(["本輪金幣", rewards.gold]);
@@ -146,12 +169,20 @@ export function createRunResultController({
     if (state.runStats?.levelUps.length > 0) items.push(["升級", state.runStats.levelUps.map((level) => `Lv. ${level}`).join("、")]);
     if (state.runStats?.learnedSkills.length > 0) items.push(["新技能", state.runStats.learnedSkills.join("、")]);
     if (state.runStats?.unlockedCharacters.length > 0) items.push(["新角色", `${state.runStats.unlockedCharacters.join("、")}已可使用`]);
-    if (state.runStats?.progressReset) items.push(["成長損失", "死亡使等級與經驗失去，已回到 Lv. 1。"]) ;
+    if (state.runStats?.progressReset) items.push(["成長損失", "死亡使等級與經驗失去，已回到 Lv. 1。", "is-loss"]);
     if (!completed && !retreated) items.push(["死因", state.deathCause ? state.deathCause.label : "未知"]);
+    // 三個重點數字固定排在最前面，其餘照原順序。
+    const reached = items.find(([label]) => label === "抵達");
+    if (reached) reached[2] = "is-headline";
+    items.sort((left, right) => Number(right[2] === "is-headline") - Number(left[2] === "is-headline"));
     renderStatList(els.endSummary, items);
   }
 
   function finishRun(outcome, options = {}) {
+    return runSaveOperation(() => finishRunOperation(outcome, options));
+  }
+
+  function finishRunOperation(outcome, options) {
     const cleared = outcome === "clear";
     const segmentCleared = outcome === "segmentClear";
     const retreated = outcome === "retreat";
@@ -165,27 +196,31 @@ export function createRunResultController({
     state.phase = "ended";
     if (defeated) handleDefeatProgression();
     recordRunFinished(outcome, options);
+    recordLastRunSummary(outcome);
     state.pendingAnpingArrival = shouldOfferAnpingArrivalAfterRun(outcome);
     clearPendingThreat();
     state.blessingContext = "normal";
     state.blessingPoolOverrideId = null;
-    els.nextButton.disabled = true;
-    els.blessingPanel.classList.remove("is-visible");
-    closeAbilityInfoPanel();
-    closeBlessingInfoPanel();
-    els.returnToEndSummaryButton.hidden = true;
-    els.endPanel.classList.add("is-visible");
-    els.endTitle.textContent = cleared ? "冒險成功" : segmentCleared ? "海灘段落完成" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
-    els.endText.textContent = getEndText(outcome);
-    els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
-    renderEndSummary(outcome);
-    els.retryButton.textContent = state.pendingAnpingArrival ? "繼續前行" : `回到${getRunOriginSafeAreaName()}`;
-    els.resultLabel.textContent = cleared
-      ? `${getAdventureSourceName()}突破`
-      : segmentCleared ? `${getAdventureSourceName()}段落完成`
-      : evacuated ? "撤離成功" : retreated ? "返回據點" : "本輪結束";
-    render();
-    if (!state.pendingAnpingArrival) windowRef.requestAnimationFrame(flushAchievementUnlockQueue);
+    afterAdventureSaved(() => {
+      els.nextButton.disabled = true;
+      els.blessingPanel.classList.remove("is-visible");
+      closeAbilityInfoPanel();
+      closeBlessingInfoPanel();
+      els.returnToEndSummaryButton.hidden = true;
+      els.endPanel.classList.add("is-visible");
+      if (els.endPanel.dataset) els.endPanel.dataset.outcome = outcome;
+      els.endTitle.textContent = cleared ? "冒險成功" : segmentCleared ? "海灘段落完成" : evacuated ? "撤離逃跑" : retreated ? "冒險撤退" : "冒險失敗";
+      els.endText.textContent = getEndText(outcome);
+      els.endText.classList.toggle("danger-text", defeated && !hasPhoenixBlessing());
+      renderEndSummary(outcome);
+      els.retryButton.textContent = state.pendingAnpingArrival ? "繼續前行" : `回到${getRunOriginSafeAreaName()}`;
+      els.resultLabel.textContent = cleared
+        ? `${getAdventureSourceName()}突破`
+        : segmentCleared ? `${getAdventureSourceName()}段落完成`
+        : evacuated ? "撤離成功" : retreated ? "返回據點" : "本輪結束";
+      render();
+      if (!state.pendingAnpingArrival) windowRef.requestAnimationFrame(flushAchievementUnlockQueue);
+    });
   }
 
   function loseRun() {

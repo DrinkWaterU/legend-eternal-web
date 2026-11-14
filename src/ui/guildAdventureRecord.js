@@ -1,4 +1,8 @@
-import { getCharacterMaxLevel, getSkillsForLevel } from "../core/progression.js";
+import {
+  getCharacterExperienceLabel,
+  getCharacterMaxLevel,
+  getSkillsForLevel
+} from "../core/progression.js";
 import { ANPING_TOWN_SAFE_AREA_ID } from "../data/safeAreas.js";
 
 export function buildGuildAdventureRecordModel({
@@ -57,6 +61,7 @@ export function buildGuildAdventureRecordModel({
       learnedSkillCount,
       maxLevel,
       atMaxLevel: level >= maxLevel,
+      experienceStatus: getCharacterExperienceLabel(progress, character),
       portrait: character.portrait,
       portraitFocus: character.portraitFocus
     } : null,

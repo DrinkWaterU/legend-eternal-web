@@ -5,7 +5,7 @@
   "race": "human",
   "gender": "male",
   "ageGroup": "older-adult",
-  "portrait": "assets/images/npcs/anping/logan.jpg",
+  "portrait": "assets/images/npcs/anping/logan.webp",
   "dialogueId": "anping-blacksmith-main",
   "identity": {
     "unknownLabel": "安平鎮的鐵匠",

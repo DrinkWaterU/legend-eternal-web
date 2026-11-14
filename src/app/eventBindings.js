@@ -7,6 +7,8 @@ function bindBackdropClose(panel, closePanel) {
 export function bindApplicationEvents({ els, documentRef = document, state, uiState, actions }) {
   const {
     showScreen,
+    hasActiveRun,
+    resumeActiveRun,
     showScreenInContext,
     showCharacterList,
     showStatisticsScreen,
@@ -83,6 +85,7 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.musicVolumeInput.addEventListener("input", previewMusicVolume);
   els.musicVolumeInput.addEventListener("change", commitMusicVolume);
   els.campStartButton.addEventListener("click", () => {
+    if (hasActiveRun?.()) { resumeActiveRun(); return; }
     setNavigationContext("camp");
     showRegionDetail(state.selectedRegionId);
   });
@@ -142,7 +145,13 @@ export function bindApplicationEvents({ els, documentRef = document, state, uiSt
   els.finishStoryButton.addEventListener("click", completePlainsStory);
   els.revealAnpingArrivalButton.addEventListener("click", revealAnpingArrivalPage);
   els.continueAnpingArrivalButton.addEventListener("click", continueAnpingArrivalStory);
-  els.nextButton.addEventListener("click", playTurn);
+  els.nextButton.addEventListener("click", () => playTurn("attack"));
+  els.tacticalActions?.addEventListener("click", event => {
+    const button = event.target.closest("button[data-action-type]");
+    if (!button || button.disabled || button.dataset.previewOnly === "true") return;
+    playTurn({ type: button.dataset.actionType, column: button.dataset.column === undefined ? undefined : Number(button.dataset.column) });
+  });
+  els.guardButton?.addEventListener("click", () => playTurn("guard"));
   els.fleeButton.addEventListener("click", tryFlee);
   els.continueButton.addEventListener("click", continueAdventure);
   els.eventContinueButton.addEventListener("click", handleEventContinueButton);

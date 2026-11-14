@@ -9,9 +9,12 @@ import {
 import { getParalysisDamageMultiplier } from "./combatStatusEffects.js";
 import { consumePreparationParalysisPenaltyPrevention } from "./preparationEffects.js";
 import { roll } from "../utils.js";
+import { consumeStagger, getStaggerDamageBonus } from "./chargeBrace.js";
 
 const HEAVY_STRIKE_CHANCE = 0.2;
 const HEAVY_STRIKE_MULTIPLIER = 1.4;
+const HEAVY_STRIKE_MASTERY_CHANCE = 0.25;
+const HEAVY_STRIKE_MASTERY_MULTIPLIER = 1.6;
 const FOLLOW_UP_CHANCE = 0.25;
 const FOLLOW_UP_ATTACK_RATIO = 0.5;
 const FOLLOW_UP_PLUS_CHANCE = 0.4;
@@ -65,7 +68,7 @@ export function resolveHeroAction({ hero, enemy, enemies = [], log }) {
     ? FOLLOW_UP_PLUS_ATTACK_RATIO
     : FOLLOW_UP_ATTACK_RATIO;
   if (enemy.hp > 0 && hasSkill(hero, "skilled-follow-up") && roll(followUpChance)) {
-    const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
+    const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies, canCrit: false });
     const rawFollowUpDamage = Math.max(1, Math.round(getHeroEffectiveAttack(hero) * followUpAttackRatio * caveModifiers.damageMultiplier)) + caveModifiers.extraDamage;
     const followUpDamage = applyEnemyDamageProtection({
       enemy,
@@ -92,7 +95,7 @@ export function resolveHeroAction({ hero, enemy, enemies = [], log }) {
 }
 
 export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {} }) {
-  const { critChanceBonus = 0, damageMultiplier = 1, allowHeavyStrike = true } = options;
+  const { critChanceBonus = 0, damageMultiplier = 1, allowHeavyStrike = true, source = "original" } = options;
   const enemyName = getEnemyDisplayName(enemy);
   const openingCritChance = hero.hasAttackedThisBattle ? 0 : (hero.openingCritChance || 0);
   hero.hasAttackedThisBattle = true;
@@ -105,8 +108,28 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
   const caveModifiers = getCaveDirectAttackModifiers({ hero, enemy, enemies });
   const attackMultiplier = getHeroAttackDamageMultiplier(hero, log);
   let damage = getHeroDirectAttackDamage({ hero, enemy, damageMultiplier: damageMultiplier * caveModifiers.damageMultiplier, attackMultiplier }) + caveModifiers.extraDamage;
-  if (allowHeavyStrike && hasSkill(hero, "heavy-strike") && roll(HEAVY_STRIKE_CHANCE)) {
-    damage = Math.max(1, Math.round(damage * HEAVY_STRIKE_MULTIPLIER));
+  if (source === "original" && getStaggerDamageBonus(enemy) > 0) {
+    // 失衡與技能本身的倍率（例如凱哥戰意終結技 ×1.5／×1.75）取較高者，不相乘。
+    // 實測（2026-11-14）：相乘時凱哥 Lv.10 撐衝鋒後首領通關率 97%，冒險者 5%、弓箭手 76%；
+    // 原因是守勢挨衝鋒同時累積戰意，下一擊常剛好是終結技。普通攻擊仍吃完整 +75%。
+    const staggerMultiplier = 1 + consumeStagger(enemy);
+    const skillMultiplier = Math.max(1, Number(damageMultiplier) || 1);
+    const extra = Math.max(skillMultiplier, staggerMultiplier) / skillMultiplier;
+    damage = Math.max(1, Math.round(damage * extra));
+    log.fixed("status", extra > 1
+      ? `${enemyName}還沒站穩，這一擊打得更重。`
+      : `${enemyName}還沒站穩，但這一擊本來就夠重了。`);
+  }
+  if (source === "original" && enemy.weaponBreach) {
+    damage += Math.max(3, Math.round((Number(enemy.defense) || 0) * .25 * enemy.weaponBreach.strength));
+  }
+  const heavyStrikeMastered = hasSkill(hero, "heavy-strike-mastery");
+  const heavyStrikeChance = heavyStrikeMastered ? HEAVY_STRIKE_MASTERY_CHANCE : HEAVY_STRIKE_CHANCE;
+  const heavyStrikeMultiplier = heavyStrikeMastered
+    ? HEAVY_STRIKE_MASTERY_MULTIPLIER
+    : HEAVY_STRIKE_MULTIPLIER;
+  if (allowHeavyStrike && hasSkill(hero, "heavy-strike") && roll(heavyStrikeChance)) {
+    damage = Math.max(1, Math.round(damage * heavyStrikeMultiplier));
     log.template("skill", "heavyStrike", { actor: hero.name });
   }
   const critChance = hero.critChance
@@ -126,7 +149,7 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
     enemy,
     enemies,
     damage,
-    reductionRatio: shouldIgnoreProtectedEnemyReduction(hero) ? 0 : undefined
+    reductionRatio: shouldIgnoreProtectedEnemyReduction(hero) || (source === "original" && hero.highlandShelterPierceActive) ? 0 : undefined
   }).damage;
   enemy.hp = Math.max(0, enemy.hp - damage);
   consumeCaveDirectAttackModifiers(hero, caveModifiers);
@@ -136,7 +159,7 @@ export function resolveHeroStrike({ hero, enemy, enemies = [], log, options = {}
     enemy,
     damage,
     critical,
-    source: "original"
+    source
   });
 
   if (hero.poisonPower > 0 && enemy.hp > 0) {

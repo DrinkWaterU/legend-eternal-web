@@ -54,6 +54,29 @@ export function createBattleSkills({
       : null;
   }
 
+  function getVersatileSatchelSecondaryFlow(firstFlowId) {
+    const momentum = state.hero?.blessingFlowMomentum || {};
+    const candidates = getBlessingFlowDefinitions()
+      .map((flow) => ({
+        ...flow,
+        weight: Math.max(0, Number(momentum[flow.id]) || 0)
+      }))
+      .filter((flow) => flow.id !== firstFlowId && flow.weight >= 1.0);
+
+    return candidates.length > 0
+      ? weightedRandomItem(candidates, (flow) => flow.weight)
+      : null;
+  }
+
+  function applySatchelEffect(flow, fallbackEffectId = "battle_attack") {
+    const effectId = flow?.satchelEffectId || fallbackEffectId;
+    const effect = VERSATILE_SATCHEL_EFFECT_HANDLERS[effectId]
+      || VERSATILE_SATCHEL_EFFECT_HANDLERS.battle_attack;
+    const bonus = effect(state.hero);
+    addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus });
+    return effectId;
+  }
+
   function applyBattleStartSkills() {
     if (hasHeroSkill("status-familiarity") && !hasBlessingFlow("debuff")) {
       state.hero.battleAttackBonus = (state.hero.battleAttackBonus || 0) + 2;
@@ -62,13 +85,16 @@ export function createBattleSkills({
 
     if (!hasHeroSkill("versatile-satchel")) return;
 
-    const satchelFlow = getVersatileSatchelFlow();
-    const effectId = satchelFlow?.satchelEffectId || "battle_attack";
-    const effect = VERSATILE_SATCHEL_EFFECT_HANDLERS[effectId]
-      || VERSATILE_SATCHEL_EFFECT_HANDLERS.battle_attack;
-    const bonus = effect(state.hero);
-    if (satchelFlow?.id) state.hero.lastBagFlow = satchelFlow.id;
-    addLog("skill", "versatileSatchel", { actor: state.hero.name, bonus });
+    const firstFlow = getVersatileSatchelFlow();
+    const firstEffectId = applySatchelEffect(firstFlow);
+    if (firstFlow?.id) state.hero.lastBagFlow = firstFlow.id;
+
+    if (hasHeroSkill("versatile-mastery")) {
+      const secondFlow = firstFlow?.id
+        ? getVersatileSatchelSecondaryFlow(firstFlow.id)
+        : null;
+      applySatchelEffect(secondFlow, firstEffectId);
+    }
   }
 
   function applyEmergencyBandage() {

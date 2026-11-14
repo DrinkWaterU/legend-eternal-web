@@ -71,7 +71,7 @@ export function renderMerchantView({
     if (batchMode) {
       const selectionMark = document.createElement("span");
       selectionMark.className = "merchant-selection-mark";
-      selectionMark.textContent = selected ? "✓ 已選" : "選取";
+      selectionMark.textContent = selected ? "√ 已選" : "選取";
       button.append(selectionMark);
       button.addEventListener("click", () => onBatchSelectionToggle(item.id));
     } else {

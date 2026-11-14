@@ -21,10 +21,10 @@ export function renderAchievementView({
 }) {
   els.achievementLockedState.hidden = systemUnlocked;
   els.achievementBrowser.hidden = !systemUnlocked;
-  els.achievementTitle.textContent = systemUnlocked ? "冒險成就" : "尚未開放";
+  els.achievementTitle.textContent = systemUnlocked ? "冒險成就" : "星光尚未照見";
   els.achievementText.textContent = systemUnlocked
     ? "這裡記錄你在傳說大陸留下的旅程節點。"
-    : "繼續完成冒險，新的旅程紀錄會在適當時機出現。";
+    : "有些旅程，要等到某雙眼睛看向你之後，才會開始留下紀錄。";
 
   if (!systemUnlocked) {
     closeAchievementDetailView(els);

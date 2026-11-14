@@ -68,10 +68,19 @@ export function renderGuildBulkConfirmPanel({ els, plan, onConfirm }) {
     row.append(copy, total);
     els.guildBulkConfirmList.append(row);
   });
-  els.guildBulkConfirmMeta.textContent = `即將交付 ${plan.items.length} 種素材，共 ${plan.totalQuantity} 件。`;
+  // 5～9 件的級距低於商人價；價差為負時直接說出少拿多少，避免玩家沒注意就確認。
+  const shortfall = plan.totalDifferenceGold < 0
+    ? `比直接賣給旅行商人少 ${Math.abs(plan.totalDifferenceGold)} G。`
+    : "";
+  els.guildBulkConfirmMeta.textContent = `即將交付 ${plan.items.length} 種素材，共 ${plan.totalQuantity} 件。${shortfall}`;
   els.guildBulkConfirmReference.textContent = `${plan.totalReferenceGold} G`;
   els.guildBulkConfirmTotal.textContent = `${plan.totalGold} G`;
   els.guildBulkConfirmDifference.textContent = formatGuildBulkDifference(plan.totalDifferenceGold);
+  els.guildBulkConfirmDifference.className = plan.totalDifferenceGold > 0
+    ? "is-positive"
+    : plan.totalDifferenceGold < 0
+      ? "is-negative"
+      : "";
   els.confirmGuildBulkSaleButton.onclick = onConfirm;
   els.guildBulkConfirmPanel.classList.add("is-visible");
   els.confirmGuildBulkSaleButton.focus?.({ preventScroll: true });

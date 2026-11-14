@@ -1,6 +1,7 @@
 import { questDefinitions as defaultQuestDefinitions } from "../data/quests.js";
 import { QUEST_RARITIES } from "../data/questRarities.js";
 import { getRouteDefinition } from "../data/routes/index.js";
+import { getEnemyDefinition } from "../data/enemies/index.js";
 import { sumSafeIntegers, toSafeInteger } from "../utils.js";
 
 export const QUEST_BOARD_SIZE = 4;
@@ -9,7 +10,8 @@ export const QUEST_RARE_BOARD_CHANCE = 0.35;
 const REGION_LABELS = Object.freeze({
   plains: "平原",
   forest: "森林",
-  beach: "海灘"
+  beach: "海灘",
+  highlands: "斷風高地"
 });
 
 const ENEMY_FAMILY_LABELS = Object.freeze({
@@ -101,9 +103,9 @@ export function generateQuestBoard(
   const rare = candidates.filter((quest) => quest.rarity === "rare");
   const selected = [];
   const includeRare = rare.length > 0 && clampRandom(random()) < rareChance;
-  const eligibleCandidates = includeRare
-    ? candidates
-    : candidates.filter((quest) => quest.rarity !== "rare");
+  // The optional rare slot is selected above. Filling ordinary slots must not
+  // draw a second rare quest as the content pool grows.
+  const eligibleCandidates = candidates.filter((quest) => quest.rarity !== "rare");
 
   if (advanced.length === 0) throw new Error("委託看板缺少可用的進階委託。");
   if (includeRare) selected.push(weightedPick(rare, random));
@@ -178,6 +180,7 @@ export function buildQuestRewardPlan(quest) {
 
 export function formatQuestObjective(quest, materialDefinitions = {}) {
   const objective = quest?.objective || {};
+  if (objective.type === "performHighlandTactic") return objective.tactic === "breakRock" ? `在高地拆岩或推敵撞岩打斷衝撞 ${objective.target} 次` : `在高地引導敵人誤傷同伴 ${objective.target} 次`;
   if (objective.type === "deliverMaterials") {
     return objective.materials.map((entry) => (
       `${materialDefinitions[entry.id]?.name || entry.id} ×${entry.quantity}`
@@ -193,6 +196,7 @@ export function formatQuestObjective(quest, materialDefinitions = {}) {
     const region = getRegionLabel(objective) || "任意";
     return `完成${region}正式冒險 ${objective.target} 次`;
   }
+  if (objective.enemyIds?.length) return `在${getRegionLabel(objective) || "指定地區"}擊敗${objective.enemyIds.map(id => getEnemyDefinition(id)?.name || id).join("、")} ${objective.target} 隻`;
   if (objective.enemyKinds?.length === 1) return `擊敗任意${objective.enemyKinds[0]}敵人 ${objective.target} 隻`;
   if (objective.enemyFamilies?.length === 1) {
     const familyLabel = ENEMY_FAMILY_LABELS[objective.enemyFamilies[0]] || `${objective.enemyFamilies[0]}系`;

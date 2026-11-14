@@ -27,27 +27,34 @@ export function renderStatisticsOverview(els, stats, questStats = {}) {
     ["冒險最高等級", highestLevel > 0 ? `Lv. ${highestLevel}` : "尚未記錄"]
   ], "statistics-key-metric");
 
-  els.statisticsResolvedRuns.textContent = `${outcomes.resolved} 次`;
+  // 標籤寫冒險總數：下方四項（含其他／未結算）加總就是這個數字。原本寫「已結算」數，與下方加總對不上。
+  els.statisticsResolvedRuns.textContent = `共 ${outcomes.totalRuns} 次`;
+  // 一條堆疊長條看比例，下方逐項列出次數與百分比。
+  els.statisticsOutcomeStack?.replaceChildren();
   outcomes.items.forEach((item) => {
+    if (els.statisticsOutcomeStack && item.value > 0) {
+      const segment = document.createElement("span");
+      segment.className = `outcome-${item.id}`;
+      segment.style.width = `${item.ratio * 100}%`;
+      els.statisticsOutcomeStack.append(segment);
+    }
     const row = document.createElement("div");
     row.className = `statistics-outcome-row outcome-${item.id}`;
-    const heading = document.createElement("div");
+    const swatch = document.createElement("i");
+    swatch.className = "statistics-outcome-swatch";
+    swatch.setAttribute("aria-hidden", "true");
     const label = document.createElement("span");
     const value = document.createElement("strong");
+    const share = document.createElement("small");
     label.textContent = item.label;
     value.textContent = String(item.value);
-    heading.append(label, value);
-    const meter = document.createElement("div");
-    meter.className = "statistics-meter";
-    const fill = document.createElement("span");
-    fill.style.width = `${Math.round(item.ratio * 100)}%`;
-    meter.append(fill);
-    row.append(heading, meter);
+    share.textContent = `${Math.round(item.ratio * 100)}%`;
+    row.append(swatch, label, value, share);
     els.statisticsOutcomeList.append(row);
   });
 
+  // 擊敗敵人已在上方關鍵數字顯示，這裡不重複。
   renderDefinitionList(els.statisticsCombatMetrics, [
-    ["擊敗敵人", safeStatisticCount(stats.totalEnemiesDefeated)],
     ["擊敗首領", safeStatisticCount(stats.bossesDefeated)],
     ["平均每次冒險", `${getAverageEnemiesPerRun(stats).toFixed(1)} 名敵人`]
   ], "statistics-compact-row");

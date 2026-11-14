@@ -10,8 +10,7 @@ import {
   REST_HEAL_RATIO,
   RUN_STARTING_FLEES,
   SAFE_ESCAPE_ENEMY_HEAL_RATIO,
-  STORY_FINISH_EXTRA_DELAY_MS,
-  STORY_LINE_DELAY_MS,
+  STORY_TYPEWRITER_TIMING,
   TACTICAL_FLEE_RESULTS
 } from "./runtimeConstants.js";
 import { createRunLifecycleController } from "../features/adventure/runLifecycleController.js";
@@ -71,6 +70,8 @@ export function createAdventureFeatures({
     captureRunStartPermanentState: battle.captureRunStartPermanentState,
     restoreRunStartPermanentState: battle.restoreRunStartPermanentState,
     recordRunStarted: battle.recordRunStarted,
+    runSaveOperation: foundation.runSaveOperation,
+    afterAdventureSaved: foundation.afterAdventureSaved,
     saveGameSafe: foundation.saveGameSafe,
     syncSelectionFromSave: world.syncSelectionFromSave,
     resetPreparationUiState: world.resetPreparationUiState,
@@ -106,6 +107,8 @@ export function createAdventureFeatures({
     resetCharacterProgress: foundation.resetCharacterProgress,
     settleCharacterProgression: foundation.settleCharacterProgression,
     recordRunFinished: battle.recordRunFinished,
+    runSaveOperation: foundation.runSaveOperation,
+    afterAdventureSaved: foundation.afterAdventureSaved,
     saveGameSafe: foundation.saveGameSafe,
     clearEnemyGroup: battle.clearEnemyGroup,
     clearPendingThreat: battle.clearPendingThreat,
@@ -129,6 +132,7 @@ export function createAdventureFeatures({
 
   campTransitionController = createCampTransitionController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
     els,
     runStartingFlees: RUN_STARTING_FLEES,
     buildHeroFromProgression: foundation.buildHeroFromProgression,
@@ -141,6 +145,8 @@ export function createAdventureFeatures({
 
   const routeEndingController = createRouteEndingController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
+    afterAdventureSaved: foundation.afterAdventureSaved,
     saveStore,
     els,
     characterDefinitions,
@@ -158,6 +164,7 @@ export function createAdventureFeatures({
 
   const blessingController = createBlessingController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
     els,
     counterEscapeEnemyHealRatio: COUNTER_ESCAPE_ENEMY_HEAL_RATIO,
     getAdventureBlessingDefinitions: foundation.getAdventureBlessingDefinitions,
@@ -169,7 +176,9 @@ export function createAdventureFeatures({
   });
 
   const escapeController = createEscapeController({
+    resolveHighlandFleeFailure: () => battle.playTurn("flee-failure"),
     state,
+    runSaveOperation: foundation.runSaveOperation,
     normalFleeChance: NORMAL_FLEE_CHANCE,
     eliteFleeChance: ELITE_FLEE_CHANCE,
     tacticalFleeResults: TACTICAL_FLEE_RESULTS,
@@ -202,6 +211,8 @@ export function createAdventureFeatures({
 
   anpingArrivalController = createAnpingArrivalController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
+    afterAdventureSaved: foundation.afterAdventureSaved,
     uiState,
     saveStore,
     els,
@@ -220,13 +231,14 @@ export function createAdventureFeatures({
 
   const plainsStoryController = createPlainsStoryController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
+    afterAdventureSaved: foundation.afterAdventureSaved,
     saveStore,
     els,
     documentRef,
     windowRef,
     regionDefinitions,
-    storyLineDelayMs: STORY_LINE_DELAY_MS,
-    storyFinishExtraDelayMs: STORY_FINISH_EXTRA_DELAY_MS,
+    storyTypewriterTiming: STORY_TYPEWRITER_TIMING,
     plainsTrialAchievementId: PLAINS_TRIAL_ACHIEVEMENT_ID,
     hasPhoenixBlessing: foundation.hasPhoenixBlessing,
     setNavigationContext: foundation.setNavigationContext,
@@ -264,6 +276,8 @@ export function createAdventureFeatures({
 
   const duelController = createDuelController({
     state,
+    runSaveOperation: foundation.runSaveOperation,
+    afterAdventureSaved: foundation.afterAdventureSaved,
     saveStore,
     els,
     storyQuestRuntime: world.storyQuestRuntime,

@@ -16,15 +16,15 @@ export const safeAreaDefinitions = Object.freeze({
     name: "冒險營地",
     eyebrow: "冒險營地",
     title: "火光暫時守住了平原的夜。",
-    description: "在出發前確認角色、地區與最近一次冒險紀錄。撤退、失敗或通關後也會回到這裡。",
+    description: "營火劈啪作響，帳篷邊堆著上次帶回的戰利品。天亮之前，還有時間整理行囊。",
     featureTitle: "營地功能",
     travelOrder: 10,
     travelDescription: "回到熟悉的冒險據點",
     placesLockedDescription: "看看營地周圍",
     visual: Object.freeze({
       background: Object.freeze({
-        mobile: "assets/images/camp/camp-mobile.png",
-        desktop: "assets/images/camp/camp-desktop.png"
+        mobile: "assets/images/camp/camp-mobile.webp",
+        desktop: "assets/images/camp/camp-desktop.webp"
       })
     }),
     audio: Object.freeze({ bgmId: "camp", ambientId: null }),
@@ -47,8 +47,8 @@ export const safeAreaDefinitions = Object.freeze({
     placesLockedDescription: "鎮內設施尚未開放",
     visual: Object.freeze({
       background: Object.freeze({
-        mobile: "assets/images/anping-town/anping-town-mobile.jpg",
-        desktop: "assets/images/anping-town/anping-town-desktop.jpg"
+        mobile: "assets/images/anping-town/anping-town-mobile.webp",
+        desktop: "assets/images/anping-town/anping-town-desktop.webp"
       })
     }),
     audio: Object.freeze({ bgmId: "anping-town", ambientId: "anping-coast" }),

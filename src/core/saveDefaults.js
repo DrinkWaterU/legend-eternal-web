@@ -17,6 +17,7 @@ export function createDefaultSave() {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: GAME_VERSION,
+    activeRun: null,
     profile: {
       createdAt: now,
       updatedAt: now,
@@ -29,6 +30,8 @@ export function createDefaultSave() {
       safeAreas: createDefaultSafeAreaProgression(undefined, { defaultVisitedAt: now })
     },
     inventory: { gold: 0, materials: {}, weapons: {} },
+    weaponTraining: { regions: { forest: false, beach: false, highlands: false }, unlocked: false, mode: "steady" },
+    hammerTraining: { regions: { highlands: false }, unlocked: false },
     storyFlags: createDefaultStoryFlags(),
     achievements: createDefaultAchievements(),
     quests: createDefaultQuestState(),
@@ -47,6 +50,8 @@ export function createDefaultSave() {
       counterEscapes: 0,
       evacuationEscapes: 0,
       highestRunLevel: 1,
+      // 最近一次結束的冒險（營地「冒險紀錄」右側顯示）；尚未冒險時為 null。
+      lastRun: null,
       regions: createDefaultRegionStatistics(),
       characters: createDefaultCharacterStatistics()
     },
@@ -74,6 +79,7 @@ function createDefaultCharacterProgression() {
       unlocked: characterId === DEFAULT_CHARACTER_ID,
       level: 1,
       exp: 0,
+      emberLevel: 0,
       learnedSkills: [],
       equipment: { weaponId: null },
       runs: 0,

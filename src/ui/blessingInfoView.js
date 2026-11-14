@@ -10,7 +10,6 @@ export function renderBlessingInfoView({ filtersElement, listElement, blessingNa
   }
   const activeFlow = activeFilterByElement.get(filtersElement) || "all";
   const flowDefinitions = getBlessingFlowDefinitions();
-  const flowDefinitionMap = new Map(flowDefinitions.map((flow) => [flow.id, flow]));
   const flowCounts = countBlessingFlows(heldBlessings);
 
   renderFilters({
@@ -34,7 +33,7 @@ export function renderBlessingInfoView({ filtersElement, listElement, blessingNa
   const visibleBlessings = activeFlow === "all"
     ? heldBlessings
     : heldBlessings.filter((blessing) => blessing.primaryFlow === activeFlow);
-  renderBlessingList(listElement, visibleBlessings, flowDefinitionMap);
+  renderBlessingList(listElement, visibleBlessings, heldBlessings);
 }
 
 function resolveHeldBlessings(blessingNames = [], blessingDefinitions = []) {
@@ -81,46 +80,104 @@ function renderFilters({ filtersElement, heldBlessings, flowDefinitions, flowCou
   }));
 }
 
-function renderBlessingList(listElement, blessings, flowDefinitionMap) {
+// 只合計「固定數值」類效果（type: add）。條件型、週期型效果不合計，留在下方逐項閱讀。
+const SUMMARY_STATS = Object.freeze([
+  ["attack", "攻擊", false],
+  ["defense", "防禦", false],
+  ["maxHp", "最大生命", false],
+  ["critChance", "暴擊率", true],
+  ["shieldStart", "開場護盾", false],
+  ["killHeal", "擊殺回復", false],
+  ["poisonPower", "攻擊附毒", false]
+]);
+
+export function summarizeBlessingTotals(blessings = []) {
+  const totals = new Map();
+  blessings.forEach((blessing) => {
+    (Array.isArray(blessing?.effects) ? blessing.effects : []).forEach((effect) => {
+      if (effect?.type !== "add" || !Number.isFinite(Number(effect.amount))) return;
+      totals.set(effect.stat, (totals.get(effect.stat) || 0) + Number(effect.amount));
+    });
+  });
+  return SUMMARY_STATS
+    .filter(([stat]) => (totals.get(stat) || 0) !== 0)
+    .map(([stat, label, percent]) => {
+      const amount = totals.get(stat);
+      return `${label} +${percent ? `${Math.round(amount * 100)}%` : Math.round(amount * 100) / 100}`;
+    });
+}
+
+// 同名祝福合併成一列並標示數量，順序維持取得順序。
+export function groupHeldBlessings(blessings = []) {
+  const groups = new Map();
+  blessings.forEach((blessing) => {
+    const key = blessing?.name || "未知祝福";
+    if (groups.has(key)) groups.get(key).count += 1;
+    else groups.set(key, { blessing, count: 1 });
+  });
+  return [...groups.values()];
+}
+
+function renderBlessingList(listElement, blessings, allBlessings = blessings) {
   listElement.replaceChildren();
+  const doc = listElement.ownerDocument || document;
+  const totals = summarizeBlessingTotals(allBlessings);
+  if (totals.length > 0) {
+    const summary = doc.createElement("section");
+    summary.className = "blessing-info-summary";
+    summary.setAttribute("aria-label", "本局祝福固定加成合計");
+    const caption = doc.createElement("small");
+    caption.textContent = "本局固定加成合計（條件型效果不計入）";
+    const list = doc.createElement("ul");
+    totals.forEach((text) => {
+      const item = doc.createElement("li");
+      item.textContent = text;
+      list.append(item);
+    });
+    summary.append(caption, list);
+    listElement.append(summary);
+  }
   if (blessings.length === 0) {
-    const empty = document.createElement("p");
+    const empty = doc.createElement("p");
     empty.className = "blessing-info-empty";
     empty.textContent = "目前沒有符合此分類的臨時祝福。";
     listElement.append(empty);
     return;
   }
 
-  blessings.forEach((blessing) => {
+  groupHeldBlessings(blessings).forEach(({ blessing, count }) => {
     const rarity = getBlessingRarity(blessing?.rarity);
-    const flow = flowDefinitionMap.get(blessing?.primaryFlow) || { id: "unknown", label: "未分類" };
-    const card = document.createElement("article");
-    const meta = document.createElement("small");
-    const event = document.createElement("span");
-    const tags = document.createElement("span");
-    const flowTag = document.createElement("i");
-    const rarityTag = document.createElement("i");
-    const title = document.createElement("strong");
-    const effect = document.createElement("p");
-    const flavor = document.createElement("em");
-
-    card.className = `blessing-info-card rarity-${rarity.id}`;
-    event.textContent = blessing?.eventTitle || "臨時祝福";
-    tags.className = "blessing-info-tags";
-    flowTag.className = "blessing-info-flow-tag";
-    flowTag.dataset.flow = flow.id;
-    flowTag.textContent = flow.label;
+    const row = doc.createElement("article");
+    row.className = `blessing-info-row rarity-${rarity.id}`;
+    const header = doc.createElement("header");
+    const title = doc.createElement("strong");
+    title.textContent = blessing?.name || "未知祝福";
+    header.append(title);
+    if (count > 1) {
+      const countTag = doc.createElement("span");
+      countTag.className = "blessing-info-count";
+      countTag.textContent = `×${count}`;
+      header.append(countTag);
+    }
+    const rarityTag = doc.createElement("i");
     rarityTag.className = "blessing-info-rarity-tag";
     rarityTag.textContent = rarity.label;
-    tags.append(flowTag, rarityTag);
-    meta.append(event, tags);
-    title.textContent = blessing?.name || "未知祝福";
+    header.append(rarityTag);
+    const effect = doc.createElement("p");
+    effect.className = "blessing-info-effect";
     effect.textContent = blessing?.effectText || "效果資料尚未整理。";
-    flavor.textContent = blessing?.flavorText || "";
-    card.append(meta, title, effect);
-    if (flavor.textContent) {
-      card.append(flavor);
+    row.append(header, effect);
+    const storyText = blessing?.eventText || blessing?.flavorText || "";
+    if (storyText) {
+      const details = doc.createElement("details");
+      const summary = doc.createElement("summary");
+      summary.textContent = "情境";
+      const story = doc.createElement("p");
+      story.className = "blessing-info-story";
+      story.textContent = storyText;
+      details.append(summary, story);
+      row.append(details);
     }
-    listElement.append(card);
+    listElement.append(row);
   });
 }

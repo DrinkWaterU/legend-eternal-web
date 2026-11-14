@@ -1,4 +1,6 @@
 import { craftWeapon } from "../core/commerce.js";
+import { getSwordTraining, unlockSwordTraining } from "../core/weaponTraining.js";
+import { getHammerTraining, unlockHammerTechnique } from "../core/hammerTraining.js";
 import {
   closeBlacksmithCraftPanel,
   renderBlacksmithCraftPanel,
@@ -14,7 +16,9 @@ export function createBlacksmithController({
   materialDefinitions = {},
   getInventory,
   getSafeArea = () => null,
-  saveInventory = () => true
+  commitInventoryChange,
+  getSave = () => null,
+  commitSaveChange = null
 } = {}) {
   if (!els || typeof els !== "object") {
     throw new Error("Blacksmith Controller 需要有效的 els。");
@@ -25,8 +29,8 @@ export function createBlacksmithController({
   if (typeof getSafeArea !== "function") {
     throw new Error("Blacksmith Controller 的 getSafeArea 必須是函式。");
   }
-  if (typeof saveInventory !== "function") {
-    throw new Error("Blacksmith Controller 的 saveInventory 必須是函式。");
+  if (typeof commitInventoryChange !== "function") {
+    throw new Error("Blacksmith Controller 需要 commitInventoryChange()。");
   }
 
   const craftableWeaponDefinitions = Object.fromEntries(
@@ -75,7 +79,11 @@ export function createBlacksmithController({
       noticeType: state.noticeType,
       onWeaponSelect: selectWeapon,
       onCraftRequest: requestCraft,
-      onCategorySelect: setCategory
+      onCategorySelect: setCategory,
+      swordTraining: getSave() ? getSwordTraining(getSave()) : null,
+      onUnlockSwordTraining: unlockTraining,
+      hammerTraining: getSave() ? getHammerTraining(getSave()) : null,
+      onUnlockHammerTraining: unlockHammerTraining
     });
   }
 
@@ -133,7 +141,11 @@ export function createBlacksmithController({
       inventory: getInventory(),
       weaponCategoryDefinitions,
       materialDefinitions,
-      onCraftRequest: requestCraft
+      onCraftRequest: requestCraft,
+      swordTraining: getSave() ? getSwordTraining(getSave()) : null,
+      onUnlockSwordTraining: unlockTraining,
+      hammerTraining: getSave() ? getHammerTraining(getSave()) : null,
+      onUnlockHammerTraining: unlockHammerTraining
     });
   }
 
@@ -152,6 +164,36 @@ export function createBlacksmithController({
     });
   }
 
+  function unlockTraining() {
+    if (!commitSaveChange) return;
+    try {
+      commitSaveChange((draft) => unlockSwordTraining(draft), () => {
+        state.notice = "已解鎖冒險反攻。可在角色裝備頁選擇打法。";
+        state.noticeType = "status";
+        render();
+      });
+    } catch (error) {
+      state.notice = error instanceof Error ? error.message : "武器專精解鎖失敗。";
+      state.noticeType = "error";
+      render();
+    }
+  }
+
+  function unlockHammerTraining() {
+    if (!commitSaveChange) return;
+    try {
+      commitSaveChange((draft) => unlockHammerTechnique(draft), () => {
+        state.notice = "已解鎖震岩裂陣。裝備鎮隘岩鎚，在任何地區遇到群敵都可使用。";
+        state.noticeType = "status";
+        render();
+      });
+    } catch (error) {
+      state.notice = error instanceof Error ? error.message : "武器專精解鎖失敗。";
+      state.noticeType = "error";
+      render();
+    }
+  }
+
   function confirmCraft() {
     const weapon = craftableWeaponDefinitions[state.pendingWeaponId];
     if (!weapon) {
@@ -159,29 +201,15 @@ export function createBlacksmithController({
       return;
     }
 
-    const inventory = getInventory();
-    const snapshot = {
-      gold: inventory.gold,
-      materials: structuredClone(inventory.materials || {}),
-      weapons: structuredClone(inventory.weapons || {})
-    };
-
     try {
-      craftWeapon({
-        inventory,
-        weapon,
-        materialDefinitions
+      commitInventoryChange((inventory) => {
+        craftWeapon({ inventory, weapon, materialDefinitions });
+      }, () => {
+        state.notice = `已製作：${weapon.name}`;
+        state.noticeType = "status";
+        closeCraftDialog();
+        render();
       });
-      if (!saveInventory()) {
-        inventory.gold = snapshot.gold;
-        inventory.materials = snapshot.materials;
-        inventory.weapons = snapshot.weapons;
-        throw new Error("瀏覽器無法保存製作結果，資源已回復。");
-      }
-      state.notice = `已製作：${weapon.name}`;
-      state.noticeType = "status";
-      closeCraftDialog();
-      render();
     } catch (error) {
       state.notice = error instanceof Error ? error.message : "武器製作失敗。";
       state.noticeType = "error";

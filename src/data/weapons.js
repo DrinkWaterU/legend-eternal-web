@@ -135,6 +135,10 @@ export function assertWeaponDefinitions(definitions = weaponDefinitions, options
 }
 
 function assertWeaponEffect(weaponId, effect) {
+  if (effect.type === "weaponTechnique") {
+    if (!["riposte", "charge", "breach", "feint", "weight"].includes(effect.technique)) throw new Error(`Weapon ${weaponId} 技法無效。`);
+    return;
+  }
   if (effect.type === "adventurerAdaptation") {
     assertAdventurerAdaptationEffect(weaponId, effect);
     return;

@@ -1,5 +1,12 @@
 export { buildEnemy, buildEnemyGroup, buildScaledEnemy } from "./enemyBuilder.js";
 export {
+  applyGuardToDirectDamage,
+  beginGuard,
+  clearGuard,
+  DEFAULT_GUARD_DAMAGE_REDUCTION,
+  getGuardState
+} from "./guard.js";
+export {
   getHeroAttackDamageMultiplier,
   getHeroDirectAttackDamage,
   resolveHeroAction,
@@ -16,6 +23,7 @@ export {
 export {
   advanceHeroCombatStatuses,
   advanceParalysis,
+  applyEnemyPoisonDamage,
   applyHeroBattleHealing,
   applyEnemyEndOfTurnNegativeEffects,
   applyEnemyEndOfTurnRecoveryEffects,
@@ -26,6 +34,9 @@ export {
   getHeroBattleHealingAmount,
   getHeroBattleHealingMultiplier,
   getParalysisDamageMultiplier,
+  describeTurnForecast,
   getEnemyPendingHpLoss,
-  getHeroPendingHpLoss
+  getEnemyTurnForecast,
+  getHeroPendingHpLoss,
+  getHeroTurnForecast
 } from "./combatStatusEffects.js";

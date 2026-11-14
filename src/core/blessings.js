@@ -63,6 +63,20 @@ function applyEffect(hero, effect, blessing, options) {
   if (effect.type === "addTimedRegen") {
     addTimedRegen(hero, effect, blessing, options);
   }
+  if (effect.type === "addPeriodicRegen") {
+    addPeriodicRegen(hero, effect, blessing, options);
+  }
+}
+
+function addPeriodicRegen(hero, effect, blessing, { instanceId = null } = {}) {
+  const everyTurns = Math.floor(Number(effect.everyTurns) || 0);
+  const amount = Number(effect.amount) || 0;
+  if (everyTurns <= 0 || amount <= 0) return;
+  hero.periodicRegens = Array.isArray(hero.periodicRegens) ? hero.periodicRegens : [];
+  const source = String(effect.id || blessing.id || "periodic-regen");
+  const id = instanceId ? `${instanceId}:${source}` : `${source}:local-${hero.periodicRegens.length + 1}`;
+  if (hero.periodicRegens.some(item => item.id === id)) return;
+  hero.periodicRegens.push({ id, instanceId, source: blessing.name || "祝福", everyTurns, amount });
 }
 
 function addTimedRegen(hero, effect, blessing, options = {}) {
@@ -176,7 +190,7 @@ export function inferBlessingFlows(blessing) {
     if (effect.type === "recoverHp") {
       flows.add("healing");
     }
-    if (effect.type === "addTimedRegen") {
+    if (effect.type === "addTimedRegen" || effect.type === "addPeriodicRegen") {
       flows.add("healing");
     }
     if (effect.type === "addFamilyDamageBonus") {

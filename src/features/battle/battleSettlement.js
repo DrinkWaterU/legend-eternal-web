@@ -85,6 +85,12 @@ export function createBattleSettlement({
     state.defeatedEnemies += 1;
     state.defeatedBoss = state.defeatedBoss || defeatedBoss;
     applyLivingEnemyDefeatReactions(enemy);
+    if (enemy.defeatOwner === "environment") return;
+    // A deliberately induced kill earns ordinary on-kill benefits. It does not
+    // run direct-hit hooks, charge a weapon or add damage to finisher healing.
+    if (enemy.defeatOwner === "hero" && state.hero.highlandEnvKillHeal && state.highlandBattle && !state.highlandBattle.environmentHealUsed) {
+      healHeroFromEnemyDefeat(Math.min(24, state.hero.highlandEnvKillHeal)); state.highlandBattle.environmentHealUsed = true;
+    }
     if (registerFrontlineDefeat(state.hero, enemy)) {
       addFixedLog("status", `${state.hero.name}擊破前衛，本場攻擊提高 ${state.hero.frontlineBreakAttack}。`);
     }

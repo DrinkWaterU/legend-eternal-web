@@ -1,0 +1,12 @@
+diff --git a/src/core/weaponTechniques.js b/src/core/weaponTechniques.js
+--- a/src/core/weaponTechniques.js
++++ b/src/core/weaponTechniques.js
+@@ -108,7 +108,7 @@ export function runWeaponAttack({ state, action, target, log, runAttack }) {
+       let hitCount = 0;
+       for (const enemy of state.enemies) {
+         if (enemy.hp <= 0 || enemy.runtimeId === target.runtimeId) continue;
+-        packet(enemy, power * 1.0, "震岩裂陣");
++        packet(enemy, power * .45, "震岩裂陣");
+         hitCount++;
+       }
+       if (!hitCount) log.fixed("status", "沒有其他存活敵人，裂陣沒有造成範圍傷害。");

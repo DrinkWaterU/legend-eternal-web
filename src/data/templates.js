@@ -22,6 +22,8 @@ export const templates = {
   defeat: "{target} 倒下了。本輪冒險結束。",
   blessing: "你接受了祝福：{blessing}。",
   expGain: "你獲得了 {amount} 點經驗。",
+  expGainEmber: "你獲得了 {amount} 點經驗（灰燼回復 +{bonus}）。",
+  emberRecovered: "灰燼裡的微光散去了：你找回了失去的 Lv. {level}。",
   levelUp: "角色等級提升到 Lv. {level}：{name}。",
   skillLearned: "你學會了技能：{name}。",
   heavyStrike: "{actor} 使出了重擊。",

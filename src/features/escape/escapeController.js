@@ -11,6 +11,7 @@ import { randomItem, roll, weightedRandomItem } from "../../utils.js";
 
 export function createEscapeController({
   state,
+  resolveHighlandFleeFailure = null,
   normalFleeChance,
   eliteFleeChance,
   tacticalFleeResults,
@@ -38,9 +39,16 @@ export function createEscapeController({
   resumePendingThreat,
   getAdventureEncounterIndex,
   getEventRuntime,
-  startEncounter
+  startEncounter,
+  runSaveOperation = (action) => action()
 }) {
   function resolveFleeFailure() {
+    if (state.highlandBattle && resolveHighlandFleeFailure) {
+      state.runStats.fleeFailures += 1;
+      addLog("system", "fleeFail", { enemy: getEnemyGroupLabel(state.enemies) });
+      resolveHighlandFleeFailure();
+      return;
+    }
     const attacker = randomItem(getLivingEnemies(state.enemies));
     if (!attacker) return;
     state.runStats.fleeFailures += 1;
@@ -48,7 +56,8 @@ export function createEscapeController({
     const log = createCombatLogger();
     resolveEnemyAction({
       hero: state.hero,
-      enemy: attacker,
+      // 逃跑失敗不推進回合，所以固定為普通攻擊：不重複上一回合的衝鋒／特殊攻擊，也不搶先打出預告中的招式。
+      enemy: { ...attacker, chargeEvery: null, specialAttack: null },
       turn: Math.max(1, state.turn),
       log,
       modifyDirectDamage: modifyIncomingDirectDamage
@@ -109,6 +118,10 @@ export function createEscapeController({
   }
 
   function tryFlee() {
+    return runSaveOperation(tryFleeOperation);
+  }
+
+  function tryFleeOperation() {
     const livingEnemies = getLivingEnemies(state.enemies);
     if (!state.hero || livingEnemies.length === 0 || state.ended || state.awaitingBlessing || state.phase === "safe") return;
     const threatKind = getEnemyGroupThreatKind(livingEnemies);
@@ -139,6 +152,10 @@ export function createEscapeController({
   }
 
   function continueAdventure() {
+    return runSaveOperation(continueAdventureOperation);
+  }
+
+  function continueAdventureOperation() {
     if (state.phase !== "safe" || state.ended || state.adventureProgressLocked) return;
     state.adventureProgressLocked = true;
     setCombatActionState();
@@ -158,6 +175,10 @@ export function createEscapeController({
   }
 
   function restAtSafeRoute() {
+    return runSaveOperation(restAtSafeRouteOperation);
+  }
+
+  function restAtSafeRouteOperation() {
     if (state.phase !== "safe" || !state.canRest || state.hasRested || state.ended) return;
     const amount = Math.max(1, Math.round(state.hero.maxHp * restHealRatio));
     const before = state.hero.hp;
@@ -169,6 +190,10 @@ export function createEscapeController({
   }
 
   function retreatRun() {
+    return runSaveOperation(retreatRunOperation);
+  }
+
+  function retreatRunOperation() {
     if (state.phase !== "safe" || state.ended) return;
     state.runStats.retreated = true;
     clearPendingThreat();

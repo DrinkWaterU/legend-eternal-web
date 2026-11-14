@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>傳說永恆</title>
-    <link rel="stylesheet" href="styles.css?v=0.2.7.3-alpha" />
+    <link rel="stylesheet" href="styles.css?v=0.2.12.0-alpha" />
   </head>
   <body>
     <main class="app-shell">
@@ -18,14 +18,17 @@
             <span id="encounterLabel">尚未開始</span>
             <span id="resultLabel">冒險準備中</span>
           </div>
-          <div class="music-controls" aria-label="背景音樂控制">
+          <details class="music-settings">
+            <summary>音樂設定</summary>
+            <div class="music-controls" aria-label="背景音樂控制">
             <button id="musicToggleButton" class="music-toggle-button" type="button" aria-pressed="true">BGM：開</button>
             <label class="music-volume-control" for="musicVolumeInput">
               <span>BGM 音量</span>
               <input id="musicVolumeInput" type="range" min="0" max="1" step="0.05" value="0.35" />
               <output id="musicVolumeValue" for="musicVolumeInput">35%</output>
             </label>
-          </div>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -33,11 +36,11 @@
         <div class="menu-layout">
           <div class="menu-copy">
             <p class="eyebrow">主選單</p>
-            <h2>傳說大陸的旅程從這裡開始。</h2>
+            <h2><span class="heading-phrase">傳說大陸的旅程</span><span class="heading-phrase">從這裡開始。</span></h2>
             <p class="body-text">
               選擇地區後開始冒險。平原之外，森林深處也開始向冒險者開放。
             </p>
-            <p class="version-label">v0.2.7.3-alpha</p>
+            <p class="version-label">v0.2.12.0-alpha</p>
           </div>
           <nav class="menu-actions" aria-label="主選單">
             <button id="openRegionButton" class="menu-button" type="button">
@@ -54,7 +57,7 @@
             </button>
             <button id="openAchievementButton" class="menu-button" type="button">
               <span>成就系統</span>
-              <small>尚未開放</small>
+              <small>星光尚未照見</small>
             </button>
           </nav>
         </div>
@@ -66,54 +69,67 @@
             <p id="campEyebrow" class="eyebrow">冒險營地</p>
             <h2 id="campTitle">火光暫時守住了平原的夜。</h2>
             <p id="campDescription" class="body-text">
-              在出發前確認角色、地區與最近一次冒險紀錄。撤退、失敗或通關後也會回到這裡。
+              營火劈啪作響，帳篷邊堆著上次帶回的戰利品。天亮之前，還有時間整理行囊。
             </p>
           </div>
 
-          <dl id="campStatusList" class="stat-list camp-status"></dl>
-          <p id="campWarning" class="camp-warning" data-type="danger"></p>
+          <!-- 指令視窗：隊伍狀態 → 出發 → 指令清單。地區與角色只在指令列右側顯示一次。 -->
+          <div class="camp-command" aria-label="營地指令">
+            <section class="camp-party" aria-label="目前角色">
+              <div class="camp-party-line">
+                <strong id="campPartyName">冒險者</strong>
+                <span id="campPartyLevel" class="camp-party-level">Lv.1</span>
+                <span id="campPartyGold" class="camp-party-gold" hidden>0 G</span>
+              </div>
+              <div class="camp-party-exp">
+                <span class="px-meter camp-party-meter" aria-hidden="true"><span id="campPartyExpBar"></span></span>
+                <small id="campPartyExp">經驗 0／0</small>
+              </div>
+              <p id="campWarning" class="camp-warning" data-type="danger"></p>
+            </section>
 
-          <button id="campStartButton" class="menu-button primary-menu-button camp-primary-action" type="button">
-            <span>出發冒險</span>
-            <small id="campStartHint">前往目前地區繼續旅程</small>
-          </button>
+            <button id="campStartButton" class="menu-button primary-menu-button camp-primary-action" type="button">
+              <span>出發冒險</span>
+              <small id="campStartHint">前往目前地區繼續旅程</small>
+            </button>
 
-          <section class="camp-feature-section" aria-label="營地功能">
-            <p id="campFeatureTitle" class="camp-feature-title">營地功能</p>
-            <nav id="campFeatureGrid" class="camp-feature-grid">
-              <button id="campRegionButton" class="camp-feature-button" data-feature="region" type="button">
-                <span>選擇地區</span>
-                <small id="campRegionHint">目前：平原</small>
-              </button>
-              <button id="campCharacterButton" class="camp-feature-button" data-feature="character" type="button">
-                <span>查看角色</span>
-                <small id="campCharacterHint">冒險者 Lv.1</small>
-              </button>
-              <button id="campStorageButton" class="camp-feature-button" data-feature="storage" type="button" hidden>
-                <span>倉庫</span>
-                <small id="campStorageHint">0 個素材</small>
-              </button>
-              <button id="campPlacesButton" class="camp-feature-button" data-feature="places" type="button" hidden>
-                <span>四處看看</span>
-                <small id="campPlacesHint">看看營地周圍</small>
-              </button>
-              <button id="campRecordButton" class="camp-feature-button camp-feature-wide" data-feature="records" type="button">
-                <span>冒險紀錄</span>
-                <small id="campRecordHint">最近：尚無紀錄</small>
-              </button>
-              <button id="campStoryQuestButton" class="camp-feature-button camp-feature-wide" data-feature="story-quests" type="button" hidden>
-                <span>任務紀錄</span>
-                <small id="campStoryQuestHint">查看劇情任務</small>
-              </button>
+            <nav class="camp-feature-section" aria-label="營地功能">
+              <p id="campFeatureTitle" class="camp-feature-title">營地功能</p>
+              <div id="campFeatureGrid" class="camp-feature-grid">
+                <button id="campRegionButton" class="camp-feature-button" data-feature="region" type="button">
+                  <span>選擇地區</span>
+                  <small id="campRegionHint">平原</small>
+                </button>
+                <button id="campCharacterButton" class="camp-feature-button" data-feature="character" type="button">
+                  <span>切換角色</span>
+                  <small id="campCharacterHint">冒險者</small>
+                </button>
+                <button id="campStorageButton" class="camp-feature-button" data-feature="storage" type="button" hidden>
+                  <span>倉庫</span>
+                  <small id="campStorageHint">0 種素材</small>
+                </button>
+                <button id="campPlacesButton" class="camp-feature-button" data-feature="places" type="button" hidden>
+                  <span>四處看看</span>
+                  <small id="campPlacesHint">看看營地周圍</small>
+                </button>
+                <button id="campRecordButton" class="camp-feature-button" data-feature="records" type="button">
+                  <span>冒險紀錄</span>
+                  <small id="campRecordHint">尚無紀錄</small>
+                </button>
+                <button id="campStoryQuestButton" class="camp-feature-button" data-feature="story-quests" type="button" hidden>
+                  <span>任務紀錄</span>
+                  <small id="campStoryQuestHint">查看劇情任務</small>
+                </button>
+                <button id="campTravelButton" class="camp-feature-button camp-travel-button" data-feature="travel" type="button" hidden>
+                  <span>移動據點</span>
+                  <small id="campTravelHint">前往其他已解鎖的據點</small>
+                  <span id="campTravelBadge" class="camp-travel-badge" hidden>新地點</span>
+                </button>
+              </div>
             </nav>
-          </section>
 
-          <button id="campTravelButton" class="camp-feature-button camp-feature-wide camp-travel-button" data-feature="travel" type="button" hidden>
-            <span>移動據點</span>
-            <small id="campTravelHint">前往其他已解鎖的據點</small>
-            <span id="campTravelBadge" class="camp-travel-badge" hidden>新地點</span>
-          </button>
-          <button id="campBackButton" class="secondary-button camp-menu-return" type="button">返回主選單</button>
+            <button id="campBackButton" class="secondary-button camp-menu-return" type="button">返回主選單</button>
+          </div>
         </div>
       </section>
 
@@ -547,15 +563,15 @@
                     <button class="blacksmith-filter-tab" type="button" data-blacksmith-filter="owned" aria-pressed="false">已擁有</button>
                   </div>
                   <div class="blacksmith-category-filter" aria-label="武器類別篩選">
-                    <button id="blacksmithCategoryPrev" class="blacksmith-category-arrow" type="button" aria-label="往左查看武器類別" hidden>‹</button>
+                    <button id="blacksmithCategoryPrev" class="blacksmith-category-arrow" type="button" aria-label="往左查看武器類別" hidden>&lt;</button>
                     <div id="blacksmithCategoryScroller" class="blacksmith-category-scroller">
                       <div id="blacksmithCategoryList" class="blacksmith-category-list" role="tablist" aria-label="武器類別"></div>
                     </div>
-                    <button id="blacksmithCategoryNext" class="blacksmith-category-arrow" type="button" aria-label="往右查看武器類別" hidden>›</button>
+                    <button id="blacksmithCategoryNext" class="blacksmith-category-arrow" type="button" aria-label="往右查看武器類別" hidden>&gt;</button>
                   </div>
                   <label class="blacksmith-search-field">
                     <span class="sr-only">搜尋武器</span>
-                    <span aria-hidden="true">⌕</span>
+                    
                     <input id="blacksmithSearchInput" type="search" placeholder="搜尋武器或類別" autocomplete="off">
                   </label>
                 </div>
@@ -763,8 +779,8 @@
             <button class="secondary-button back-button" type="button" data-target="menuScreen">回主選單</button>
           </div>
           <div id="achievementLockedState" class="achievement-locked-state" hidden>
-            <strong>成就系統尚未開放</strong>
-            <p>繼續完成冒險，新的旅程紀錄會在適當時機出現。</p>
+            <strong>這裡還是一片空白</strong>
+            <p>繼續冒險吧。你走過的路，總有一天會被看見。</p>
           </div>
           <div id="achievementBrowser" class="achievement-browser">
             <div class="achievement-summary-row"><p id="achievementSummary">目前尚未留下旅程節點。</p><strong id="achievementVisibleCount" class="result-count-badge">0 項</strong></div>
@@ -801,7 +817,7 @@
             <section class="statistics-journey-summary"><p class="eyebrow">旅程摘要</p><h3 id="statisticsJourneySummary">尚未留下冒險紀錄。</h3></section>
             <dl id="statisticsKeyMetrics" class="statistics-key-metrics"></dl>
             <div class="statistics-dashboard-grid">
-              <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">已結算結果</p><h3>冒險結果</h3></div><strong id="statisticsResolvedRuns" class="result-count-badge">0 次</strong></div><div id="statisticsOutcomeList" class="statistics-outcome-list"></div></section>
+              <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">全部冒險</p><h3>冒險結果</h3></div><strong id="statisticsResolvedRuns" class="result-count-badge">0 次</strong></div><div id="statisticsOutcomeStack" class="statistics-outcome-stack" aria-hidden="true"></div><div id="statisticsOutcomeList" class="statistics-outcome-list"></div></section>
               <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">戰鬥累積</p><h3>戰鬥足跡</h3></div></div><dl id="statisticsCombatMetrics" class="statistics-compact-list"></dl></section>
               <section class="statistics-card statistics-escape-card"><div class="browser-panel-heading"><div><p class="eyebrow">撤離方式</p><h3>成功脫離</h3></div><strong id="statisticsEscapeRate" class="result-count-badge">0%</strong></div><div id="statisticsEscapeMetrics"></div></section>
               <section class="statistics-card"><div class="browser-panel-heading"><div><p class="eyebrow">公會紀錄</p><h3>委託履歷</h3></div><strong id="statisticsQuestCompleted" class="result-count-badge">0 件</strong></div><dl id="statisticsQuestMetrics" class="statistics-compact-list"></dl></section>
@@ -828,52 +844,57 @@
 
       <section id="gameScreen" class="screen">
         <div id="combatLayout" class="combat-layout">
-          <aside class="status-panel" aria-label="戰鬥即時資訊與目前狀態摘要">
+          <section class="battle-stage" aria-label="戰場">
+            <section id="highlandBattlePanel" class="highland-battle-panel" aria-label="風與地形" hidden></section>
+            <section class="enemy-zone" aria-label="敵群">
+              <div class="enemy-section-heading">
+                <h3>敵群</h3>
+                <span id="enemyCountLabel">暫無遭遇</span>
+              </div>
+              <p class="enemy-intent-summary" hidden></p>
+              <p class="enemy-list-scroll-hint">上下滑動查看其他敵人與預告</p>
+              <div id="enemyRoster" class="enemy-roster" aria-label="敵人列表" tabindex="0"></div>
+            </section>
+          </section>
+
+          <aside class="battle-hero" aria-label="玩家即時狀態與目前狀態摘要">
             <section class="hero-combat-status" aria-label="玩家即時狀態">
               <div class="hero-combat-heading">
                 <h2 id="heroName">冒險者</h2>
                 <span id="heroLevel" class="hero-level">角色 Lv. 1</span>
               </div>
-              <div id="heroHealthMeter" class="layered-meter" role="meter" aria-label="冒險者生命">
+              <div id="heroHealthMeter" class="layered-meter px-meter" role="meter" aria-label="冒險者生命">
                 <span id="heroHealthBar" class="meter-layer hp"></span>
                 <span id="heroPendingHealthBar" class="meter-layer pending-loss"></span>
+                <span class="meter-layer pending-gain"></span>
                 <span id="heroShieldBar" class="meter-layer shield"></span>
               </div>
               <div class="meter-meta">
                 <p id="heroHealthText" class="meter-text">100 / 100</p>
                 <div id="heroStatusList" class="combat-statuses" aria-label="玩家戰鬥狀態"></div>
               </div>
+              <p class="turn-forecast" data-turn-forecast hidden></p>
             </section>
-
             <section id="combatPreparationStatus" class="combat-preparation-status" aria-label="冒險整備" hidden>
               <span class="combat-preparation-label">冒險整備</span>
               <strong id="combatPreparationName">未整備</strong>
               <small id="combatPreparationCharges"></small>
             </section>
-
-            <section class="enemy-zone" aria-label="敵群">
-              <div class="enemy-section-heading">
-                <h3>敵群</h3>
-                <span id="enemyCountLabel">暫無遭遇</span>
-              </div>
-              <div id="enemyRoster" class="enemy-roster" aria-label="敵人列表"></div>
-            </section>
-
             <section class="current-status-summary" aria-label="目前狀態摘要">
               <div class="summary-heading">
                 <strong>目前狀態摘要</strong>
                 <small>點擊查看完整資訊</small>
               </div>
               <div class="summary-grid">
-                <button id="openAbilityFromAttack" class="summary-tile" type="button">
+                <button id="openAbilityFromAttack" class="summary-tile" type="button" aria-label="查看攻擊與目前能力">
                   <span class="summary-label">攻擊</span>
                   <span id="currentAttackSummary" class="summary-value">0</span>
                 </button>
-                <button id="openAbilityFromDefense" class="summary-tile" type="button">
+                <button id="openAbilityFromDefense" class="summary-tile" type="button" aria-label="查看防禦與目前能力">
                   <span class="summary-label">防禦</span>
                   <span id="currentDefenseSummary" class="summary-value">0</span>
                 </button>
-                <button id="openAbilityFromCrit" class="summary-tile" type="button">
+                <button id="openAbilityFromCrit" class="summary-tile" type="button" aria-label="查看暴擊率與目前能力">
                   <span class="summary-label">暴擊率</span>
                   <span id="currentCritSummary" class="summary-value">0%</span>
                 </button>
@@ -888,14 +909,6 @@
           <section class="log-panel" aria-label="戰鬥紀錄">
             <div class="log-header">
               <h2 id="battleLogTitle">戰鬥紀錄</h2>
-              <div class="combat-actions">
-                <button id="nextButton" class="secondary-button action-combat" type="button">下一回合</button>
-                <button id="fleeButton" class="secondary-button action-flee" type="button">嘗試逃跑</button>
-                <button id="restButton" class="secondary-button action-rest" type="button">原地修整</button>
-                <button id="continueButton" class="secondary-button action-forward" type="button">繼續前進</button>
-                <button id="retreatButton" class="secondary-button action-retreat" type="button">撤退</button>
-                <button id="returnToEndSummaryButton" class="primary-button" type="button" hidden>返回結算</button>
-              </div>
             </div>
             <button
               id="questCombatToggle"
@@ -905,18 +918,33 @@
               aria-expanded="false"
               hidden
             >
-              <span class="quest-combat-toggle-mark" aria-hidden="true">✦</span>
+              <span class="quest-combat-toggle-mark" aria-hidden="true">◆</span>
               <span class="quest-combat-toggle-copy">
                 <span class="eyebrow">目前委託</span>
                 <strong id="questCombatSummaryName">目前委託</strong>
               </span>
               <span id="questCombatSummaryProgress" class="quest-combat-toggle-progress">0 / 0</span>
-              <span class="quest-combat-toggle-chevron" aria-hidden="true">↗</span>
+              <span class="quest-combat-toggle-chevron" aria-hidden="true">→</span>
             </button>
             <ol id="battleLog" class="battle-log"></ol>
           </section>
 
-          <button id="combatHomeButton" class="secondary-button home-button combat-home-button" type="button" data-target="menuScreen">回主選單</button>
+          <section class="combat-command-panel" aria-label="本回合行動">
+            <p id="weaponTechniqueStatus" class="weapon-technique-status" hidden></p>
+            <div id="tacticalActions" class="tactical-actions" hidden></div>
+            <div class="combat-actions">
+              <button id="nextButton" class="px-button action-combat" type="button">攻擊</button>
+              <button id="guardButton" class="px-button action-guard" type="button">守勢</button>
+              <button id="fleeButton" class="px-button action-flee" type="button">嘗試逃跑</button>
+              <button id="restButton" class="px-button action-rest" type="button">原地修整</button>
+              <button id="continueButton" class="px-button action-forward" type="button">繼續前進</button>
+              <button id="retreatButton" class="px-button action-retreat" type="button">撤退</button>
+              <button id="returnToEndSummaryButton" class="primary-button" type="button" hidden>返回結算</button>
+            </div>
+            <p id="combatActionHint" class="combat-action-hint" aria-live="polite">選擇攻擊或守勢；守勢會放棄本回合攻擊。</p>
+          </section>
+
+          <button id="combatHomeButton" class="px-button home-button combat-home-button" type="button" data-target="menuScreen">回主選單</button>
         </div>
 
         <section id="eventLayout" class="event-layout" aria-label="冒險事件" hidden>
@@ -979,13 +1007,14 @@
             <div>
               <p class="eyebrow">冒險祝福</p>
               <h2>選擇一項臨時祝福</h2>
+              <p class="blessing-scroll-hint" hidden>向下滑動，看看其他祝福</p>
             </div>
             <div id="blessingChoices" class="blessing-grid"></div>
           </div>
         </section>
 
         <section id="endPanel" class="end-panel" aria-label="冒險結果" aria-modal="true">
-          <div class="end-dialog">
+          <div class="end-dialog px-dialog">
             <div>
               <p class="eyebrow">本輪結束</p>
               <h2 id="endTitle">冒險失敗</h2>
@@ -1001,7 +1030,7 @@
         </section>
 
         <section id="duelExitPanel" class="end-panel" aria-label="結束切磋確認" aria-modal="true">
-          <div class="end-dialog compact-confirm-dialog">
+          <div class="end-dialog compact-confirm-dialog px-dialog">
             <div>
               <p class="eyebrow">特殊切磋</p>
               <h2>確定要結束這場切磋？</h2>
@@ -1015,7 +1044,7 @@
         </section>
 
         <section id="abilityInfoPanel" class="end-panel ability-info-panel" aria-label="目前能力" aria-modal="true">
-          <div class="end-dialog combat-info-dialog">
+          <div class="end-dialog combat-info-dialog px-dialog">
             <div class="combat-info-header">
               <p class="eyebrow">戰鬥資訊</p>
               <h2>目前能力</h2>
@@ -1030,7 +1059,7 @@
         </section>
 
         <section id="blessingInfoPanel" class="end-panel blessing-info-panel" aria-label="目前祝福" aria-modal="true">
-          <div class="end-dialog blessing-info-dialog">
+          <div class="end-dialog blessing-info-dialog px-dialog">
             <div class="combat-info-header">
               <p class="eyebrow">臨時祝福</p>
               <h2>目前祝福</h2>
@@ -1046,7 +1075,7 @@
         </section>
 
         <section id="questInfoPanel" class="end-panel quest-info-panel" aria-label="目前委託詳情" aria-modal="true">
-          <div class="end-dialog combat-info-dialog quest-info-dialog">
+          <div class="end-dialog combat-info-dialog quest-info-dialog px-dialog">
             <div class="combat-info-header">
               <p class="eyebrow">戰鬥中的委託詳情</p>
               <h2 id="questInfoTitle">目前委託</h2>
@@ -1088,12 +1117,16 @@
         <div id="anpingArrivalDialog" class="story-dialog anping-arrival-dialog" data-stage="forest">
           <div class="anping-arrival-visual" aria-hidden="true">
             <picture class="anping-arrival-picture anping-arrival-background-picture">
-              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-background-desktop.jpg">
-              <img src="assets/images/anping-town/arrival/anping-arrival-background-mobile.jpg" alt="">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-background-desktop.webp">
+              <img src="assets/images/anping-town/arrival/anping-arrival-background-mobile.webp" alt="">
+            </picture>
+            <picture class="anping-arrival-picture anping-arrival-forest-picture">
+              <source media="(min-width: 821px)" srcset="assets/images/regions/forest/forest-mid.webp">
+              <img src="assets/images/regions/forest/forest-mid-mobile.webp" alt="">
             </picture>
             <picture class="anping-arrival-picture anping-arrival-scene-picture">
-              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-scene-desktop.jpg">
-              <img src="assets/images/anping-town/arrival/anping-arrival-scene-mobile.jpg" alt="">
+              <source media="(min-width: 821px)" srcset="assets/images/anping-town/arrival/anping-arrival-scene-desktop.webp">
+              <img src="assets/images/anping-town/arrival/anping-arrival-scene-mobile.webp" alt="">
             </picture>
             <div class="anping-arrival-mist"></div>
             <div class="anping-arrival-wind"><i></i><i></i><i></i></div>
@@ -1185,7 +1218,7 @@
       </section>
 
       <section id="merchantSalePanel" class="end-panel merchant-sale-panel" aria-label="出售素材" aria-modal="true">
-        <div class="end-dialog merchant-sale-dialog">
+        <div class="end-dialog merchant-sale-dialog px-dialog">
           <div>
             <p class="eyebrow">旅行商人</p>
             <h2 id="merchantSaleTitle">素材</h2>
@@ -1217,7 +1250,7 @@
       </section>
 
       <section id="guildBulkConfirmPanel" class="end-panel guild-bulk-confirm-panel" aria-label="確認交付冒險物資" aria-modal="true">
-        <div class="end-dialog guild-bulk-confirm-dialog">
+        <div class="end-dialog guild-bulk-confirm-dialog px-dialog">
           <div>
             <p class="eyebrow">冒險者公會</p>
             <h2>確認交付內容</h2>
@@ -1237,7 +1270,7 @@
       </section>
 
       <section id="guildQuestAbandonPanel" class="end-panel guild-quest-abandon-panel" aria-label="放棄委託確認" aria-modal="true">
-        <div class="end-dialog guild-quest-abandon-dialog">
+        <div class="end-dialog guild-quest-abandon-dialog px-dialog">
           <div>
             <p class="eyebrow">公會委託</p>
             <h2 id="guildQuestAbandonTitle">目前委託</h2>
@@ -1251,7 +1284,7 @@
       </section>
 
       <section id="blacksmithCraftPanel" class="end-panel blacksmith-craft-panel" aria-label="確認製作武器" aria-modal="true">
-        <div class="end-dialog blacksmith-craft-dialog">
+        <div class="end-dialog blacksmith-craft-dialog px-dialog">
           <div>
             <p class="eyebrow">鐵匠鋪</p>
             <h2 id="blacksmithCraftTitle">武器名稱</h2>
@@ -1271,6 +1304,6 @@
       </aside>
     </main>
 
-    <script type="module" src="game.js?v=0.2.7.3-alpha&amp;build=v0273-alpha-1"></script>
+  <script type="module" src="game.js?v=0.2.12.0-alpha&amp;build=v02120-alpha-1"></script>
   </body>
 </html>

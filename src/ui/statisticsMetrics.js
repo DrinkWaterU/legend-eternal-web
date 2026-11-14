@@ -70,6 +70,17 @@ export function clampProgress(value, maximum) {
   return { current, maximum: max, ratio: current / max };
 }
 
+// 地區最高抵達：海岸等地區在第一段（例如海灘 16 場）之後還有後續路線，
+// 存檔裡的 bestEncounter 可能超過本段場數（例如 25）。本段進度要截在上限，超出的部分另外說明。
+export function describeRegionReach(bestEncounter, encounterCount) {
+  const best = safeCount(bestEncounter);
+  const progress = clampProgress(best, encounterCount);
+  return {
+    ...progress,
+    beyond: progress.maximum > 0 && best > progress.maximum ? best : 0
+  };
+}
+
 export function safeStatisticCount(value) {
   return safeCount(value);
 }

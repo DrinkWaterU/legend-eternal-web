@@ -9,6 +9,7 @@
 /角色設定規格.md
 /傳說永恆_世界觀設定.md
 /AI專案打包使用說明.md
+/AGENTS.md
 /開頭prompt_媒體排除版.txt
 
 # Local environment files
@@ -36,3 +37,15 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# Local-only prototypes, verification data and tool state (deliver separately; see Handoff.md)
+/tools/blacksmith-demo/
+/tools/camp-transition-demo/
+/tools/highlands-prototype/
+/tools/immersive-ui-prototype/
+/tools/quest-progress-demo/
+/tools/tools/
+/tools/verification-artifacts/
+/.playwright-mcp/
+/.claude/
+/代訂企劃.txt

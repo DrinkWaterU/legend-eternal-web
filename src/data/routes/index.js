@@ -5,8 +5,9 @@ import { regionDefinitions } from "../regions/index.js";
 import { ROUTE_ENDING_ROLES, ROUTE_ENDING_TONES } from "./endingSemantics.js";
 import goblinCampData from "./goblinCamp.json" with { type: "json" };
 import coastCaveData from "./coastCave.json" with { type: "json" };
+import windbreakData from "./windbreakAscent.json" with { type: "json" };
 
-const routeDataFiles = [goblinCampData, coastCaveData];
+const routeDataFiles = [goblinCampData, coastCaveData, windbreakData];
 const ROUTE_ENCOUNTER_TYPES = new Set(["normal", "elite", "boss"]);
 
 export const routeDefinitions = buildRouteRegistry(routeDataFiles);

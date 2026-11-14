@@ -138,6 +138,7 @@ export function runTestSuite({
   mode,
   match = "",
   toolsDirectory,
+  cwd = path.dirname(toolsDirectory),
   output = process.stdout,
   errorOutput = process.stderr
 }) {
@@ -167,7 +168,7 @@ export function runTestSuite({
 
   for (const fileName of selectedTests) {
     const testFilePath = path.join(toolsDirectory, fileName);
-    const result = runTestFile(testFilePath, { cwd: path.dirname(toolsDirectory) });
+    const result = runTestFile(testFilePath, { cwd });
     results.push({ fileName, ...result });
 
     const durationLabel = `${result.durationSeconds.toFixed(2)}s`.padStart(8);
@@ -237,7 +238,9 @@ export function main(args = process.argv.slice(2)) {
   }
 
   const toolsDirectory = path.dirname(fileURLToPath(import.meta.url));
-  return runTestSuite({ mode: parsed.mode, match: parsed.match, toolsDirectory }).exitCode;
+  const testsDirectory = path.join(toolsDirectory, "tests");
+  const projectRoot = path.resolve(toolsDirectory, "..");
+  return runTestSuite({ mode: parsed.mode, match: parsed.match, toolsDirectory: testsDirectory, cwd: projectRoot }).exitCode;
 }
 
 const isDirectExecution = process.argv[1]

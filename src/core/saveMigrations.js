@@ -21,6 +21,11 @@ import { toSafeInteger } from "../utils.js";
 import { normalizeQuestState } from "./questRules.js";
 import { STORY_QUEST_STATUSES, normalizeStoryQuestState } from "./storyQuestRules.js";
 import { applyStoryQuestRewards } from "./storyQuestRewards.js";
+import { getExpStorageLimit } from "./progression.js";
+import { getSwordTraining } from "./weaponTraining.js";
+import { getHammerTraining } from "./hammerTraining.js";
+
+export const LV25_EXP_CAP_MIGRATION_SCHEMA_VERSION = 11;
 
 export function migrateSaveData(rawSave) {
   const save = createDefaultSave();
@@ -29,6 +34,9 @@ export function migrateSaveData(rawSave) {
   }
 
   const rawSchemaVersion = toSafeInteger(rawSave.schemaVersion, 0);
+  if (rawSchemaVersion > SAVE_SCHEMA_VERSION) {
+    throw new Error("這份存檔來自較新的遊戲版本，請更新遊戲後再開啟。");
+  }
   const shouldMarkMigration = rawSchemaVersion !== SAVE_SCHEMA_VERSION;
   save.gameVersion = GAME_VERSION;
   save.profile.createdAt = rawSave.profile?.createdAt || save.profile.createdAt;
@@ -38,6 +46,12 @@ export function migrateSaveData(rawSave) {
   mergePlainObject(save.inventory.materials, rawSave.inventory?.materials);
   save.inventory.gold = toSafeInteger(rawSave.inventory?.gold);
   save.inventory.weapons = normalizeWeaponInventory(rawSave.inventory?.weapons, weaponDefinitions);
+  const training = getSwordTraining(rawSave);
+  delete training.ready;
+  save.weaponTraining = training;
+  const hammerTraining = getHammerTraining(rawSave);
+  delete hammerTraining.ready;
+  save.hammerTraining = hammerTraining;
   normalizeInventory(save.inventory);
   migrateStoryFlags(save, rawSave);
   migrateAchievements(save, rawSave);
@@ -51,6 +65,9 @@ export function migrateSaveData(rawSave) {
   save.progression.safeAreas = migrateSafeAreaProgression(rawSave, undefined, { defaultVisitedAt: save.profile.createdAt });
   syncSafeAreaUnlocks(save);
   migrateSettings(save, rawSave);
+  // Preserve opaque incompatible snapshots for export/discard in the UI.
+  // Never replay one or silently erase it during permanent-progress migration.
+  save.activeRun = rawSave.activeRun ? structuredClone(rawSave.activeRun) : null;
   return save;
 }
 
@@ -108,6 +125,25 @@ function migrateAchievements(save, rawSave) {
   });
 }
 
+const LAST_RUN_RESULTS = new Set(["成功", "段落完成", "撤離", "撤退", "失敗"]);
+
+// 最近一次冒險摘要只用來顯示；格式不對就丟掉，不影響其他存檔內容。
+export function normalizeLastRunSummary(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  if (!LAST_RUN_RESULTS.has(raw.result)) return null;
+  const sourceName = typeof raw.sourceName === "string" ? raw.sourceName.trim().slice(0, 40) : "";
+  const encounterTotal = toSafeInteger(raw.encounterTotal);
+  if (!sourceName || encounterTotal <= 0) return null;
+  return {
+    result: raw.result,
+    sourceName,
+    reachedEncounter: Math.min(toSafeInteger(raw.reachedEncounter), encounterTotal),
+    encounterTotal,
+    runLevel: Math.max(1, toSafeInteger(raw.runLevel, 1)),
+    endedAt: typeof raw.endedAt === "string" && !Number.isNaN(Date.parse(raw.endedAt)) ? raw.endedAt : null
+  };
+}
+
 function migrateStatistics(save, rawSave, options = {}) {
   const { rawSchemaVersion = 0 } = options;
   const rawStats = rawSave.statistics || {};
@@ -119,6 +155,7 @@ function migrateStatistics(save, rawSave, options = {}) {
     save.statistics[field] = toSafeInteger(rawStats[field]);
   }
   save.statistics.highestRunLevel = Math.max(1, toSafeInteger(rawStats.highestRunLevel, 1));
+  save.statistics.lastRun = normalizeLastRunSummary(rawStats.lastRun);
 
   Object.keys(regionDefinitions).forEach((regionId) => {
     const rawRegionStats = rawStats.regions?.[regionId] || rawSave.progression?.regions?.[regionId] || {};
@@ -148,6 +185,7 @@ function migrateStatistics(save, rawSave, options = {}) {
 }
 
 function migrateProgression(save, rawSave, options = {}) {
+  const { rawSchemaVersion = 0 } = options;
   const shouldResetLegacyCharacterGrowth = (options.rawSchemaVersion || 0) < 5;
   Object.keys(regionDefinitions).forEach((regionId) => {
     const progress = save.progression.regions[regionId];
@@ -169,12 +207,20 @@ function migrateProgression(save, rawSave, options = {}) {
     if (shouldResetLegacyCharacterGrowth) {
       progress.level = 1;
       progress.exp = 0;
+      progress.emberLevel = 0;
       progress.learnedSkills = [];
       return;
     }
     progress.level = Math.max(1, toSafeInteger(rawProgress.level, 1));
     progress.exp = toSafeInteger(rawProgress.exp);
+    if (rawSchemaVersion < LV25_EXP_CAP_MIGRATION_SCHEMA_VERSION && progress.level === 25) {
+      progress.exp = Math.min(
+        progress.exp,
+        getExpStorageLimit(progress.level, characterDefinitions[characterId])
+      );
+    }
     progress.learnedSkills = Array.isArray(rawProgress.learnedSkills) ? rawProgress.learnedSkills : [];
+    progress.emberLevel = toSafeInteger(rawProgress.emberLevel);
   });
 }
 

@@ -1,4 +1,3 @@
-import { createApplication } from "./src/app/createApplication.js";
+import { startGame } from "./src/app/startGame.js";
 
-const application = createApplication();
-application.start();
+await startGame();

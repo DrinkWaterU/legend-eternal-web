@@ -16,6 +16,12 @@ export const FOREST_TRIAL_ACHIEVEMENT_ID = "forest_trial";
 export const GOBLIN_CAMP_CLEAR_ACHIEVEMENT_ID = "goblin_camp_clear";
 export const BEACH_TRIAL_ACHIEVEMENT_ID = "beach_trial";
 export const COAST_TRIAL_ACHIEVEMENT_ID = "coast_trial";
-export const STORY_LINE_DELAY_MS = 1500;
-export const STORY_FINISH_EXTRA_DELAY_MS = 1700;
+// Phoenix awakening typewriter: per-character delay, pause between lines,
+// hold after a cue word, and the wait before the finish button appears.
+export const STORY_TYPEWRITER_TIMING = Object.freeze({
+  charDelayMs: 72,
+  linePauseMs: 750,
+  cueHoldMs: 700,
+  finishDelayMs: 900
+});
 export const ACHIEVEMENT_TOAST_DURATION_MS = 4600;

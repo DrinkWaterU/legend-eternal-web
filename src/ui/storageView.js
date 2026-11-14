@@ -128,7 +128,7 @@ function renderMaterialGrid({ element, items, selectedMaterialId, onMaterialSele
     name.textContent = item.name;
     const meta = document.createElement("span");
     meta.className = "storage-material-meta";
-    meta.textContent = `${item.source || "來源不明"}｜${item.sellPrice || 0} 金幣`;
+    meta.textContent = `${item.source || "來源不明"}｜單價 ${item.sellPrice || 0} 金幣`;
     const quantity = document.createElement("small");
     quantity.textContent = `×${item.quantity}`;
     button.append(rarityLabel, name, meta, quantity);
@@ -169,8 +169,8 @@ function renderMaterialDetail({ els, item, usageIndex, usageFilter, expandedUsag
   els.storageDetailRarity.textContent = rarity.label;
   els.storageDetailRarity.className = `modal-status rarity-${rarity.id}`;
   els.storageDetailName.textContent = item.name;
-  els.storageDetailMeta.textContent = `${getCategoryLabel(item.category)}｜持有 ${item.quantity}`;
-  els.storageDetailQuantity.textContent = `×${item.quantity}`;
+  els.storageDetailMeta.textContent = getCategoryLabel(item.category);
+  els.storageDetailQuantity.textContent = `持有 ${item.quantity}`;
   els.storageDetailDescription.textContent = item.description || "尚未記錄素材描述。";
   els.storageDetailSource.textContent = item.source || "來源不明。";
   els.storageDetailPrice.textContent = `${item.sellPrice || 0} 金幣`;
@@ -234,10 +234,10 @@ function renderUsageList({ element, usages, expandedUsageIds, onUsageToggle }) {
     const title = document.createElement("strong");
     title.textContent = usage.title;
     const meta = document.createElement("small");
-    meta.textContent = `${usage.location}｜需要 ×${usage.quantity}`;
+    meta.textContent = usage.location;
     copy.append(title, meta);
     const quantity = document.createElement("b");
-    quantity.textContent = `×${usage.quantity}`;
+    quantity.textContent = `需要 ${usage.quantity}`;
     heading.append(copy, quantity);
 
     const subtitle = document.createElement("span");

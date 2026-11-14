@@ -1,7 +1,8 @@
-export function createSaveActions({ state, saveStore, addFixedLog }) {
+export function createSaveActions({ state, saveStore, addFixedLog, showSaveError = () => {} }) {
   function saveGameSafe() {
     return saveStore.persist({
-      onError: () => {
+      onError: (error) => {
+        showSaveError(error);
         if (state.hero) addFixedLog("system", "瀏覽器無法保存目前進度。");
       }
     });

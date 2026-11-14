@@ -1,4 +1,7 @@
+import { startHighlandBattle } from "../../core/highlandBattle.js";
+import { resetWeaponTechnique } from "../../core/weaponTechniques.js";
 import { resetBattleEntryState } from "../../adventure/battleLifecycle.js";
+import { canTakeBattleAction } from "../../core/battleActions.js";
 import { initializeCharacterBattleState } from "../../characters/skills/index.js";
 import { createSkillState } from "../../core/progression.js";
 import { beginPreparationBattle } from "../../core/preparations.js";
@@ -24,7 +27,8 @@ export function createBattleState({
   addLog,
   addFixedLog,
   applyBattleStartSkills,
-  render
+  render,
+  runSaveOperation = (action) => action()
 }) {
   function clearEnemyGroup() {
     state.enemies = [];
@@ -46,8 +50,12 @@ export function createBattleState({
   }
 
   function selectEnemyTarget(runtimeId) {
+    return runSaveOperation(() => selectEnemyTargetOperation(runtimeId));
+  }
+
+  function selectEnemyTargetOperation(runtimeId) {
     const target = getLivingEnemies(state.enemies).find((enemy) => enemy.runtimeId === runtimeId);
-    if (!target || state.ended || state.awaitingBlessing || state.phase === "safe") return;
+    if (!target || !canTakeBattleAction(state)) return;
     state.targetEnemyId = target.runtimeId;
     render();
   }
@@ -78,9 +86,17 @@ export function createBattleState({
       activeRouteId: state.activeRouteId,
       battleEncounterType: state.battleEncounterType,
       turn: state.turn,
+      highlandBattle: clone(state.highlandBattle || null),
+      heroBattleColumn: state.hero.battleColumn,
+      heroCombat: Object.fromEntries(["shield", "skillState", "battleAttackBonus", "battleCritBonus", "hasAttackedThisBattle", "weaponBattleMode", "weaponBattleStartApplied", "windStagger", "highlandOpportunities", "highlandShelterPierceReady"].map(key => [key, clone(state.hero[key] ?? null)])),
+      weaponRuntime: clone(state.hero.weaponRuntime || null),
       blessingBattleState: clone(state.hero.blessingBattleState || {}),
       source,
-      battleSource: state.battleSource
+      battleSource: state.battleSource,
+      hammerTrainingStartEnemyCount: state.hammerTrainingStartEnemyCount,
+      hammerTrainingBreachTargetId: livingEnemies.some(enemy => enemy.runtimeId === state.hammerTrainingBreachTargetId && enemy.weaponBreach?.strength === 3)
+        ? state.hammerTrainingBreachTargetId
+        : null
     };
   }
 
@@ -93,6 +109,7 @@ export function createBattleState({
     state.hero.entangle = null;
     state.hero.saltErosion = null;
     state.hero.paralysis = null;
+    state.hero.guardState = null;
     state.hero.battleAttackBonus = 0;
     state.hero.battleCritBonus = 0;
     state.hero.hasAttackedThisBattle = false;
@@ -105,6 +122,7 @@ export function createBattleState({
     state.hero.skillState = createSkillState();
     resetBlessingBattleState(state.hero);
     initializeCharacterBattleState(state.hero);
+    resetWeaponTechnique(state.hero);
   }
 
   function beginBattleRuntime(options = {}) {
@@ -119,7 +137,10 @@ export function createBattleState({
     resetBattleEntryState(state, { source, encounterType, ambushAdvantage });
     setEnemyGroup(enemies, { restore: restoreEnemies });
     state.hero.activeEnemyCount = getLivingEnemies(state.enemies).length;
+    state.hammerTrainingStartEnemyCount = state.hero.activeEnemyCount;
+    state.hammerTrainingBreachTargetId = null;
     resetHeroBattleState();
+    startHighlandBattle(state);
     beginPreparationBattle(state.runPreparation, { enemyCount: state.hero.activeEnemyCount });
     applyBattleStartSkills();
     const weaponStart = applyEquippedWeaponBattleStart(state.hero, {
@@ -132,9 +153,13 @@ export function createBattleState({
         `${weaponStart.weaponName}啟動「${weaponStart.modeName}」：${weaponStart.summary}。`
       );
     }
-    if (state.hero.activeEnemyCount >= 2 && state.hero.multiEnemyShieldStart > 0) {
-      state.hero.shield += state.hero.multiEnemyShieldStart;
-      addFixedLog("status", `敵群逼近，${state.hero.name}獲得額外 ${state.hero.multiEnemyShieldStart} 點護盾。`);
+    if (state.hero.activeEnemyCount >= 2) {
+      const crowdShield = (Number(state.hero.multiEnemyShieldStart) || 0)
+        + Math.min(100, (Number(state.hero.shieldPerExtraEnemy) || 0) * Math.min(3, state.hero.activeEnemyCount - 1));
+      if (crowdShield > 0) {
+        state.hero.shield += crowdShield;
+        addFixedLog("status", `敵群逼近，${state.hero.name}獲得額外 ${crowdShield} 點護盾。`);
+      }
     }
   }
 
@@ -168,6 +193,16 @@ export function createBattleState({
       source: threat.battleSource || "main",
       encounterType: threat.battleEncounterType || getAdventureEncounterType()
     });
+    state.turn = threat.turn;
+    if (threat.highlandBattle) {
+      state.enemies = restoreRuntimeEnemyGroup(restoredEnemies);
+      state.highlandBattle = clone(threat.highlandBattle);
+      state.hero.battleColumn = threat.heroBattleColumn;
+    }
+    if (threat.weaponRuntime) state.hero.weaponRuntime = clone(threat.weaponRuntime);
+    if (threat.heroCombat) Object.assign(state.hero, clone(threat.heroCombat));
+    if (Number.isInteger(threat.hammerTrainingStartEnemyCount)) state.hammerTrainingStartEnemyCount = threat.hammerTrainingStartEnemyCount;
+    state.hammerTrainingBreachTargetId = threat.hammerTrainingBreachTargetId || null;
     state.hero.blessingBattleState = clone(threat.blessingBattleState || threat.caveBlessingBattle || {});
 
     if (introText) addFixedLog("system", introText);

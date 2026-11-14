@@ -16,6 +16,8 @@ export function createRouteEndingController({
   recordRunFinished,
   finishRun,
   render,
+  runSaveOperation = (action) => action(),
+  afterAdventureSaved = (effect) => effect(),
   getEventRuntime
 }) {
   function showRouteEnding(route = currentRoute(), { endingKey: requestedEndingKey = "ending" } = {}) {
@@ -32,16 +34,22 @@ export function createRouteEndingController({
     state.blessingContext = "normal";
     state.blessingPoolOverrideId = null;
     clearPendingThreat();
-    els.nextButton.disabled = true;
-    els.blessingPanel.classList.remove("is-visible");
-    els.endPanel.classList.remove("is-visible");
-    closeAbilityInfoPanel();
-    closeBlessingInfoPanel();
-    renderRouteEndingPage();
-    render();
+    afterAdventureSaved(() => {
+      els.nextButton.disabled = true;
+      els.blessingPanel.classList.remove("is-visible");
+      els.endPanel.classList.remove("is-visible");
+      closeAbilityInfoPanel();
+      closeBlessingInfoPanel();
+      renderRouteEndingPage();
+      render();
+    });
   }
 
   function completeRoute() {
+    return runSaveOperation(completeRouteOperation);
+  }
+
+  function completeRouteOperation() {
     const route = currentRoute();
     if (!canCompleteRouteEncounter({
       route,
@@ -109,6 +117,10 @@ export function createRouteEndingController({
   }
 
   function continueRouteEnding() {
+    return runSaveOperation(continueRouteEndingOperation);
+  }
+
+  function continueRouteEndingOperation() {
     if (state.phase !== "routeEnding" || !state.routeEndingContext) return;
     const ending = getActiveRouteEnding();
     state.routeEndingContext.pageIndex += 1;
@@ -135,5 +147,5 @@ export function createRouteEndingController({
     getEventRuntime()?.continueEventResult();
   }
 
-  return Object.freeze({ completeRoute, showRouteEnding, handleEventContinueButton });
+  return Object.freeze({ completeRoute, showRouteEnding, renderRouteEndingPage, handleEventContinueButton });
 }

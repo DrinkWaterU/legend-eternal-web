@@ -98,6 +98,7 @@ function syncDebugScenario(context, options = {}) {
       : scenarioDescription;
   context.routeEntryRow.hidden = !supportsRouteEntry;
   context.midChoiceRow.hidden = !supportsMidChoice;
+  if (context.storyDefeatsRow) context.storyDefeatsRow.hidden = scenario?.kind !== "plainsStory";
   context.hpRow.hidden = !supportsHp;
   context.buildSection.hidden = !supportsBuild;
   context.scenarioStartButton.disabled = !scenario;
@@ -304,7 +305,8 @@ function startSelectedScenario(context) {
 function getScenarioOptions(context) {
   return {
     routeEntryEncounter: Number(context.routeEntrySelect.value) || 6,
-    midChoice: context.midChoiceSelect.value || "heal"
+    midChoice: context.midChoiceSelect.value || "heal",
+    storyDefeats: context.storyDefeatsSelect?.value ?? ""
   };
 }
 

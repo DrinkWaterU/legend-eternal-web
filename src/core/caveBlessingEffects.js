@@ -15,7 +15,7 @@ export function resetBlessingBattleState(hero) {
   };
 }
 
-export function getCaveDirectAttackModifiers({ hero, enemy, enemies }) {
+export function getCaveDirectAttackModifiers({ hero, enemy, enemies, canCrit = true }) {
   const runtime = ensureRuntime(hero);
   const marked = Boolean(runtime.tideMarkTargetId) && runtime.tideMarkTargetId === enemy.runtimeId;
   const sameEchoTarget = Boolean(runtime.cavernEchoTargetId)
@@ -32,10 +32,10 @@ export function getCaveDirectAttackModifiers({ hero, enemy, enemies }) {
     damageMultiplier: enemy.paralysis?.remainingTurns > 0
       ? 1 + number(hero.paralysisResonanceDamageBonus)
       : 1,
-    critChanceBonus: marked ? number(hero.tideMarkCritChance) : 0,
+    critChanceBonus: canCrit && marked ? number(hero.tideMarkCritChance) : 0,
     consumeShieldReversal: runtime.shieldReversalReady,
     consumeSupportCounter: runtime.supportCounterCharges > 0,
-    consumeTideMark: marked
+    consumeTideMark: canCrit && marked
   };
 }
 
@@ -50,7 +50,8 @@ export function finishCaveDirectAttack({ hero, enemy, enemyAlive }) {
     applyParalysis(enemy);
   }
 
-  if (runtime.tideMarkTargetId && (!enemyAlive || runtime.tideMarkTargetId === enemy.runtimeId)) {
+  // Capable hits consume the mark above; fixed follow-ups must not erase it.
+  if (!enemyAlive && runtime.tideMarkTargetId === enemy.runtimeId) {
     runtime.tideMarkTargetId = null;
   }
   if (enemyAlive && !runtime.tideMarkCreated && number(hero.tideMarkCritChance) > 0) {
