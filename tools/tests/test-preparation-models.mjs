@@ -38,6 +38,8 @@ import { weightedPick, withSeed } from "../model-test-helpers.mjs";
 const ROUNDS = Math.max(1, Number(process.argv[2]) || 5000);
 const SCOPE = ["all", "plains", "forest"].includes(process.argv[3]) ? process.argv[3] : "all";
 const MAX_TURNS = 500;
+// 平原開始能通關的等級：2026-11-14 作者定為 Lv.9（保守），首領由攻 12／血 118 調為攻 11／血 108。
+const PLAINS_MODEL_LEVEL = 9;
 const logger = {
   template() {},
   fixed() {}
@@ -68,7 +70,7 @@ const plainsResults = SCOPE === "forest" ? [] : plainsCases.map((entry) => ({
     rounds: ROUNDS,
     region: plainsRegion,
     characterId: "adventurer",
-    level: 10,
+    level: PLAINS_MODEL_LEVEL,
     preparationId: entry.id,
     preparationEnhanced: entry.enhanced,
     chooseBlessing: chooseReasonableAdventurerBlessing
@@ -88,7 +90,7 @@ const forestResults = SCOPE === "plains" ? [] : forestCases.map((entry) => ({
 }));
 
 if (plainsResults.length > 0) {
-  printResults("Plains Lv.10 adventurer preparation model", plainsResults);
+  printResults(`Plains Lv.${PLAINS_MODEL_LEVEL} adventurer preparation model`, plainsResults);
 }
 if (forestResults.length > 0) {
   printResults("Forest Lv.25 archer preparation model", forestResults);
@@ -96,14 +98,15 @@ if (forestResults.length > 0) {
 
 if (ROUNDS >= 5000 && plainsResults.length > 0) {
   const plainsBaseline = getWinRatio(plainsResults[0].result);
-  assert.ok(plainsBaseline >= 0.45 && plainsBaseline <= 0.58, "Lv.10 冒險者平原 baseline 應維持可開始通關區間");
+  // Lv.9 一直攻擊約 11%；會在衝鋒時守勢的玩家約 44%（代理另跑的守勢策略模型，2026-11-14）。
+  assert.ok(plainsBaseline >= 0.07 && plainsBaseline <= 0.15, "Lv.9 冒險者平原 baseline（一直攻擊）應維持在可開始挑戰的區間");
   const plainsRanges = new Map([
-    ["簡易繃帶", [0.01, 0.05]],
-    ["驅獸香草", [0.02, 0.07]],
-    ["武器保養", [0.02, 0.07]],
-    ["簡易繃帶・強化", [0.02, 0.07]],
-    ["驅獸香草・強化", [0.03, 0.08]],
-    ["武器保養・強化", [0.03, 0.09]]
+    ["簡易繃帶", [0.015, 0.06]],
+    ["驅獸香草", [0.015, 0.055]],
+    ["武器保養", [0.0, 0.035]],
+    ["簡易繃帶・強化", [0.04, 0.10]],
+    ["驅獸香草・強化", [0.02, 0.07]],
+    ["武器保養・強化", [0.015, 0.06]]
   ]);
   for (const entry of plainsResults.slice(1)) {
     const delta = getWinRatio(entry.result) - plainsBaseline;

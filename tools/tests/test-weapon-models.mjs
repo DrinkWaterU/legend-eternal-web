@@ -69,11 +69,12 @@ if (INCLUDE_V02721_WEAPON_PROTOTYPES) {
 
 const modelGroups = [
   {
-    title: "Plains Lv.10 adventurer weapon model",
+    // 平原開始能通關的等級：2026-11-14 作者定為 Lv.9，首領調為攻 11／血 108。
+    title: "Plains Lv.9 adventurer weapon model",
     seed: 0x24001010,
     region: plainsRegion,
     characterId: "adventurer",
-    level: 10,
+    level: 9,
     chooseBlessing: chooseReasonableAdventurerBlessing,
     cases: withV02721WeaponPrototypes(withAdventurerRarePrototypes([
       { weaponId: null, label: "未裝備" },
@@ -570,7 +571,8 @@ function validateResults(group, entries) {
     });
   }
   if (ROUNDS >= 5000 && group.region.id === "plains" && group.characterId === "adventurer") {
-    assert.ok(baseline >= 0.45 && baseline <= 0.58, "Lv.10 冒險者平原 baseline 應維持可開始通關區間");
+    // 2026-11-14：平原起始通關等級改為 Lv.9；未裝備、一直攻擊約 11%，會守勢撐衝鋒時約 44%。
+    assert.ok(baseline >= 0.07 && baseline <= 0.15, "Lv.9 冒險者平原 baseline（未裝備、一直攻擊）應維持在可開始挑戰的區間");
   }
   if (ROUNDS >= 5000 && group.region.id === "forest" && group.characterId === "adventurer") {
     assert.ok(baseline >= 0.65 && baseline <= 0.77, "Lv.25 冒險者森林 baseline 應維持後期平衡區間");

@@ -7,8 +7,8 @@
     "野獸出沒",
     "強敵衝擊"
   ],
-  "recommendedLevel": "首領 Lv.10",
-  "bossRecommendedLevel": 10,
+  "recommendedLevel": "首領 Lv.9",
+  "bossRecommendedLevel": 9,
   "audio": {
     "bgmId": "plains"
   },
@@ -374,8 +374,8 @@
     "kind": "首領",
     "family": "beast",
     "weight": 100,
-    "maxHp": 118,
-    "attack": 12,
+    "maxHp": 108,
+    "attack": 11,
     "defense": 3,
     "critChance": 0.06,
     "chargeEvery": 3,

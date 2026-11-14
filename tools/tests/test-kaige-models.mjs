@@ -157,10 +157,11 @@ const modelWeaponDefinitions = Object.freeze({
 
 const adventureScenarios = Object.freeze([
   {
-    id: "plains-lv10",
-    label: "平原 Lv.10",
+    // 平原開始能通關的等級：2026-11-14 作者定為 Lv.9，首領調為攻 11／血 108。
+    id: "plains-lv9",
+    label: "平原 Lv.9",
     region: plainsRegion,
-    level: 10,
+    level: 9,
     weapons: {
       adventurer: "iron-longsword",
       archer: "hunter-shortbow",
@@ -951,7 +952,7 @@ function validateCandidateContracts() {
 }
 
 function validateModelResults({ adventureResults, duelResults, level20Gap, level25Gap }) {
-  const kaigePlains = findAdventureResult(adventureResults, "plains-lv10", "kaige");
+  const kaigePlains = findAdventureResult(adventureResults, "plains-lv9", "kaige");
   const kaigeForest = findAdventureResult(adventureResults, "forest-lv25", "kaige");
   assert.ok(
     kaigePlains.winRatio >= 0.5 && kaigePlains.winRatio <= 0.7,
